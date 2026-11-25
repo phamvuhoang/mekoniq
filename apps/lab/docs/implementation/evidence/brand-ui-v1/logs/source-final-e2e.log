@@ -1,0 +1,53 @@
+
+> mekoniq-platform@ test:e2e /Users/hoangpham/source/prv/robot/source
+> node scripts/test-runner.mjs e2e
+
+[WebServer] (node:76444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:76445) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:76460) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 35 tests using 1 worker
+
+(node:76467) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/e2e/cash-print.spec.ts:3:1 › cash shift and print queue screens render from real snapshots, with the fixture printer labelled as not physical (519ms)
+  ✓   2 tests/e2e/cloud-brand.spec.ts:13:1 › cloud login theme, local logo, keyboard focus, error and busy feedback (2.0s)
+  ✓   3 tests/e2e/cloud-brand.spec.ts:23:1 › authenticated admin routes preserve navigation and deny an actor without configuration permission (31.4s)
+  ✓   4 tests/e2e/cloud-catalog.spec.ts:18:1 › authenticated menu editor publishes a durable pending relay without replacing applied prices (7.3s)
+  ✓   5 tests/e2e/device-status.spec.ts:3:1 › venue receipt does not claim a cloud commit and pending journal prevents reset (244ms)
+  ✓   6 tests/e2e/device-status.spec.ts:9:1 › local commit is presented separately from venue or cloud acknowledgement (308ms)
+  ✓   7 tests/e2e/device-status.spec.ts:15:1 › chef route guards and language work on a portrait tablet (385ms)
+  ✓   8 tests/e2e/full-pos.spec.ts:20:1 › QR order, amendment to two stations, three-way split, two tenders, partial refund, reconciled shift and the matching report (2.1s)
+  ✓   9 tests/e2e/full-pos.spec.ts:108:1 › reports: permission denial, offline and unsynced states, recovery, and touch layout in portrait and landscape (1.0s)
+  ✓  10 tests/e2e/guest-requests.spec.ts:4:1 › staff hand out a guest link, see the guest call and acknowledge it without closing a bill (380ms)
+  ✓  11 tests/e2e/guest-review-repairs.spec.ts:3:1 › staff opens a guest seating without POS and kiosk accepted cart renders empty (928ms)
+  ✓  12 tests/e2e/guest-review-repairs.spec.ts:50:54 › guest seating surface follows robot-only policy (302ms)
+  ✓  13 tests/e2e/guest-review-repairs.spec.ts:50:54 › guest seating surface follows sessions-disabled policy (244ms)
+  ✓  14 tests/e2e/guest-table.spec.ts:24:1 › a QR guest order stays pending until the venue receipt and says so when the venue never answers (6.9s)
+  ✓  15 tests/e2e/pilot-service.spec.ts:12:1 › one control source: only the robot's bound executor on its owner device observes, and stale epochs are refused (123ms)
+  ✓  16 tests/e2e/pilot-service.spec.ts:25:1 › robots imported from the trial cannot be dispatched until commissioned and bound; the import creates no mission (141ms)
+  ✓  17 tests/e2e/pilot-service.spec.ts:43:1 › the pilot dossier stays BLOCKED and carries the cutover checklist (1ms)
+  -  18 tests/e2e/pilot-service.spec.ts:49:1 › real-device pilot (O01/O10/O11) with an approved commissioned robot
+  ✓  19 tests/e2e/restaurant-journey.spec.ts:4:1 › actual POS KDS fake-executor and cash ledger journey keeps stable IDs (1.4s)
+  ✓  20 tests/e2e/restaurant-journey.spec.ts:29:1 › CSV import preview and approval do not trigger a second physical action (450ms)
+  ✓  21 tests/e2e/restaurant-presets.spec.ts:23:1 › every offered template only switches on modules that exist, and the chain template says what it still waits for (1ms)
+  ✓  22 tests/e2e/restaurant-presets.spec.ts:28:1 › cafe: counter ordering and payment screens are offered, robot and booking screens are not (315ms)
+  ✓  23 tests/e2e/restaurant-presets.spec.ts:40:1 › buffet template offers the service-models screen over the same fixture menu (236ms)
+  ✓  24 tests/e2e/restaurant-presets.spec.ts:47:1 › robot-only template needs no menu: ordering screens disappear, fleet stays (249ms)
+  ✓  25 tests/e2e/restaurant-presets.spec.ts:56:1 › trial-service still offers only the trial functions after the new templates exist (243ms)
+  ✓  26 tests/e2e/restaurant-pricing.spec.ts:2:1 › POS shows the server quote for modifiers, tax and a coupon and the placed order keeps its charge snapshot (549ms)
+  ✓  27 tests/e2e/service-models-screen.spec.ts:5:1 › weighed price and combo parts are still shown after the screen refreshes (361ms)
+  ✓  28 tests/e2e/table-order-amendments.spec.ts:4:1 › cancelling an unprepared dish reaches the station as a delta ticket it must acknowledge (536ms)
+  ✓  29 tests/e2e/table-order-amendments.spec.ts:23:1 › a version conflict keeps the unsent draft and says a newer version exists (337ms)
+  ✓  30 tests/e2e/tablet-brand.spec.ts:6:1 › tablet brand uses local artwork, dark first paint and touch targets across routes (369ms)
+  ✓  31 tests/e2e/tablet-brand.spec.ts:16:1 › all tablet route surfaces remain responsive, offline stays readable and print uses ink (11.2s)
+  ✓  32 tests/e2e/tablet-brand.spec.ts:25:1 › snapshot polling preserves keyboard focus and an unsent field draft (2.6s)
+  ✓  33 tests/e2e/trial-service-preset.spec.ts:40:1 › baseline site (all legacy flags off): only the core trial functions are offered and disabled ones are refused (530ms)
+  ✓  34 tests/e2e/trial-service-preset.spec.ts:92:1 › all legacy flags on (demo site): call, bill request, guide and robot ordering are offered, bussing and delivery are on, the rest stays off (595ms)
+  ✓  35 tests/e2e/trial-service-preset.spec.ts:131:1 › pay branch: a guest "I paid" claim never settles; only a manager attestation with a reference does (359ms)
+
+  1 skipped
+  34 passed (1.4m)

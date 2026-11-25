@@ -1,0 +1,228 @@
+{
+  "recordedAt": "2026-11-06T07:00:07.074428+00:00",
+  "sourceBranch": "feat/lab-digital-twin-v2",
+  "labBranch": "feat/robot-lab",
+  "testedSourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+  "testedLabCommit": "66445c5acf24f90cc17449bae561dbc45965eba7",
+  "runtimeLock": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+    "schemaHash": "ebc4b1f05c57f1dbbbca9e376bd815dd20277a9fe8a7d4c8365ab566cc8f63fe",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "470a404c61714f5ee5b1878f964c1be4bea28628846bdfd800b1df8619a9d236",
+    "entrypoint": "runtime.mjs"
+  },
+  "toolchain": "Node 24.22.2 / pnpm 10.32.1 / Python 3.13.3 trên macOS ARM64; CI Python 3.12 là target riêng",
+  "tasks": [
+    {
+      "id": "I01",
+      "title": "Cup ledger và chuyển quyền sở hữu cốc",
+      "implementation": "implemented",
+      "verification": "verified_mock / portable tests",
+      "detail": "Durable cup ledger ràng buộc observations; takeCup/projection idempotent; domain delivery chuyển physical parent tới bàn, giải phóng tray và phục hồi crash-cut.",
+      "scope": "SQLite/domain + protocol doubles; final suite đã pass."
+    },
+    {
+      "id": "I02",
+      "title": "BV01 dùng chung CoffeeDriver và recovery",
+      "implementation": "implemented",
+      "verification": "verified_mock / portable tests",
+      "detail": "CoffeeDriver dùng chung plant ports; stage/start có journal; completion outbox và recovery không tự gửi lại chuyển động.",
+      "scope": "Mock hai recipe qua browser; production native ports qua protocol doubles. Chưa chạy LinuxCNC engine."
+    },
+    {
+      "id": "I03",
+      "title": "Controller / ARM03 trong RunReport và replay",
+      "implementation": "implemented",
+      "verification": "verified_mock / portable tests",
+      "detail": "Controller/ARM03, transfer evidence, hashes và native clock mapping trong RunReport; import validation, replay và CSV giữ raw timestamps, không hiện future evidence.",
+      "scope": "Checker/import/render tests; browser import/replay fixture đã pass trên pin cuối."
+    },
+    {
+      "id": "I04",
+      "title": "Readiness và admission trước khi chạy",
+      "implementation": "implemented",
+      "verification": "verified_mock / portable tests",
+      "detail": "Readiness theo scenario/project, dependency và protocol; snapshot hết hạn được refresh, admission kiểm lại trước tác động.",
+      "scope": "Gateway/auth/admission/UI và autonomous hold revision/SSE/poll tests; readiness không thay native qualification."
+    },
+    {
+      "id": "I05",
+      "title": "Scenario fault schedule và project persistence",
+      "implementation": "implemented",
+      "verification": "verified_mock / portable tests",
+      "detail": "Editor lưu fault schedule trong project, kiểm target/trigger/duration; fired markers bền vững để không bắn lại sau restart.",
+      "scope": "Mock scheduler/UI và browser missing-cup→hold→reconcile pass; shared native schedule qua protocol tests."
+    },
+    {
+      "id": "N01",
+      "title": "Provision UTM và hai Linux VM",
+      "implementation": "not_implemented",
+      "verification": "not_run",
+      "detail": "Có host/storage preflight và UTM runbook. Chưa tải ISO, cài UTM hoặc tạo hai VM vì không đủ dung lượng.",
+      "scope": "blocked_external: cần 120 GiB cho VM + 20 GiB reserve; RAM host 16 GiB."
+    },
+    {
+      "id": "N02",
+      "title": "ARM64 ROS/Gazebo/Nav2 profile",
+      "implementation": "implemented",
+      "verification": "verified_mock / portable tests",
+      "detail": "Có explicit ARM64 profile, inventory validation và doctor/launch selection; candidate không tự được coi là installed/verified.",
+      "scope": "Portable profile tests; FD01/02/03/04/07 native chưa chạy."
+    },
+    {
+      "id": "N03",
+      "title": "LinuxCNC SIM / QtVCP qualification tooling",
+      "implementation": "implemented",
+      "verification": "verified_mock / portable tests",
+      "detail": "Có ARM64 lock/inventory, staged terminal/QtVCP smoke, kiểm path/joint fault và fresh evidence; process exit không xác nhận GUI checklist.",
+      "scope": "Portable tests; terminal/GUI native not_run trên Mac."
+    },
+    {
+      "id": "N04",
+      "title": "SSH tunnel và correlated transfer barriers",
+      "implementation": "implemented",
+      "verification": "verified_mock / portable tests",
+      "detail": "SSH Unix socket supervisor có lifecycle và quyền socket; barriers ràng buộc participant/nonce/epoch/sequence theo coordinator receipt time.",
+      "scope": "Process/socket/protocol doubles; cross-VM transport/ACL chưa chạy."
+    },
+    {
+      "id": "N05",
+      "title": "Controller-driven SIM gripper và tray observation",
+      "implementation": "implemented",
+      "verification": "verified_mock / portable tests",
+      "detail": "SIM grip dùng output và pose controller; receiver do Gazebo quan sát riêng. Replay proof kiểm live boot/epoch; release đợi cả hai phía.",
+      "scope": "Controller/grip/tray protocol tests; grip vẫn là modeled plant, không phải cảm biến vật lý."
+    },
+    {
+      "id": "N06",
+      "title": "BV01 native coordinator, CLI và gateway",
+      "implementation": "implemented",
+      "verification": "verified_mock / portable tests",
+      "detail": "Shared native lifecycle/factory với CoffeeDriver/domain, provider barriers, fault/operator observation và CLI/gateway/UI; executable closure được pin/snapshot, wire expiry có bounded clock mapping.",
+      "scope": "Hai recipe qua production ports với protocol doubles; mixed FD/BV dispatch regression pass. ROS/Gazebo/LinuxCNC và native UI/import chưa chạy."
+    },
+    {
+      "id": "R01",
+      "title": "Full PostgreSQL integration",
+      "implementation": "implemented",
+      "verification": "verified · full PostgreSQL + SQLite",
+      "detail": "Dedicated Supabase project chạy full integration trên final source HEAD; mọi failure trước được lưu và sửa, suite cuối pass.",
+      "scope": "Exact source commit và skipped-case classification trong qualification-final.json; không lọc SQLite để thay PostgreSQL."
+    },
+    {
+      "id": "R02",
+      "title": "Offline package và guided usability",
+      "implementation": "in_progress",
+      "verification": "verified_mock · acceptance pending",
+      "detail": "Clean export, schema/runtime pin, 4 browser journeys và gói offline darwin/arm64 với BV01 2 cốc đã pass; editor giữ disclosure state sau đổi fault.",
+      "scope": "Offline browser chặn mọi HTTP ngoài loopback; chưa clean target, OS network-off, Linux package hoặc guided usability với 5 người mới."
+    },
+    {
+      "id": "R03",
+      "title": "Signed release trên clean Linux amd64",
+      "implementation": "not_implemented",
+      "verification": "not_run",
+      "detail": "Signed release trên clean Linux amd64 chưa thực hiện. Existing trust/signature/installer regressions nằm trong portable controller suite; chưa có release key/target thật.",
+      "scope": "blocked_external: signing station/trust policy/amd64 target chưa provision; ARM64 không thay amd64."
+    }
+  ],
+  "checks": [
+    {
+      "name": "Source contracts / typecheck / lint / build",
+      "result": "exit 0",
+      "scope": "f82b2057cae89b0029968212753df01f86f334ad"
+    },
+    {
+      "name": "Source unit / contracts / adapters / arm security",
+      "result": "129 / 41 / 50 / 3 passed",
+      "scope": "Các suite độc lập; không cộng thành production score."
+    },
+    {
+      "name": "Full integration: PostgreSQL + SQLite",
+      "result": "941 passed · 2 skipped",
+      "scope": "121 files; skipped measurement và opt-in duplicate clean-export check. Clean export đã chạy riêng."
+    },
+    {
+      "name": "Python agent / simulation / schema",
+      "result": "285 passed, 1 skipped in 1.93s",
+      "scope": "1 native ROS/Gazebo module blocked do thiếu rclpy."
+    },
+    {
+      "name": "Python arm-controller",
+      "result": "143 passed, 1 skipped, 11 subtests passed in 34.27s",
+      "scope": "1 Linux service ACL check blocked trên Mac; FakeController không là native engine."
+    },
+    {
+      "name": "Lab pin / schema mirror / typecheck / tests / build",
+      "result": "188 passed · 1 skipped",
+      "scope": "66445c5acf24f90cc17449bae561dbc45965eba7; 1 optional telemetry measurement skipped."
+    },
+    {
+      "name": "Browser journeys trên runtime pin",
+      "result": "4 passed",
+      "scope": "Coffee, arm simulation, controller report fixture, scheduled fault/reconcile."
+    },
+    {
+      "name": "Offline package darwin/arm64",
+      "result": "Build pass · 1 browser journey passed",
+      "scope": "BV01 served=2, customer custody, report pin và loopback-only requests. Chưa clean-machine/OS network-off."
+    },
+    {
+      "name": "Native prerequisites / terminal / GUI",
+      "result": "6 lệnh exit 2 · not_run",
+      "scope": "Chưa provision UTM/Linux/ROS/Gazebo/LinuxCNC; không có native run pass."
+    },
+    {
+      "name": "Independent final code review",
+      "result": "W01–W06 resolved",
+      "scope": "Review scoped delta được duyệt; qualification còn phát hiện và sửa stale fixtures + disclosure UI."
+    }
+  ],
+  "blockers": [
+    "UTM chưa cài, hai VM chưa tạo: còn 13.7 GiB; cần 140 GiB nếu cùng volume",
+    "Native ARM64/amd64, GUI, clean offline target, 5 người usability và signed release còn not_run"
+  ],
+  "deploy": [
+    {
+      "target": "mac-mock",
+      "title": "Lab + mock runtime",
+      "scope": "Node 24.22.2; source pin và schema đã được kiểm trên baseline trong báo cáo.",
+      "command": "cd lab\npnpm check:source\npnpm lab:mock"
+    },
+    {
+      "target": "linux-vm-sim",
+      "title": "Hai VM theo runbook",
+      "scope": "Cần giải quyết storage trước; native acceptance riêng.",
+      "command": "node source/scripts/native-sim/host-preflight.mjs --vm-root /absolute/existing/volume"
+    },
+    {
+      "target": "darwin-arm64-offline",
+      "title": "Gói offline đúng target",
+      "scope": "Artifact đã build/test trên macOS ARM64. Không cần pnpm để start; dùng mã pairing terminal. Chỉ tương thích đúng OS/architecture; clean-machine/network-off vẫn cần nghiệm thu riêng.",
+      "command": "/var/tmp/mekoniq-bvi-offline-f82b205-darwin-arm64/start"
+    },
+    {
+      "target": "linux-amd64-sim",
+      "title": "Signed controller release",
+      "scope": "Theo controller deployment/restore runbooks sau qualification amd64 và provisioning trust. Không dùng fixture key làm release key.",
+      "command": "cd source/integrations/arm-controller\ncat docs/bridge-deployment.md\ncat docs/restore-runbook.md"
+    }
+  ],
+  "nextSteps": [
+    "Cấp volume đủ 120 GiB cho VM và giữ 20 GiB reserve host; chạy preflight rồi provision hai VM theo runbook. Host 16 GiB ưu tiên standalone luân phiên; combined cần đo headroom thực.",
+    "Resolve/pin package và runtime inventory trong Ubuntu/Debian, commit rồi export/re-pin tools/schema/controller cùng revision. Chạy FD01 trước FD02/03/04/07; chạy LinuxCNC terminal và QtVCP checklist thật.",
+    "Chạy combined BV01 hai recipe và các negative faults với hai engine sống cùng run; giữ raw telemetry, collision/contact/transfer evidence và kiểm import/replay trên Lab.",
+    "Thử gói offline trên clean target đúng OS/architecture với network-off, rollback/import/export; thực hiện guided usability với ít nhất 5 người mới có consent.",
+    "Provision clean Linux amd64 và signing station/trust policy, chạy qualification và signed install/reboot/rollback. Hardware safety, timing và guarded HIL vẫn là gate riêng."
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "commit": "8a52cb6d2d2c5b1a46199642699775caf704b21a",
+  "status": "build_verified",
+  "command": "ANDROID_HOME=<local SDK> pnpm --filter @mekoniq/tablet-android android:build",
+  "exitCode": 0,
+  "sha256": "47a270a6319f66ae082e76208d4a4732c6fa16742b5eea445dcf3918ecb303e7",
+  "bytes": 5340075,
+  "nativeWebView": "blocked_external: no connected enrolled devices"
+}

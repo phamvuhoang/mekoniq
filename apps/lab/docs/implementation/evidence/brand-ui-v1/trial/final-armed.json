@@ -1,0 +1,24 @@
+[
+  {
+    "id": "reset",
+    "state": {
+      "armed": true,
+      "label": "Chạm lần nữa để khôi phục",
+      "fg": "rgb(7, 29, 33)",
+      "bg": "rgb(255, 170, 160)"
+    },
+    "resets": [],
+    "violations": []
+  },
+  {
+    "id": "defaults",
+    "state": {
+      "armed": true,
+      "label": "Chạm lần nữa để khôi phục",
+      "fg": "rgb(7, 29, 33)",
+      "bg": "rgb(255, 170, 160)"
+    },
+    "resets": [],
+    "violations": []
+  }
+]

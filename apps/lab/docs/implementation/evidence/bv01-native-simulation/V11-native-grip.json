@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "taskId": "N05",
+  "gate": "G-SIM-ARM",
+  "execution": "not_run",
+  "result": "not_run",
+  "blockers": [
+    "NATIVE_LINUXCNC_UNAVAILABLE",
+    "NATIVE_GAZEBO_NAV2_UNAVAILABLE",
+    "NATIVE_CARTESIAN_TRAJECTORY_UNVERIFIED",
+    "NATIVE_COMBINED_BV01_RUN_NOT_EXECUTED"
+  ],
+  "target": {"profile": "linux-vm-sim", "architecture": "arm64"},
+  "claims": {"hardwareValidated": false, "productionReady": false},
+  "artifacts": []
+}

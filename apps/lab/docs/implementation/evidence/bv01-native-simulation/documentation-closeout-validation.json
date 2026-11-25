@@ -1,0 +1,44 @@
+{
+  "recordedAt": "2026-11-06T07:01:30.432722+00:00",
+  "scope": "Current local Markdown links and document identities only",
+  "result": "pass",
+  "localLinks": 38,
+  "documents": [
+    {
+      "path": "docs/plans/2026-11-06-bv01-native-simulation/utm-runbook.md",
+      "sha256": "2f2f2887952a19f2e9c8a47a16dc4da404c8936fdcb6e52d2da7420d4377c78d"
+    },
+    {
+      "path": "docs/plans/2026-11-06-bv01-native-simulation/01-golden-path.md",
+      "sha256": "623c6c59297938e7c3e1e7e906ede6513ae783f27908263e171bac9cfd4bad78"
+    },
+    {
+      "path": "docs/plans/2026-11-06-bv01-native-simulation/README.md",
+      "sha256": "a3ac95be3eb291d10a6b7c68147a926c2d6a461ee2516e897173c0e90c1a0c57"
+    },
+    {
+      "path": "docs/plans/2026-11-06-bv01-native-simulation/03-release-acceptance.md",
+      "sha256": "79003995c2e4fdcff5d72fe4c8a87a59b5d494061f8e6679ab7374ec9afdac4b"
+    },
+    {
+      "path": "docs/plans/2026-11-06-bv01-native-simulation/02-native-simulation.md",
+      "sha256": "0b83d33339d0d4edf09ac258c8b903d91f7f683213be7b274d28f8d5678d72ef"
+    },
+    {
+      "path": "docs/specs/2026-11-06-bv01-native-simulation/contracts-and-evidence.md",
+      "sha256": "37c46ede2ce7ffdf25e1bf4ab921ee078f51ba1a46eac191c4651df3baf1ee65"
+    },
+    {
+      "path": "docs/specs/2026-11-06-bv01-native-simulation/README.md",
+      "sha256": "1abe6c80e83df900c299a2e253f835716ddb9e53b23907b7aa6ea900c7d426a7"
+    },
+    {
+      "path": "docs/specs/2026-11-06-bv01-native-simulation/verification.md",
+      "sha256": "446356e50daa7922e6ea5a2e3a169e128b943439332aa2344956fe685ce3307d"
+    },
+    {
+      "path": "docs/implementation/evidence/bv01-native-simulation/README.md",
+      "sha256": "163dda95ce6d8a7e86bf3183a7c95eeb12091f09fb96037ace5dce5b1e84add0"
+    }
+  ]
+}

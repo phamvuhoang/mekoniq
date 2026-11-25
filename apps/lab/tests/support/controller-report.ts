@@ -1,0 +1,7 @@
+import type {RunReport} from '../../src/scenarios/controls';
+import {coffeeReplay} from './coffee-replay';
+export function controllerReportFixture(collisionEndTick:number|null):RunReport{
+ const report=structuredClone(coffeeReplay().report);report.manifest.mode='simulation';report.manifest.world.hash='c'.repeat(64);
+ report.verification={schemaVersion:1,execution:'ran',result:collisionEndTick===null?'not_run':'fail',blockers:collisionEndTick===null?['TRACE_EMPTY']:[],target:'linux-vm-sim',aspects:[],transfers:[],artifacts:[],armTickMap:collisionEndTick===null?[]:[{sampleTick:0,runTick:0,entityId:'arm-1',bootId:'controller',seq:'1'},{sampleTick:1,runTick:collisionEndTick,entityId:'arm-1',bootId:'controller',seq:'2'}],arm:{id:'ARM03',result:collisionEndTick===null?'not_run':'fail',reasonCodes:collisionEndTick===null?['TRACE_EMPTY']:['COLLISION'],engine:'capsule-sweep-v1',modelRevision:'a'.repeat(64),geometryRevision:'b'.repeat(64),worldRevision:{id:'world',revision:1,hash:'c'.repeat(64)},assetRef:{id:'arm-puma-reference'},trace:collisionEndTick===null?null:{samples:2,fromTick:0,toTick:1},attachments:[],allowedContacts:[],method:{kind:'adaptive-subdivision',bound:'conservative',toleranceM:0.0005,maxDepth:24},coverage:{intervals:collisionEndTick===null?0:1,evaluations:collisionEndTick===null?0:2,uncertain:0,allowedContactsApplied:0},colliding:collisionEndTick===null?[]:[{pair:['gripper','fixture'],reason:'COLLISION',fraction:0.5,clearanceM:-0.01,interval:{fromTick:0,toTick:1}}],provenance:'geometric_checker',fidelity:'modeled'}};
+ return report;
+}

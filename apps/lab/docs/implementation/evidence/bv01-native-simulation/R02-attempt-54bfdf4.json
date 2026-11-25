@@ -1,0 +1,13 @@
+{
+  "labCommit": "54bfdf410d312e43cdbe0d3019067835e887c6a9",
+  "sourceCommit": "fa5ed2871db92e57e5bd3490195486d569ecc5a0",
+  "result": "failed",
+  "passed": 186,
+  "failed": 2,
+  "skipped": 1,
+  "failures": [
+    "the campaign fixture names registry scenarios and backend sets the runtime offers; it equals the source copy when the sibling exists",
+    "current cup follows the first unfinished job, then the last cup"
+  ],
+  "resolution": "Synchronize campaign fixture note from source; retain exact expected backend list including implemented native-bv01 preset. Focused 13 tests passed; full rerun follows on committed revision."
+}

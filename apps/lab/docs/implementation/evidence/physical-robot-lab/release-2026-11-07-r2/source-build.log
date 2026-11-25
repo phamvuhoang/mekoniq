@@ -1,0 +1,11 @@
+
+> check:brand
+> node scripts/check-brand.mjs --dir packages/ui/brand && node scripts/check-brand.mjs --dir apps/cloud-web/public/brand --against packages/ui/brand/release.json && node scripts/check-brand.mjs --dir apps/tablet-web/public/brand --against packages/ui/brand/release.json
+
+MEKONIQ 1.0.1 verified (22 files)
+MEKONIQ 1.0.1 verified (22 files)
+MEKONIQ 1.0.1 verified (22 files)
+npm warn Unknown env config "reporter". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "npm-globalconfig". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "verify-deps-before-run". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "_jsr-registry". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.

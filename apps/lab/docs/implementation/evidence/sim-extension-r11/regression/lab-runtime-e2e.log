@@ -1,0 +1,7 @@
+Testing the pinned source runtime with a fresh, isolated journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/service-journey.spec.ts:5:1 › paired source runtime drives arrival then human load and handoff (1.9s)
+
+  1 passed (3.8s)

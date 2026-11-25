@@ -1,0 +1,15 @@
+AssertionError [ERR_ASSERTION]: defaults on-danger foreground
++ actual - expected
+
++ 'rgb(246, 248, 244)'
+- 'rgb(7, 29, 33)'
+       ^
+
+    at /Users/hoangpham/source/prv/robot/trial/scripts/smoke-brand.js:34:11 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'rgb(246, 248, 244)',
+  expected: 'rgb(7, 29, 33)',
+  operator: 'strictEqual',
+  diff: 'simple'
+}

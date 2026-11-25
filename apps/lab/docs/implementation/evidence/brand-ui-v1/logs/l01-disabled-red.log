@@ -1,0 +1,48 @@
+[WebServer] (node:66920) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:66945) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:66952) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:30:27 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✘  1 tests/e2e/brand-ui.spec.ts:41:1 › primary, disabled and unknown states retain readable semantics (5.8s)
+
+
+  1) tests/e2e/brand-ui.spec.ts:41:1 › primary, disabled and unknown states retain readable semantics 
+
+    Error: expect(locator).toHaveCSS(expected) failed
+
+    Locator:  getByRole('button', { name: 'Create run', exact: true })
+    Expected: "rgb(16, 47, 52)"
+    Received: "rgb(185, 251, 117)"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCSS" getByRole('button', { name: 'Create run', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Create run', exact: true })
+        14 × locator resolved to <button disabled data-action="create-run" class="button primary full">…</button>
+           - unexpected value "rgb(185, 251, 117)"
+
+
+      49 |   const unavailable = page.getByRole('button', { name: 'Create run', exact: true });
+      50 |   await expect(unavailable).toBeDisabled();
+    > 51 |   await expect(unavailable).toHaveCSS('background-color', 'rgb(16, 47, 52)');
+         |                             ^
+      52 |   await expect(unavailable).toHaveCSS('color', 'rgb(168, 194, 198)');
+      53 |   await page.locator('.nav-item[href="#deployment"]').click();
+      54 |   const primary = page.getByRole('button', { name: 'Export draft candidate', exact: true });
+        at /Users/hoangpham/source/prv/robot/lab/tests/e2e/brand-ui.spec.ts:51:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/brand-ui-primary-disabled--5c298-s-retain-readable-semantics/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/brand-ui-primary-disabled--5c298-s-retain-readable-semantics/error-context.md
+
+  1 failed
+    tests/e2e/brand-ui.spec.ts:41:1 › primary, disabled and unknown states retain readable semantics 

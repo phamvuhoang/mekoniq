@@ -1,0 +1,42 @@
+{
+  "node": "24.22.2",
+  "command": "npm run check:brand (each repo)",
+  "exitCode": 0,
+  "copies": [
+    {
+      "path": "source/packages/ui/brand",
+      "brandVersion": "1.0.1",
+      "sourceCommit": "3f31af9f837a6a5f13c41f27c26154d9c24b5c83",
+      "manifestSha256": "4798ca3aedd18d08bfab9a9222fbf31c7a7110a44f814fe1e0c24fef5fd4bf85",
+      "verifiedPayloadFiles": 22
+    },
+    {
+      "path": "source/apps/cloud-web/public/brand",
+      "brandVersion": "1.0.1",
+      "sourceCommit": "3f31af9f837a6a5f13c41f27c26154d9c24b5c83",
+      "manifestSha256": "4798ca3aedd18d08bfab9a9222fbf31c7a7110a44f814fe1e0c24fef5fd4bf85",
+      "verifiedPayloadFiles": 22
+    },
+    {
+      "path": "source/apps/tablet-web/public/brand",
+      "brandVersion": "1.0.1",
+      "sourceCommit": "3f31af9f837a6a5f13c41f27c26154d9c24b5c83",
+      "manifestSha256": "4798ca3aedd18d08bfab9a9222fbf31c7a7110a44f814fe1e0c24fef5fd4bf85",
+      "verifiedPayloadFiles": 22
+    },
+    {
+      "path": "lab/public/brand",
+      "brandVersion": "1.0.1",
+      "sourceCommit": "3f31af9f837a6a5f13c41f27c26154d9c24b5c83",
+      "manifestSha256": "4798ca3aedd18d08bfab9a9222fbf31c7a7110a44f814fe1e0c24fef5fd4bf85",
+      "verifiedPayloadFiles": 22
+    },
+    {
+      "path": "trial/data/public/brand",
+      "brandVersion": "1.0.1",
+      "sourceCommit": "3f31af9f837a6a5f13c41f27c26154d9c24b5c83",
+      "manifestSha256": "4798ca3aedd18d08bfab9a9222fbf31c7a7110a44f814fe1e0c24fef5fd4bf85",
+      "verifiedPayloadFiles": 22
+    }
+  ]
+}

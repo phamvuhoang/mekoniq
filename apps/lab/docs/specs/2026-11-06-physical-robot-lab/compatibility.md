@@ -1,0 +1,38 @@
+# Bảo toàn chức năng hiện hữu
+
+Thuộc [spec chính](README.md), áp dụng PHY-13 và V21. Đây là acceptance contract của đợt nâng cấp, chưa phải bằng chứng đã triển khai. Baseline code/pin ở README phải được chụp lại trước A01 và sau mỗi lần đổi pin; không dùng số test pass để thay inventory chức năng.
+
+## 1. Quy tắc mở rộng
+
+Engineering là profile bổ sung. Giữ các đường vào UI, API/protocol 1/2, CLI, project/candidate/report cũ và dữ liệu đã lưu. Chuyển sang engineering là hành động rõ, có original/migration report; không tự chuyển preset, ép migrate hay biến việc thiếu ROS thành lỗi không dùng được toàn Lab. Giới hạn một AMR/FD01/BV01 chỉ áp dụng cho engineering MVP. Native profile chưa có evidence vẫn giữ trạng thái not_run; không xóa implementation hoặc đổi kết luận lịch sử.
+
+## 2. Inventory và task chịu trách nhiệm
+
+Paths trong bảng tính từ workspace. Các tests ghi **new** được task tương ứng tạo; các test còn lại đã có tại baseline. Task phải mở rộng assertions cho shared store/new contracts, không chỉ chạy lại fixture cũ để chứng minh đường mới.
+
+| ID | Chức năng phải giữ | Task | Test/evidence bắt buộc |
+|---|---|---|---|
+| NR01 | Designer service/Valetudo, khay/pin/sensor/payload, chọn part, exploded/functional connections, BOM/giá thiếu, energy/drive/stability có provenance | A03/D01 | `lab/tests/unit/core-calculations.test.ts`, `core-design-world.test.ts`; `lab/tests/e2e/ui.spec.ts`; **new** `lab/tests/unit/engineering-estimates.test.ts` kiểm projection và thiếu input không dùng preset |
+| NR02 | Autosave, active project/reload, import/export, undo/redo; giữ original khi migrate hoặc import lỗi; vẫn xuất RAM draft khi storage lỗi | A01/D01 | `lab/tests/integration/project-store.test.ts`, `project-v2-migration.test.ts`; `lab/tests/e2e/ui.spec.ts`; **new** `engineering-migration.test.ts`, `engineering-storage.test.ts` trong integration và `engineering-design.spec.ts` trong e2e |
+| NR03 | Layout: sửa tọa độ/kích thước/points/obstacles, thêm/xóa, empty layout, handoff/yaw, selection sau undo; dùng đúng world cho run | A03/B02/D01 | `lab/tests/unit/core-design-world.test.ts`, `lab/tests/e2e/ui.spec.ts`; **new** `source/robotics/simulation/tests/test_engineering_compiler.py` V17 và browser engineering-design |
+| NR04 | S01 v1: pairing, start/step, xác nhận load/handoff, cancel, blocked/clear/offline/online/reboot/duplicate; report/candidate | A04/D01/D03 | `source/tests/integration/lab-runtime.test.ts`, `lab-runtime-gateway.test.ts`; `lab/tests/e2e/service-journey.spec.ts` qua `pnpm test:runtime-e2e` |
+| NR05 | FD01/BV01 mock, hai recipe, journal/source authority, explicit domain confirmations, không auto served từ renderer | B03/C04/D01/D03 | `source/tests/integration/lab-v2-mock.test.ts`, `lab-v2-bv01-ports.test.ts`; `lab/tests/e2e/twin-workspace.spec.ts`, `coffee-journey.spec.ts` qua mock launcher |
+| NR06 | Các scenario hiện có trong scenarioRegistry/matrix, gồm FD02/FD02-cups, FD03/04/05/07 và `CAMPAIGN-FD02-FD07-BV01-BV03`; không rút về một robot ở legacy | B03/C04/D01/D03 | `source/tests/integration/lab-v2-mixed.test.ts`, `lab-v2-scenario-matrix.test.ts`, `source/tests/acceptance/lab-v2-mock.acceptance.test.ts`; **new** `lab/tests/e2e/legacy-campaign.spec.ts` chạy mixed và hai AMR từ UI |
+| NR07 | Profile `coffee-simulation`/PUMA/LinuxCNC, stage/start/lease/epoch, legacy compiler, controller evidence/replay và native CLI | B02/B03/C01/C04/D02 | `source/tests/integration/lab-v2-arm-stage-start.test.ts`, `lab-v2-native-gateway.test.ts`, `lab-v2-controller-report.test.ts`; `source/robotics/simulation/tests/test_world_compiler.py`; `lab/tests/e2e/controller-report.spec.ts`, `arm-simulation.spec.ts`; native test giữ gate môi trường riêng |
+| NR08 | Khóa inputs/seed/speed limit; reset tạo run mới đúng input, lưu/archive run cũ; SSE/reconnect/staleness; proof reclaim chỉ view/reconcile | A04/B03/D01/D02 | `source/tests/integration/lab-v2-recovery.test.ts`, `lab-v2-stream.test.ts`, `lab-v2-reclaim-targets.test.ts`; `lab/tests/unit/workspace-reclaim.test.ts`; `lab/tests/e2e/twin-inputs.spec.ts`, `twin-recovery.spec.ts`; **new** engineering lifecycle V19 |
+| NR09 | Fault schedule save/load/export, trigger/once identity, pause/resume/cancel, restoreCup/reconcile với target rõ; custody không tự xóa | C04/D01/D02 | `source/tests/integration/lab-v2-fault-schedule.test.ts`, `lab-v2-bv01-recovery.test.ts`, `lab-v2-cup-ledger.test.ts`; `lab/tests/unit/fault-schedule.test.ts`; `lab/tests/e2e/fault-schedule.spec.ts` qua launcher |
+| NR10 | Saved/imported evidence bất biến, replay theo cursor không phát command, stale scopes, KPI/human wait, A/B compare, JSON/CSV/HTML report và candidate draft | D01/D02 | `lab/tests/unit/report-evidence.test.ts`, `report-replay.test.ts`, `report-metrics.test.ts`, `report-human-wait.test.ts`, `core-deployment.test.ts`; `lab/tests/e2e/ui.spec.ts`, `twin-recovery.spec.ts`, `controller-report.spec.ts`; **new** engineering-candidate/report tests |
+| NR11 | Không-runtime preview và static build; `pnpm lab:mock` không ROS/download; offline bundled Node; clean pin/import/rollback/hash/license closure, giữ nguyên cổng/process của người dùng | A04/D01/D03 | `lab/tests/integration/mock-launcher.test.ts`, `runtime-artifact.test.ts`, `offline-bundle.test.ts`; `lab/tests/e2e/offline-bv01.spec.ts` trên gói target; **new** no-runtime engineering draft journey |
+| NR12 | VI/JA/EN, responsive/mobile/tablet, keyboard/accessibility, reduced motion, WebGL loss/2D, overlays/inspector selection, print và performance budgets hiện hữu | D01/D02/D03 | `lab/tests/e2e/ui.spec.ts`, `brand-ui.spec.ts`, `brand-accessibility.spec.ts`, `twin-workspace.spec.ts`; `lab/scripts/measure-twin-ui.mjs`; kiểm p95 desktop 33 ms/tablet 2D 50 ms trên cùng fixture/host |
+
+NR12 chạy benchmark thực theo lệnh D03, không tạo số đo từ unit test của validator. Performance tablet emulated không thành evidence thiết bị thật.
+
+## 3. Bằng chứng và điều kiện phát hành
+
+A01 chụp inventory gồm scenario IDs/revisions, backend sets, protocol/capabilities, UI actions, schema/export formats và trạng thái external gates; D03 so trước/sau. Lưu trong `lab/docs/implementation/evidence/physical-robot-lab/compatibility.json` khi thực thi: mỗi row có ID, baseline commit/pin, candidate commit/pin, commands/test IDs, pass/fail/skip, reasons và artifact refs. Không ghi secret/token hoặc raw journal vào Git. Baseline chỉ chạy tests đã có; tests engineering mới có baseline absent và phải chứng minh candidate riêng. Baseline không chạy được phải ghi not_run, không suy từ tài liệu rằng đã pass.
+
+Compatibility inventory không thay manifest regression của R-MOCK acceptance. D03 bổ sung explicit evidence root cho recorder/acceptance và ghi kết quả mới với source HEAD + Lab code/pin đã commit sạch. Giữ format identity/checkpoints/hash guard hiện hữu; manifest lịch sử digital-twin-v2 không dùng để nghiệm thu commit mới và không bị ghi đè. Sau recording chỉ được đổi các docs/evidence paths vốn nằm trong allowlist; đổi code hoặc pin yêu cầu recording mới.
+
+Một capability có baseline pass mà candidate fail/skipped/not_run thì NR row fail và chặn phát hành phạm vi bị ảnh hưởng. Case native/hardware vốn not_run không được tự đóng; vẫn phải qua portable contract/replay và giữ đường chạy cũ. Test mới của engineering không được thay tên/xóa test cũ để làm mất oracle. Compile/API fixture tests chỉ chứng minh portable behavior; native evidence cần target thực.
+
+Review chốt riêng: (1) giá trị mới G0/G1/G2 đã chứng minh tới đâu; (2) NR01–NR12 có giữ chức năng cũ không; (3) distribution/calibration/external gates còn mở. Chỉ sửa tài liệu không đóng bất kỳ gate implementation nào.

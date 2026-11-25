@@ -1,0 +1,240 @@
+{
+  "date": "2026-11-06",
+  "kind": "before_migration",
+  "commits": {
+    "lab": "357d6699b2c618d489a054bb23e1c3bcd567f2d9",
+    "source": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+    "trial": "6298f8315ac0c89cb233024c42b8b9c035dd1d9f"
+  },
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "notes": [
+    "Local test data; screenshot capture is not behavior acceptance.",
+    "Guest table baseline is invalid-token state; happy path covered by e2e qualification.",
+    "Lab/tablet/trial captured reduced-motion; Cloud browser default."
+  ],
+  "files": [
+    {
+      "path": "baseline/lab-scenarios.png",
+      "sha256": "ac8c84cdab02aa6c0f7894a5db66636217dc85a9dd7305c82b222b297e7e9fe5"
+    },
+    {
+      "path": "baseline/tablet-staff.png",
+      "sha256": "2e049ba78445b5b5bb789f64956528ad744c7a5654e0c959d42768d8ea0cbcba"
+    },
+    {
+      "path": "baseline/tablet-cash.png",
+      "sha256": "41489707a33c84a989fdf495724a5fe4b62cedd9ab4fcf7c91a107b6677f9ad2"
+    },
+    {
+      "path": "baseline/lab-results.png",
+      "sha256": "70490eabb03a5f2a9ff594f8fc8b3496735deb0f313ec4304b77181a77a8f347"
+    },
+    {
+      "path": "baseline/tablet-settings.png",
+      "sha256": "60908b0d844fdaa469f8462544683a313b9e4beea0d6f57c10676c1399d33759"
+    },
+    {
+      "path": "baseline/tablet-reports.png",
+      "sha256": "4197f83a7077269a941aa14d9fbc8ffdbde556bf4cf59ae04aa808b3b11207dc"
+    },
+    {
+      "path": "baseline/cloud-admin-customers.png",
+      "sha256": "921fbaed20fae6b73a5944e384e1ba0416416516c5507d6e3d6a9d90d86f31d3"
+    },
+    {
+      "path": "baseline/trial-map.png",
+      "sha256": "7610164f6bd473c8e12f99646498e8a8e150fddccb7763e262e75b86e62d5db8"
+    },
+    {
+      "path": "baseline/tablet-pos.png",
+      "sha256": "aa9c77ff027eb8252f6ee56027da5f16d65979991f6f4655dda7a5d260691a42"
+    },
+    {
+      "path": "baseline/cloud-home.png",
+      "sha256": "c41cf6f535fd604fc84f12c031dfcd4d53f8c8a1fd71b62e2289a1b35881c980"
+    },
+    {
+      "path": "baseline/tablet-reconciliation.png",
+      "sha256": "8c6c445eed036efcfb430422c1fd41c5ee7b855ef491a3e62211f41d22f54f2f"
+    },
+    {
+      "path": "baseline/tablet-promotions.png",
+      "sha256": "89683cbe67178cf6f198b03a2e57faba46a68880f854b8c3828c4074eeffc0ca"
+    },
+    {
+      "path": "baseline/tablet-kiosk.png",
+      "sha256": "c687d8428f74d5484a27e07c44e05208002c50cd34346693f2c825dcb40e31f0"
+    },
+    {
+      "path": "baseline/tablet-recovery.png",
+      "sha256": "750e298e59a394f450668c658efd0a44af6a785e51f459e8eaa28d97113d68de"
+    },
+    {
+      "path": "baseline/cloud-admin-settings.png",
+      "sha256": "09f18136b3028317a8b550ce2c11e1111cb0854d0f1f8d5fe69d815d812ef292"
+    },
+    {
+      "path": "baseline/tablet-customers.png",
+      "sha256": "6da501b49ae88e06b1727159a66060cc6ddbca57246267fada397bdd38c9111b"
+    },
+    {
+      "path": "baseline/tablet-reservations.png",
+      "sha256": "79c08fae98ae0f8108e78f824b7bdb6761922cb33ee0a30e313e11d7c6daf5a4"
+    },
+    {
+      "path": "baseline/tablet-checkout.png",
+      "sha256": "13141aed2a9923625cb673c8331d2821e8ebedb52b7c008b4c3de76001138969"
+    },
+    {
+      "path": "baseline/lab-twin.png",
+      "sha256": "e98fd625280457f847e3a181f443f0bfe5d2f425ed8b19546d3212d6efecc0ba"
+    },
+    {
+      "path": "baseline/cloud-login.png",
+      "sha256": "1f22492946ab9be1ec13ef2aa3dbb99b3eeb52d7fea93be8e546fd0d7c47796d"
+    },
+    {
+      "path": "baseline/trial-station.png",
+      "sha256": "5d74fa73c326bd02508afde6a6e9cf2a7b945e9e59a167533f772edcfbce0d9e"
+    },
+    {
+      "path": "baseline/lab-design.png",
+      "sha256": "757153369838d294df2ebed6bc0c64cb3dc2320cba9db5e790ceabb1deebab81"
+    },
+    {
+      "path": "baseline/cloud-guest-menu.png",
+      "sha256": "d6c49e37d70b3074fc0fa25721824bc9c871d2d2a70fc875f7cca94b3630e686"
+    },
+    {
+      "path": "baseline/tablet-guest-requests.png",
+      "sha256": "2bd5cc9bec61a5edf5c11b53fe21c14b7da8f0af499cb7c4ec5c925f3640bd6c"
+    },
+    {
+      "path": "baseline/trial-index.png",
+      "sha256": "580cd03a7e2697c844c122a4ae6e53c763eeceb7724bfb141922c04294bb1a07"
+    },
+    {
+      "path": "baseline/tablet-robot.png",
+      "sha256": "8843a4a8ad608433326b377400d90e260629af18c449a4578fce01004f3f8058"
+    },
+    {
+      "path": "baseline/lab-deployment.png",
+      "sha256": "8ca8998d1b7c26b5e7558c1ecf08f1d82c6082d8c2bbd3ad35ed88be97b14fc6"
+    },
+    {
+      "path": "baseline/tablet-recipes.png",
+      "sha256": "1c27e4bc289d5d65a21507118353aaba4977cc9d88e7d103ad6aaf5421c327c9"
+    },
+    {
+      "path": "baseline/cloud-admin-reservations.png",
+      "sha256": "659199f791fd1315ea509ed754c73d7a95ecd327ff208cf989890f6afd5927d4"
+    },
+    {
+      "path": "baseline/tablet-maintenance.png",
+      "sha256": "0c22d72a65d888284b6622fb7e8432fd9448346b2825f69870bbd7f4af286bd7"
+    },
+    {
+      "path": "baseline/tablet-print.png",
+      "sha256": "f7a9a9c3c74c62874eb8c5e0122d9b67703e71efd6cc2cf3ffb3a2e44dc5e8a6"
+    },
+    {
+      "path": "baseline/cloud-guest-table.png",
+      "sha256": "d6c4fc2980ff8a0dbc45a4dd96a86662672a1226d47bf3c13ab1af00605e6a30"
+    },
+    {
+      "path": "baseline/tablet-device.png",
+      "sha256": "f011d19cbbd7c79d9bd01a2e486ef3234449803310761bd2a5efad929a8881cb"
+    },
+    {
+      "path": "baseline/tablet-isolated.png",
+      "sha256": "b4dc8b0122400f07194192e1c79eb431f6aa799771e98be421b1612b460cbe49"
+    },
+    {
+      "path": "baseline/trial-table.png",
+      "sha256": "1653a024c3ff39af4d76cfe9c94b9bee4b2931c77c9f0b2a669f98e0b59c268e"
+    },
+    {
+      "path": "baseline/tablet-purchasing.png",
+      "sha256": "4d62d364398ca3fee646553879bf3dfea5a31ed02b57b471d59fb16e58271f02"
+    },
+    {
+      "path": "baseline/tablet-stocktake.png",
+      "sha256": "a23f3540bbde6d3dd5cf5e1be9f3a63fc8f137bd7bb0af410ede3e0137ae1ae9"
+    },
+    {
+      "path": "baseline/cloud-guest-order.png",
+      "sha256": "eef9636cb73b42ec6cd21f0f934693af122c0a90a52ba125c8d2c5a8e86c84d2"
+    },
+    {
+      "path": "baseline/tablet-robot-setup.png",
+      "sha256": "1e54ff00dc7c680029db9f6dbb3323507e36a977431abda0ceaeef7bad36c162"
+    },
+    {
+      "path": "baseline/tablet-robot-screen.png",
+      "sha256": "de0981021d6dbd4b8f228106e45b8fc8ccf9ea36202adf73ee80a1c515006c6a"
+    },
+    {
+      "path": "baseline/trial-setup.png",
+      "sha256": "82df51d570d676a5cc5ba3c9e23cd7411d9ef928c903e2e70cdffda69b03b09c"
+    },
+    {
+      "path": "baseline/tablet-inventory-reports.png",
+      "sha256": "119e3ecbe77abefa5bc50bba3117ad729678292bfc9843b31cd43af97d26ba6f"
+    },
+    {
+      "path": "baseline/cloud-admin-chain-reports.png",
+      "sha256": "0f3a7e8a89846c625b7de4cc42455cf87864535899222644f226063aad4a572d"
+    },
+    {
+      "path": "baseline/lab-restaurant.png",
+      "sha256": "0b4c30131810d744ff95939fe2b98d8cde0947259e363422fb01380d2c397167"
+    },
+    {
+      "path": "baseline/trial-robot.png",
+      "sha256": "5c1b8d1ecb710a9cb8ff8fe1c3bdb46a92f61e1619b62a7f3fc38bf280e48360"
+    },
+    {
+      "path": "baseline/tablet-models.png",
+      "sha256": "aac349da8c5aa95ac9776f4edd3579835176d444232496c9861955386fc3df0d"
+    },
+    {
+      "path": "baseline/tablet-inventory.png",
+      "sha256": "af299549643d3560e8be371a162874e51c2892fdd6b5350fd07f130956cc89e6"
+    },
+    {
+      "path": "baseline/tablet-import.png",
+      "sha256": "26b7cacfbe03acc451c5ff4862da25cecb00ae57ecddb6270a86ff28df919acf"
+    },
+    {
+      "path": "baseline/cloud-admin-operations.png",
+      "sha256": "124b59f7339d9142230045ab73afe4cf9f0ecd2d67a4132aa22f66a5c2f476a7"
+    },
+    {
+      "path": "baseline/cloud-admin-promotions.png",
+      "sha256": "fe7031efc5a0e42e6c7601c2b6da30e8c3539b8626bf710e9e133283df067a92"
+    },
+    {
+      "path": "baseline/tablet-invoices.png",
+      "sha256": "fb786bf0443536f7b28dce4c90d96442510d1f9d09434c9f8618268c40310b61"
+    },
+    {
+      "path": "baseline/tablet-kitchen.png",
+      "sha256": "f7b54db34a92aac53773c74a4b8d4f0a0a5c8c4b8b0d249968ec87f15e1ff4ee"
+    },
+    {
+      "path": "baseline/cloud-admin-catalog.png",
+      "sha256": "3368966d62f116a4ec16f0189e4a071bcf0f53667a29af32ce7cba3134e15476"
+    },
+    {
+      "path": "baseline/cloud-admin-chain-configuration.png",
+      "sha256": "11bdb9800d1fffc80ee1f90b71dda9fb9b9d17198536b74e0968522e63c25d12"
+    },
+    {
+      "path": "baseline/tablet-fleet.png",
+      "sha256": "a585b90f8ede238194456f0ca0366c9d03359e37948b88b2f56fde0c8478e06d"
+    }
+  ]
+}

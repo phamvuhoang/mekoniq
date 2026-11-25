@@ -1,0 +1,9 @@
+{
+  "implementationCommit": "23cc7cecf1dd503b9730e3573252e279b439649b",
+  "releaseFilesHashVerified": 22,
+  "brandVersion": "1.0.1",
+  "archive": "dist/robot-nodered.tar.gz",
+  "archiveSha256": "756762bbe51d26a7450dc0c11a394397b4caba7ecd9b7302ece99071104a9ca7",
+  "currentBrandCssSha256": "006f6f2a75375df506d6579f1925c58e64f113168db96952ed17bdf656f84c64",
+  "brandCssMatchesCurrent": true
+}

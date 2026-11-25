@@ -1,0 +1,1 @@
+Browser attempt on Lab23aebdf/sourcefa5ed28: 3 journeys passed; fault-schedule failed because the details panel collapsed after changing the fault. This is a failed attempt, retained separately from the subsequent corrected qualification.

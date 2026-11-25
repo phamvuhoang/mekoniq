@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "taskId": "N01",
+  "kind": "host_preflight",
+  "recordedAt": "2026-11-06T01:46:38.795507+00:00",
+  "host": {
+    "model": "MacBook Pro",
+    "chip": "Apple M2 Pro",
+    "architecture": "arm64",
+    "cpuCores": 10,
+    "memoryBytes": 17179869184,
+    "macOS": "26.5"
+  },
+  "storage": {
+    "workspaceVolumeAvailableBytes": 4737699840,
+    "vmBudgetGiB": 120,
+    "systemReserveGiB": 20,
+    "externalVolumeDetected": false
+  },
+  "utm": {
+    "installed": false,
+    "version": null
+  },
+  "checks": [
+    {
+      "id": "host_arch",
+      "status": "ready"
+    },
+    {
+      "id": "vm_storage",
+      "blocker": "VM_STORAGE_INSUFFICIENT",
+      "status": "blocked"
+    },
+    {
+      "id": "utm_install",
+      "blocker": "VM_STORAGE_INSUFFICIENT",
+      "status": "blocked"
+    },
+    {
+      "id": "ubuntu_vm_boot",
+      "blocker": "VM_NOT_PROVISIONED",
+      "status": "blocked"
+    },
+    {
+      "id": "debian_vm_boot",
+      "blocker": "VM_NOT_PROVISIONED",
+      "status": "blocked"
+    }
+  ],
+  "status": "blocked_external",
+  "execution": "not_run",
+  "result": "not_run",
+  "blockers": [
+    "VM_STORAGE_INSUFFICIENT"
+  ],
+  "commandsExecuted": [
+    "system_profiler SPHardwareDataType (only non-identifying fields retained)",
+    "sw_vers",
+    "df -h .",
+    "sysctl hw.memsize hw.ncpu",
+    "ls /Volumes",
+    "ls /Applications/UTM.app/Contents/MacOS",
+    "HOMEBREW_NO_AUTO_UPDATE=1 brew list --cask utm"
+  ],
+  "actions": {
+    "utmInstalled": false,
+    "imagesDownloaded": false,
+    "vmsCreated": false,
+    "vmsStarted": false,
+    "userDataDeleted": false
+  },
+  "claims": {
+    "nativeSimulationVerified": false,
+    "hardwareValidated": false,
+    "productionReady": false
+  },
+  "nextAction": "Choose storage with at least 120 GiB free for VMs and restore at least 20 GiB free on the macOS system volume; re-run preflight before downloading images.",
+  "scope": "VM provisioning and execution",
+  "preflightExecuted": true
+}

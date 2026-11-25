@@ -1,0 +1,112 @@
+[
+  {
+    "name": "host",
+    "command": [
+      "node",
+      "scripts/native-sim/host-preflight.mjs",
+      "--vm-root",
+      "/Users/hoangpham/source/prv/robot"
+    ],
+    "exitCode": 2,
+    "execution": "not_run",
+    "result": "blocked_external",
+    "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+    "recordedAt": "2026-11-06T06:42:01.631097+00:00"
+  },
+  {
+    "name": "gazebo-doctor",
+    "command": [
+      "node",
+      "scripts/lab-sil.mjs",
+      "doctor",
+      "--backend",
+      "gazebo_nav2",
+      "--environment-profile",
+      "utm-ubuntu-arm64",
+      "--json"
+    ],
+    "exitCode": 2,
+    "execution": "not_run",
+    "result": "blocked_external",
+    "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+    "recordedAt": "2026-11-06T06:42:01.911902+00:00"
+  },
+  {
+    "name": "arm-doctor",
+    "command": [
+      "node",
+      "scripts/lab-sil.mjs",
+      "doctor",
+      "--backend",
+      "linuxcnc_sim",
+      "--json"
+    ],
+    "exitCode": 2,
+    "execution": "not_run",
+    "result": "blocked_external",
+    "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+    "recordedAt": "2026-11-06T06:42:02.115582+00:00"
+  },
+  {
+    "name": "bv01-prerequisites",
+    "command": [
+      "node",
+      "scripts/lab-sil.mjs",
+      "run",
+      "--scenario",
+      "BV01",
+      "--seed",
+      "23",
+      "--repeat",
+      "1",
+      "--backend-set",
+      "coffee-simulation",
+      "--environment-profile",
+      "utm-ubuntu-arm64",
+      "--out",
+      "/Users/hoangpham/source/prv/robot/lab/docs/implementation/evidence/bv01-native-simulation/N06-native-final-f82b205"
+    ],
+    "exitCode": 2,
+    "execution": "not_run",
+    "result": "blocked_external",
+    "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+    "recordedAt": "2026-11-06T06:42:02.989339+00:00"
+  },
+  {
+    "name": "arm-terminal",
+    "command": [
+      "bash",
+      "scripts/smoke-sim.sh",
+      "--profile",
+      "configs/sim/puma560/mekoniq.ini",
+      "--dependencies-lock",
+      "packaging/dependencies.arm64-vm.lock.json",
+      "--evidence-dir",
+      "/Users/hoangpham/source/prv/robot/lab/docs/implementation/evidence/bv01-native-simulation/N03-terminal-final-f82b205"
+    ],
+    "exitCode": 2,
+    "execution": "not_run",
+    "result": "blocked_external",
+    "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+    "recordedAt": "2026-11-06T06:42:03.213976+00:00"
+  },
+  {
+    "name": "arm-gui",
+    "command": [
+      "bash",
+      "scripts/smoke-sim.sh",
+      "--profile",
+      "configs/sim/puma560/mekoniq.ini",
+      "--dependencies-lock",
+      "packaging/dependencies.arm64-vm.lock.json",
+      "--evidence-dir",
+      "/Users/hoangpham/source/prv/robot/lab/docs/implementation/evidence/bv01-native-simulation/N03-gui-final-f82b205",
+      "--gui"
+    ],
+    "exitCode": 2,
+    "execution": "not_run",
+    "result": "blocked_external",
+    "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+    "recordedAt": "2026-11-06T06:42:03.439291+00:00"
+  }
+]

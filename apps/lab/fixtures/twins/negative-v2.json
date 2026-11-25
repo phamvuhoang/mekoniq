@@ -1,0 +1,142 @@
+{
+  "missingUnits": {
+    "id": "cell_base",
+    "parentId": null,
+    "translation": [
+      10,
+      0,
+      0
+    ],
+    "yaw": 90
+  },
+  "badQuaternion": {
+    "schemaVersion": 2,
+    "revision": 1,
+    "contentHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "hashAlgorithm": "sha256-canonical-json-v1",
+    "visual": null,
+    "collision": null,
+    "id": "bad-asset",
+    "kind": "amr",
+    "frames": [
+      {
+        "id": "base_link",
+        "parentId": null,
+        "translationM": [
+          0,
+          0,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          5,
+          0
+        ]
+      }
+    ],
+    "geometry": [],
+    "provenance": [
+      {
+        "parameter": "geometry",
+        "source": "illustrative"
+      }
+    ]
+  },
+  "cyclicFrames": {
+    "schemaVersion": 2,
+    "revision": 1,
+    "contentHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "hashAlgorithm": "sha256-canonical-json-v1",
+    "visual": null,
+    "collision": null,
+    "id": "bad-asset",
+    "kind": "amr",
+    "frames": [
+      {
+        "id": "base_link",
+        "parentId": null,
+        "translationM": [
+          0,
+          0,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "id": "a",
+        "parentId": "b",
+        "translationM": [
+          0,
+          0,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "id": "b",
+        "parentId": "a",
+        "translationM": [
+          0,
+          0,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "geometry": [],
+    "provenance": [
+      {
+        "parameter": "geometry",
+        "source": "illustrative"
+      }
+    ]
+  },
+  "v1BadId": {
+    "schemaVersion": 1,
+    "id": "mekoniq-service-lab",
+    "name": "MEKONIQ · Service Lab",
+    "revision": 1,
+    "updatedAt": "2026-11-05T00:00:00.000Z",
+    "design": {
+      "id": "service-robot",
+      "revision": 1,
+      "chassis": "service",
+      "trays": 3,
+      "batteryAh": 20,
+      "sensor": "lidar",
+      "payloadKg": 10
+    },
+    "world": {
+      "id": "restaurant-six-tables",
+      "revision": 1,
+      "width": 12,
+      "height": 8,
+      "points": [
+        {
+          "id": "bad id",
+          "name": "x",
+          "kind": "table",
+          "x": 1,
+          "y": 1
+        }
+      ],
+      "obstacles": []
+    }
+  }
+}

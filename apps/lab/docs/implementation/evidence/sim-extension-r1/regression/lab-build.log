@@ -1,0 +1,31 @@
+
+> mekoniq-robot-lab@0.1.0 check:brand
+> node scripts/check-brand.mjs --dir public/brand
+
+MEKONIQ 1.0.1 verified (22 files)
+vite v7.3.1 building client environment for production...
+transforming...
+✓ 239 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/source-runtime.lock.json                0.53 kB │ gzip:   0.37 kB
+dist/index.html                              0.84 kB │ gzip:   0.43 kB
+dist/assets/index-C8ZmCyXu.css              44.36 kB │ gzip:   9.20 kB
+dist/assets/engineering-scene-BNq2zJat.js    1.93 kB │ gzip:   1.02 kB
+dist/assets/twin3d-CUBVWJbE.js               5.26 kB │ gzip:   2.47 kB
+dist/assets/robot-NPUeSsgk.js                5.62 kB │ gzip:   2.68 kB
+dist/assets/OrbitControls-D96ASTms.js       19.14 kB │ gzip:   4.35 kB
+dist/assets/three.module-BcbE0VXl.js       335.72 kB │ gzip:  82.59 kB
+dist/assets/three.core-Drd9jfXp.js         375.76 kB │ gzip: 102.35 kB
+dist/assets/index-CZX2QNcD.js              621.68 kB │ gzip: 174.15 kB
+✓ built in 1.10s
+npm warn Unknown env config "reporter". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "npm-globalconfig". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "verify-deps-before-run". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "_jsr-registry". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+Module "src/project/engineering-archive.ts" tried to import "src/shared/engineering-schemas/engineering-component.schema.json" with no attributes, but it was already imported elsewhere with "type": "json" attributes. Please ensure that import attributes for the same module are always consistent.
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.

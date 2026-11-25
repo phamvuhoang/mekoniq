@@ -1,0 +1,8 @@
+{
+  "route": "/admin/chain/configuration",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "violations": []
+}

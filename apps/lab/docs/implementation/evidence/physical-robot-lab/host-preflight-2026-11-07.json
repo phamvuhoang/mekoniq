@@ -1,0 +1,50 @@
+{
+  "command": "node scripts/native-sim/host-preflight.mjs --vm-root /var/tmp",
+  "exitCode": 2,
+  "report": {
+    "schemaVersion": 1,
+    "taskId": "N01",
+    "kind": "host_preflight",
+    "recordedAt": "2026-11-07T09:04:54.456Z",
+    "host": {
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpuCores": 10,
+      "memoryBytes": 17179869184,
+      "macOS": "26.5"
+    },
+    "storage": {
+      "systemFreeBytes": 51654873088,
+      "vmFreeBytes": 51654873088,
+      "sameVolume": true,
+      "vmRoot": "/var/tmp",
+      "canProvision": false,
+      "blockers": [
+        "VM_STORAGE_INSUFFICIENT"
+      ],
+      "runConcurrently": false,
+      "vmBudgetGiB": 120,
+      "systemReserveGiB": 20
+    },
+    "utm": {
+      "installed": false
+    },
+    "execution": "not_run",
+    "result": "not_run",
+    "status": "blocked_external",
+    "blockers": [
+      "VM_STORAGE_INSUFFICIENT"
+    ],
+    "actions": {
+      "imagesDownloaded": false,
+      "vmsCreated": false,
+      "vmsStarted": false,
+      "userDataDeleted": false
+    },
+    "claims": {
+      "nativeSimulationVerified": false,
+      "hardwareValidated": false,
+      "productionReady": false
+    }
+  }
+}

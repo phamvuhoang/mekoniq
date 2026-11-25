@@ -1,0 +1,25 @@
+{
+  "reviewFixCommit": "8a52cb6d2d2c5b1a46199642699775caf704b21a",
+  "baseTabletCommit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+  "red": "../logs/source-review-red.log: 2 tests failed",
+  "green": "../logs/source-review-green.log: 8 tests passed",
+  "checks": [
+    "contracts:check",
+    "typecheck",
+    "lint",
+    "build"
+  ],
+  "nativeDeviceAcceptance": "blocked_external: unchanged, no connected enrolled device",
+  "files": [
+    {
+      "path": "tablet-checkout-populated-danger.png",
+      "bytes": 168777,
+      "sha256": "82228685183e8f25ba13151d318e46df7ecc0b156c629ec7a88e1ecedfaa24c1"
+    },
+    {
+      "path": "tablet-reservations-populated-danger.png",
+      "bytes": 101814,
+      "sha256": "3fc197073cc9ffb100a003b5f152e881de633782e2078b81fe65870ad3a40d2b"
+    }
+  ]
+}

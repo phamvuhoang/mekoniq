@@ -1,0 +1,178 @@
+
+> mekoniq-platform@ test:e2e /Users/hoangpham/source/prv/robot/source
+> node scripts/test-runner.mjs e2e tablet-destructive-brand
+
+[WebServer] (node:81873) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:81874) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:81889) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:81896) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/e2e/tablet-destructive-brand.spec.ts:4:1 › populated unpaid bills and bookings keep destructive styling while original cancellation commands complete (1.6s)
+(node:81919) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 tests/e2e/tablet-destructive-brand.spec.ts:49:1 › ordinary text links use Aqua underline while navigation retains its current treatment (5.6s)
+
+
+  1) tests/e2e/tablet-destructive-brand.spec.ts:4:1 › populated unpaid bills and bookings keep destructive styling while original cancellation commands complete 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 3
+
+      Object {
+    -   "background": "rgb(13, 43, 46)",
+    -   "border": "rgb(255, 170, 160)",
+    -   "color": "rgb(255, 170, 160)",
+    +   "background": "rgb(185, 251, 117)",
+    +   "border": "rgb(185, 251, 117)",
+    +   "color": "rgb(7, 29, 33)",
+      }
+
+      19 |   await expect(control).toBeVisible();
+      20 |   const appearance=()=>control.evaluate(n=>{const s=getComputedStyle(n);return {color:s.color,border:s.borderTopColor,background:s.backgroundColor};});
+    > 21 |   expect.soft(await appearance()).toEqual({color:'rgb(255, 170, 160)',border:'rgb(255, 170, 160)',background:'rgb(13, 43, 46)'});
+         |                                   ^
+      22 |   await control.hover();expect.soft((await appearance()).color).toBe('rgb(255, 170, 160)');expect.soft((await appearance()).background).not.toBe('rgb(185, 251, 117)');
+      23 |   await control.focus();await expect(control).toHaveCSS('outline-style','solid');
+      24 |  };
+        at assertDanger (/Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:21:35)
+        at /Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:36:92
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "rgb(255, 170, 160)"
+    Received: "rgb(7, 29, 33)"
+
+      20 |   const appearance=()=>control.evaluate(n=>{const s=getComputedStyle(n);return {color:s.color,border:s.borderTopColor,background:s.backgroundColor};});
+      21 |   expect.soft(await appearance()).toEqual({color:'rgb(255, 170, 160)',border:'rgb(255, 170, 160)',background:'rgb(13, 43, 46)'});
+    > 22 |   await control.hover();expect.soft((await appearance()).color).toBe('rgb(255, 170, 160)');expect.soft((await appearance()).background).not.toBe('rgb(185, 251, 117)');
+         |                                                                 ^
+      23 |   await control.focus();await expect(control).toHaveCSS('outline-style','solid');
+      24 |  };
+      25 |  const cancel=async(control:Locator,type:string,payload:object)=>{
+        at assertDanger (/Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:22:65)
+        at /Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:36:92
+
+    Error: expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "rgb(185, 251, 117)"
+
+      20 |   const appearance=()=>control.evaluate(n=>{const s=getComputedStyle(n);return {color:s.color,border:s.borderTopColor,background:s.backgroundColor};});
+      21 |   expect.soft(await appearance()).toEqual({color:'rgb(255, 170, 160)',border:'rgb(255, 170, 160)',background:'rgb(13, 43, 46)'});
+    > 22 |   await control.hover();expect.soft((await appearance()).color).toBe('rgb(255, 170, 160)');expect.soft((await appearance()).background).not.toBe('rgb(185, 251, 117)');
+         |                                                                                                                                             ^
+      23 |   await control.focus();await expect(control).toHaveCSS('outline-style','solid');
+      24 |  };
+      25 |  const cancel=async(control:Locator,type:string,payload:object)=>{
+        at assertDanger (/Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:22:141)
+        at /Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:36:92
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 3
+
+      Object {
+    -   "background": "rgb(13, 43, 46)",
+    -   "border": "rgb(255, 170, 160)",
+    -   "color": "rgb(255, 170, 160)",
+    +   "background": "rgb(185, 251, 117)",
+    +   "border": "rgb(185, 251, 117)",
+    +   "color": "rgb(7, 29, 33)",
+      }
+
+      19 |   await expect(control).toBeVisible();
+      20 |   const appearance=()=>control.evaluate(n=>{const s=getComputedStyle(n);return {color:s.color,border:s.borderTopColor,background:s.backgroundColor};});
+    > 21 |   expect.soft(await appearance()).toEqual({color:'rgb(255, 170, 160)',border:'rgb(255, 170, 160)',background:'rgb(13, 43, 46)'});
+         |                                   ^
+      22 |   await control.hover();expect.soft((await appearance()).color).toBe('rgb(255, 170, 160)');expect.soft((await appearance()).background).not.toBe('rgb(185, 251, 117)');
+      23 |   await control.focus();await expect(control).toHaveCSS('outline-style','solid');
+      24 |  };
+        at assertDanger (/Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:21:35)
+        at /Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:43:81
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "rgb(255, 170, 160)"
+    Received: "rgb(7, 29, 33)"
+
+      20 |   const appearance=()=>control.evaluate(n=>{const s=getComputedStyle(n);return {color:s.color,border:s.borderTopColor,background:s.backgroundColor};});
+      21 |   expect.soft(await appearance()).toEqual({color:'rgb(255, 170, 160)',border:'rgb(255, 170, 160)',background:'rgb(13, 43, 46)'});
+    > 22 |   await control.hover();expect.soft((await appearance()).color).toBe('rgb(255, 170, 160)');expect.soft((await appearance()).background).not.toBe('rgb(185, 251, 117)');
+         |                                                                 ^
+      23 |   await control.focus();await expect(control).toHaveCSS('outline-style','solid');
+      24 |  };
+      25 |  const cancel=async(control:Locator,type:string,payload:object)=>{
+        at assertDanger (/Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:22:65)
+        at /Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:43:81
+
+    Error: expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "rgb(185, 251, 117)"
+
+      20 |   const appearance=()=>control.evaluate(n=>{const s=getComputedStyle(n);return {color:s.color,border:s.borderTopColor,background:s.backgroundColor};});
+      21 |   expect.soft(await appearance()).toEqual({color:'rgb(255, 170, 160)',border:'rgb(255, 170, 160)',background:'rgb(13, 43, 46)'});
+    > 22 |   await control.hover();expect.soft((await appearance()).color).toBe('rgb(255, 170, 160)');expect.soft((await appearance()).background).not.toBe('rgb(185, 251, 117)');
+         |                                                                                                                                             ^
+      23 |   await control.focus();await expect(control).toHaveCSS('outline-style','solid');
+      24 |  };
+      25 |  const cancel=async(control:Locator,type:string,payload:object)=>{
+        at assertDanger (/Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:22:141)
+        at /Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:43:81
+
+    Error Context: .lab/playwright-results/tablet-destructive-brand-p-6eba1-cellation-commands-complete/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .lab/playwright-results/tablet-destructive-brand-p-6eba1-cellation-commands-complete/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace .lab/playwright-results/tablet-destructive-brand-p-6eba1-cellation-commands-complete/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests/e2e/tablet-destructive-brand.spec.ts:49:1 › ordinary text links use Aqua underline while navigation retains its current treatment 
+
+    Error: expect(locator).toHaveCSS(expected) failed
+
+    Locator:  getByRole('link', { name: 'Text-link fixture', exact: true })
+    Expected: "rgb(99, 220, 197)"
+    Received: "rgb(185, 251, 117)"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCSS" getByRole('link', { name: 'Text-link fixture', exact: true }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Text-link fixture', exact: true })
+        14 × locator resolved to <a href="/device">Text-link fixture</a>
+           - unexpected value "rgb(185, 251, 117)"
+
+
+      51 |  // A plain anchor verifies the adapter without introducing a product route or changing navigation.
+      52 |  await page.locator('main').evaluate(main=>{const link=document.createElement('a');link.href='/device';link.textContent='Text-link fixture';main.append(link);});
+    > 53 |  const link=page.getByRole('link',{name:'Text-link fixture',exact:true});await expect(link).toHaveCSS('color','rgb(99, 220, 197)');await expect(link).toHaveCSS('text-decoration-line','underline');
+         |                                                                                             ^
+      54 |  const nav=page.getByRole('navigation').getByRole('link',{name:'Thiết bị',exact:true});await expect(nav).toHaveCSS('color','rgb(185, 251, 117)');await expect(nav).toHaveCSS('text-decoration-line','none');
+      55 |  const manage=page.locator('.management-links a').first();await expect(manage).toHaveCSS('color','rgb(185, 251, 117)');await expect(manage).toHaveCSS('text-decoration-line','none');
+      56 | });
+        at /Users/hoangpham/source/prv/robot/source/tests/e2e/tablet-destructive-brand.spec.ts:53:93
+
+    Error Context: .lab/playwright-results/tablet-destructive-brand-o-893b8-tains-its-current-treatment/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .lab/playwright-results/tablet-destructive-brand-o-893b8-tains-its-current-treatment/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace .lab/playwright-results/tablet-destructive-brand-o-893b8-tains-its-current-treatment/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests/e2e/tablet-destructive-brand.spec.ts:4:1 › populated unpaid bills and bookings keep destructive styling while original cancellation commands complete 
+    tests/e2e/tablet-destructive-brand.spec.ts:49:1 › ordinary text links use Aqua underline while navigation retains its current treatment 
+ ELIFECYCLE  Command failed with exit code 1.

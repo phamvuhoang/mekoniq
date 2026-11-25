@@ -1,0 +1,44 @@
+{
+  "host": "mekoniq-pcioivxhv-henry-projects.vercel.app",
+  "checks": [
+    {
+      "route": "/#design",
+      "background": "rgb(7, 29, 33)",
+      "brokenImages": [],
+      "overflow": false
+    },
+    {
+      "route": "/#restaurant",
+      "background": "rgb(7, 29, 33)",
+      "brokenImages": [],
+      "overflow": false
+    },
+    {
+      "route": "/#scenarios",
+      "background": "rgb(7, 29, 33)",
+      "brokenImages": [],
+      "overflow": false
+    },
+    {
+      "route": "/#twin",
+      "background": "rgb(7, 29, 33)",
+      "brokenImages": [],
+      "overflow": false
+    },
+    {
+      "route": "/#results",
+      "background": "rgb(7, 29, 33)",
+      "brokenImages": [],
+      "overflow": false
+    },
+    {
+      "route": "/#deployment",
+      "background": "rgb(7, 29, 33)",
+      "brokenImages": [],
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "protectionPreserved": true,
+  "appAuthentication": "anonymous only; no hosted data mutations"
+}

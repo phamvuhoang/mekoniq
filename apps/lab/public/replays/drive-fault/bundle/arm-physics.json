@@ -1,0 +1,250 @@
+{
+  "actuators": [
+    {
+      "joint": "J1",
+      "kp": 6000,
+      "kv": 150
+    },
+    {
+      "joint": "J2",
+      "kp": 6000,
+      "kv": 150
+    },
+    {
+      "joint": "J3",
+      "kp": 5000,
+      "kv": 100
+    },
+    {
+      "joint": "J4",
+      "kp": 2000,
+      "kv": 40
+    },
+    {
+      "joint": "J5",
+      "kp": 2000,
+      "kv": 30
+    },
+    {
+      "joint": "J6",
+      "kp": 500,
+      "kv": 14
+    }
+  ],
+  "armatureKgM2": [
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1
+  ],
+  "capsuleRadiusM": [
+    0.049,
+    0.0485,
+    0.045,
+    0.045,
+    0.039,
+    0.039
+  ],
+  "capsuleSegmentsM": [
+    [
+      [
+        0,
+        0,
+        -0.07
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0.0535,
+        -0.2845,
+        0
+      ]
+    ],
+    [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0.0775,
+        0.12,
+        0
+      ]
+    ],
+    [
+      [
+        0,
+        0,
+        -0.16
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0.076,
+        0.06,
+        0
+      ]
+    ],
+    [
+      [
+        0,
+        0,
+        -0.02
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ]
+  ],
+  "contact": {
+    "condim": 4,
+    "impratio": 10,
+    "padFriction": [
+      1,
+      0.02,
+      0.0001
+    ],
+    "propFriction": [
+      0.6,
+      0.005,
+      0.0001
+    ],
+    "solimp": [
+      0.9,
+      0.95,
+      0.005
+    ],
+    "solref": [
+      0.01,
+      1
+    ]
+  },
+  "gripper": {
+    "armatureKgM2": 0.002,
+    "closedRad": 0.85,
+    "commandRateRadPerTick": 0.04,
+    "driveJoint": "drive_joint",
+    "forceN": 13.15,
+    "forceRangeNm": 1.2,
+    "kp": 20,
+    "kv": 0.5,
+    "mimic": [
+      {
+        "joint": "left_finger_joint",
+        "multiplier": 1
+      },
+      {
+        "joint": "left_inner_knuckle_joint",
+        "multiplier": 1
+      },
+      {
+        "joint": "right_outer_knuckle_joint",
+        "multiplier": 1
+      },
+      {
+        "joint": "right_finger_joint",
+        "multiplier": 1
+      },
+      {
+        "joint": "right_inner_knuckle_joint",
+        "multiplier": 1
+      }
+    ],
+    "mimicSolref": [
+      0.004,
+      1
+    ],
+    "openingMaxM": 0.0889
+  },
+  "jointDynamics": {
+    "damping": 1,
+    "frictionloss": 1,
+    "source": {
+      "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+      "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+      "kind": "assumed",
+      "locator": "joint1..6 <dynamics damping friction> (Gazebo values)",
+      "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+    }
+  },
+  "maxAccelerationRadS2": [
+    6,
+    6,
+    6,
+    8,
+    8,
+    8
+  ],
+  "not_calibrated": true,
+  "note": "Spike M00 values (docs/research/2026-11-mujoco-arm-spike.md), copied verbatim: gains, armature, gripper drive, pads, palm, contact and motion limits are assumed; jointDynamics (damping 1, frictionloss 1) is cited from the vendor xacro <dynamics>, which are Gazebo simulation settings, so it is assumed too, not a measured joint property; gripper.forceN and openingMaxM are spike measurements of this model, not product data.",
+  "pads": [
+    {
+      "centerM": [
+        0,
+        -0.024,
+        0.04
+      ],
+      "link": "left_finger",
+      "sizeM": [
+        0.024,
+        0.004,
+        0.04
+      ]
+    },
+    {
+      "centerM": [
+        0,
+        0.024,
+        0.04
+      ],
+      "link": "right_finger",
+      "sizeM": [
+        0.024,
+        0.004,
+        0.04
+      ]
+    }
+  ],
+  "palm": {
+    "centerM": [
+      0,
+      0,
+      0.047
+    ],
+    "link": "xarm_gripper_base_link",
+    "sizeM": [
+      0.075,
+      0.102,
+      0.112
+    ]
+  },
+  "provenance": "assumed",
+  "schemaVersion": 1,
+  "speedFraction": 0.5,
+  "substitute": false
+}

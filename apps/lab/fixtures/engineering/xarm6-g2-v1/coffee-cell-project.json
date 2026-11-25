@@ -1,0 +1,121 @@
+{
+  "armCollisionProfile": {
+    "baseInMap": {
+      "position": [
+        2.65,
+        0.65,
+        0.7
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "fixtureHeightM": 1,
+    "id": "coffee-arm-scene-xarm6",
+    "modelId": "xarm6-reference",
+    "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+    "provenance": "illustrative",
+    "reference": "Illustrative xArm 6 base placement: the xarm6-g2-v1 cell-layout tray lands on coffee_pickup; the arm base is 0.7 m above the floor; the AMR body is extruded to 0.6 m, below the arm base plane, and its tray (the cell-layout tray, top 0.76 m) stands on a riser above the body; extruded fixture/AMR heights; not calibrated or physical safety evidence",
+    "revision": 1,
+    "robotHeightM": 0.6,
+    "schemaVersion": 1,
+    "units": "SI"
+  },
+  "entities": [
+    {
+      "assetRef": {
+        "contentHash": "bf15015afcc0e719c79ff76eff955ba9c83f72c82968156fa25743f7d8e15c79",
+        "id": "service-robot-asset",
+        "revision": 1
+      },
+      "id": "amr-1",
+      "kind": "amr"
+    },
+    {
+      "assetRef": {
+        "contentHash": "f12c8e962d74dcab35734e0e14f00e0a1168e6906b377fa530b27a4e4b2f79ef",
+        "id": "arm-puma-reference",
+        "revision": 1
+      },
+      "id": "arm-1",
+      "kind": "arm"
+    },
+    {
+      "assetRef": {
+        "contentHash": "18771958e98006dd7cb6bd9352611ce0bbd37aaacaaa159f67ef70124d7d9faa",
+        "id": "coffee-machine-illustrative",
+        "revision": 1
+      },
+      "id": "coffee-1",
+      "kind": "coffee_machine"
+    },
+    {
+      "assetRef": {
+        "contentHash": "a58680ada2a4f5befb241b9abd6f3ee38a4dc60639038e07cd69b0e1fbd3633e",
+        "id": "cup-paper-illustrative",
+        "revision": 1
+      },
+      "id": "cups-1",
+      "kind": "cup_station"
+    }
+  ],
+  "id": "coffee-cell-xarm6",
+  "name": "Coffee cell (xArm 6)",
+  "revision": 1,
+  "schemaVersion": 2,
+  "updatedAt": "2026-11-05T00:00:00.000Z",
+  "world": {
+    "handoffPoints": [
+      {
+        "id": "coffee-pickup",
+        "kind": "coffee_pickup",
+        "name": "Coffee pickup",
+        "position": [
+          3,
+          1,
+          0
+        ],
+        "yawRad": 1.57079632679
+      }
+    ],
+    "height": 4,
+    "id": "coffee-cell-world",
+    "obstacles": [
+      {
+        "height": 0.6,
+        "id": "counter",
+        "width": 2,
+        "x": 2,
+        "y": 1.5
+      }
+    ],
+    "points": [
+      {
+        "id": "parking",
+        "kind": "parking",
+        "name": "Parking",
+        "x": 0.8,
+        "y": 0.8
+      },
+      {
+        "id": "coffee-pickup",
+        "kind": "coffee_pickup",
+        "name": "Coffee pickup",
+        "x": 3,
+        "y": 1
+      },
+      {
+        "id": "table-1",
+        "kind": "table",
+        "name": "T01",
+        "x": 5,
+        "y": 3
+      }
+    ],
+    "revision": 1,
+    "width": 6
+  }
+}

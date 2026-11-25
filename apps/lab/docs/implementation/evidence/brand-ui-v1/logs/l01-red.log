@@ -1,0 +1,48 @@
+[WebServer] (node:64341) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:64366) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:64373) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:23:40 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✘  1 tests/e2e/brand-ui.spec.ts:4:1 › canonical theme, original artwork and keyboard focus (5.8s)
+
+
+  1) tests/e2e/brand-ui.spec.ts:4:1 › canonical theme, original artwork and keyboard focus ─────────
+
+    Error: expect(locator).toHaveCSS(expected) failed
+
+    Locator:  locator('body')
+    Expected: "rgb(7, 29, 33)"
+    Received: "rgb(11, 21, 26)"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCSS" locator('body') with timeout 5000ms
+      - waiting for locator('body')
+        13 × locator resolved to <body>…</body>
+           - unexpected value "rgb(11, 21, 26)"
+
+
+      4 | test('canonical theme, original artwork and keyboard focus', async ({ page }) => {
+      5 |   await page.goto('/#design');
+    > 6 |   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(7, 29, 33)');
+        |                                      ^
+      7 |   const brand = page.getByRole('link', { name: 'MEKONIQ Robot Lab', exact: true });
+      8 |   await expect(brand).toBeVisible();
+      9 |   await expect(brand.locator('.brand-horizontal')).toHaveAttribute('src', '/brand/assets/MEKONIQ_Horizontal_White_Transparent_v2.png');
+        at /Users/hoangpham/source/prv/robot/lab/tests/e2e/brand-ui.spec.ts:6:38
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/brand-ui-canonical-theme-original-artwork-and-keyboard-focus/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/brand-ui-canonical-theme-original-artwork-and-keyboard-focus/error-context.md
+
+  1 failed
+    tests/e2e/brand-ui.spec.ts:4:1 › canonical theme, original artwork and keyboard focus ──────────

@@ -1,0 +1,55 @@
+{
+  "deployments": [
+    {
+      "repo": "source",
+      "url": "https://www.mekoniq.app",
+      "id": "dpl_BYhmRNPmkWYQtea56jTzBrobXdXV",
+      "commit": "899a83769726aa6840c40a32fb0e89d17a137cb7",
+      "verifiedAt": "2026-11-07T10:43:04.042595+00:00",
+      "status": "pass",
+      "deploymentUrl": "https://mekoniq-5fz5e08dk-henry-projects.vercel.app"
+    },
+    {
+      "repo": "lab",
+      "url": "https://mekoniq-lab.vercel.app",
+      "id": "dpl_4Yd7d6hi4EFcAskPVdyd6jof96sf",
+      "commit": "582f9f46eb4a6fed40e3df97ce50c580c5ea850d",
+      "verifiedAt": "2026-11-07T10:43:18.226711+00:00",
+      "status": "pass",
+      "deploymentUrl": "https://mekoniq-o5xhded46-henry-projects.vercel.app"
+    }
+  ],
+  "http": [
+    {
+      "repo": "source",
+      "path": "/health/live",
+      "status": 200,
+      "checkedAt": "2026-11-07T10:43:13.358270+00:00"
+    },
+    {
+      "repo": "source",
+      "path": "/health/ready",
+      "status": 200,
+      "checkedAt": "2026-11-07T10:43:14.097783+00:00"
+    },
+    {
+      "repo": "source",
+      "path": "/login",
+      "status": 200,
+      "checkedAt": "2026-11-07T10:43:14.841577+00:00"
+    },
+    {
+      "repo": "lab",
+      "path": "/",
+      "status": 200,
+      "checkedAt": "2026-11-07T10:43:18.944037+00:00"
+    },
+    {
+      "repo": "lab",
+      "path": "/source-runtime.lock.json",
+      "status": 200,
+      "checkedAt": "2026-11-07T10:43:20.740612+00:00",
+      "matchesPin": true
+    }
+  ]
+}

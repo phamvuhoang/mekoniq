@@ -1,0 +1,12 @@
+{
+  "capturedAt": "2026-11-09T09:32:03.626Z",
+  "browser": "156.0.8078.80",
+  "command": "node scripts/test-mock-e2e.mjs --evidence twin-recovery.spec.ts",
+  "scenario": "FD01 completed, replayed, second run started; 2D view, both SSE streams open",
+  "heap": {
+    "usedJSHeapSizeMiB": 20,
+    "totalJSHeapSizeMiB": 52,
+    "jsHeapSizeLimitMiB": 4192,
+    "note": "Chrome performance.memory is coarse (bucketed) without --enable-precise-memory-info"
+  }
+}

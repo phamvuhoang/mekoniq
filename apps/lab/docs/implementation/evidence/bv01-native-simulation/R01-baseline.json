@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "taskId": "R01",
+  "recordedAt": "2026-11-06T04:26:08.651272+00:00",
+  "purpose": "initial branch baseline, not qualification of implementation changes",
+  "source": {
+    "branch": "feat/lab-digital-twin-v2",
+    "commit": "a89a077ed12648931a857333f899e3d6c1ea9719"
+  },
+  "lab": {
+    "branch": "feat/robot-lab",
+    "commit": "3a92e6579793aa47c30c0a3abd44942d95c679c3"
+  },
+  "runtimeLockAtBaseline": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "a89a077ed12648931a857333f899e3d6c1ea9719",
+    "schemaHash": "8b398544fdeb8127da0697a086283f055126075696a573dd4e8be40b00d56881",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "fe49fcea31da67630fa50e6fe75418967092cee57ab9144959413a529129ce15",
+    "entrypoint": "runtime.mjs"
+  },
+  "toolchain": {
+    "node": "24.22.2",
+    "pnpm": "10.32.1"
+  },
+  "preservedUncommittedWork": "source/artifacts digital-twin-status report and editable sources",
+  "firstPostgresAttempt": {
+    "execution": "ran",
+    "result": "fail",
+    "files": 111,
+    "passed": 830,
+    "skipped": 2,
+    "failed": 4,
+    "seconds": 325.6,
+    "qualification": false,
+    "sourceState": "in-progress shared worktree; not a frozen final HEAD",
+    "findings": [
+      "Three readiness assertions failed while related implementation was changing; stable targeted rerun passed.",
+      "One contract fixture used retired C01; replaced with registered FD01 in 9e7d22d."
+    ],
+    "followUp": "Final full integration rerun required after implementation stabilizes."
+  },
+  "claims": {
+    "nativeSimulationVerified": false,
+    "hardwareValidated": false,
+    "productionReady": false
+  }
+}

@@ -1,0 +1,96 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/lab-v2-arm-scene.test.ts (17 tests) 38353ms
+   ✓ ARM03 project fixture stops real arm motion and leaves the cup at the nozzle  3072ms
+   ✓ ARM03 the current AMR pose and compiled radius block the arm independently of project fixtures  23859ms
+   ✓ ARM03 nominal BV01 records the declared scene and hashes without claiming physical validation  2666ms
+   ✓ ARM03 the shipped Lab coffee counter fixture completes nominal BV01  2841ms
+   ✓ ARM03 a legacy project reports self/injected-only coverage  1934ms
+   ✓ ARM03 unknown AMR geometry cannot run scene clearance or transfer a cup  1433ms
+   ✓ ARM03 scene refresh never erases a manually injected collision obstacle  2298ms
+ ✓ tests/integration/lab-v2-mixed.test.ts (3 tests) 23834ms
+   ✓ FD02-cups carries food and its identified coffee cup on one mission, then serves each allocation once  2096ms
+   ✓ the versioned food, corridor and coffee campaign executes both AMRs and queues the second coffee job without sharing a cup  20548ms
+   ✓ cancelling a mixed mission after both loads retains the cup on its robot until the return confirmation  1190ms
+ ✓ tests/integration/lab-v2-software-gaps.test.ts (8 tests) 18917ms
+   ✓ restoring an untouched removed cup requires a real bound observation and then allows the existing job to complete  3743ms
+   ✓ a persistent transient coffee interlock escalates within the declared mock policy instead of waiting forever  1311ms
+   ✓ a robot that cannot dock times out pickup without departing or losing cup custody  13596ms
+ ✓ tests/integration/lab-v2-arm-faults.test.ts (4 tests) 19946ms
+   ✓ ARM mock arm-following-error reaches source attention, preserves cup custody and cannot resume by reset  4844ms
+   ✓ ARM mock arm-stop reaches source attention, preserves cup custody and cannot resume by reset  4646ms
+   ✓ ARM mock arm-estop reaches source attention, preserves cup custody and cannot resume by reset  5513ms
+   ✓ ARM mock arm-collision reaches source attention, preserves cup custody and cannot resume by reset  4942ms
+ ✓ tests/integration/lab-v2-arm-inactive-scene.test.ts (3 tests) 15122ms
+   ✓ ARM03 BV01 includes an unused project AMR as a declared static parked obstacle  3099ms
+   ✓ ARM03 an unused AMR parked under the arm remains an obstruction and retains cell custody  10934ms
+   ✓ ARM03 an unused project AMR without a parking binding reports unknown pose and blocks clearance  1089ms
+ ✓ tests/integration/lab-v2-mock.test.ts (11 tests) 8900ms
+   ✓ FD07: two robots never own the constrained corridor at once; one progresses at a time and both deliver  7953ms
+ ✓ tests/integration/lab-v2-simulation-report.test.ts (4 tests) 5784ms
+   ✓ a mock BV01 report yields a business pass record and physics/closed-loop not_run records, all schema-valid  2866ms
+   ✓ a model that claims a measured quantity, or a cup movement without evidence, fails the business record with the offending id  2751ms
+ ✓ tests/integration/lab-v2-report.test.ts (5 tests) 5722ms
+   ✓ report separates durable business events from lossy coalesced telemetry with per-entity sample counts  2826ms
+   ✓ compareRuns refuses to rank mock against hardware, and different scenarios, with explicit reasons  2591ms
+ ✓ tests/integration/lab-v2-stream.test.ts (15 tests | 1 skipped) 5158ms
+   ✓ a Last-Event-ID older than the retained window, unknown or malformed gets an explicit reset record with a snapshot, not a silent skip  4091ms
+ ✓ tests/integration/coffee-transfer.test.ts (8 tests) 5516ms
+   ✓ BV01 on mock-default: espresso and iced milk coffee run recipe -> verify -> arm -> robot -> table with one cup owner at a time  5163ms
+ ✓ tests/integration/lab-v2-recovery.test.ts (7 tests) 5067ms
+   ✓ an expired command is never sent; the run needs attention instead of retrying  4411ms
+ ✓ tests/integration/lab-v2-checkpoint-compat.test.ts (1 test) 2728ms
+   ✓ legacy coffee checkpoint without trays reopens before pickup and completes with journal-owned cup custody  2727ms
+ ✓ tests/integration/lab-v2-reclaim-targets.test.ts (2 tests) 2065ms
+   ✓ reclaim at the actual FD01 first completed navigation exposes the waiting robot for audited reconciliation  2012ms
+ ✓ tests/integration/lab-v2-sil-review.test.ts (19 tests) 1658ms
+ ✓ tests/integration/coffee-policy.test.ts (16 tests) 1892ms
+   ✓ BV04 mock outlier fault preserves model quantity while source refuses implausible sensor evidence  1292ms
+ ✓ tests/integration/lab-v2-sil-physics.test.ts (5 tests) 1450ms
+   ✓ a worker claiming sil evidence without contact-sensor liveness or separation samples never passes a physics row  457ms
+   ✓ measured physics rows come only from worker events: liveness + clearance pass, a reported contact fails, an overlap fails  867ms
+ ✓ tests/integration/beverage-handoff.test.ts (4 tests) 1301ms
+   ✓ release ACK without receiving sensor cannot transfer cup ownership  417ms
+   ✓ a robot near the pickup but not docked receives nothing: the arm waits, then fails holding the cup  500ms
+   ✓ docked robot with tray presence completes the transfer once; replays are absorbed  343ms
+ ✓ tests/integration/lab-runtime-artifact.test.ts (4 tests) 1710ms
+   ✓ self-contained exported artifact opens its embedded SQLite migration away from the source checkout  975ms
+   ✓ --clean-checkout exports committed HEAD: dirty false and sourceCommit equal to HEAD  478ms
+ ✓ tests/integration/coffee-recovery.test.ts (6 tests) 860ms
+   ✓ BV05 on mock-default: a cell reboot mid-brew leaves the outcome unknown, never resends, keeps the cup; a human reconcile quarantines it  589ms
+ ✓ tests/integration/coffee-review.test.ts (16 tests) 804ms
+ ✓ tests/integration/lab-v2-arm.test.ts (12 tests) 268ms
+ ✓ tests/integration/lab-runtime.test.ts (16 tests) 619ms
+ ✓ tests/integration/coffee-job.test.ts (12 tests) 519ms
+ ✓ tests/integration/coffee-conservation.test.ts (9 tests) 499ms
+ ✓ tests/integration/robot-admission.test.ts (20 tests) 480ms
+ ✓ tests/integration/lab-v2-runtime-review.test.ts (7 tests) 489ms
+ ✓ tests/integration/coffee-simulation-evidence.test.ts (6 tests) 543ms
+ ✓ tests/integration/lab-v2-sil-campaign.test.ts (4 tests) 356ms
+ ✓ tests/integration/coffee-simulation-resources.test.ts (5 tests) 339ms
+ ✓ tests/integration/lab-v2-simulated-navigation.test.ts (10 tests) 285ms
+ ✓ tests/integration/lab-runtime-gateway.test.ts (6 tests) 351ms
+ ✓ tests/integration/simulated-delivery.test.ts (5 tests) 224ms
+ ✓ tests/integration/stock-consumption.test.ts (12 tests) 193ms
+ ✓ tests/integration/stocktake.test.ts (10 tests) 226ms
+ ✓ tests/integration/lab-v2-arm-collision-evidence.test.ts (8 tests) 163ms
+ ✓ tests/integration/lab-v2-sim-recovery.test.ts (2 tests) 137ms
+ ✓ tests/integration/beverage-simulator.test.ts (5 tests) 123ms
+ ✓ tests/integration/lab-v2-arm-model.test.ts (15 tests) 114ms
+ ✓ tests/integration/mission-queue.test.ts (2 tests) 123ms
+ ✓ tests/integration/lab-v2-sim-clock.test.ts (6 tests) 105ms
+ ✓ tests/integration/kitchen-allocation.test.ts (2 tests) 108ms
+ ✓ tests/integration/lab-v2-zone-bridge.test.ts (2 tests) 102ms
+ ✓ tests/integration/lab-v2-contracts.test.ts (19 tests) 73ms
+ ✓ tests/integration/lab-runtime-contracts.test.ts (1 test) 43ms
+ ✓ tests/integration/lab-v2-model.test.ts (17 tests) 22ms
+ ✓ tests/integration/lab-v2-arm-safety-model.test.ts (8 tests) 9ms
+ ✓ tests/integration/lab-v2-arm-trace-coverage.test.ts (16 tests) 7ms
+ ✓ tests/integration/lab-v2-scenario-matrix.test.ts (3 tests) 7ms
+ ✓ tests/integration/lab-v2-residuals.test.ts (9 tests) 5ms
+
+ Test Files  49 passed (49)
+      Tests  406 passed | 1 skipped (407)
+   Start at  04:58:22
+   Duration  186.72s (transform 1.10s, setup 0ms, import 9.44s, tests 173.32s, environment 2ms)

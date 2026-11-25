@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "suppliedBy": "user",
+  "copiedOn": "2026-11-06",
+  "files": [
+    {
+      "file": "assets/MEKONIQ_Horizontal_DeepTeal_v2.png",
+      "sha256": "5363ad195e12d5719a24dfa3532e2e4cfba8ae663778ed31dd1e3f856969055f",
+      "bytes": 29626,
+      "role": "original_reference_unmodified"
+    },
+    {
+      "file": "assets/MEKONIQ_Horizontal_White_Transparent.svg",
+      "sha256": "43693e11d6178f75dca87b876db7ca5c77582047dfe607449e7de81d0226d732",
+      "bytes": 722,
+      "role": "original_reference_unmodified"
+    },
+    {
+      "file": "assets/MEKONIQ_Horizontal_White_Transparent_v2.png",
+      "sha256": "1d4feac18e195633c407ec073536f6ce86976f24ad462b259981588b2fe1d19d",
+      "bytes": 27357,
+      "role": "original_reference_unmodified"
+    },
+    {
+      "file": "assets/MEKONIQ_Icon_OffWhite.png",
+      "sha256": "5e5415318de9c7ce0ffa79fd71aa11db4b23043bc48f6bfb897c22b5ea24c3cc",
+      "bytes": 39575,
+      "role": "original_reference_unmodified"
+    },
+    {
+      "file": "assets/MEKONIQ_Icon_Transparent.png",
+      "sha256": "e147ec79a78153b29dd28f88161ad8951cf8c3d3d9f849c66d42612fd97385ae",
+      "bytes": 34601,
+      "role": "original_reference_unmodified"
+    },
+    {
+      "file": "assets/MEKONIQ_Icon_Transparent.svg",
+      "sha256": "447e2f9fa4900db8b5a10a044cd8b2bafc039c2c0034298b10399de78bc4ad7b",
+      "bytes": 491,
+      "role": "original_reference_unmodified"
+    },
+    {
+      "file": "assets/MEKONIQ_Wordmark_DeepTeal.png",
+      "sha256": "097b1862c9d449d42547fc1fca5923aa178d6ed63470ad0c44ed834b4196f916",
+      "bytes": 21548,
+      "role": "original_reference_unmodified"
+    },
+    {
+      "file": "assets/MEKONIQ_Wordmark_White_Transparent.png",
+      "sha256": "216bf5e2af0f3f1f29ed17f738a49df92d3cdf0ac4c42be92ab9e3adefff1748",
+      "bytes": 19989,
+      "role": "original_reference_unmodified"
+    },
+    {
+      "file": "assets/MEKONIQ_Wordmark_White_Transparent.svg",
+      "sha256": "66c7d27b1c52d5a786b6323a9313aca2343ce1c22a43bbd0d561c7bdfca5e2ba",
+      "bytes": 289,
+      "role": "original_reference_unmodified"
+    }
+  ]
+}

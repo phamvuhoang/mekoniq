@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-11-06T06:36:40.479325+00:00",
+  "command": [
+    "node",
+    "scripts/test-mock-e2e.mjs",
+    "coffee-journey.spec.ts",
+    "arm-simulation.spec.ts",
+    "controller-report.spec.ts",
+    "fault-schedule.spec.ts"
+  ],
+  "labCommit": "23aebdffb73db89a6fc5037a1852673a408c680d",
+  "labCommitAfter": "23aebdffb73db89a6fc5037a1852673a408c680d",
+  "runtimeLock": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "fa5ed2871db92e57e5bd3490195486d569ecc5a0",
+    "schemaHash": "ebc4b1f05c57f1dbbbca9e376bd815dd20277a9fe8a7d4c8365ab566cc8f63fe",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "9b9c964db1c49ab3dd46f08fec7cc07072279f27a4be622ffc05d0d71a9bc729",
+    "entrypoint": "runtime.mjs"
+  },
+  "exitCode": 1,
+  "durationSeconds": 214.13,
+  "scope": "Browser mock workflow and report fixture rendering; no native engine acceptance"
+}

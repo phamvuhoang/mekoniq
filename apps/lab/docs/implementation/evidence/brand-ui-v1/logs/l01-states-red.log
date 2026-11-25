@@ -1,0 +1,48 @@
+[WebServer] (node:64971) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:64996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:65003) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:26:03 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✘  1 tests/e2e/brand-ui.spec.ts:41:1 › primary, disabled and unknown states retain readable semantics (5.7s)
+
+
+  1) tests/e2e/brand-ui.spec.ts:41:1 › primary, disabled and unknown states retain readable semantics 
+
+    Error: expect(locator).toHaveCSS(expected) failed
+
+    Locator:  locator('#battery')
+    Expected: "1"
+    Received: "0.7"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCSS" locator('#battery') with timeout 5000ms
+      - waiting for locator('#battery')
+        14 × locator resolved to <select disabled id="battery" data-design="batteryAh">…</select>
+           - unexpected value "0.7"
+
+
+      45 |   const disabled = page.locator('#battery');
+      46 |   await expect(disabled).toBeDisabled();
+    > 47 |   await expect(disabled).toHaveCSS('opacity', '1');
+         |                          ^
+      48 |   await page.locator('.nav-item[href="#deployment"]').click();
+      49 |   const primary = page.getByRole('button', { name: 'Export draft candidate', exact: true });
+      50 |   await expect(primary).toHaveCSS('background-color', 'rgb(185, 251, 117)');
+        at /Users/hoangpham/source/prv/robot/lab/tests/e2e/brand-ui.spec.ts:47:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/brand-ui-primary-disabled--5c298-s-retain-readable-semantics/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/brand-ui-primary-disabled--5c298-s-retain-readable-semantics/error-context.md
+
+  1 failed
+    tests/e2e/brand-ui.spec.ts:41:1 › primary, disabled and unknown states retain readable semantics 

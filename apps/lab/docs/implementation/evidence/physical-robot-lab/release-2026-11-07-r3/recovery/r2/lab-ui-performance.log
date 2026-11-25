@@ -1,0 +1,5 @@
+Capturing desktop-3d: 60s; 2 AMRs + 1 arm + 6 tables, 10 Hz samples.
+desktop-3d: p95 frame 16.80 ms, paint 40.20 ms; valid.
+Capturing tablet-2d-emulated: 60s; 2 AMRs + 1 arm + 6 tables, 10 Hz samples.
+tablet-2d-emulated: p95 frame 16.70 ms, paint 1.80 ms; valid.
+Saved <workspace>/lab/docs/implementation/evidence/physical-robot-lab/release-2026-11-07-r2/lab-ui-performance.json

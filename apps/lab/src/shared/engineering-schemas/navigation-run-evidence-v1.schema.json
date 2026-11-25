@@ -1,0 +1,1046 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.navigation-run-evidence.v1",
+  "title": "NavigationRunEvidenceV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "navigation-run-evidence"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "sceneDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "sceneRef": {
+      "$ref": "robot-physical-model-v1.schema.json#/definitions/ArtifactRef"
+    },
+    "modelDigests": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "items": {
+        "$ref": "engineering-component.schema.json#/definitions/Digest"
+      }
+    },
+    "policyRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "hash": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "hash"
+      ]
+    },
+    "controller": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "const": "grid-diff-v1"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ]
+    },
+    "engine": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "const": "irsim_2d"
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "pythonVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "platform": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "lockDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "pythonVersion",
+            "platform",
+            "lockDigest"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "const": "webots_3d"
+            },
+            "engineVersion": {
+              "const": "R2025a"
+            },
+            "executableSha256": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "basicTimeStepMs": {
+              "enum": [
+                1,
+                2,
+                4,
+                5,
+                10,
+                20
+              ]
+            },
+            "pythonVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "platform": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "lockDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            }
+          },
+          "required": [
+            "id",
+            "engineVersion",
+            "executableSha256",
+            "basicTimeStepMs",
+            "pythonVersion",
+            "platform",
+            "lockDigest"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "const": "mujoco_3d"
+            },
+            "engineVersion": {
+              "const": "3.17.0"
+            },
+            "pythonVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "platform": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "lockDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "timestepMs": {
+              "const": 2
+            },
+            "substeps": {
+              "const": 10
+            },
+            "stopPolicyRef": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "path": {
+                  "type": "string",
+                  "maxLength": 240,
+                  "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_-]+(?:/[A-Za-z0-9_.-]+)*\\.json$"
+                },
+                "sha256": {
+                  "$ref": "engineering-component.schema.json#/definitions/Digest"
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "path",
+                "sha256"
+              ]
+            },
+            "physicsProfileRef": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "path": {
+                  "type": "string",
+                  "maxLength": 240,
+                  "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_-]+(?:/[A-Za-z0-9_.-]+)*\\.json$"
+                },
+                "sha256": {
+                  "$ref": "engineering-component.schema.json#/definitions/Digest"
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "path",
+                "sha256"
+              ]
+            },
+            "loadProfileRef": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "path": {
+                  "type": "string",
+                  "maxLength": 240,
+                  "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_-]+(?:/[A-Za-z0-9_.-]+)*\\.json$"
+                },
+                "sha256": {
+                  "$ref": "engineering-component.schema.json#/definitions/Digest"
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "path",
+                "sha256"
+              ]
+            },
+            "controllerPolicyRef": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "path": {
+                  "type": "string",
+                  "maxLength": 240,
+                  "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_-]+(?:/[A-Za-z0-9_.-]+)*\\.json$"
+                },
+                "sha256": {
+                  "$ref": "engineering-component.schema.json#/definitions/Digest"
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "path",
+                "sha256"
+              ]
+            },
+            "hostArch": {
+              "enum": [
+                "arm64",
+                "x86_64"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "engineVersion",
+            "pythonVersion",
+            "platform",
+            "lockDigest",
+            "timestepMs",
+            "substeps",
+            "stopPolicyRef",
+            "physicsProfileRef",
+            "loadProfileRef",
+            "controllerPolicyRef"
+          ]
+        }
+      ]
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional (added with B05): the versions a rerun must match besides the engine and lock.",
+      "properties": {
+        "sourceCommit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "compilerVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sceneSchemaHash": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "evidenceFormat": {
+          "const": "navigation-evidence-ndjson-gzip-v1"
+        },
+        "os": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "arch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "node": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "sourceCommit",
+        "compilerVersion",
+        "sceneSchemaHash",
+        "evidenceFormat",
+        "os",
+        "arch",
+        "node"
+      ]
+    },
+    "clock": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tickMs": {
+          "const": 20
+        },
+        "tickHorizon": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30000
+        },
+        "businessEpochMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "tickMs",
+        "tickHorizon",
+        "businessEpochMs"
+      ]
+    },
+    "seed": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runSeed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "engineSeed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "engineSeedAlgorithm": {
+          "enum": [
+            "irsim-env-seed-v1",
+            "webots-worldinfo-seed-v1",
+            "mujoco-identity-seed-v1"
+          ]
+        },
+        "sensorSeeds": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "robotId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "sensorId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "noiseSeed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              }
+            },
+            "required": [
+              "robotId",
+              "sensorId",
+              "noiseSeed"
+            ]
+          }
+        },
+        "actorRng": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "seed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          },
+          "required": [
+            "algorithm",
+            "seed"
+          ]
+        },
+        "engineRng": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Optional (added with B05): the IR-SIM NumPy stream, separate from the source actor stream.",
+          "properties": {
+            "library": {
+              "const": "numpy"
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "algorithm": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "seed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          },
+          "required": [
+            "library",
+            "version",
+            "algorithm",
+            "seed"
+          ]
+        }
+      },
+      "required": [
+        "runSeed",
+        "engineSeed",
+        "engineSeedAlgorithm",
+        "sensorSeeds",
+        "actorRng"
+      ]
+    },
+    "validationReportRef": {
+      "anyOf": [
+        {
+          "$ref": "robot-physical-model-v1.schema.json#/definitions/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trajectory": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "sha256": {
+                "$ref": "engineering-component.schema.json#/definitions/Digest"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "firstTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "lastTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "path",
+              "sha256",
+              "bytes",
+              "firstTick",
+              "lastTick"
+            ]
+          }
+        },
+        "sensors": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "sha256": {
+                "$ref": "engineering-component.schema.json#/definitions/Digest"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "firstTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "lastTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "path",
+              "sha256",
+              "bytes",
+              "firstTick",
+              "lastTick"
+            ]
+          }
+        },
+        "control": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "sha256": {
+                "$ref": "engineering-component.schema.json#/definitions/Digest"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "firstTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "lastTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "path",
+              "sha256",
+              "bytes",
+              "firstTick",
+              "lastTick"
+            ]
+          }
+        },
+        "collisions": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "sha256": {
+                "$ref": "engineering-component.schema.json#/definitions/Digest"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "firstTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "lastTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "path",
+              "sha256",
+              "bytes",
+              "firstTick",
+              "lastTick"
+            ]
+          }
+        }
+      },
+      "required": [
+        "trajectory",
+        "sensors",
+        "control",
+        "collisions"
+      ]
+    },
+    "digests": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trajectoryDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "sensorDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "assertionDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "algorithm": {
+          "const": "navigation-evidence-digest-v1"
+        },
+        "normalizedOmits": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "required": [
+        "trajectoryDigest",
+        "sensorDigest",
+        "assertionDigest"
+      ]
+    },
+    "assertions": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "inconclusive",
+              "not_run"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "id",
+          "result",
+          "detail"
+        ]
+      }
+    },
+    "metricCoverage": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "metric": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "status": {
+            "enum": [
+              "available",
+              "unavailable"
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "metric",
+          "status",
+          "reason"
+        ]
+      }
+    },
+    "recordingGaps": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fromTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "toTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "fromTick",
+          "toTick",
+          "reason"
+        ]
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
+    "completeness": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional (added with B05): incomplete whenever a chunk fails verification, ticks are missing or a limit ended the recording.",
+      "properties": {
+        "status": {
+          "enum": [
+            "complete",
+            "incomplete"
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "required": [
+        "status",
+        "reasons"
+      ]
+    },
+    "recording": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional (added with the B05 review): the recorder's own end-of-recording record as committed in its manifest (the gaps it recorded, the terminal reason or null for a recording that was not ended early, and the last durable tick). An import without it cannot claim a complete recording.",
+      "properties": {
+        "gaps": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 10000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "fromTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "toTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "required": [
+              "fromTick",
+              "toTick",
+              "reason"
+            ]
+          }
+        },
+        "terminal": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastTick": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "runTick": {
+          "description": "Optional (added with review 4): the run's logical tick when the document was built (null before start). An import compares the durable horizon with it: ticks the run reached that the chunks do not hold are EVIDENCE_PENDING, never complete.",
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "gaps",
+        "terminal",
+        "lastTick"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "runId",
+    "sceneDigest",
+    "sceneRef",
+    "modelDigests",
+    "policyRef",
+    "controller",
+    "engine",
+    "clock",
+    "seed",
+    "validationReportRef",
+    "artifacts",
+    "digests",
+    "assertions",
+    "metricCoverage",
+    "recordingGaps",
+    "limitations"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "engine": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "const": "webots_3d"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        "required": [
+          "engine"
+        ]
+      },
+      "then": {
+        "properties": {
+          "seed": {
+            "type": "object",
+            "properties": {
+              "engineSeedAlgorithm": {
+                "const": "webots-worldinfo-seed-v1"
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "if": {
+          "type": "object",
+          "properties": {
+            "engine": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "const": "mujoco_3d"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": [
+            "engine"
+          ]
+        },
+        "then": {
+          "properties": {
+            "seed": {
+              "type": "object",
+              "properties": {
+                "engineSeedAlgorithm": {
+                  "const": "mujoco-identity-seed-v1"
+                }
+              }
+            }
+          }
+        },
+        "else": {
+          "properties": {
+            "seed": {
+              "type": "object",
+              "properties": {
+                "engineSeedAlgorithm": {
+                  "const": "irsim-env-seed-v1"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

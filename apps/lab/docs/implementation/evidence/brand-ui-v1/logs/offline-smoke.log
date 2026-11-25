@@ -1,0 +1,13 @@
+Offline mock ready: http://127.0.0.1:4175
+Enter this one-use pairing code (expires in 5 minutes): <redacted>
+Source f82b2057cae89b0029968212753df01f86f334ad.
+Ready in 404 ms. Press Ctrl-C to stop.
+Running offline-bv01.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+(node:69511) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/offline-bv01.spec.ts:6:1 › offline package completes BV01 and exports its pinned report with only loopback requests (17.8s)
+
+  1 passed (18.8s)

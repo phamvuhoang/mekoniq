@@ -1,0 +1,19 @@
+✓ guest alias, unknown tab and Hệ thống link open the one editor; layout fits
+✓ order on with an empty menu saves as Chưa đủ điều kiện, reason links to the menu
+✓ call staff needs the request station; Hệ thống shows only the saved config
+✓ all quick notes removed stay [] after save and reload
+✓ preset changes only the draft, lists the changes, a later toggle makes it custom
+✓ competing save keeps the feature draft and reports the conflict
+✓ import with a string flag is refused by normalize and nothing is saved
+✓ migration notice until a site arrives without the flag; Lưu enabled without edits
+✓ a save lost in a reconnect is reported, never toasted as saved
+✓ QR guest: bill button alone, toasts only on the reply, return request alerts staff and the trip goes on
+✓ robot order: off keeps the open cart, back on drops items gone from the menu, only the ok reply empties it, a retry after a lost reply is one order
+✓ guide: staff pick and confirm; slow button only on the simulator; guide off mid-trip still finishes; bus off hides robot shortcuts
+✓ each preset, applied and saved, stores exactly its row of spec §4.2; menu, notes, bank and points stay
+✓ each flag alone shows only its own controls on the QR page and both robot screens; call off keeps the open alert; bus off mid-trip finishes
+✓ QR guest in English at 390 px with custom chips: a call lost in a disconnect is resent once on reconnect; direct → request swaps the button and refuses an old cancel
+✓ billing: staff prepare → robot QR of the bill total → guest claim → ack keeps orders → settle → close once the table is clear
+✓ billing: 0đ bill has no QR; QR failure falls back to the static QR; bank change refused; pay off mid-screen still claims
+✓ billing: two stations race one table, changed orders refuse the bill and keep what was typed, a stale claim shows the server text
+FEATURE_POLICY_BROWSER_OK

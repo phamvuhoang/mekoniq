@@ -1,0 +1,21 @@
+{
+  "componentDigest": "c52d4ab92e73c6d8de34eaf06de60ba6a80e675e29b7f7f2a872a638e51b0f3b",
+  "documentType": "sim3d-fixture-manifest",
+  "files": [
+    {
+      "bytes": 26885,
+      "path": "component.json",
+      "sha256": "18eba69d973279fcda541fc287f8531ed5997e4121d3f9c03653fed0a02ef6ae"
+    },
+    {
+      "bytes": 1146,
+      "path": "fk-golden.json",
+      "sha256": "f3611159f6952a28ba370f7f6447efc6259fbcfa2f1c655dea2fcde4c1bf3d4a"
+    }
+  ],
+  "generator": "scripts/generate-arm-fixture.mjs",
+  "id": "arm-ref-3d-v1",
+  "modelRevision": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+  "note": "The Lab PUMA560_REFERENCE table as one 6-revolute engineering component for the Webots arm plant. Geometry derives from the table; masses, inertia and joint effort are assumed inputs (spike X00). Not PUMA data and not a product arm.",
+  "schemaVersion": 1
+}

@@ -1,0 +1,59 @@
+{
+  "command": "cd source && LAB_V2_MEASURE=../lab/docs/implementation/evidence/digital-twin-v2/F06-telemetry-measure-source.json node node_modules/vitest/vitest.mjs run tests/integration/lab-v2-stream.test.ts -t measure",
+  "sourceCommit": "8133e55 (measured on the working tree just before commit; same code)",
+  "latencyDefinition": "gateway ingress (process.hrtime at sample record) -> SSE record parsed by a fetch client in the same Node process; same host monotonic clock, not comparable across hosts",
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v24.22.2",
+    "cpu": "Apple M2 Pro",
+    "cpus": 10,
+    "memGiB": 16
+  },
+  "streamOptions": {
+    "pollMs": 250,
+    "telemetryMs": 100,
+    "heartbeatMs": 1000
+  },
+  "FD07 (2 AMR, corridor)": {
+    "status": "completed",
+    "simTicks": 4025,
+    "wallMs": 4773,
+    "samplesRecorded": 1612,
+    "sampleCounts": {
+      "amr-a": 806,
+      "amr-b": 806
+    },
+    "samplesDeliveredLive": 82,
+    "latencyMs": {
+      "p50": 2.065125,
+      "p95": 49.552708,
+      "max": 97.823459
+    },
+    "heapDeltaMiB": 41.49,
+    "rssMiB": 279.5,
+    "reportBytes": 970995,
+    "note": "steps of 25 ticks (0.5 s sim) as fast as the runner allows; live delivery is coalesced at 100 ms, so samplesDeliveredLive < samplesRecorded by design"
+  },
+  "BV01 (1 AMR + arm + coffee cell)": {
+    "status": "completed",
+    "simTicks": 4775,
+    "wallMs": 3066,
+    "samplesRecorded": 2868,
+    "sampleCounts": {
+      "amr-1": 956,
+      "arm-1": 956,
+      "coffee-1": 956
+    },
+    "samplesDeliveredLive": 84,
+    "latencyMs": {
+      "p50": 5.450125,
+      "p95": 43.1125,
+      "max": 43.460625
+    },
+    "heapDeltaMiB": 18.34,
+    "rssMiB": 240.9,
+    "reportBytes": 1732193,
+    "note": "steps of 25 ticks (0.5 s sim) as fast as the runner allows; live delivery is coalesced at 100 ms, so samplesDeliveredLive < samplesRecorded by design"
+  }
+}

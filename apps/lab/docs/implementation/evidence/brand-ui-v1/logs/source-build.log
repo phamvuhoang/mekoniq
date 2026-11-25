@@ -1,0 +1,102 @@
+
+> mekoniq-platform@ build /Users/hoangpham/source/prv/robot/source
+> npm run check:brand && pnpm -r --if-present build
+
+npm warn Unknown env config "npm-globalconfig". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "verify-deps-before-run". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "_jsr-registry". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> check:brand
+> node scripts/check-brand.mjs --dir packages/ui/brand && node scripts/check-brand.mjs --dir apps/cloud-web/public/brand --against packages/ui/brand/release.json && node scripts/check-brand.mjs --dir apps/tablet-web/public/brand --against packages/ui/brand/release.json
+
+MEKONIQ 1.0.1 verified (22 files)
+MEKONIQ 1.0.1 verified (22 files)
+MEKONIQ 1.0.1 verified (22 files)
+Scope: 10 of 11 workspace projects
+apps/cloud-web build$ npm run check:brand && next build --webpack
+apps/tablet-web build$ npm run check:brand && vite build
+packages/contracts build$ tsc --noEmit -p ../../tsconfig.json
+apps/tablet-web build: npm warn Unknown env config "npm-globalconfig". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+apps/tablet-web build: npm warn Unknown env config "recursive". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+apps/tablet-web build: npm warn Unknown env config "verify-deps-before-run". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+apps/tablet-web build: npm warn Unknown env config "_jsr-registry". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+apps/cloud-web build: npm warn Unknown env config "npm-globalconfig". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+apps/cloud-web build: npm warn Unknown env config "recursive". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+apps/cloud-web build: npm warn Unknown env config "verify-deps-before-run". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+apps/cloud-web build: npm warn Unknown env config "_jsr-registry". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+apps/tablet-web build: > @mekoniq/tablet-web@0.1.0 check:brand
+apps/tablet-web build: > node ../../scripts/check-brand.mjs --dir ../../packages/ui/brand && node ../../scripts/check-brand.mjs --dir public/brand --against ../../packages/ui/brand/release.json
+apps/cloud-web build: > check:brand
+apps/cloud-web build: > node ../../scripts/check-brand.mjs --dir ../../packages/ui/brand && node ../../scripts/check-brand.mjs --dir public/brand --against ../../packages/ui/brand/release.json
+apps/tablet-web build: MEKONIQ 1.0.1 verified (22 files)
+apps/cloud-web build: MEKONIQ 1.0.1 verified (22 files)
+apps/tablet-web build: MEKONIQ 1.0.1 verified (22 files)
+apps/cloud-web build: MEKONIQ 1.0.1 verified (22 files)
+apps/tablet-web build: vite v7.3.1 building client environment for production...
+apps/tablet-web build: transforming...
+apps/cloud-web build: ▲ Next.js 16.4.3 (webpack)
+apps/cloud-web build: ✓ Running next.config.ts took 16ms
+apps/cloud-web build:   Creating an optimized production build ...
+apps/tablet-web build: ✓ 343 modules transformed.
+apps/tablet-web build: rendering chunks...
+apps/tablet-web build: computing gzip size...
+apps/tablet-web build: dist/index.html                                      0.59 kB │ gzip:   0.41 kB
+apps/tablet-web build: dist/assets/BeVietnamPro-400-vi-SOx6iaFb.woff2       4.72 kB
+apps/tablet-web build: dist/assets/BeVietnamPro-700-vi-DptIoWwl.woff2       5.13 kB
+apps/tablet-web build: dist/assets/BeVietnamPro-400-latin-OEyTajQY.woff2   12.91 kB
+apps/tablet-web build: dist/assets/BeVietnamPro-700-latin-CPfR8Jz_.woff2   13.35 kB
+apps/tablet-web build: dist/assets/JetBrainsMono-500-D1jhc3sc.woff2        21.88 kB
+apps/tablet-web build: dist/assets/index-CIssgxE7.css                      13.94 kB │ gzip:   3.63 kB
+apps/tablet-web build: dist/assets/lan-bridge-BZXPvWSh.js                   0.13 kB │ gzip:   0.13 kB
+apps/tablet-web build: dist/assets/ui-entry-DSmXEPS_.js                   223.42 kB │ gzip:  63.31 kB
+apps/tablet-web build: dist/assets/index-CtdBqFrZ.js                      445.06 kB │ gzip: 138.83 kB
+apps/tablet-web build: ✓ built in 1.08s
+apps/tablet-web build: Done
+apps/cloud-web build: ✓ Compiled successfully in 2.2s
+apps/cloud-web build:   Running TypeScript ...
+apps/cloud-web build:   Finished TypeScript in 1127ms ...
+apps/cloud-web build:   Collecting page data using 9 workers ...
+apps/cloud-web build:   Generating static pages using 9 workers (0/4) ...
+apps/cloud-web build:   Generating static pages using 9 workers (1/4) 
+apps/cloud-web build:   Generating static pages using 9 workers (2/4) 
+apps/cloud-web build:   Generating static pages using 9 workers (3/4) 
+apps/cloud-web build: ✓ Generating static pages using 9 workers (4/4) in 313ms
+packages/contracts build: Done
+apps/cloud-web build:   Finalizing page optimization ...
+apps/cloud-web build:   Collecting build traces ...
+apps/cloud-web build: Route (app)
+apps/cloud-web build: ┌ ○ /
+apps/cloud-web build: ├ ○ /_not-found
+apps/cloud-web build: ├ ƒ /admin/catalog
+apps/cloud-web build: ├ ƒ /admin/chain/configuration
+apps/cloud-web build: ├ ƒ /admin/chain/reports
+apps/cloud-web build: ├ ƒ /admin/customers
+apps/cloud-web build: ├ ƒ /admin/operations
+apps/cloud-web build: ├ ƒ /admin/promotions
+apps/cloud-web build: ├ ƒ /admin/reservations
+apps/cloud-web build: ├ ƒ /admin/settings
+apps/cloud-web build: ├ ƒ /health/live
+apps/cloud-web build: ├ ƒ /health/ready
+apps/cloud-web build: ├ ƒ /internal/jobs/run
+apps/cloud-web build: ├ ○ /login
+apps/cloud-web build: ├ ƒ /menu/[venueId]
+apps/cloud-web build: ├ ƒ /order/[venueId]
+apps/cloud-web build: ├ ƒ /table/[token]
+apps/cloud-web build: └ ƒ /v1/[...path]
+apps/cloud-web build: ○  (Static)   prerendered as static content
+apps/cloud-web build: ƒ  (Dynamic)  server-rendered on demand
+apps/cloud-web build: Done
+packages/cell-adapters build$ tsc --noEmit -p ../../tsconfig.json
+apps/tablet-android build$ cap sync android
+packages/domain build$ tsc --noEmit -p ../../tsconfig.json
+packages/robot-adapters build$ tsc --noEmit -p ../../tsconfig.json
+apps/tablet-android build: ✔ Copying web assets from dist to android/app/src/main/assets/public in 17.29ms
+apps/tablet-android build: ✔ Creating capacitor.config.json in android/app/src/main/assets in 4.31ms
+apps/tablet-android build: ✔ copy android in 49.21ms
+apps/tablet-android build: ✔ Updating Android plugins in 3.19ms
+apps/tablet-android build: ✔ update android in 61.40ms
+apps/tablet-android build: [info] Sync finished in 0.13s
+apps/tablet-android build: Done
+packages/cell-adapters build: Done
+packages/robot-adapters build: Done
+packages/domain build: Done

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "taskId": "N01",
+  "kind": "host_preflight",
+  "recordedAt": "2026-11-06T03:48:31.830Z",
+  "host": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "cpuCores": 10,
+    "memoryBytes": 17179869184,
+    "macOS": "26.5"
+  },
+  "storage": {
+    "systemFreeBytes": 5241929728,
+    "vmFreeBytes": 5241929728,
+    "sameVolume": true,
+    "vmRoot": "/Users/hoangpham/source/prv/robot",
+    "canProvision": false,
+    "blockers": [
+      "SYSTEM_RESERVE_INSUFFICIENT",
+      "VM_STORAGE_INSUFFICIENT"
+    ],
+    "runConcurrently": false,
+    "vmBudgetGiB": 120,
+    "systemReserveGiB": 20
+  },
+  "utm": {
+    "installed": false
+  },
+  "execution": "not_run",
+  "result": "not_run",
+  "status": "blocked_external",
+  "blockers": [
+    "SYSTEM_RESERVE_INSUFFICIENT",
+    "VM_STORAGE_INSUFFICIENT"
+  ],
+  "actions": {
+    "imagesDownloaded": false,
+    "vmsCreated": false,
+    "vmsStarted": false,
+    "userDataDeleted": false
+  },
+  "claims": {
+    "nativeSimulationVerified": false,
+    "hardwareValidated": false,
+    "productionReady": false
+  }
+}

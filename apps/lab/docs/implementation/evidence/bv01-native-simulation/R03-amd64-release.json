@@ -1,0 +1,28 @@
+{
+  "schema": "mekoniq-qualification-record-1",
+  "task": "R03",
+  "recordedAt": "2026-11-06T04:03:52.449528+00:00",
+  "status": "blocked_external",
+  "execution": "not_run",
+  "result": "not_run",
+  "scope": "signed release on clean Linux amd64",
+  "sourceCommit": "4eb2f6ad0b97ad710b0f30f70ab73d325411792b",
+  "blockers": [
+    "NO_CLEAN_LINUX_AMD64_TARGET",
+    "NO_PROVISIONED_ACTIVE_RELEASE_SIGNING_KEY",
+    "NATIVE_CONTROLLER_AND_COMBINED_QUALIFICATION_NOT_RUN"
+  ],
+  "portableRegression": {
+    "execution": "ran",
+    "result": "pass",
+    "command": "../../.venv/bin/python -m pytest tests/test_release_trust.py tests/test_release_security.py tests/test_bridge_permissions_linux.py -q",
+    "cwd": "source/integrations/arm-controller",
+    "passed": 17,
+    "skipped": 1,
+    "subtestsPassed": 5,
+    "skipReason": "Linux filesystem/socket ACL requires Linux",
+    "scope": "script/security behavior on macOS, not signed installation qualification"
+  },
+  "productionReady": false,
+  "hardwareVerified": false
+}

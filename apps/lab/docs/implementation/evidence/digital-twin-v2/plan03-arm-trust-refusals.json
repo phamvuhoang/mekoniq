@@ -1,0 +1,37 @@
+{
+ "schemaVersion": 1,
+ "note": "A06 trust chain exercised on the recorded macOS host against the unsigned export of source 14d62c4: every path fails closed. Signed install/rollback paths are proven by tests/test_release_trust.py with ephemeral keys; no release signing key exists yet.",
+ "exportWithoutKey": {
+  "exit": 2,
+  "stderr": "SIGNING_KEY_REQUIRED (or --allow-unsigned for a development artifact the installer refuses)"
+ },
+ "exportAllowUnsigned": {
+  "output": "<scratch>/a06-final/artifact",
+  "version": "0.1.0+14d62c4",
+  "files": 43,
+  "signed": false,
+  "dirty": false,
+  "keyId": "unsigned"
+ },
+ "verifySignature": {
+  "exit": 3,
+  "result": {
+   "ok": false,
+   "artifact": "<scratch>/a06-final/artifact",
+   "keyId": null,
+   "filesChecked": 0,
+   "downgrade": null,
+   "reasons": [
+    "MANIFEST_OR_SIGNATURE_MISSING:FileNotFoundError"
+   ]
+  }
+ },
+ "installSim": {
+  "exit": 3,
+  "stdout": "REFUSED: {\"ok\": false, \"artifact\": \"<scratch>/a06-final/artifact\", \"keyId\": null, \"filesChecked\": 0, \"downgrade\": null, \"reasons\": [\"MANIFEST_OR_SIGNATURE_MISSING:FileNotFoundError\"]}"
+ },
+ "installFromArtifact": {
+  "exit": 3,
+  "stdout": "INSTALLER_FROM_ARTIFACT: <scratch>/a06-final/artifact/scripts is inside <scratch>/a06-final/artifact; use $prefix/current/scripts/install-sim.sh or the provisioning package"
+ }
+}

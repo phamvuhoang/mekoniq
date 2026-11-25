@@ -1,0 +1,380 @@
+{
+  "recordedAt": "2026-11-06T07:00:06.914176+00:00",
+  "groups": {
+    "source-static": [
+      {
+        "name": "contracts",
+        "command": [
+          "pnpm",
+          "contracts:check"
+        ],
+        "commit": "f82b2057cae89b0029968212753df01f86f334ad",
+        "commitAfter": "f82b2057cae89b0029968212753df01f86f334ad",
+        "recordedAt": "2026-11-06T06:39:54.730499+00:00",
+        "exitCode": 0,
+        "durationSeconds": 0.67
+      },
+      {
+        "name": "typecheck",
+        "command": [
+          "pnpm",
+          "typecheck"
+        ],
+        "commit": "f82b2057cae89b0029968212753df01f86f334ad",
+        "commitAfter": "f82b2057cae89b0029968212753df01f86f334ad",
+        "recordedAt": "2026-11-06T06:39:55.397554+00:00",
+        "exitCode": 0,
+        "durationSeconds": 6.76
+      },
+      {
+        "name": "lint",
+        "command": [
+          "pnpm",
+          "lint"
+        ],
+        "commit": "f82b2057cae89b0029968212753df01f86f334ad",
+        "commitAfter": "f82b2057cae89b0029968212753df01f86f334ad",
+        "recordedAt": "2026-11-06T06:40:02.159524+00:00",
+        "exitCode": 0,
+        "durationSeconds": 4.74
+      },
+      {
+        "name": "build",
+        "command": [
+          "pnpm",
+          "build"
+        ],
+        "commit": "f82b2057cae89b0029968212753df01f86f334ad",
+        "commitAfter": "f82b2057cae89b0029968212753df01f86f334ad",
+        "recordedAt": "2026-11-06T06:40:06.896332+00:00",
+        "exitCode": 0,
+        "durationSeconds": 20.05
+      }
+    ],
+    "source-tests": [
+      {
+        "name": "unit",
+        "command": [
+          "pnpm",
+          "test:unit",
+          "--",
+          "tests/unit",
+          "--reporter=default",
+          "--reporter=json",
+          "--outputFile=/var/tmp/mekoniq-bvi-final-checks/source-unit-vitest.json"
+        ],
+        "commit": "f82b2057cae89b0029968212753df01f86f334ad",
+        "commitAfter": "f82b2057cae89b0029968212753df01f86f334ad",
+        "recordedAt": "2026-11-06T06:46:48.133906+00:00",
+        "exitCode": 0,
+        "durationSeconds": 72.63
+      },
+      {
+        "name": "contracts",
+        "command": [
+          "pnpm",
+          "test:contracts",
+          "--",
+          "tests/contracts",
+          "--reporter=default",
+          "--reporter=json",
+          "--outputFile=/var/tmp/mekoniq-bvi-final-checks/source-contracts-vitest.json"
+        ],
+        "commit": "f82b2057cae89b0029968212753df01f86f334ad",
+        "commitAfter": "f82b2057cae89b0029968212753df01f86f334ad",
+        "recordedAt": "2026-11-06T06:48:00.783151+00:00",
+        "exitCode": 0,
+        "durationSeconds": 10.76
+      },
+      {
+        "name": "adapters",
+        "command": [
+          "pnpm",
+          "test:adapters",
+          "--",
+          "tests/adapters",
+          "--reporter=default",
+          "--reporter=json",
+          "--outputFile=/var/tmp/mekoniq-bvi-final-checks/source-adapters-vitest.json"
+        ],
+        "commit": "f82b2057cae89b0029968212753df01f86f334ad",
+        "commitAfter": "f82b2057cae89b0029968212753df01f86f334ad",
+        "recordedAt": "2026-11-06T06:48:11.545238+00:00",
+        "exitCode": 0,
+        "durationSeconds": 9.44
+      },
+      {
+        "name": "integration",
+        "command": [
+          "pnpm",
+          "test:integration",
+          "--",
+          "tests/integration",
+          "--reporter=default",
+          "--reporter=json",
+          "--outputFile=/var/tmp/mekoniq-bvi-final-checks/source-integration-vitest.json"
+        ],
+        "commit": "f82b2057cae89b0029968212753df01f86f334ad",
+        "commitAfter": "f82b2057cae89b0029968212753df01f86f334ad",
+        "recordedAt": "2026-11-06T06:48:20.984406+00:00",
+        "exitCode": 0,
+        "durationSeconds": 499.02
+      },
+      {
+        "name": "security-arm",
+        "command": [
+          "pnpm",
+          "test:security",
+          "--",
+          "tests/security/lab-v2-arm-authority.test.ts",
+          "--reporter=default",
+          "--reporter=json",
+          "--outputFile=/var/tmp/mekoniq-bvi-final-checks/source-security-arm-vitest.json"
+        ],
+        "commit": "f82b2057cae89b0029968212753df01f86f334ad",
+        "commitAfter": "f82b2057cae89b0029968212753df01f86f334ad",
+        "recordedAt": "2026-11-06T06:56:39.978391+00:00",
+        "exitCode": 0,
+        "durationSeconds": 1.92
+      }
+    ],
+    "python": [
+      {
+        "name": "python-general",
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "robotics/agent/tests",
+          "tests/hardware",
+          "tests/contracts/test_schema_python.py",
+          "robotics/simulation/tests",
+          "-q"
+        ],
+        "commit": "f82b2057cae89b0029968212753df01f86f334ad",
+        "commitAfter": "f82b2057cae89b0029968212753df01f86f334ad",
+        "recordedAt": "2026-11-06T06:39:54.730428+00:00",
+        "exitCode": 0,
+        "durationSeconds": 2.18
+      },
+      {
+        "name": "python-arm",
+        "command": [
+          "../../.venv/bin/python",
+          "-m",
+          "pytest",
+          "tests",
+          "-q"
+        ],
+        "commit": "f82b2057cae89b0029968212753df01f86f334ad",
+        "commitAfter": "f82b2057cae89b0029968212753df01f86f334ad",
+        "recordedAt": "2026-11-06T06:39:56.910000+00:00",
+        "exitCode": 0,
+        "durationSeconds": 34.44
+      }
+    ],
+    "lab": [
+      {
+        "name": "pin",
+        "command": [
+          "pnpm",
+          "check:source"
+        ],
+        "commit": "66445c5acf24f90cc17449bae561dbc45965eba7",
+        "commitAfter": "66445c5acf24f90cc17449bae561dbc45965eba7",
+        "recordedAt": "2026-11-06T06:57:29.483426+00:00",
+        "exitCode": 0,
+        "durationSeconds": 0.44
+      },
+      {
+        "name": "verification-contracts",
+        "command": [
+          "node",
+          "scripts/check-verification-contracts.mjs"
+        ],
+        "commit": "66445c5acf24f90cc17449bae561dbc45965eba7",
+        "commitAfter": "66445c5acf24f90cc17449bae561dbc45965eba7",
+        "recordedAt": "2026-11-06T06:57:29.927633+00:00",
+        "exitCode": 0,
+        "durationSeconds": 0.07
+      },
+      {
+        "name": "typecheck",
+        "command": [
+          "pnpm",
+          "typecheck"
+        ],
+        "commit": "66445c5acf24f90cc17449bae561dbc45965eba7",
+        "commitAfter": "66445c5acf24f90cc17449bae561dbc45965eba7",
+        "recordedAt": "2026-11-06T06:57:30.002099+00:00",
+        "exitCode": 0,
+        "durationSeconds": 3.19
+      },
+      {
+        "name": "tests",
+        "command": [
+          "pnpm",
+          "test",
+          "--reporter=default",
+          "--reporter=json",
+          "--outputFile=/var/tmp/mekoniq-bvi-final-checks/lab-vitest.json"
+        ],
+        "commit": "66445c5acf24f90cc17449bae561dbc45965eba7",
+        "commitAfter": "66445c5acf24f90cc17449bae561dbc45965eba7",
+        "recordedAt": "2026-11-06T06:57:33.188266+00:00",
+        "exitCode": 0,
+        "durationSeconds": 4.24
+      },
+      {
+        "name": "build",
+        "command": [
+          "pnpm",
+          "build"
+        ],
+        "commit": "66445c5acf24f90cc17449bae561dbc45965eba7",
+        "commitAfter": "66445c5acf24f90cc17449bae561dbc45965eba7",
+        "recordedAt": "2026-11-06T06:57:37.425690+00:00",
+        "exitCode": 0,
+        "durationSeconds": 3.04
+      }
+    ]
+  },
+  "suites": {
+    "source-contracts-vitest": {
+      "files": 6,
+      "passed": 41,
+      "failed": 0,
+      "skipped": 0,
+      "success": true,
+      "skippedCases": [],
+      "failedCases": []
+    },
+    "source-integration-vitest": {
+      "files": 121,
+      "passed": 941,
+      "failed": 0,
+      "skipped": 2,
+      "success": true,
+      "skippedCases": [
+        "--clean-checkout exports committed HEAD: dirty false and sourceCommit equal to HEAD",
+        "measure telemetry latency (gateway ingress -> SSE client receipt, one process clock) and memory"
+      ],
+      "failedCases": []
+    },
+    "lab-vitest": {
+      "files": 30,
+      "passed": 188,
+      "failed": 0,
+      "skipped": 1,
+      "success": true,
+      "skippedCases": [
+        "measure TwinStore apply latency and memory on the verification workload"
+      ],
+      "failedCases": []
+    },
+    "source-adapters-vitest": {
+      "files": 4,
+      "passed": 50,
+      "failed": 0,
+      "skipped": 0,
+      "success": true,
+      "skippedCases": [],
+      "failedCases": []
+    },
+    "source-security-arm-vitest": {
+      "files": 1,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "success": true,
+      "skippedCases": [],
+      "failedCases": []
+    },
+    "source-unit-vitest": {
+      "files": 24,
+      "passed": 129,
+      "failed": 0,
+      "skipped": 0,
+      "success": true,
+      "skippedCases": [],
+      "failedCases": []
+    },
+    "python-general": {
+      "pytestSummary": "285 passed, 1 skipped in 1.93s"
+    },
+    "python-arm": {
+      "pytestSummary": "143 passed, 1 skipped, 11 subtests passed in 34.27s"
+    }
+  },
+  "browser": [
+    {
+      "file": "browser-coffee-journey.json",
+      "startTime": "2026-11-06T06:58:05.741Z",
+      "duration": 19038.094999999998,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "file": "browser-arm-simulation.json",
+      "startTime": "2026-11-06T06:58:26.175Z",
+      "duration": 2662.095,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "file": "browser-controller-report.json",
+      "startTime": "2026-11-06T06:58:30.200Z",
+      "duration": 1675.183,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "file": "browser-fault-schedule.json",
+      "startTime": "2026-11-06T06:58:32.954Z",
+      "duration": 6351.115000000001,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "file": "offline-browser-offline-bv01.json",
+      "startTime": "2026-11-06T06:59:15.564Z",
+      "duration": 22323.56,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  ],
+  "runtimeLock": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+    "schemaHash": "ebc4b1f05c57f1dbbbca9e376bd815dd20277a9fe8a7d4c8365ab566cc8f63fe",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "470a404c61714f5ee5b1878f964c1be4bea28628846bdfd800b1df8619a9d236",
+    "entrypoint": "runtime.mjs"
+  },
+  "scope": "Portable source full integration including PostgreSQL, mock/browser and protocol/controller doubles. Native engines and hardware not verified.",
+  "skipClassification": {
+    "source-integration": "Optional LAB_V2_MEASURE_STREAM measurement and opt-in LAB_V2_CLEAN_EXPORT duplicate check. Clean export was executed separately on final source HEAD.",
+    "lab": "Optional LAB_V2_MEASURE_STREAM telemetry measurement.",
+    "python-general": "Native ROS/Gazebo restaurant module not collected because rclpy is absent; required native qualification remains blocked_external.",
+    "python-arm": "Linux root service/operator/Lab ACL check requires isolated provisioned Linux identities; remains blocked_external."
+  }
+}

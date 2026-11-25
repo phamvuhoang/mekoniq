@@ -1,0 +1,281 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.lab-transfer-evidence.v1",
+  "title": "TransferObservation",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "observationId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "cupId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "transferId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "commandId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "deviceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "observerId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "bootId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "clockDomain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "payloadHash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "controlEpoch": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "seq": {
+      "type": "string",
+      "pattern": "^[0-9]{1,100}$"
+    },
+    "producer": {
+      "$ref": "#/definitions/SimProducer"
+    },
+    "fidelity": {
+      "const": "modeled"
+    },
+    "phase": {
+      "enum": [
+        "grasp",
+        "release",
+        "receive",
+        "lost"
+      ]
+    },
+    "parent": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^(cell:[A-Za-z0-9_.:-]+/nozzle|arm:[A-Za-z0-9_.:-]+/tcp|robot:[A-Za-z0-9_.:-]+/tray:[1-9][0-9]*|table:[A-Za-z0-9_.:-]+)$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "grip": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "closed": {
+              "type": "boolean"
+            },
+            "objectPresent": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "closed",
+            "objectPresent"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observedMonotonicNs": {
+      "type": "string",
+      "pattern": "^[0-9]{1,100}$"
+    },
+    "receivedMonotonicNs": {
+      "type": "string",
+      "pattern": "^[0-9]{1,100}$"
+    },
+    "quality": {
+      "enum": [
+        "valid",
+        "stale",
+        "unknown"
+      ]
+    },
+    "liftPoseReached": {
+      "type": "boolean",
+      "description": "Optional actual/modeled lift observation. Grasp alone projects attachment; arm custody confirmation requires true."
+    }
+  },
+  "required": [
+    "observationId",
+    "runId",
+    "cupId",
+    "transferId",
+    "commandId",
+    "deviceId",
+    "observerId",
+    "bootId",
+    "clockDomain",
+    "payloadHash",
+    "controlEpoch",
+    "seq",
+    "producer",
+    "fidelity",
+    "phase",
+    "parent",
+    "grip",
+    "observedMonotonicNs",
+    "receivedMonotonicNs",
+    "quality"
+  ],
+  "definitions": {
+    "SimProducer": {
+      "type": "string",
+      "enum": [
+        "mock_arm",
+        "mock_amr",
+        "linuxcnc_virtual_grip",
+        "gazebo_tray"
+      ]
+    },
+    "CorrelatedTransferEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "giver": {
+          "$ref": "#"
+        },
+        "receiver": {
+          "$ref": "#"
+        },
+        "dock": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "robotId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "slot": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "bootId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "stationary": {
+              "type": "boolean"
+            },
+            "localizationValid": {
+              "type": "boolean"
+            },
+            "errorM": {
+              "type": "number",
+              "minimum": 0
+            },
+            "receivedMonotonicNs": {
+              "type": "string",
+              "pattern": "^[0-9]{1,100}$"
+            }
+          },
+          "required": [
+            "robotId",
+            "slot",
+            "bootId",
+            "stationary",
+            "localizationValid",
+            "errorM",
+            "receivedMonotonicNs"
+          ]
+        }
+      },
+      "required": [
+        "giver",
+        "receiver",
+        "dock"
+      ]
+    },
+    "CupPhysicalState": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cupId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(cell:[A-Za-z0-9_.:-]+/nozzle|arm:[A-Za-z0-9_.:-]+/tcp|robot:[A-Za-z0-9_.:-]+/tray:[1-9][0-9]*|table:[A-Za-z0-9_.:-]+)$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "known",
+            "unknown",
+            "lost"
+          ]
+        },
+        "lastObservationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        }
+      },
+      "required": [
+        "cupId",
+        "parent",
+        "status",
+        "lastObservationId"
+      ]
+    }
+  }
+}

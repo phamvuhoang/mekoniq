@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "replays": [
+    {
+      "id": "coffee-delivery",
+      "title": [
+        "Giao cà phê",
+        "コーヒーを届ける",
+        "Coffee delivery"
+      ],
+      "manifestSha256": "b3eb6e7cc0e6c2287092c358e02ab3c860e76e5bc828a5ed41bae4e83bbebaea",
+      "recording": "9821d890-85d2-41f0-91f8-d070ab7c222a",
+      "horizon": 10850,
+      "provenance": "B07a genuine retained recording; display only; accepted:false; not_calibrated"
+    },
+    {
+      "id": "external-impact",
+      "title": [
+        "Cốc rơi do tác động",
+        "外力によるカップ落下",
+        "Cup falls after an impact"
+      ],
+      "manifestSha256": "98d43fafb890e9bd9cce7c0de6bdc182b46458ec8d601ba44a8f73494526e6e7",
+      "recording": "2d8c4707-4bd2-455e-a2c8-1cc3ddb365ca",
+      "horizon": 2375,
+      "provenance": "B07a genuine retained recording; display only; accepted:false; not_calibrated"
+    },
+    {
+      "id": "mobile-impact",
+      "title": [
+        "Tác động lên cốc di động",
+        "移動カップへの外力",
+        "Impact on a mobile cup"
+      ],
+      "manifestSha256": "0300656468e9cf507a2844d3e784cf89c4b2e038ebcc1ce405bdc4e49383953f",
+      "recording": "69dd0480-e1d6-4707-8be6-6f77052eac8b",
+      "horizon": 520,
+      "provenance": "B07a genuine retained recording; display only; accepted:false; not_calibrated"
+    },
+    {
+      "id": "drive-fault",
+      "title": [
+        "Lỗi drive: bánh phải ngắt khi chở cốc",
+        "ドライブ障害:カップ搬送中に右車輪がトリップ",
+        "Drive fault: the right wheel trips while carrying a cup"
+      ],
+      "manifestSha256": "982d10074c2cf0e28a1147b626c5beb1b56756b0d4755fdf18bacbbcf30eff1c",
+      "recording": "b733d671-1ad6-4aec-b879-0c1fca662269",
+      "horizon": 2550,
+      "provenance": "R4 V09 recording of the real MuJoCo cell (drive-nominal-v1, drive-trip on amr-1/wheel-right at 48 s); display only; accepted:false; not_calibrated"
+    },
+    {
+      "id": "belief-recovery",
+      "title": [
+        "Gắp lại cốc sau khi cốc bị xê dịch",
+        "カップの位置ずれ後に把持を再試行",
+        "Retrying a grasp after the cup shifts"
+      ],
+      "manifestSha256": "d7c0671b9d77975c6ed9f15e27a67c9fdeb261592435ee53ef3cd587033095c4",
+      "recording": "0bfb555d-4cee-472f-88ad-fb6a15d34f0a",
+      "horizon": 11050,
+      "provenance": "REC06 pulse-42, Source eceb7681d3d3f077d335cbe80fe5aee9b6e99bd2; display_only_not_requalification; accepted:false; not_calibrated"
+    }
+  ]
+}

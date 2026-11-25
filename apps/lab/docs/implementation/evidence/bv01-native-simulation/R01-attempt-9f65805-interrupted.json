@@ -1,0 +1,8 @@
+{
+  "recordedAt": "2026-11-06T05:25:15.119818+00:00",
+  "sourceCommit": "9f65805ea6b912e6025ccee9d3e2d6fd06b9e735",
+  "execution": "interrupted",
+  "result": "not_qualified",
+  "reason": "Task rereview confirmed new expected-negative campaign/operator-window defects; stopped only owned Vitest via SIGINT to avoid treating this pre-fix suite as final qualification.",
+  "fullIntegrationPass": false
+}

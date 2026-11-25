@@ -1,0 +1,11 @@
+{
+  "sourceCommit": "fa5ed2871db92e57e5bd3490195486d569ecc5a0",
+  "result": "failed",
+  "passed": 940,
+  "failed": 1,
+  "skipped": 2,
+  "failures": [
+    "exporter refuses a dirty checkout, and a failing --clean-checkout surfaces the real git error and leaks no temporary directory"
+  ],
+  "resolution": "Throwaway exporter test repository omitted newly imported native-sim/tool-identity.mjs. Copy the actual helper into scratch repository; retain dirty checkout and failed-worktree cleanup assertions. Full rerun follows on committed revision."
+}

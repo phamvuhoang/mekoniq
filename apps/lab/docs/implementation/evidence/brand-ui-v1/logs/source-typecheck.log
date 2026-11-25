@@ -1,0 +1,6 @@
+
+> mekoniq-platform@ typecheck /Users/hoangpham/source/prv/robot/source
+> pnpm --filter @mekoniq/cloud-web exec next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully

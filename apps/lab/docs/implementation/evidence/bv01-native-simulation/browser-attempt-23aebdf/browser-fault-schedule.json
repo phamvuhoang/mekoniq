@@ -1,0 +1,183 @@
+{
+  "config": {
+    "argv": [
+      "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+      "/Users/hoangpham/source/prv/robot/lab/node_modules/.pnpm/@playwright+test@1.64.1/node_modules/@playwright/test/cli.js",
+      "test",
+      "fault-schedule.spec.ts"
+    ],
+    "configFile": "/Users/hoangpham/source/prv/robot/lab/playwright.config.ts",
+    "rootDir": "/Users/hoangpham/source/prv/robot/lab/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/hoangpham/source/prv/robot/lab/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/hoangpham/source/prv/robot/lab/tests/e2e",
+        "testIgnore": [
+          "**/native-run-report.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/hoangpham/source/prv/robot/lab/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/hoangpham/source/prv/robot/lab/tests/e2e",
+        "snapshotDir": "/Users/hoangpham/source/prv/robot/lab/tests/e2e",
+        "testIgnore": "**/native-run-report.spec.ts",
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4175",
+          "headless": true,
+          "launchOptions": {
+            "executablePath": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+          },
+          "screenshot": "only-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/hoangpham/source/prv/robot/lab/docs/implementation/evidence/bv01-native-simulation/browser-fault-schedule.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 5,
+    "webServer": {
+      "command": "pnpm dev",
+      "url": "http://127.0.0.1:4175",
+      "reuseExistingServer": true,
+      "timeout": 30000
+    }
+  },
+  "suites": [
+    {
+      "title": "fault-schedule.spec.ts",
+      "file": "fault-schedule.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "scheduled missing cup holds the real pinned mock workflow and offers explicit reconcile",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 180104,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/hoangpham/source/prv/robot/lab/tests/e2e/fault-schedule.spec.ts",
+                        "column": 186,
+                        "line": 6
+                      },
+                      "message": "Error: locator.selectOption: Test timeout of 180000ms exceeded.\nBrowser logs:\n\n<launching> /Applications/Google Chrome.app/Contents/MacOS/Google Chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,AvoidCorsURLLoaderRestartOnRedirect,Translate,AutoDeElevate,OptimizationHints,NetworkTimeServiceQuerying,AimEnabled,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/playwright_chromiumdev_profile-wphalk --remote-debugging-pipe --no-startup-window\n<launched> pid=89000\n[pid=89000][err] Trying to load the allocator multiple times. This is *not* supported.\n[pid=89000][err] [89004:60343963:1106/133340.078268:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[pid=89000][err] [89004:60344025:1106/133340.078448:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[pid=89000][err] [89004:60343963:1106/133340.080148:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[pid=89000][err] [89004:60344025:1106/133340.080199:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[pid=89000][err] [89004:60343963:1106/133340.080979:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[pid=89000][err] [89004:60344025:1106/133340.081055:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[pid=89000][err] [89004:60343963:1106/133340.081525:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[pid=89000][err] [89004:60344025:1106/133340.081586:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[pid=89000][err] [89004:60343963:1106/133340.081721:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[pid=89000][err] [89004:60344025:1106/133340.081767:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[pid=89000][err] [89004:60343963:1106/133340.274548:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[pid=89000][err] [89004:60344025:1106/133340.274613:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[pid=89000][err] Trying to load the allocator multiple times. This is *not* supported.\n[pid=89000][err] WARNING: All log messages before absl::InitializeLog() is called are written to STDERR\n[pid=89000][err] I0000 00:00:1793946999.901925 60350078 environment.cc:526] Selected adapter: Apple M2 Pro, arch=metal-3, vendor=apple, backend=Metal, adapterType=Integrated GPU\n[pid=89000][err] I0000 00:00:1793946999.912392 60350093 environment.cc:526] Selected adapter: Apple M2 Pro, arch=metal-3, vendor=apple, backend=Metal, adapterType=Integrated GPU\n[pid=89000] <gracefully close start>\n[pid=89000][err] [89000:60343961:1106/133640.072797:ERROR:base/process/process_mac.cc:45] task_policy_set TASK_CATEGORY_POLICY: (os/kern) invalid argument (4)\n[pid=89000][err] [89000:60343961:1106/133640.072818:ERROR:base/process/process_mac.cc:90] task_policy_set TASK_SUPPRESSION_POLICY: (os/kern) invalid argument (4)\nCall log:\n\u001b[2m  - waiting for locator('#twin-schedule-trigger')\u001b[22m\n\u001b[2m    - locator resolved to <select id=\"twin-schedule-trigger\">…</select>\u001b[22m\n\u001b[2m  - attempting select option action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying select option action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying select option action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    59 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying select option action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible and enabled\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\u001b[2m    - locator resolved to <select id=\"twin-schedule-trigger\">…</select>\u001b[22m\n\u001b[2m  - attempting select option action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying select option action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying select option action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    297 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m        - element is not visible\u001b[22m\n\u001b[2m      - retrying select option action\u001b[22m\n\u001b[2m        - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible and enabled\u001b[22m\n\n\n  4 |  test.skip(!token,'Requires test-mock-e2e launcher and current source pin');test.setTimeout(180000);\n  5 |  await page.goto('/#twin');await page.locator('#twin-pair-token').fill(token!);await page.getByRole('button',{name:'Ghép nối runtime'}).click();await page.getByRole('button',{name:'Cà phê sữa đá'}).click();\n> 6 |  await page.getByTestId('fault-schedule').locator('summary').click();await page.locator('#twin-schedule-fault').selectOption('cup-removed');await page.locator('#twin-schedule-trigger').selectOption('phase');await page.locator('#twin-schedule-value').selectOption('grasp');await page.getByRole('button',{name:'Thêm lỗi',exact:true}).click();\n    |                                                                                                                                                                                          ^\n  7 |  await expect(page.getByTestId('fault-schedule').locator('li')).toContainText('cup-removed');await page.getByRole('button',{name:'Chạy mock',exact:true}).click();await page.getByRole('button',{name:'Tự chạy',exact:true}).click();\n  8 |  await expect(page.getByTestId('run-status')).toContainText('Cần kiểm tra',{timeout:120000});await expect(page.getByTestId('run-served')).toContainText('0');\n  9 |  await page.getByTestId('next-action').getByRole('button',{name:'Đối soát',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'Xác nhận đã kiểm tra'}).click();await expect(page.getByTestId('run-status')).toContainText('Cần kiểm tra');\n    at /Users/hoangpham/source/prv/robot/lab/tests/e2e/fault-schedule.spec.ts:6:186"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T06:33:39.529Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/hoangpham/source/prv/robot/lab/test-results/fault-schedule-scheduled-m-ce343-d-offers-explicit-reconcile/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/hoangpham/source/prv/robot/lab/test-results/fault-schedule-scheduled-m-ce343-d-offers-explicit-reconcile/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f7a68cc1ea4e6460f580-6f05a6621824708de4cf",
+          "file": "fault-schedule.spec.ts",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-06T06:33:39.225Z",
+    "duration": 181165.28,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

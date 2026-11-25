@@ -1,0 +1,8 @@
+{
+  "route": "/device",
+  "viewport": {
+    "width": 800,
+    "height": 1280
+  },
+  "violations": []
+}

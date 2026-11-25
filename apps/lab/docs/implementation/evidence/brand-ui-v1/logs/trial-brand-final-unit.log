@@ -1,0 +1,231 @@
+
+> trial@1.0.0 test
+> npm run check:brand && node scripts/test-brand.js && node scripts/test.js && node scripts/test-valetudo.js && node scripts/test-site.js && node scripts/test-feature-policy.js && node scripts/test-billing.js && node scripts/test-guest-policy.js && node scripts/test-health.js && node scripts/test-review.js && node scripts/test-review-followup.js
+
+
+> trial@1.0.0 check:brand
+> node scripts/check-brand.cjs --dir data/public/brand
+
+MEKONIQ 1.0.1 verified (22 files)
+MEKONIQ 1.0.1 verified (22 files)
+BRAND_STATIC_OK: six screens, ordered local styles, original favicon, release checksums
+✓ giao 2 bàn, khách bàn 07 huỷ khi robot tới -> mang về bếp
+✓ xong lệnh mà còn lệnh chờ -> đi thẳng, không ghé dock
+✓ trạm huỷ trước khi xếp đồ -> robot về luôn
+✓ trạm huỷ giữa đường khi đã xếp đồ -> mang về quầy pha chế
+✓ khách huỷ trước khi bếp xếp -> cả nhiệm vụ huỷ
+✓ gọi robot tới bàn 03 rồi gửi chén đĩa về khu rửa
+✓ gọi robot về bếp rồi giao từ màn robot
+✓ thu dọn bàn: khu rửa
+✓ E-stop: dừng hẳn, trạm không nhả được, chỉ nhả tại robot
+✓ đi theo lối đi đã thiết kế, không cắt ngang bàn
+✓ vật cản cố định -> dừng, xin nhường đường, đi vòng
+✓ người đi ngang -> chờ rồi đi tiếp, không đổi lộ trình
+✓ lối duy nhất bị chặn -> báo nhân viên, dọn lối -> chạy tiếp
+✓ đóng lối đi -> robot tự tìm đường khác; đóng hết -> báo không có lộ trình
+✓ lối hẹp chỉ cho 1 robot, robot kia chờ ở đầu lối
+✓ khách không nhận -> nhắc, quá giờ mang về
+✓ mất kết nối và kết nối lại
+✓ pin yếu -> không nhận việc, robot khác nhận
+✓ chỉ định robot bận -> chờ, ưu tiên GẤP lên trước
+✓ chuyển xử lý thủ công
+✓ siteSave / siteReset / point without route node
+✓ probe / pos / log
+✓ seed site / robots removed / nearest-by-cm assignment
+✓ route/simulator ignore points without a node
+✓ adapter alert / resolve events
+✓ khách gọi nhân viên: 1 cảnh báo tới khi Đã biết, rồi gọi lại được
+✓ call refused when features.call is off
+✓ đổi bàn khi robot đang đi: tới bàn mới, không về bếp
+✓ robot chờ ở bếp -> thu dọn Bàn 05 từ màn robot
+✓ thu dọn từ màn robot bị từ chối khi robot chờ ở bàn
+✓ dẫn khách từ bếp tới Bàn 07, đi chậm, khách xác nhận
+✓ dẫn khách: không ai xác nhận -> nhắc, quá giờ robot tự về, không tính timeout giao món
+✓ guide refused when features.guide is off
+✓ gọi món 2 danh mục -> mỗi trạm một cảnh báo, chỉ món của trạm đó
+✓ order refused when features.order is off
+✓ màn thanh toán cũ báo đã chuyển khoản -> yêu cầu tải lại, đơn giữ nguyên, không cảnh báo
+✓ review: cảnh báo khách không đẩy mất cảnh báo dừng khẩn cấp
+✓ review: 20 cảnh báo lỗi -> cảnh báo khách mới bị bỏ, không xoá lỗi
+✓ review: Đã biết hoá đơn / chuyển khoản -> chỉ nhận yêu cầu, giữ đơn
+✓ ack bill/paid never settles or deletes orders
+✓ review: khách huỷ món sau khi bếp đã đổi bàn -> không huỷ nhầm bàn mới
+OK — all scenarios pass
+✓ fit/toSite
+✓ ingest / telemetry / publishes
+✓ trip end / blocked / redirect
+✓ map-data position
+✓ compact map / telemetry pos
+✓ probe
+✓ wait / retry / blocked / self-clear
+✓ acceptCm
+✓ stuck watchdog
+✓ retryable errors
+✓ new goal / paused / trip-end log
+✓ rebuild keeps the trip
+✓ progress between stops resets the tries
+✓ simulator ignores valetudo robots
+✓ valetudo state rebuilt when site.json changes
+✓ config / parse robustness, mirrored map
+✓ nomoveSec / tripSec knobs
+✓ knob edit keeps ingested state; topic change does not
+✓ online without $state; $state lost sticks
+✓ new goal right after a sent command stops the robot first
+✓ health: link alerts once, wifi facts, garbage ignored, kept across rebuild
+✓ health: state saved before the health fields existed
+✓ health: retained redelivery does not count as heard from
+✓ speed: Valetudo logs and ignores it
+✓ retained status cannot finish an active trip
+✓ retained docked snapshot recovers a trip completed during downtime
+✓ fault cleared during downtime recovers a blocked trip
+✓ reconnect preserves pending retarget STOP/send sequence
+✓ v2 seed normalizes to itself, a pre-v2 site migrates to v2 once
+✓ ids, kinds, dish, dock, knobs, regex
+✓ numeric strings coerced
+✓ battery thresholds
+✓ robot point coords
+✓ size / type / unknown fields kept
+✓ inUse
+✓ nextTable / KNOBS
+✓ migrates old site.valetudo.points
+✓ v2 features default to off, non-booleans rejected
+✓ quick notes trimmed, capped, defaulted only when missing
+✓ entrance points accepted
+✓ menu validated
+✓ category station defaults to the first station point
+✓ payment validated
+✔ both seeds are explicit v2 and normalize to themselves (3.510667ms)
+✔ legacy call splits without losing other flags (0.465542ms)
+✔ explicit empty notes stay empty (0.308625ms)
+✔ preset does not enable ordering or payment (0.060833ms)
+✔ legacy migration keeps the other flags, metadata and new fields that are already valid (0.375917ms)
+✔ legacy requestStation: valid kept, else first station by key order, else null (0.55825ms)
+✔ v2 normalize is idempotent and never re-injects legacy defaults (0.9875ms)
+✔ each preset (0.130375ms)
+✔ missing notes get the defaults, non-list is rejected (0.667791ms)
+✔ "false" and other non-booleans are rejected, enums validated (4.376541ms)
+✔ v2 requestStation must be null or an existing station (7.118833ms)
+✔ alias call is dropped from v2 input without enabling callStaff (0.78325ms)
+✔ custom unknown fields are kept through migrate and normalize (1.721291ms)
+✔ capabilities: only simulator robots control speed (0.112791ms)
+✔ readiness: a fully configured site is ready for every feature (2.638792ms)
+✔ readiness: callStaff/requestBill need a table and a request station (0.403125ms)
+✔ readiness: guide needs a start point and a robot that reaches a table (0.251209ms)
+✔ readiness: order needs items, valid prices, categories and stations (0.233791ms)
+✔ readiness: pay needs request station, bank details and staff verification (0.4695ms)
+✔ readiness: busRobot needs a table and the dish point (0.367042ms)
+✔ readiness accepts legacy sites (0.484125ms)
+✔ orchestrator gate reads the v2 flags (legacy "call" = callStaff) (2.588125ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 33.4735
+✔ claim is not settlement; closing uses the prepared snapshot (1.394292ms)
+✔ retry after serialize/restart does not prepare a second bill (0.215834ms)
+✔ init adds billing metadata, keeps the bill sequence monotonic and never touches orders (0.466625ms)
+✔ prepare stores a staff-verified bill with the exact fields (0.17075ms)
+✔ prepare validates input, table, open bill, order set and note without mutating (0.346667ms)
+✔ closed orders are not part of the open set; paid-claimed legacy orders are open and never auto-settled (0.094375ms)
+✔ snapshot keeps names and order prices, survives menu edits, falls back to id for removed items (0.260667ms)
+✔ stale rev, missing bill and wrong status are refused without mutating (0.186125ms)
+✔ same requestId + same payload replays, different payload conflicts, failures leave no receipt (0.398083ms)
+✔ claim never takes an amount; zero bills are settled with method zero only (2.664375ms)
+✔ void keeps the orders open and needs a reason (0.466583ms)
+✔ close is refused while the table has new orders or a delivery still heading there (0.546583ms)
+✔ a robot parked on standby at the table (the pay screen) does not block close; handoff/collect/guide stops still do (0.382083ms)
+✔ close marks exactly the snapshot orderIds, never by table (0.149917ms)
+✔ cleanup drops terminal bills and closed orders at exactly 30 days, never open records (0.301375ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14.4135
+✔ init, sync and reset own the billing state (2.544375ms)
+✔ reset is refused while a bill is open; afterwards bill numbers never repeat and old requestIds never hit a new bill (4.702125ms)
+✔ prepare and claim over WS: a claimed amount never changes the bill (0.606709ms)
+✔ turning pay off keeps an existing bill workable to the end (1.728209ms)
+✔ a table being billed takes no new order until the bill is voided (0.571ms)
+✔ payment account cannot change while a bill waits for payment (5.3505ms)
+✔ a table with an open order or bill can be neither deleted nor made another kind (1.885125ms)
+✔ an open order for a table already gone from the site never blocks a save (1.382417ms)
+✔ legacy config: hello sends the migrated v2 site without saving it (0.815958ms)
+✔ importing an old file: setup normalizes it to v2 and the save goes through (1.064917ms)
+✔ stale setup page: a pre-v2 payload cannot overwrite a v2 live site (1.421625ms)
+✔ old pay screen: call paid asks for a reload and changes nothing (0.321083ms)
+✔ state snapshot carries open bills and orders only, without receipts (0.531083ms)
+✔ open orders and bills outlive days; closed ones leave 30 days after closing (0.381667ms)
+✔ restart after prepare, claim, settle and close: the bill goes on, retries of the same requestIds replay (1.555916ms)
+✔ callStaff off / requestBill on: only the bill request goes through (0.521875ms)
+✔ bill request off / callStaff on: only staff is called; on but not ready answers the reasons (0.573625ms)
+✔ pay works without callStaff or requestBill: a claim still reaches the request station (0.44775ms)
+✔ call routing and dedupe: one alert per table and type until ack, ding at the request station (0.386916ms)
+✔ call receipts: a retry within 24 h never re-alerts, even after ack; another payload conflicts (0.875167ms)
+✔ call receipts: refusals and requests without requestId leave none (0.403583ms)
+✔ returnRequest: alert keyed by mission/stop/table, mission untouched, works with callStaff off under both policies (1.003459ms)
+✔ returnRequest refuses a stale or invalid stop and routes to a fallback station (1.55175ms)
+✔ customer cancel: refused under the request policy (old clients too), table required, staff unaffected (0.723ms)
+✔ customer cancel under direct: needs the table, refuses a stop moved to another table (0.308417ms)
+✔ busRobot off: the robot screen cannot start a bus trip, the station still can (1.102958ms)
+✔ busRobot on but not ready: the robot screen gets the reason (0.313583ms)
+✔ speed: simulator robot changes speed, Valetudo robot in the same site is refused without touching state (0.396208ms)
+✔ speed: malformed or missing robot config fails closed (0.293125ms)
+✔ guide: refused when off or not reachable; a guide accepted before the toggle still finishes (2.008208ms)
+✔ order: off or not ready answers the robot screen and records nothing; accepted orders are confirmed (1.1745ms)
+✔ order with an item gone from the menu or a bad quantity is refused, never dropped silently (0.844792ms)
+✔ order receipts: a retry with the same requestId never adds an order or alert, even once the bill is prepared; another cart conflicts (0.59875ms)
+✔ a full alert list never drops a guest bill claim (1.271792ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 48.232541
+✓ steady state
+✓ ip changed
+✓ ip null
+✓ first run
+✓ first run kept
+✓ missing broker facts
+✓ no password field
+✓ ipEvents transitions
+✓ localIp no route → null
+✓ localIp unbound 0.0.0.0 → null
+✓ localIp private LAN only
+✓ localIp 192.168.1.4
+OK — health
+✓ another save after disconnect preserves draft
+✓ matching request acknowledges save
+✓ save request identity survives hello
+✓ simulator site has no broker outage alert
+✓ removing final real robot resolves existing outage
+✓ API refuses map cached under old topic
+✔ a burst of other requests cannot turn an order retry into a second order (25.169958ms)
+✔ reset preserves order receipts alongside closed financial records (1.339791ms)
+✔ guide rejects closed runtime lanes without ending standby; reopening permits it (3.752292ms)
+✔ fresh identical cart is a new order after synchronous reply (1.693459ms)
+✔ fresh identical cart is a new order after lost reply (0.728ms)
+✔ retrying the same timed-out cart keeps its ID and late reply does not clear a new cart (0.853333ms)
+✔ guide readiness respects closed and one-way lanes in the supplied map (0.33425ms)
+✔ installer preserves effective site: unsaved (48.857625ms)
+✔ installer preserves effective site: saved (47.572833ms)
+✔ installer preserves effective site: fresh (40.3055ms)
+✔ installer preserves effective site: corrupt (41.289375ms)
+✔ guide checks the selected robot route even when another pickup point is ready (2.51375ms)
+✔ explicit sim driver supports guides and speed just like an implicit simulator (0.508792ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 219.731708

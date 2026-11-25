@@ -1,0 +1,1 @@
+Browser attempt on Labe05230b/sourcef82b205: disclosure regression passed; the schedule journey then waited for Start without refreshing readiness after editing project inputs. Update the journey to use the existing Check again action, keeping fresh admission required. The other three journeys passed.

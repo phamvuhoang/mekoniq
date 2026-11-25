@@ -1,0 +1,24 @@
+{
+  "host": "mekoniq-61bz7zou2-henry-projects.vercel.app",
+  "checks": [
+    {
+      "route": "/",
+      "background": "rgb(7, 29, 33)",
+      "brokenImages": [],
+      "overflow": false
+    },
+    {
+      "route": "/login",
+      "background": "rgb(7, 29, 33)",
+      "brokenImages": [],
+      "overflow": false
+    },
+    {
+      "route": "/admin/catalog",
+      "anonymousRedirect": "/login"
+    }
+  ],
+  "errors": [],
+  "protectionPreserved": true,
+  "appAuthentication": "anonymous only; no hosted data mutations"
+}

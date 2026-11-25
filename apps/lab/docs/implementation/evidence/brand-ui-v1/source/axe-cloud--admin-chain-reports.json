@@ -1,0 +1,8 @@
+{
+  "route": "/admin/chain/reports",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "violations": []
+}

@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "status": "not_run",
+  "result": "blocked_external",
+  "campaignId": "food-beverage",
+  "scenarios": [
+    {
+      "scenarioId": "FD02",
+      "seed": 23,
+      "repeat": 3,
+      "backendSetId": "simulation-default",
+      "requiredBackends": [
+        "gazebo_nav2"
+      ]
+    },
+    {
+      "scenarioId": "FD07",
+      "seed": 23,
+      "repeat": 3,
+      "backendSetId": "simulation-default",
+      "requiredBackends": [
+        "gazebo_nav2"
+      ]
+    },
+    {
+      "scenarioId": "BV01",
+      "seed": 23,
+      "repeat": 3,
+      "backendSetId": "coffee-simulation",
+      "requiredBackends": [
+        "gazebo_nav2",
+        "linuxcnc_sim",
+        "coffee_io_sim"
+      ],
+      "reasons": [
+        "BACKEND_MISSING:linuxcnc_sim,coffee_io_sim",
+        "SIL_FIXTURE_MISSING"
+      ]
+    },
+    {
+      "scenarioId": "CAMPAIGN-FD02-FD07-BV01-BV03",
+      "seed": 23,
+      "repeat": 3,
+      "backendSetId": "coffee-simulation",
+      "requiredBackends": [
+        "gazebo_nav2",
+        "linuxcnc_sim",
+        "coffee_io_sim"
+      ],
+      "reasons": [
+        "BACKEND_MISSING:linuxcnc_sim,coffee_io_sim",
+        "SIL_FIXTURE_MISSING"
+      ]
+    }
+  ],
+  "expectedRuns": 12,
+  "reasons": [
+    "PREREQUISITE_MISSING:linux",
+    "PREREQUISITE_MISSING:python-deps",
+    "PREREQUISITE_MISSING:compiler",
+    "PREREQUISITE_MISSING:ros2",
+    "PREREQUISITE_MISSING:gz",
+    "SCENARIO_BLOCKED:BV01:BACKEND_MISSING:linuxcnc_sim,coffee_io_sim|SIL_FIXTURE_MISSING",
+    "SCENARIO_BLOCKED:CAMPAIGN-FD02-FD07-BV01-BV03:BACKEND_MISSING:linuxcnc_sim,coffee_io_sim|SIL_FIXTURE_MISSING"
+  ],
+  "doctor": {
+    "backend": "gazebo_nav2",
+    "host": {
+      "platform": "darwin",
+      "node": "24.22.2",
+      "python": "Python 3.13.3"
+    },
+    "image": {
+      "image": "ros:jazzy-ros-base",
+      "digest": "sha256:8eed0a4669bbf43ee331878a4c39bd8ebddea8e3312a58b4fae8edb14526b617",
+      "ros": "jazzy",
+      "gazebo": "harmonic",
+      "ubuntu": "24.04",
+      "note": "Pinned baseline for every gazebo_nav2 SIL run; the backend capability report carries this digest. Not a statement that the image was run on this host."
+    },
+    "checks": [
+      {
+        "id": "node24",
+        "ok": true,
+        "detail": "node 24.22.2"
+      },
+      {
+        "id": "linux",
+        "ok": false,
+        "detail": "platform darwin (a Gazebo/Nav2 SIL runs on Linux only)"
+      },
+      {
+        "id": "python3",
+        "ok": true,
+        "detail": "Python 3.13.3"
+      },
+      {
+        "id": "python-deps",
+        "ok": false,
+        "detail": "Traceback (most recent call last):"
+      },
+      {
+        "id": "compiler",
+        "ok": false,
+        "detail": "Traceback (most recent call last):"
+      },
+      {
+        "id": "ros2",
+        "ok": false,
+        "detail": "ENOENT"
+      },
+      {
+        "id": "gz",
+        "ok": false,
+        "detail": "ENOENT"
+      },
+      {
+        "id": "image-lock",
+        "ok": true,
+        "detail": "ros:jazzy-ros-base@sha256:8eed0a4669bbf43ee331878a4c39bd8ebddea8e3312a58b4fae8edb14526b617"
+      }
+    ],
+    "prerequisitesMet": false,
+    "reportSha256": "a4f111198b2a0c3dd8a6bbe2acd83a11b3da0eeac7e2d6656cd3342c9215c1f1"
+  }
+}

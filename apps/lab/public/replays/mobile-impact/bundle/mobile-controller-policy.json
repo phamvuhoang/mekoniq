@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "serve-mobile-controller-v1",
+  "revision": 1,
+  "calibration": "not_calibrated",
+  "controller": {
+    "id": "grid-diff-v1",
+    "version": "2+mujoco-sent-ramp-v1"
+  },
+  "ramp": "previous-sent-command-v1",
+  "commandState": "Per robot, initialized to zero on a new run, updated from every sent output including explicit zeros; preserved across pause/resume, cancel and goal changes; lost or refused steps terminate, never resume.",
+  "observations": "Measured velocity remains authoritative for arrival/stopped checks, obstacle stopping distance and progress. No hardware controller equivalence is claimed."
+}

@@ -1,0 +1,22 @@
+
+Running 13 tests using 2 workers
+
+(node:68098) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:68099) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/e2e/brand-ui.spec.ts:4:1 › canonical theme, original artwork and keyboard focus (830ms)
+  ✓   2 tests/e2e/brand-accessibility.spec.ts:4:86 › accessible brand surface: design (954ms)
+  ✓   4 tests/e2e/brand-accessibility.spec.ts:4:86 › accessible brand surface: restaurant (563ms)
+  ✓   5 tests/e2e/brand-accessibility.spec.ts:4:86 › accessible brand surface: scenarios (488ms)
+  ✓   6 tests/e2e/brand-accessibility.spec.ts:4:86 › accessible brand surface: twin (668ms)
+  ✓   3 tests/e2e/brand-ui.spec.ts:18:40 › six workspaces and three locales at 390px (2.4s)
+  ✓   7 tests/e2e/brand-accessibility.spec.ts:4:86 › accessible brand surface: results (705ms)
+  ✓   9 tests/e2e/brand-accessibility.spec.ts:4:86 › accessible brand surface: deployment (943ms)
+  ✓  10 tests/e2e/brand-accessibility.spec.ts:11:1 › compact heading controls retain touch targets (888ms)
+  ✓  11 tests/e2e/brand-accessibility.spec.ts:17:1 › print captions and highlighted values use dark ink (983ms)
+  ✓   8 tests/e2e/brand-ui.spec.ts:18:40 › six workspaces and three locales at 1024px (3.7s)
+  ✓  12 tests/e2e/brand-ui.spec.ts:18:40 › six workspaces and three locales at 1512px (2.7s)
+  ✓  13 tests/e2e/brand-ui.spec.ts:41:1 › primary, disabled and unknown states retain readable semantics (942ms)
+
+  13 passed (11.9s)

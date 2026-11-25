@@ -1,0 +1,96 @@
+{
+  "capturedAt": "2026-11-11T04:13:09.444Z",
+  "durationMs": 60000,
+  "browser": "157.0.8103.39",
+  "host": {
+    "platform": "darwin",
+    "release": "25.5.0",
+    "arch": "arm64",
+    "cpu": "Apple M2 Pro",
+    "memoryGiB": 16
+  },
+  "workload": "Synthetic visual telemetry into actual TwinWorkspace: 2 AMRs, 1 arm, 6 tables; 10 Hz input; no runtime execution or physical tablet claim.",
+  "minimumDurationMet": true,
+  "results": [
+    {
+      "id": "desktop-3d",
+      "width": 1440,
+      "height": 900,
+      "deviceScaleFactor": 1,
+      "view": "3d",
+      "limitMs": 33,
+      "elapsedMs": 60012.89999985695,
+      "frameIntervals": {
+        "samples": 3584,
+        "p50Ms": 16.69999999999709,
+        "p95Ms": 16.799999999995634,
+        "maxMs": 50
+      },
+      "workspacePaint": {
+        "samples": 600,
+        "p50Ms": 19.5,
+        "p95Ms": 22,
+        "maxMs": 54.90000009536743
+      },
+      "renderedPaints": 600,
+      "longTasks": {
+        "samples": 1,
+        "p50Ms": 55,
+        "p95Ms": 55,
+        "maxMs": 55
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "devicePixelRatio": 1,
+      "visibilityState": "visible",
+      "renderedView": "3d",
+      "webglRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)",
+      "entities": 2,
+      "armCount": 1,
+      "tableCount": 6,
+      "pageErrors": [],
+      "valid": true,
+      "meetsTarget": true,
+      "errors": []
+    },
+    {
+      "id": "tablet-2d-emulated",
+      "width": 1024,
+      "height": 768,
+      "deviceScaleFactor": 2,
+      "view": "2d",
+      "limitMs": 50,
+      "elapsedMs": 60002.40000009537,
+      "frameIntervals": {
+        "samples": 3600,
+        "p50Ms": 16.69999999999709,
+        "p95Ms": 16.799999999995634,
+        "maxMs": 16.80000000000291
+      },
+      "workspacePaint": {
+        "samples": 600,
+        "p50Ms": 1.3999998569488525,
+        "p95Ms": 2,
+        "maxMs": 4.200000047683716
+      },
+      "renderedPaints": 600,
+      "longTasks": {
+        "samples": 0,
+        "p50Ms": null,
+        "p95Ms": null,
+        "maxMs": null
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "devicePixelRatio": 2,
+      "visibilityState": "visible",
+      "renderedView": "2d",
+      "webglRenderer": null,
+      "entities": 2,
+      "armCount": 1,
+      "tableCount": 6,
+      "pageErrors": [],
+      "valid": true,
+      "meetsTarget": true,
+      "errors": []
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v24.22.2",
+    "cpu": "Apple M2 Pro",
+    "memGiB": 16
+  },
+  "command": "LAB_TWIN_MEASURE=docs/implementation/evidence/digital-twin-v2/F06-twin-store-measure.json pnpm exec vitest run tests/integration/twin-telemetry-measure.test.ts",
+  "workload": "2 AMR + 1 arm + 1 coffee cell at 10 Hz, 180 s simulated receipt time (7200 samples); Node (not a browser) process",
+  "applyLatencyUs": {
+    "p50": 5.25,
+    "p95": 8.709,
+    "p99": 13.084,
+    "max": 1301.542
+  },
+  "heldSamples": 2884,
+  "stats": {
+    "applied": 7200,
+    "duplicates": 0,
+    "outOfOrder": 0,
+    "staleEpoch": 0,
+    "epochResets": 0,
+    "foreignProvider": 0,
+    "downsampled": 4316,
+    "dropped": 0,
+    "gapDropped": 0
+  },
+  "heapDeltaMiB": 18.3
+}

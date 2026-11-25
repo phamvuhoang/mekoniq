@@ -1,0 +1,32 @@
+ RUN  v4.1.12 <ws>/source
+stdout | tests/acceptance/lab-v2-mock.acceptance.test.ts > coverage table: every pass row has an executed assertion; not_run rows carry a reason; every mock-capable row is listed
+coverage {"pass":96,"not_run:UNSUPPORTED_FIDELITY":4,"not_run:NEEDS_HUMAN":5,"not_run:BLOCKED_EXTERNAL":1}
+ ✓ tests/acceptance/lab-v2-mock.acceptance.test.ts (41 tests) 85060ms
+   ✓ FD02 runner: one batched mission for two tables; confirming table A hands off only A, B stays loaded for its own stop  836ms
+   ✓ FD07 runner: two robots, one narrow corridor: one owner at a time, no undetected deadlock, both deliver  3734ms
+   ✓ BV01 runner: both recipes run their own step order; espresso has no ice/milk; one cup owner; served only after the final handoff  2777ms
+   ✓ BV02 runner: cup removed mid-brew: step fails CUP_REMOVED, job held, the drink never becomes ready  546ms
+   ✓ BV02 runner: no cup under the nozzle before start: the job never starts and no brew command is issued  531ms
+   ✓ BV03 runner: milk runs out: espresso still served, iced milk coffee held with its reason; consumed beans/ice kept, no blind retry  2149ms
+   ✓ BV03 runner: ice dispenser jammed before its step: the dispense is refused, the step times out on the recipe clock, job held, never resent  2291ms
+   ✓ BV03 runner: ice dispenser jams mid-dispense: the partial amount is measured and kept, the job is held, no second ice command  6080ms
+   ✓ BV03 runner: two orders contend for one machine and arm: brews never overlap, the robot gets the cup only once docked  2382ms
+   ✓ BV04 runner: dose-low: the drink is not ready; requested, observed and accepted stay separate (QUALITY_REJECTED)  676ms
+   ✓ BV04 runner: measure-unknown: the drink is not ready; requested, observed and accepted stay separate (QUALITY_REJECTED)  1045ms
+   ✓ BV04 runner: measure-missing: the drink is not ready; requested, observed and accepted stay separate (MEASUREMENT_MISSING)  1060ms
+   ✓ BV05 runner: lost ACK, duplicate completion and a reboot mid-brew: one effect each, unknown is held, no second brew, cup kept  3418ms
+   ✓ BV07 runner: arm drops the cup during pick: transfer fails, the cup is never on the robot, the robot is not released from the load stop  2503ms
+   ✓ BV07 runner: robot docked out of tolerance: no tray transfer, the cup stays with the arm, the robot is held at the load stop  2069ms
+   ✓ ARM06 runner: arm reboot after an accepted pick: transfer outcome unknown, cup keeps its last owner, the program is not resent  2958ms
+   ✓ BV08 runner: machine not ready between StartJob and the brew step: the step waits visibly with MACHINE_NOT_READY (no latch) and opens only once readiness returns  4577ms
+   ✓ SYS01 runner: step granularity, pauses and interleaved reads never change the canonical outcome  1453ms
+   ✓ SYS03 runner: duplicate and stale retained completions are absorbed or rejected; no terminal state revived, served once  333ms
+   ✓ QA-06 transport deny: a full coffee run through the gateway opens no robot/cell socket, process or datagram; hardware sets stay denied  2977ms
+   ✓ QA-03 stochastic: FD01 and FD02 over 20 fixed seeds hold every invariant; each seed repeats to the same digest 3 times  3109ms
+   ✓ QA-03 deterministic scenarios: FD07, BV01, FD03, FD04-reopen repeat 3 times to one digest (seed is provenance only)  31189ms
+   ✓ Timing: two runs compare wait/travel/brew/transfer and interventions against thresholds fixed before the run  4700ms
+   ✓ coverage table: every pass row has an executed assertion; not_run rows carry a reason; every mock-capable row is listed  379ms
+ Test Files  1 passed (1)
+      Tests  41 passed (41)
+   Start at  16:37:01
+   Duration  86.00s (transform 517ms, setup 0ms, import 853ms, tests 85.06s, environment 0ms)

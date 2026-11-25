@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.engineering-project.v1",
+  "title": "EngineeringProject",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "documentType": {
+      "const": "engineering-project"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "runtimeProject": {
+      "$ref": "lab-project-v2.schema.json"
+    },
+    "assembly": {
+      "$ref": "#/definitions/Assembly"
+    },
+    "entityBindings": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/definitions/EntityBinding"
+      }
+    },
+    "requestedProfile": {
+      "$ref": "#/definitions/EngineeringProfile"
+    },
+    "mujocoExperimentId": {
+      "description": "Registered server-owned new-run payload or tray experiment; only engineering-mujoco-3d-v1.",
+      "enum": [
+        "payload-empty-v1",
+        "payload-center-v1",
+        "payload-offset-v1",
+        "payload-slow-v1",
+        "payload-fast-v1",
+        "payload-friction-low-v1",
+        "payload-friction-high-v1",
+        "tray-nominal-v1",
+        "tray-low-friction-v1",
+        "tray-accel-high-v1",
+        "tray-torque-limited-v1",
+        "tray-person-crossing-v1"
+      ]
+    },
+    "driveExperimentId": {
+      "description": "Registered server-owned virtual-drive experiment (R4); only engineering-mujoco-3d-v1. Absent: the R2b control path, byte for byte.",
+      "enum": [
+        "drive-ideal-v1",
+        "drive-nominal-v1",
+        "drive-torque-limited-v1",
+        "drive-latency-v1",
+        "drive-coarse-encoder-v1"
+      ]
+    }
+  },
+  "required": [
+    "documentType",
+    "schemaVersion",
+    "id",
+    "revision",
+    "runtimeProject",
+    "assembly",
+    "entityBindings",
+    "requestedProfile"
+  ],
+  "definitions": {
+    "Instance": {
+      "title": "Instance",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "componentDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "pose": {
+          "$ref": "engineering-component.schema.json#/definitions/Pose"
+        }
+      },
+      "required": [
+        "id",
+        "componentDigest",
+        "pose"
+      ]
+    },
+    "Connection": {
+      "title": "Connection",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+/[A-Za-z0-9_.:-]+$"
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+/[A-Za-z0-9_.:-]+$"
+        },
+        "kind": {
+          "enum": [
+            "mount",
+            "power",
+            "data"
+          ]
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "kind"
+      ]
+    },
+    "Assembly": {
+      "title": "Assembly",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "instances": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "#/definitions/Instance"
+          }
+        },
+        "connections": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/definitions/Connection"
+          }
+        }
+      },
+      "required": [
+        "instances",
+        "connections"
+      ]
+    },
+    "EntityBinding": {
+      "title": "EntityBinding",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entityId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "instanceIds": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          }
+        }
+      },
+      "required": [
+        "entityId",
+        "instanceIds"
+      ]
+    },
+    "EngineeringProfile": {
+      "title": "EngineeringProfile",
+      "enum": [
+        "engineering-rigid-v1",
+        "engineering-contact-v1",
+        "engineering-irsim-2d-v1",
+        "engineering-webots-3d-v1",
+        "engineering-mujoco-3d-v1"
+      ]
+    }
+  }
+}

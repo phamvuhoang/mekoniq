@@ -1,0 +1,683 @@
+{
+  "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+  "schemaHash": "ebc4b1f05c57f1dbbbca9e376bd815dd20277a9fe8a7d4c8365ab566cc8f63fe",
+  "protocolMajor": 2,
+  "protocolMajors": [
+    1,
+    2
+  ],
+  "artifactSha256": "470a404c61714f5ee5b1878f964c1be4bea28628846bdfd800b1df8619a9d236",
+  "entrypoint": "runtime.mjs",
+  "nodeMajor": 24,
+  "packageVersion": "0.1.0",
+  "dirty": false,
+  "schemas": [
+    "arm-command.schema.json",
+    "arm-observation.schema.json",
+    "asset-manifest.schema.json",
+    "asset-revision.schema.json",
+    "authority-provision.schema.json",
+    "cell-command.schema.json",
+    "cell-observation.schema.json",
+    "coffee-recipe.schema.json",
+    "command.schema.json",
+    "commit-batch.schema.json",
+    "grant-return.schema.json",
+    "journal.schema.json",
+    "lab-action-v2.schema.json",
+    "lab-arm-collision-evidence.schema.json",
+    "lab-deployment.schema.json",
+    "lab-evidence-v2.schema.json",
+    "lab-fault-schedule.schema.json",
+    "lab-project-v2.schema.json",
+    "lab-project.schema.json",
+    "lab-run-v2.schema.json",
+    "lab-run-verification.schema.json",
+    "lab-run.schema.json",
+    "lab-transfer-evidence.schema.json",
+    "money.schema.json",
+    "offline-grant.schema.json",
+    "ownership-grant.schema.json",
+    "pairing-grant.schema.json",
+    "robot-command.schema.json",
+    "robot-manifest.schema.json",
+    "settlement-grant.schema.json",
+    "sync-ack.schema.json",
+    "twin-sample-v2.schema.json",
+    "wire.schema.json"
+  ],
+  "toolchain": {
+    "node": "v24.22.2"
+  },
+  "simulationTools": {
+    "distribution": "separate",
+    "path": "robotics/simulation",
+    "digest": "af90da85a4971bd7671ae08b19d48cbd7501dcb6dfa8e22469ad474da89258da",
+    "files": 38,
+    "image": "ros:jazzy-ros-base",
+    "imageDigest": "sha256:8eed0a4669bbf43ee331878a4c39bd8ebddea8e3312a58b4fae8edb14526b617",
+    "requires": [
+      "linux",
+      "ros2-jazzy",
+      "gazebo-harmonic",
+      "python3+rfc8785+jsonschema"
+    ],
+    "note": "not bundled; verify with scripts/lab-sil.mjs doctor on the Linux host"
+  },
+  "nativeTools": {
+    "version": 1,
+    "digest": "f043a28735d9274105968547b061ea204778f1cce5e6c84afdb802c0dd4a1703",
+    "files": [
+      {
+        "path": "integrations/arm-controller/bridge/__init__.py",
+        "sha256": "467438a81ada2fd406c99b783fb83dcc20f451280eadc26bb6fb5baeb3c2bf76",
+        "bytes": 148
+      },
+      {
+        "path": "integrations/arm-controller/bridge/arbiter.py",
+        "sha256": "508c1667c27cf7254222ba53cefb55beacc78ca3fbd5f5565c9c12be70b61307",
+        "bytes": 31658
+      },
+      {
+        "path": "integrations/arm-controller/bridge/handoff.py",
+        "sha256": "e5dc01716229e75a440c767958fadd7c841e4b3cd8bbb1505b83bd561621a3e8",
+        "bytes": 2090
+      },
+      {
+        "path": "integrations/arm-controller/bridge/journal.py",
+        "sha256": "28cc18eea72c405c25b9c93221ed8213ae4bd22dbd2b92cb26eb70f6137c4348",
+        "bytes": 2496
+      },
+      {
+        "path": "integrations/arm-controller/bridge/linuxcnc_port.py",
+        "sha256": "80741a37a5eb43524850683aef58781fc3b69292ff71c83cb4b3029116ab5b0b",
+        "bytes": 10647
+      },
+      {
+        "path": "integrations/arm-controller/bridge/protocol.py",
+        "sha256": "238e8464261510d55786a5c2f526034304b3e8b49c6f53581be532b90d98c4e3",
+        "bytes": 8929
+      },
+      {
+        "path": "integrations/arm-controller/bridge/run.py",
+        "sha256": "a54e6af39b193c962e172fd7870d637911238b7e36f4aec00fe4def0e392fd3b",
+        "bytes": 1820
+      },
+      {
+        "path": "integrations/arm-controller/bridge/service.py",
+        "sha256": "f1a92c6e42268f3e02aa947fe0e9d4612dec7f156265ed363060c6f7fc4915c9",
+        "bytes": 21171
+      },
+      {
+        "path": "integrations/arm-controller/bridge/sim_geometry.py",
+        "sha256": "b186f517c8a0eb9a95e455b3b9537f874a78ae901159db41f172d6ba31e394db",
+        "bytes": 1022
+      },
+      {
+        "path": "integrations/arm-controller/bridge/sim_gripper.py",
+        "sha256": "16efe2ead4f8e355cfbd30b782c55fc47d2d5292d5504ce3682e74cbda0257ad",
+        "bytes": 8080
+      },
+      {
+        "path": "integrations/arm-controller/configs/sim/puma560/cup-geometry.json",
+        "sha256": "18e74fd42a32fda28d890f4390e161a92451641fe1619be944c9611ae8208ca7",
+        "bytes": 6298
+      },
+      {
+        "path": "integrations/arm-controller/configs/sim/puma560/machine.hal",
+        "sha256": "83c88d7ea4ca84d6be30706b6ed920720197026dd333ad0610cb79f6ab45b396",
+        "bytes": 1753
+      },
+      {
+        "path": "integrations/arm-controller/configs/sim/puma560/mekoniq.ini",
+        "sha256": "e500350bc2294d5ae43c0a5179584f5bb1d2bedda5a80a2ff4b398506a4696d2",
+        "bytes": 3152
+      },
+      {
+        "path": "integrations/arm-controller/configs/sim/puma560/profile.json",
+        "sha256": "3c6b0e0f0cdb2fcc906d090b793f1fd1b4e5e2966d3451d1686b033f6788ef93",
+        "bytes": 3537
+      },
+      {
+        "path": "integrations/arm-controller/configs/sim/puma560/puma560-dh.hal",
+        "sha256": "1d27c5fc14a611e722a0742c4cec63580242f7abe808c7eee4451a921296deb4",
+        "bytes": 681
+      },
+      {
+        "path": "integrations/arm-controller/configs/sim/puma560/tool.tbl",
+        "sha256": "c9a68097999276d075140993dd58b0ddc49c33d6a158dfdc702ddc1d35938b38",
+        "bytes": 135
+      },
+      {
+        "path": "integrations/arm-controller/models/puma560-reference/frames.json",
+        "sha256": "7f93c97d985d31365d8e4897c5aaa53dc61f3e2b6f55cb1d2fcaaebdd73cb5de",
+        "bytes": 2390
+      },
+      {
+        "path": "integrations/arm-controller/models/puma560-reference/manifest.json",
+        "sha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5",
+        "bytes": 3839
+      },
+      {
+        "path": "integrations/arm-controller/models/puma560-reference/modified-dh.json",
+        "sha256": "d0269d04828d26893f52087c5fcda8ab36a0f9333307a3ae0e100253b0bf171a",
+        "bytes": 1764
+      },
+      {
+        "path": "integrations/arm-controller/models/puma560-reference/origin/puma560_dh.hal",
+        "sha256": "dae628cb0d84ffbf858bfef12a9238e21a3e353029262d38174699a6e0efb80e",
+        "bytes": 536
+      },
+      {
+        "path": "integrations/arm-controller/models/puma560-reference/reference-poses.json",
+        "sha256": "4bd03c8d89715c4fb3d9b391474cf3cee5da1317bcc891f6e286af916eaa6ab1",
+        "bytes": 4220
+      },
+      {
+        "path": "integrations/arm-controller/programs/cup-pick.ngc",
+        "sha256": "67a9daa19a59a9a041d53b9e1403249c56a9b999e7a7ab108d313ad9d49951fb",
+        "bytes": 519
+      },
+      {
+        "path": "integrations/arm-controller/programs/cup-place.ngc",
+        "sha256": "31d4b6434f113fcd4e251a1f40b6982992da894e8b30155f5a51ef8a05310486",
+        "bytes": 519
+      },
+      {
+        "path": "integrations/arm-controller/programs/demo-six-axis.ngc",
+        "sha256": "632f6da013644a03804dc3d4f68cd79227d584c63c3654cab21c640de6d710b9",
+        "bytes": 529
+      },
+      {
+        "path": "packages/contracts/schemas/arm-command.schema.json",
+        "sha256": "d0651b4c2b6426e61959d79256375de4b6694fa1def29d906bfacfec51f3089e",
+        "bytes": 10216
+      },
+      {
+        "path": "packages/contracts/schemas/arm-observation.schema.json",
+        "sha256": "ac79ea556862be1d1de4366a96c5f889179f7ac9e0ffa6847c803fab6914336e",
+        "bytes": 19608
+      },
+      {
+        "path": "packages/contracts/schemas/asset-manifest.schema.json",
+        "sha256": "df1bb9f365c767f9ae2cc3108a54162fa3fa2bd05cb78e1b7b700147fe4829b8",
+        "bytes": 181
+      },
+      {
+        "path": "packages/contracts/schemas/asset-revision.schema.json",
+        "sha256": "ff741ad719244d9f16cd971b9fc8dc4e9a9462270e130cfd6f89f679c741721d",
+        "bytes": 8139
+      },
+      {
+        "path": "packages/contracts/schemas/authority-provision.schema.json",
+        "sha256": "2e1da90406d1c13452f41788346f819960d614506d0f1ec0b2ac9390c2390b3b",
+        "bytes": 208
+      },
+      {
+        "path": "packages/contracts/schemas/cell-command.schema.json",
+        "sha256": "45d327b86a8b7afd2cf482caf7a6cd552f8958fd597d9355866a17b6def8a7be",
+        "bytes": 20421
+      },
+      {
+        "path": "packages/contracts/schemas/cell-observation.schema.json",
+        "sha256": "79282ad4053a8b600929ce6e6706d6a371ee3a4595c8f1b3bf78a01eae6db616",
+        "bytes": 1986
+      },
+      {
+        "path": "packages/contracts/schemas/coffee-recipe.schema.json",
+        "sha256": "e9ff88cb242ea4dad6beeea5e75f33601b40a411590a88ce8a72c17f07a53873",
+        "bytes": 9624
+      },
+      {
+        "path": "packages/contracts/schemas/command.schema.json",
+        "sha256": "98c4b1b65f35902a716ef4edabd0c0df9b4d1c9a4cf3867ffa8731290a201313",
+        "bytes": 178
+      },
+      {
+        "path": "packages/contracts/schemas/commit-batch.schema.json",
+        "sha256": "7e8695e3d7a2617955b769267b515eac6308b534379d117380e520ad613b1c8b",
+        "bytes": 175
+      },
+      {
+        "path": "packages/contracts/schemas/grant-return.schema.json",
+        "sha256": "358827d5aceaa449a3784d0b13db45dd87dcd5694befc51dfd4d14d3831c9494",
+        "bytes": 185
+      },
+      {
+        "path": "packages/contracts/schemas/journal.schema.json",
+        "sha256": "ba4b8962bbad02633eb49ad239beb926ed18de35612028357ac01019b293844b",
+        "bytes": 172
+      },
+      {
+        "path": "packages/contracts/schemas/lab-action-v2.schema.json",
+        "sha256": "f5b46205cca373193f27efc4433323333d6308857884be719dcbd12bb818cf1a",
+        "bytes": 8260
+      },
+      {
+        "path": "packages/contracts/schemas/lab-arm-collision-evidence.schema.json",
+        "sha256": "821f3b3b9808a54c569ce6d7d39eccf1e6c63565fefb9316d4bad01fcfc06aed",
+        "bytes": 8071
+      },
+      {
+        "path": "packages/contracts/schemas/lab-deployment.schema.json",
+        "sha256": "12d180b9c8c4dca598fd8711d1ecde913674726c86535871b4a8e7d9e4e98679",
+        "bytes": 13270
+      },
+      {
+        "path": "packages/contracts/schemas/lab-evidence-v2.schema.json",
+        "sha256": "b9ebf24647539f91a6b9d112210282f46f5d568a739be77603b9ff19ef1c77e3",
+        "bytes": 4569
+      },
+      {
+        "path": "packages/contracts/schemas/lab-fault-schedule.schema.json",
+        "sha256": "bdfac85d58c0b0887ad9cda85d3881480039a81a5d6226a55e5f5738db5e1062",
+        "bytes": 1582
+      },
+      {
+        "path": "packages/contracts/schemas/lab-project-v2.schema.json",
+        "sha256": "29737e456a2fc664d174e03c4dc501a369341d893ef7f9e0a099e15a5a77bd22",
+        "bytes": 10046
+      },
+      {
+        "path": "packages/contracts/schemas/lab-project.schema.json",
+        "sha256": "d6dda9f63e3ded3421004444a64a32cb0b7d4ccf1e139901ebc76c8e021a97ea",
+        "bytes": 4638
+      },
+      {
+        "path": "packages/contracts/schemas/lab-run-v2.schema.json",
+        "sha256": "4c1b16ba7d70b880c4114694735f3b811effdefa99ac8b53dc05d2911c653392",
+        "bytes": 4470
+      },
+      {
+        "path": "packages/contracts/schemas/lab-run-verification.schema.json",
+        "sha256": "0ec157ef4060da1447992256d7c71d463d3b5835ef758dc5420524d59cafe90d",
+        "bytes": 3619
+      },
+      {
+        "path": "packages/contracts/schemas/lab-run.schema.json",
+        "sha256": "f2063867b11ee8e144cfe9f0785cb39fc5622e3dc2c9f060780fba851d139059",
+        "bytes": 2573
+      },
+      {
+        "path": "packages/contracts/schemas/lab-transfer-evidence.schema.json",
+        "sha256": "67e41979a78821556ce0fbdd0ec71336e3a146655ea016d6e38e1994faacab15",
+        "bytes": 6258
+      },
+      {
+        "path": "packages/contracts/schemas/money.schema.json",
+        "sha256": "b0ed9c5f9681da5fe247795bab29d77a72a8779d49cacbe4f8e48cf6f26db383",
+        "bytes": 156
+      },
+      {
+        "path": "packages/contracts/schemas/offline-grant.schema.json",
+        "sha256": "a3d48413cbdb9a5ed793f3633e7a4e5a73b30359c2974019a251a4eb70251bb8",
+        "bytes": 190
+      },
+      {
+        "path": "packages/contracts/schemas/ownership-grant.schema.json",
+        "sha256": "f495946471e5ad00b01e70257f0b7974fef6640749cbb8231626a3148e7704e3",
+        "bytes": 184
+      },
+      {
+        "path": "packages/contracts/schemas/pairing-grant.schema.json",
+        "sha256": "d36ef1da07f93cac9c30000da20bf89d80e9731f7d51c9b543fdf0a8db25b8e9",
+        "bytes": 190
+      },
+      {
+        "path": "packages/contracts/schemas/robot-command.schema.json",
+        "sha256": "9a39142ea1cbc4087dc04fc4af2204e6431e826d33d82321375b0206d985bc06",
+        "bytes": 178
+      },
+      {
+        "path": "packages/contracts/schemas/robot-manifest.schema.json",
+        "sha256": "63660819ee65df2ff0d005ddcc61fdd34dcfde116cbd586677487655507953f5",
+        "bytes": 181
+      },
+      {
+        "path": "packages/contracts/schemas/settlement-grant.schema.json",
+        "sha256": "3b82f3ac830b6fe6a542cd3de54ab75a9ca96f9923e580105892004837c1ba4b",
+        "bytes": 187
+      },
+      {
+        "path": "packages/contracts/schemas/sync-ack.schema.json",
+        "sha256": "cec00df823d37bb6d1503721d95b68032d9c85da6df01e9d32d1c410e4a922e5",
+        "bytes": 163
+      },
+      {
+        "path": "packages/contracts/schemas/twin-sample-v2.schema.json",
+        "sha256": "10658b45927080eec118793ea262ba96ea5c9aa65f3152f678f551617237d2ff",
+        "bytes": 11463
+      },
+      {
+        "path": "packages/contracts/schemas/wire.schema.json",
+        "sha256": "4e0985c9db08871ddca853774c18bf4ef2f3f7fed6affed9654c50b0eddfb523",
+        "bytes": 49136
+      },
+      {
+        "path": "robotics/agent/mekoniq_agent/__init__.py",
+        "sha256": "80fed95cd5866cca2550e02c43a463cbdca8ca3776bd5a31c27b259cd042e19c",
+        "bytes": 425
+      },
+      {
+        "path": "robotics/agent/mekoniq_agent/executor.py",
+        "sha256": "e980d2f30486c5a4df820d81cf888fce7ec475d7453853b31bc343f04dbe4f8f",
+        "bytes": 11993
+      },
+      {
+        "path": "robotics/agent/mekoniq_agent/journal.py",
+        "sha256": "c4f498f1e4e471853c0e40c5a6a254284d163d5d95091f6b5e51c5cfa290a3f4",
+        "bytes": 7206
+      },
+      {
+        "path": "robotics/agent/mekoniq_agent/nav2_adapter.py",
+        "sha256": "564726465baf4079ce181f15d842b698f73de60837442aea401e1bf7537a9a0b",
+        "bytes": 9954
+      },
+      {
+        "path": "robotics/agent/mekoniq_agent/nav2_rclpy.py",
+        "sha256": "e350f25c3c17533197173cc1aa3fd9cfca68bf5cfb1724e11e69b706291ab8ad",
+        "bytes": 10941
+      },
+      {
+        "path": "robotics/agent/mekoniq_agent/ownership.py",
+        "sha256": "a7b48a2655420bc1a4b8fd41e65bd8cdab97ae104154b184141e6ba3bd18139c",
+        "bytes": 2769
+      },
+      {
+        "path": "robotics/agent/mekoniq_agent/protocol.py",
+        "sha256": "adeea3262e600c9e788a0a9acae51e7db7e49654126b7f667911d3ef4343426d",
+        "bytes": 7731
+      },
+      {
+        "path": "robotics/agent/pyproject.toml",
+        "sha256": "182531e351f6917ff43d9dff8a51bcc07936e425354af6bf3b15736b983d177f",
+        "bytes": 658
+      },
+      {
+        "path": "robotics/simulation/CMakeLists.txt",
+        "sha256": "d670c08425303509c21c5005849e150e00ea86c3c7bfec6326d4e780f4d3c920",
+        "bytes": 951
+      },
+      {
+        "path": "robotics/simulation/Dockerfile",
+        "sha256": "86980b7611f2a0ce2588301cd6bad057b483f1d14ea1bb82519fb935e9758b58",
+        "bytes": 1685
+      },
+      {
+        "path": "robotics/simulation/README.md",
+        "sha256": "e55745876b1c3cc7895c5c6f57dfa3272917223eb153e9432b120b083159489a",
+        "bytes": 1732
+      },
+      {
+        "path": "robotics/simulation/actors/__init__.py",
+        "sha256": "2f5772071f2ba0fedc2bd33e13d23d5370b379f48b8af276b0d2bcf73352063f",
+        "bytes": 101
+      },
+      {
+        "path": "robotics/simulation/actors/blocker.py",
+        "sha256": "9c19912b2e5f9caffe7152053bbab3a1d5a44e2f98ecd8adba032953847a0567",
+        "bytes": 2182
+      },
+      {
+        "path": "robotics/simulation/actors/pedestrian.py",
+        "sha256": "cf8a2aac0d2e2cb95150ab049ee458c3ff4f269f08ed3e273413761b9b779e43",
+        "bytes": 4443
+      },
+      {
+        "path": "robotics/simulation/actors/scenario.py",
+        "sha256": "355cd9a60320255b87775486e1b23404acb634c744226d5414636bc4e6fbc171",
+        "bytes": 4683
+      },
+      {
+        "path": "robotics/simulation/beverage_cell.py",
+        "sha256": "4c899c162634ce11559e80f06cffb7d31acaa1b6c008f5be07cd727a35a809a6",
+        "bytes": 5875
+      },
+      {
+        "path": "robotics/simulation/bridge/__init__.py",
+        "sha256": "50296d09f9b6a22a49edf40d839aaa46632afc791fbd59497be19cb5515b2113",
+        "bytes": 134
+      },
+      {
+        "path": "robotics/simulation/bridge/clock_barrier.py",
+        "sha256": "eaf20aa3fc7b6c212657816470296f208e66918312eb7ddbfb8a64935c1c69f8",
+        "bytes": 4573
+      },
+      {
+        "path": "robotics/simulation/bridge/launch_plan.py",
+        "sha256": "1e59d1c425a6b3e627a334db05d5a00e7430974e960083f3982e8e31ffe9572c",
+        "bytes": 4560
+      },
+      {
+        "path": "robotics/simulation/bridge/native_profile.py",
+        "sha256": "f59b27f5a9ddc6dd3e41fa20d30ec645dfc5a66a94cfaa9021bad0ab86513c38",
+        "bytes": 6822
+      },
+      {
+        "path": "robotics/simulation/bridge/nav2_session.py",
+        "sha256": "66d9584b2d520d20519acdb68b0cabfe17dce65df5312f0cbb33ce6065e761c1",
+        "bytes": 25140
+      },
+      {
+        "path": "robotics/simulation/bridge/protocol.py",
+        "sha256": "9dfdf2d6b412c3bf80379678b4822bafe6e68386769bb02b046489c4a3e9bdf8",
+        "bytes": 5921
+      },
+      {
+        "path": "robotics/simulation/bridge/scene_loop.py",
+        "sha256": "b4d560636e348ab9a4b4cba7f505b88da82fceb02c17319dffcfc0a16787d053",
+        "bytes": 12001
+      },
+      {
+        "path": "robotics/simulation/bridge/telemetry.py",
+        "sha256": "a15056af15430c9084586c08392f77c6c4550773abb539fbc20f3067c831c59e",
+        "bytes": 2584
+      },
+      {
+        "path": "robotics/simulation/bridge/tray_observer.py",
+        "sha256": "45aea5f59231a3c5421b50271bd81c63a397d4783391e395373d51ba86f30cdd",
+        "bytes": 8160
+      },
+      {
+        "path": "robotics/simulation/collision/__init__.py",
+        "sha256": "dee35b94e933ad312092b389e92c480053a0c757c17ec9e8a014c541470bbc37",
+        "bytes": 86
+      },
+      {
+        "path": "robotics/simulation/collision/__main__.py",
+        "sha256": "1e82e6ecfcfd5568e50ec9bb94b4f617ff31d112d1c1d691d5d6b4e267ad2d0a",
+        "bytes": 1198
+      },
+      {
+        "path": "robotics/simulation/collision/arm_swept_path.py",
+        "sha256": "28da33d07eadbfd07be37e764e9ee99a8b4cd7d52e594eac7600c5d8fb803a24",
+        "bytes": 13561
+      },
+      {
+        "path": "robotics/simulation/compiler/__init__.py",
+        "sha256": "1482a5f4fe9e2ef5fea7de1ff3170519b9150bb795e2e31b96000f9bd562eebd",
+        "bytes": 360
+      },
+      {
+        "path": "robotics/simulation/compiler/__main__.py",
+        "sha256": "5a8091c8f2e95a63a26d5121fd3b9da0522c69576bb69a8fa1f3a18cae439b02",
+        "bytes": 1796
+      },
+      {
+        "path": "robotics/simulation/compiler/compile_world.py",
+        "sha256": "dcc8e6ca8ef153c14900900cc9dbba1a9c486cbcf838bfebb00ed27c418cae99",
+        "bytes": 18570
+      },
+      {
+        "path": "robotics/simulation/compiler/manifest.py",
+        "sha256": "9072c063fb24d6a01adece6404f19abb39ab2aff3f38eb0aa1db66b7f2a8397f",
+        "bytes": 2006
+      },
+      {
+        "path": "robotics/simulation/compiler/models.py",
+        "sha256": "4d41340425241b8a230a4bf00973e2be11844c51ed6ae0d06200df8a2858e4b7",
+        "bytes": 15254
+      },
+      {
+        "path": "robotics/simulation/compiler/occupancy.py",
+        "sha256": "39d308340650f69d81a3410495a7fea5c835d86ccd754e8c19e04198c1137a24",
+        "bytes": 1350
+      },
+      {
+        "path": "robotics/simulation/cup_transfer.py",
+        "sha256": "8988f5b2ee1f0a0a311a7ca2cd93ef74e3af8bf76b5ad5f39f468807283a188b",
+        "bytes": 2618
+      },
+      {
+        "path": "robotics/simulation/image.lock.json",
+        "sha256": "8894cb90a4a103093d963ed88808d65ce3396dc2cbbb2733d37bf249c61602ca",
+        "bytes": 350
+      },
+      {
+        "path": "robotics/simulation/launch/lab_world.launch.py",
+        "sha256": "b13c43679249481d53b6f20f0cada03bb34a087af970f43349be678d0f096de4",
+        "bytes": 4938
+      },
+      {
+        "path": "robotics/simulation/launch/restaurant_sim.launch.py",
+        "sha256": "c157355d273b9cafd5015b8c7e4c34dc70a9aa849b61cdca9c2d2b562cc6b16d",
+        "bytes": 4098
+      },
+      {
+        "path": "robotics/simulation/metrics/__init__.py",
+        "sha256": "2b2944a25df30e0401f0715dcd8c509a1b95ba6e7b5811db8fac8f4e911982ee",
+        "bytes": 101
+      },
+      {
+        "path": "robotics/simulation/metrics/contact.py",
+        "sha256": "f3e9fd3fcc3ec0b25938f8bce303a4837b03cc10f613521ed0f93c659d0d835f",
+        "bytes": 1853
+      },
+      {
+        "path": "robotics/simulation/metrics/separation.py",
+        "sha256": "f18469c921a51dbdf8ea4cd7c6ff865732fc19295f24df63786d3a420f17b5e3",
+        "bytes": 1934
+      },
+      {
+        "path": "robotics/simulation/package.xml",
+        "sha256": "63e30607a762a0d24441d3798a1dea752c3a6af6c4d2d3c85d0d0b352ff68620",
+        "bytes": 891
+      },
+      {
+        "path": "robotics/simulation/profiles/utm-ubuntu-arm64.lock.json",
+        "sha256": "11cdd9dbda782ef3f6057a65453b321b25de87ac2982c6de98d58aeceaf6d4cc",
+        "bytes": 889
+      },
+      {
+        "path": "robotics/simulation/requirements-dev.txt",
+        "sha256": "991eb183d7e1f299632f8cc4eded3c6ae82e0332161266c0ef4dda0cd63f11b3",
+        "bytes": 376
+      },
+      {
+        "path": "robotics/simulation/worlds/__init__.py",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "path": "robotics/simulation/worlds/generate_restaurant.py",
+        "sha256": "58b17d075f28df9d42775542882c203b97b43b2a57191d382c86af52b75fcdb1",
+        "bytes": 6512
+      },
+      {
+        "path": "robotics/simulation/worlds/restaurant.sdf",
+        "sha256": "149be7d30a95a6065c953b5cc8ccb7ba5eba5991598b701cef020845395ce516",
+        "bytes": 6997
+      },
+      {
+        "path": "tests/fixtures/digital-twin/arm-fk-golden.json",
+        "sha256": "cfcd9f15f67eff1420ffb0b76af729606b606417cd210a7221b54687f4dd894f",
+        "bytes": 3187
+      },
+      {
+        "path": "tests/fixtures/digital-twin/arm/messages.json",
+        "sha256": "bc4a075f9fc251d81dca1a2add089e81113d14587868f39385e7b44bca6d64d3",
+        "bytes": 19196
+      },
+      {
+        "path": "tests/fixtures/digital-twin/assets/arm-puma-reference.json",
+        "sha256": "34d5e28cb51841fb588c068ff6a6d540d35ddef2c6b84da1c4c3395b6daacc2b",
+        "bytes": 3419
+      },
+      {
+        "path": "tests/fixtures/digital-twin/assets/coffee-machine-illustrative.json",
+        "sha256": "6929cb738e073244a702049d15ad1e2e8c77824c5e7c5d0949ee47b70e86e2bc",
+        "bytes": 1295
+      },
+      {
+        "path": "tests/fixtures/digital-twin/assets/cup-paper-illustrative.json",
+        "sha256": "4e62ddb446042c735ee7bde65ebc2fcb336fc0ca39e9b6c5fa4107d2ba936ae5",
+        "bytes": 976
+      },
+      {
+        "path": "tests/fixtures/digital-twin/assets/cup-v1.json",
+        "sha256": "931eedb062867fab5dcf65a7e61705d033743ab068cbd9e00dc3dc3c1dd2da54",
+        "bytes": 1363
+      },
+      {
+        "path": "tests/fixtures/digital-twin/assets/service-robot-v1.json",
+        "sha256": "82964d8b3f153d1d9c6c21fdd2ef632ac9f1d84931fad6898da532a6a1a012ac",
+        "bytes": 2564
+      },
+      {
+        "path": "tests/fixtures/digital-twin/assets/table-v1.json",
+        "sha256": "bce792d1987543ee4deff97fb66e947e2f51bf2b7a96445b1529f2b5a5036eb7",
+        "bytes": 1262
+      },
+      {
+        "path": "tests/fixtures/digital-twin/bundle/bindings.json",
+        "sha256": "18a1a724e14cd8e69cde2d45c0bcb6fbe7c1d799520dc8a0540c40dfbae2adde",
+        "bytes": 1034
+      },
+      {
+        "path": "tests/fixtures/digital-twin/bundle/compiler-manifest.json",
+        "sha256": "d6a30f36b52e726409179ca68a89b370d50ea51f12a1e47889182efb8b238ba0",
+        "bytes": 4472
+      },
+      {
+        "path": "tests/fixtures/digital-twin/campaigns/food-beverage.json",
+        "sha256": "a3dd5712b03f4967124fea7af2f2ac52199c99c3304fdf996bfae895dc279c20",
+        "bytes": 1447
+      },
+      {
+        "path": "tests/fixtures/digital-twin/corridor-v2.json",
+        "sha256": "14bd1e8153d1b7f1dde20d43942d5dff9b574f627b12ba78d540d5d68dd5c721",
+        "bytes": 1356
+      },
+      {
+        "path": "tests/fixtures/digital-twin/restaurant-v2.json",
+        "sha256": "aec9fc270746071eab8f87672f5c9e7b3d46f47e1c812563d9d5e7310dd99203",
+        "bytes": 2085
+      },
+      {
+        "path": "tests/fixtures/digital-twin/scenarios/fd03-crossing.json",
+        "sha256": "8c5fc1467814f1abecdf5f904b10d196d3c62dc48323f65e476654c00e103a80",
+        "bytes": 1102
+      },
+      {
+        "path": "tests/fixtures/digital-twin/scenarios/fd04-blocked.json",
+        "sha256": "f2982ff39c29d5b58e5741736c2def84301f8b6689f703e58fee63f75aa33ac5",
+        "bytes": 746
+      },
+      {
+        "path": "tests/fixtures/digital-twin/scenarios/fd07-corridor.json",
+        "sha256": "c9190d194a4e6a3cf248d1f43810d68522ade04ab752adcb0341e6db23956c02",
+        "bytes": 406
+      },
+      {
+        "path": "tests/fixtures/digital-twin/scenarios/fd08-localization.json",
+        "sha256": "c12f879addcd1df1f9e0da25f5fbd61dba8445cb82fd597d0f976c3fe0ad84e4",
+        "bytes": 459
+      },
+      {
+        "path": "tests/fixtures/digital-twin/sil/bv01.json",
+        "sha256": "cf6f57c9550d293be3696bb4db5cdab4bc6abbe82f5a2c81ca774e0636d73298",
+        "bytes": 3552
+      }
+    ]
+  }
+}

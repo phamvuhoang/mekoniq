@@ -1,0 +1,95 @@
+{
+  "backend": "gazebo_nav2",
+  "host": {
+    "platform": "darwin",
+    "node": "24.22.2",
+    "python": "Python 3.13.3"
+  },
+  "image": null,
+  "environment": {
+    "actual": {
+      "architecture": "arm64",
+      "executionPaths": {
+        "pythonPath": "/Users/hoangpham/source/prv/robot/source/robotics/simulation:/Users/hoangpham/source/prv/robot/source/robotics/agent"
+      },
+      "os": {
+        "id": null,
+        "version": null
+      },
+      "packages": {},
+      "platform": "darwin",
+      "runtime": {
+        "amentPrefixes": [
+          ""
+        ],
+        "executables": {},
+        "gazeboPluginPath": "",
+        "libraryPath": "",
+        "overlayManifests": {},
+        "pythonPath": "$NATIVE_SOURCE/robotics/simulation:$NATIVE_SOURCE/robotics/agent",
+        "rosDistro": null
+      }
+    },
+    "available": false,
+    "headless": true,
+    "id": "utm-ubuntu-arm64",
+    "image": null,
+    "installation": "native_apt",
+    "inventorySha256": "5c7c9ebb55b9ca5b6d3a1a8fc5c15d0cc443100c4aa7c86ade6f529e8b490cad",
+    "profileSha256": "11cdd9dbda782ef3f6057a65453b321b25de87ac2982c6de98d58aeceaf6d4cc",
+    "reasonCodes": [
+      "PROFILE_PLATFORM_MISMATCH",
+      "PROFILE_OS_MISMATCH",
+      "PROFILE_INVENTORY_UNRESOLVED",
+      "PROFILE_PACKAGE_MISSING:ros-jazzy-nav2-bringup",
+      "PROFILE_PACKAGE_MISSING:ros-jazzy-navigation2",
+      "PROFILE_PACKAGE_MISSING:ros-jazzy-ros-base",
+      "PROFILE_PACKAGE_MISSING:ros-jazzy-ros-gz",
+      "PROFILE_RUNTIME_UNRESOLVED"
+    ]
+  },
+  "checks": [
+    {
+      "id": "node24",
+      "ok": true,
+      "detail": "node 24.22.2"
+    },
+    {
+      "id": "linux",
+      "ok": false,
+      "detail": "platform darwin (a Gazebo/Nav2 SIL runs on Linux only)"
+    },
+    {
+      "id": "python3",
+      "ok": true,
+      "detail": "Python 3.13.3"
+    },
+    {
+      "id": "python-deps",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "id": "compiler",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "id": "ros2",
+      "ok": false,
+      "detail": "ENOENT"
+    },
+    {
+      "id": "gz",
+      "ok": false,
+      "detail": "ENOENT"
+    },
+    {
+      "id": "environment-profile",
+      "ok": false,
+      "detail": "PROFILE_PLATFORM_MISMATCH,PROFILE_OS_MISMATCH,PROFILE_INVENTORY_UNRESOLVED,PROFILE_PACKAGE_MISSING:ros-jazzy-nav2-bringup,PROFILE_PACKAGE_MISSING:ros-jazzy-navigation2,PROFILE_PACKAGE_MISSING:ros-jazzy-ros-base,PROFILE_PACKAGE_MISSING:ros-jazzy-ros-gz,PROFILE_RUNTIME_UNRESOLVED"
+    }
+  ],
+  "prerequisitesMet": false,
+  "reportSha256": "4d30931ef25a6cddf38aaa470c7b44fd9d91f8108968c5888f98135d157c4f91"
+}

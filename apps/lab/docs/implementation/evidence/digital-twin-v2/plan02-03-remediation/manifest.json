@@ -1,0 +1,565 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-05T22:04:10.833968+00:00",
+  "scope": "Software remediation of independent Plan 02/03 review R01–R12; no physics/controller/hardware acceptance",
+  "sourceCommit": "a89a077ed12648931a857333f899e3d6c1ea9719",
+  "sourceCleanForChecksAndExport": true,
+  "labVerification": {
+    "baseCommit": "a0a02d205a0996fdc160269b8c742cb6c1f70dcb",
+    "runtimeLockSha256": "e87849ffeca20b999f78743e93766c44664206e649c9774b471aca0b52b4c0d1",
+    "runtimeLock": {
+      "dirty": false,
+      "packageVersion": "0.1.0",
+      "toolchain": {
+        "node": "v24.22.2"
+      },
+      "sourceCommit": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "schemaHash": "8b398544fdeb8127da0697a086283f055126075696a573dd4e8be40b00d56881",
+      "protocolMajor": 2,
+      "protocolMajors": [
+        1,
+        2
+      ],
+      "nodeMajor": 24,
+      "artifactSha256": "fe49fcea31da67630fa50e6fe75418967092cee57ab9144959413a529129ce15",
+      "entrypoint": "runtime.mjs"
+    },
+    "note": "Broad Lab checks ran with this imported lock on unchanged baseline UI/source/tests. Compatibility identity was updated afterwards and checked by lab-metadata. Subsequent review/evidence documentation does not change execution inputs."
+  },
+  "toolchain": {
+    "node": "v24.22.2",
+    "pnpm": "10.32.1",
+    "python": "3.13.3",
+    "host": "Darwin",
+    "architecture": "arm64"
+  },
+  "runtimeManifest": {
+    "sourceCommit": "a89a077ed12648931a857333f899e3d6c1ea9719",
+    "schemaHash": "8b398544fdeb8127da0697a086283f055126075696a573dd4e8be40b00d56881",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "artifactSha256": "fe49fcea31da67630fa50e6fe75418967092cee57ab9144959413a529129ce15",
+    "entrypoint": "runtime.mjs",
+    "nodeMajor": 24,
+    "packageVersion": "0.1.0",
+    "dirty": false,
+    "schemas": [
+      "arm-command.schema.json",
+      "arm-observation.schema.json",
+      "asset-manifest.schema.json",
+      "asset-revision.schema.json",
+      "authority-provision.schema.json",
+      "cell-command.schema.json",
+      "cell-observation.schema.json",
+      "coffee-recipe.schema.json",
+      "command.schema.json",
+      "commit-batch.schema.json",
+      "grant-return.schema.json",
+      "journal.schema.json",
+      "lab-action-v2.schema.json",
+      "lab-deployment.schema.json",
+      "lab-evidence-v2.schema.json",
+      "lab-project-v2.schema.json",
+      "lab-project.schema.json",
+      "lab-run-v2.schema.json",
+      "lab-run.schema.json",
+      "money.schema.json",
+      "offline-grant.schema.json",
+      "ownership-grant.schema.json",
+      "pairing-grant.schema.json",
+      "robot-command.schema.json",
+      "robot-manifest.schema.json",
+      "settlement-grant.schema.json",
+      "sync-ack.schema.json",
+      "twin-sample-v2.schema.json",
+      "wire.schema.json"
+    ],
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "simulationTools": {
+      "distribution": "separate",
+      "path": "robotics/simulation",
+      "digest": "2102ba087776b9935f54b43c9eaeff760dbe306d55c5b17ed95b14e68026b78d",
+      "files": 33,
+      "image": "ros:jazzy-ros-base",
+      "imageDigest": "sha256:8eed0a4669bbf43ee331878a4c39bd8ebddea8e3312a58b4fae8edb14526b617",
+      "requires": [
+        "linux",
+        "ros2-jazzy",
+        "gazebo-harmonic",
+        "python3+rfc8785+jsonschema"
+      ],
+      "note": "not bundled; verify with scripts/lab-sil.mjs doctor on the Linux host"
+    }
+  },
+  "armArtifact": {
+    "file": "arm-artifact-manifest.json",
+    "sha256": "748a090b56eaf8edd029441745b8bbd9113b5499cc6577c1d8e46349b11f83b8",
+    "signed": false,
+    "controllerRun": "not_run"
+  },
+  "independentReview": {
+    "verdict": "no remaining blocking code findings in the reviewed remediation diff",
+    "closedFindings": [
+      "R01",
+      "R02",
+      "R03",
+      "R04",
+      "R05",
+      "R06",
+      "R07",
+      "R08",
+      "R09",
+      "R10",
+      "R11",
+      "R12"
+    ],
+    "followupsVerified": [
+      "R03 reconcile before native error drain",
+      "startup budget vs real stdio transport deadline",
+      "Python SceneLoop canonical telemetry validation"
+    ],
+    "scope": "Code/test diff and targeted reproductions; broad checks run separately by coordinator; Linux UID/systemd/ROS/Gazebo/LinuxCNC/hardware not verified"
+  },
+  "totals": {
+    "sourceUnitContractsArmSecurity": {
+      "filesPassed": 25,
+      "passed": 114
+    },
+    "sourceSQLiteIntegration": {
+      "filesPassed": 49,
+      "passed": 406,
+      "skipped": 1
+    },
+    "pythonAgentHardwareSchemaSimulation": {
+      "passed": 267,
+      "skipped": 1
+    },
+    "pythonArmController": {
+      "passed": 108,
+      "skipped": 1,
+      "subtestsPassed": 11
+    },
+    "labUnitIntegration": {
+      "passed": 161,
+      "skipped": 1
+    },
+    "labBrowser": {
+      "passed": 3,
+      "journeys": [
+        "service",
+        "arm-simulation",
+        "coffee"
+      ]
+    }
+  },
+  "checks": [
+    {
+      "sourceHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "signed": false,
+      "dirty": false,
+      "checks": [
+        {
+          "command": [
+            "<workspace>/source/.venv/bin/python",
+            "/tmp/robot-remediation-arm-a89a077/bridge/run.py",
+            "--help"
+          ],
+          "exitCode": 0,
+          "expectedExitCode": 0,
+          "elapsedSeconds": 0.144,
+          "log": "arm-artifact-help.log",
+          "sha256": "22b57b74240c97214d2d4b029c22e769420447cb1cf49d762bfaa7ed2267d1dd",
+          "capturedLogSha256": "22b57b74240c97214d2d4b029c22e769420447cb1cf49d762bfaa7ed2267d1dd"
+        },
+        {
+          "command": [
+            "<workspace>/source/.venv/bin/python",
+            "/tmp/robot-remediation-arm-a89a077/bridge/run.py",
+            "--profile",
+            "/tmp/robot-remediation-arm-a89a077/configs/sim/puma560/profile.json",
+            "--journal",
+            "/tmp/robot-remediation-no-controller.jsonl"
+          ],
+          "exitCode": 2,
+          "expectedExitCode": 2,
+          "elapsedSeconds": 0.104,
+          "log": "arm-artifact-unavailable.log",
+          "sha256": "ce865dc1dcd073d69d719e9b257c39fd3cb09463c28a4dcb30491d598c9e01ff",
+          "capturedLogSha256": "ce865dc1dcd073d69d719e9b257c39fd3cb09463c28a4dcb30491d598c9e01ff"
+        }
+      ],
+      "controllerRun": "not_run",
+      "group": "arm-artifact-smoke"
+    },
+    {
+      "repo": "lab",
+      "endHead": "a0a02d205a0996fdc160269b8c742cb6c1f70dcb",
+      "checks": [
+        {
+          "command": [
+            "pnpm",
+            "typecheck"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 1.801,
+          "log": "lab-checks-1.log",
+          "sha256": "a2b4f1e81e614f4f8c846ee3fe7e09adc9bec999d1dc4e8be3d4bdefc1262997",
+          "capturedLogSha256": "18e3a3ffa55ba32c8b379c577e44d507a28db6e621d4a40da27d0788a6c71993"
+        },
+        {
+          "command": [
+            "pnpm",
+            "test"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 4.107,
+          "log": "lab-checks-2.log",
+          "sha256": "adf93ff7f6625204992ceb5d2dba7cdf9b9eadc636cde4caa69d98c449e34516",
+          "capturedLogSha256": "2df77a161a29b4cac935ba535795f9ca241ba0ce65f6a878facb80773e3f70ab"
+        },
+        {
+          "command": [
+            "pnpm",
+            "build"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 2.528,
+          "log": "lab-checks-3.log",
+          "sha256": "b2ff7bc3a74d3eb5f736c178aed43a9d96b8d08479fb84e1921fa343f319fe57",
+          "capturedLogSha256": "b2ff7bc3a74d3eb5f736c178aed43a9d96b8d08479fb84e1921fa343f319fe57"
+        },
+        {
+          "command": [
+            "pnpm",
+            "test:runtime-e2e"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 9.706,
+          "log": "lab-checks-4.log",
+          "sha256": "e801fb7a593aecff78ba7c9d79bea8cd4f3822021afa404f3185aa6054bfe308",
+          "capturedLogSha256": "e801fb7a593aecff78ba7c9d79bea8cd4f3822021afa404f3185aa6054bfe308"
+        },
+        {
+          "command": [
+            "node",
+            "scripts/test-mock-e2e.mjs",
+            "arm-simulation.spec.ts",
+            "coffee-journey.spec.ts"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 18.822,
+          "log": "lab-checks-5.log",
+          "sha256": "e443c0d4121b1c28a4836009dfc5d5c01e8d6d85efbc6a51d15ceab2858d7847",
+          "capturedLogSha256": "e443c0d4121b1c28a4836009dfc5d5c01e8d6d85efbc6a51d15ceab2858d7847"
+        }
+      ],
+      "startHead": "a0a02d205a0996fdc160269b8c742cb6c1f70dcb",
+      "group": "lab-checks"
+    },
+    {
+      "repo": "lab",
+      "endHead": "a0a02d205a0996fdc160269b8c742cb6c1f70dcb",
+      "checks": [
+        {
+          "command": [
+            "node",
+            "scripts/import-runtime.mjs",
+            "/tmp/robot-remediation-runtime-a89a077"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 0.339,
+          "log": "lab-import-1.log",
+          "sha256": "44a38a12791e6691b9f56afe77a5f95ae3cc384d79504403766fa562a5615381",
+          "capturedLogSha256": "44a38a12791e6691b9f56afe77a5f95ae3cc384d79504403766fa562a5615381"
+        },
+        {
+          "command": [
+            "pnpm",
+            "check:source"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 0.235,
+          "log": "lab-import-2.log",
+          "sha256": "77b4884a6e3ff39d0c56b3f9284f95f1febb2c93c1d89727f3d4dc5123ee491d",
+          "capturedLogSha256": "77b4884a6e3ff39d0c56b3f9284f95f1febb2c93c1d89727f3d4dc5123ee491d"
+        }
+      ],
+      "startHead": "a0a02d205a0996fdc160269b8c742cb6c1f70dcb",
+      "group": "lab-import"
+    },
+    {
+      "repo": "lab",
+      "endHead": "a0a02d205a0996fdc160269b8c742cb6c1f70dcb",
+      "checks": [
+        {
+          "command": [
+            "pnpm",
+            "check:source"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 0.367,
+          "log": "lab-metadata-1.log",
+          "sha256": "77b4884a6e3ff39d0c56b3f9284f95f1febb2c93c1d89727f3d4dc5123ee491d",
+          "capturedLogSha256": "77b4884a6e3ff39d0c56b3f9284f95f1febb2c93c1d89727f3d4dc5123ee491d"
+        },
+        {
+          "command": [
+            "pnpm",
+            "exec",
+            "vitest",
+            "run",
+            "tests/integration/simulation-capability.test.ts"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 0.635,
+          "log": "lab-metadata-2.log",
+          "sha256": "271294efbb9b333a4f506abed5d5898a8fb69c7f18af47dae03cbbb6c27f3a41",
+          "capturedLogSha256": "7b5cf01b7181efd834bb728ccd8d89829ff28dd3589de5e747834d19fc419420"
+        }
+      ],
+      "startHead": "a0a02d205a0996fdc160269b8c742cb6c1f70dcb",
+      "group": "lab-metadata"
+    },
+    {
+      "repo": "source/integrations/arm-controller",
+      "endHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "checks": [
+        {
+          "command": [
+            "../../.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests",
+            "-q"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 32.121,
+          "log": "source-arm-1.log",
+          "sha256": "6606e9fc6ad7f2cfb03c8b0e402b3fbe1f08e401d1e76a47af3d26e45fb428fe",
+          "capturedLogSha256": "6606e9fc6ad7f2cfb03c8b0e402b3fbe1f08e401d1e76a47af3d26e45fb428fe"
+        }
+      ],
+      "startHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "group": "source-arm"
+    },
+    {
+      "repo": "source",
+      "endHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "checks": [
+        {
+          "command": [
+            "node",
+            "scripts/export-lab-runtime.mjs",
+            "/tmp/robot-remediation-runtime-a89a077"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 0.486,
+          "log": "source-export-1.log",
+          "sha256": "eb5e37ec27eab8075e838e9003398ca8a70752bfaf018ff4e1ebf906cd6d8915",
+          "capturedLogSha256": "eb5e37ec27eab8075e838e9003398ca8a70752bfaf018ff4e1ebf906cd6d8915"
+        },
+        {
+          "command": [
+            "node",
+            "scripts/export-arm-controller.mjs",
+            "/tmp/robot-remediation-arm-a89a077",
+            "--allow-unsigned"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 0.093,
+          "log": "source-export-2.log",
+          "sha256": "ac8c62c2940ed03de07c0507f93f7b8de8374dbe6c2daf63e455bde8a79aa9a3",
+          "capturedLogSha256": "ac8c62c2940ed03de07c0507f93f7b8de8374dbe6c2daf63e455bde8a79aa9a3"
+        }
+      ],
+      "startHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "group": "source-export"
+    },
+    {
+      "repo": "source",
+      "endHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "checks": [
+        {
+          "command": [
+            "pnpm",
+            "exec",
+            "vitest",
+            "run",
+            "tests/integration/beverage-handoff.test.ts",
+            "tests/integration/beverage-simulator.test.ts",
+            "tests/integration/coffee-conservation.test.ts",
+            "tests/integration/coffee-job.test.ts",
+            "tests/integration/coffee-policy.test.ts",
+            "tests/integration/coffee-recovery.test.ts",
+            "tests/integration/coffee-review.test.ts",
+            "tests/integration/coffee-simulation-evidence.test.ts",
+            "tests/integration/coffee-simulation-resources.test.ts",
+            "tests/integration/coffee-transfer.test.ts",
+            "tests/integration/kitchen-allocation.test.ts",
+            "tests/integration/lab-runtime-artifact.test.ts",
+            "tests/integration/lab-runtime-contracts.test.ts",
+            "tests/integration/lab-runtime-gateway.test.ts",
+            "tests/integration/lab-runtime.test.ts",
+            "tests/integration/lab-v2-arm-collision-evidence.test.ts",
+            "tests/integration/lab-v2-arm-faults.test.ts",
+            "tests/integration/lab-v2-arm-inactive-scene.test.ts",
+            "tests/integration/lab-v2-arm-model.test.ts",
+            "tests/integration/lab-v2-arm-safety-model.test.ts",
+            "tests/integration/lab-v2-arm-scene.test.ts",
+            "tests/integration/lab-v2-arm-trace-coverage.test.ts",
+            "tests/integration/lab-v2-arm.test.ts",
+            "tests/integration/lab-v2-checkpoint-compat.test.ts",
+            "tests/integration/lab-v2-contracts.test.ts",
+            "tests/integration/lab-v2-mixed.test.ts",
+            "tests/integration/lab-v2-mock.test.ts",
+            "tests/integration/lab-v2-model.test.ts",
+            "tests/integration/lab-v2-reclaim-targets.test.ts",
+            "tests/integration/lab-v2-recovery.test.ts",
+            "tests/integration/lab-v2-report.test.ts",
+            "tests/integration/lab-v2-residuals.test.ts",
+            "tests/integration/lab-v2-runtime-review.test.ts",
+            "tests/integration/lab-v2-scenario-matrix.test.ts",
+            "tests/integration/lab-v2-sil-campaign.test.ts",
+            "tests/integration/lab-v2-sil-physics.test.ts",
+            "tests/integration/lab-v2-sil-review.test.ts",
+            "tests/integration/lab-v2-sim-clock.test.ts",
+            "tests/integration/lab-v2-sim-recovery.test.ts",
+            "tests/integration/lab-v2-simulated-navigation.test.ts",
+            "tests/integration/lab-v2-simulation-report.test.ts",
+            "tests/integration/lab-v2-software-gaps.test.ts",
+            "tests/integration/lab-v2-stream.test.ts",
+            "tests/integration/lab-v2-zone-bridge.test.ts",
+            "tests/integration/mission-queue.test.ts",
+            "tests/integration/robot-admission.test.ts",
+            "tests/integration/simulated-delivery.test.ts",
+            "tests/integration/stock-consumption.test.ts",
+            "tests/integration/stocktake.test.ts"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 187.223,
+          "log": "source-integration-1.log",
+          "sha256": "3425cbccc16f963c9ddba7fb318dfd37feae31b1f0a6f6650d5c312f6434966a",
+          "capturedLogSha256": "44e0162f238d18a471cf256780baacb3a79d38f02d0654fda9f4907871644259"
+        }
+      ],
+      "startHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "group": "source-integration"
+    },
+    {
+      "repo": "source",
+      "endHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "checks": [
+        {
+          "command": [
+            ".venv/bin/python",
+            "-m",
+            "pytest",
+            "robotics/agent/tests",
+            "tests/hardware",
+            "tests/contracts/test_schema_python.py",
+            "robotics/simulation/tests",
+            "-q"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 1.93,
+          "log": "source-python-1.log",
+          "sha256": "262186632ed5b83345f1983b88e1762dbef199841ddfa8dcdc88cd56ce1af8ce",
+          "capturedLogSha256": "262186632ed5b83345f1983b88e1762dbef199841ddfa8dcdc88cd56ce1af8ce"
+        }
+      ],
+      "startHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "group": "source-python"
+    },
+    {
+      "repo": "source",
+      "endHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "checks": [
+        {
+          "command": [
+            "pnpm",
+            "contracts:check"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 0.671,
+          "log": "source-static-1.log",
+          "sha256": "a16f041ff958ddc9c7d5d4c8861fb7a623af2369b05fa892426bfd5291c3073e",
+          "capturedLogSha256": "a16f041ff958ddc9c7d5d4c8861fb7a623af2369b05fa892426bfd5291c3073e"
+        },
+        {
+          "command": [
+            "pnpm",
+            "typecheck"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 6.557,
+          "log": "source-static-2.log",
+          "sha256": "0d00ccccf69582c987cd5fb21bd5e91cc61ce5810ddec64fa40daba8078db5f8",
+          "capturedLogSha256": "0d00ccccf69582c987cd5fb21bd5e91cc61ce5810ddec64fa40daba8078db5f8"
+        },
+        {
+          "command": [
+            "pnpm",
+            "lint"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 4.37,
+          "log": "source-static-3.log",
+          "sha256": "78fe12961e2caec0c649fe595d451b2fc923fa3820d193f00ae3c181baa3b23c",
+          "capturedLogSha256": "fa2d0a23600b78e675224a81c36104994197541421cd3d06c97b05a5d4a70647"
+        },
+        {
+          "command": [
+            "pnpm",
+            "build"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 20.493,
+          "log": "source-static-4.log",
+          "sha256": "1e3fa6f2c3089f1c33b13568ed63fed998f1b5fe47044fad49fbc6787ef805b4",
+          "capturedLogSha256": "0d030f45a2d151eb5d38a7c764a6fb05b9776805a5f331db49b1e43a843bb560"
+        }
+      ],
+      "startHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "group": "source-static"
+    },
+    {
+      "repo": "source",
+      "endHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "checks": [
+        {
+          "command": [
+            "pnpm",
+            "exec",
+            "vitest",
+            "run",
+            "tests/unit",
+            "tests/contracts",
+            "tests/security/lab-v2-arm-authority.test.ts"
+          ],
+          "exitCode": 0,
+          "elapsedSeconds": 21.075,
+          "log": "source-unit-1.log",
+          "sha256": "550a772678429449792cf2f7961ebc6e56dcca539b30591d8e8222c713e8bfbc",
+          "capturedLogSha256": "06f8d0bc7e7b2c4c18e33f8dabe679b1f5afceab6e2dfb2cb004e8f5f19387a3"
+        }
+      ],
+      "startHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+      "group": "source-unit"
+    }
+  ],
+  "externalLimitations": {
+    "postgresIntegration": "not_run: Docker/Supabase unavailable (Docker socket absent)",
+    "linuxUidIsolation": "not_run: requires Linux root runner and provisioned distinct test identities",
+    "linuxRosGazeboLinuxcnc": "not_run",
+    "systemdGuiCleanLinuxInstall": "not_run",
+    "productionReleaseSigning": "not_run: ephemeral keys only in software tests; standalone smoke artifact unsigned",
+    "physicsAndHardwareAcceptance": "blocked_external",
+    "acceptanceGatesChanged": false
+  },
+  "logNormalization": "Workspace/home paths redacted by recorder; archived logs trim trailing whitespace and final blank lines. capturedLogSha256 identifies recorder output before whitespace normalization."
+}

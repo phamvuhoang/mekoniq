@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "taskId": "R01",
+  "gate": "V13-full-integration",
+  "execution": "ran",
+  "result": "fail",
+  "scope": "Frozen pre-review-fix HEAD; not final qualification",
+  "recordedAt": "2026-11-06T05:04:45.470693+00:00",
+  "testRun": {
+    "name": "integration",
+    "command": [
+      "pnpm",
+      "test:integration",
+      "--",
+      "tests/integration",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile=/var/tmp/mekoniq-bvi-final-checks/source-integration-vitest.json"
+    ],
+    "commit": "485563672226941674ceff120ae35c6c5d0ad078",
+    "commitAfter": "485563672226941674ceff120ae35c6c5d0ad078",
+    "recordedAt": "2026-11-06T04:56:47.208358+00:00",
+    "exitCode": 1,
+    "durationSeconds": 397.55
+  },
+  "observedLabCommit": "a3a361559f751c49f4793d676ff9723a71f5bb8e",
+  "runtimeLock": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "a89a077ed12648931a857333f899e3d6c1ea9719",
+    "schemaHash": "8b398544fdeb8127da0697a086283f055126075696a573dd4e8be40b00d56881",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "fe49fcea31da67630fa50e6fe75418967092cee57ab9144959413a529129ce15",
+    "entrypoint": "runtime.mjs"
+  },
+  "files": 120,
+  "passed": 904,
+  "failed": 5,
+  "skipped": 2,
+  "failedCases": [
+    "a worker claiming sil evidence without contact-sensor liveness or separation samples never passes a physics row",
+    "measured physics rows come only from worker events: liveness + clearance pass, a reported contact fails, an overlap fails",
+    "an earlier live sensor and clearance cannot hide later lost coverage",
+    "a recorded collision remains a failure when contact coverage is later lost",
+    "a recorded overlap remains a failure when pose coverage is later lost"
+  ],
+  "skippedCases": [
+    "--clean-checkout exports committed HEAD: dirty false and sourceCommit equal to HEAD",
+    "measure telemetry latency (gateway ingress -> SSE client receipt, one process clock) and memory"
+  ],
+  "disposition": "Included in N06 fix round 1; retain physics/coverage assertions without promoting protocol doubles to native evidence. Full integration rerun required after fixes.",
+  "claims": {
+    "nativeSimulationVerified": false,
+    "hardwareValidated": false,
+    "productionReady": false
+  },
+  "skipClassification": {
+    "--clean-checkout exports committed HEAD: dirty false and sourceCommit equal to HEAD": "Opt-in clean-export test: LAB_V2_CLEAN_EXPORT unset; real clean export separately required before final pin",
+    "measure telemetry latency (gateway ingress -> SSE client receipt, one process clock) and memory": "Optional telemetry latency/memory measurement: LAB_V2_MEASURE unset"
+  }
+}

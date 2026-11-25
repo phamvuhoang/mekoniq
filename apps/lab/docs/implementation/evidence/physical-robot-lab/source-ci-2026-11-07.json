@@ -1,0 +1,28 @@
+{
+  "conclusion": "success",
+  "databaseId": 42359984034,
+  "headSha": "899a83769726aa6840c40a32fb0e89d17a137cb7",
+  "jobs": [
+    {
+      "name": "python",
+      "conclusion": "success",
+      "status": "completed",
+      "startedAt": "2026-11-07T09:30:07Z",
+      "completedAt": "2026-11-07T09:30:50Z",
+      "url": "https://github.com/phamvuhoang/mekoniq/actions/runs/42359984034/job/128366136965"
+    },
+    {
+      "name": "verify",
+      "conclusion": "success",
+      "status": "completed",
+      "startedAt": "2026-11-07T09:30:07Z",
+      "completedAt": "2026-11-07T09:42:04Z",
+      "url": "https://github.com/phamvuhoang/mekoniq/actions/runs/42359984034/job/128366137183"
+    }
+  ],
+  "status": "completed",
+  "updatedAt": "2026-11-07T09:42:05Z",
+  "url": "https://github.com/phamvuhoang/mekoniq/actions/runs/42359984034",
+  "checkedAt": "2026-11-07T10:44:53.560896+00:00",
+  "scope": "Repository CI portable/software tests on GitHub Linux; no ROS/Gazebo or hardware qualification claim."
+}

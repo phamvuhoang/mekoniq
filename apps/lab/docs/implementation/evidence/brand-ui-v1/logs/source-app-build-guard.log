@@ -1,0 +1,15 @@
+
+> mekoniq-platform@ test:unit /Users/hoangpham/source/prv/robot/source
+> node scripts/test-runner.mjs unit brand-app-build
+
+
+ RUN  v4.1.12 /Users/hoangpham/source/prv/robot/source
+
+ ✓ tests/unit/brand-app-build.test.ts (1 test) 538ms
+   ✓ filtered app builds validate canonical and public releases before compiling  537ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  19:37:04
+   Duration  649ms (transform 12ms, setup 0ms, import 19ms, tests 538ms, environment 0ms)
+

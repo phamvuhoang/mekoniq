@@ -1,0 +1,22 @@
+
+> mekoniq-platform@ test:e2e /Users/hoangpham/source/prv/robot/source
+> node scripts/test-runner.mjs e2e cloud-brand tablet-brand
+
+[WebServer] (node:76846) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:76855) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:76876) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:76883) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/cloud-brand.spec.ts:13:1 › cloud login theme, local logo, keyboard focus, error and busy feedback (2.8s)
+  ✓  2 tests/e2e/cloud-brand.spec.ts:23:1 › authenticated admin routes preserve navigation and deny an actor without configuration permission (29.0s)
+  ✓  3 tests/e2e/tablet-brand.spec.ts:6:1 › tablet brand uses local artwork, dark first paint and touch targets across routes (594ms)
+  ✓  4 tests/e2e/tablet-brand.spec.ts:17:1 › all tablet route surfaces remain responsive, offline stays readable and print uses ink (10.9s)
+  ✓  5 tests/e2e/tablet-brand.spec.ts:26:1 › snapshot polling preserves keyboard focus and an unsent field draft (2.6s)
+
+  5 passed (53.5s)

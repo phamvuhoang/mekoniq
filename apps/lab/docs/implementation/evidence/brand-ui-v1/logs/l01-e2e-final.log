@@ -1,0 +1,148 @@
+
+> mekoniq-robot-lab@0.1.0 test:e2e /Users/hoangpham/source/prv/robot/lab
+> playwright test
+
+[WebServer] (node:66228) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:66254) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 31 tests using 5 workers
+
+(node:66261) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:66262) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:66264) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:66265) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:66263) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -   1 tests/e2e/coffee-journey.spec.ts:7:1 › missing cup: visible reason and entity, confirmed reconcile, corrected run completes
+[WebServer] 7:28:20 PM [vite] http proxy error: /lab/v2/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:20 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:20 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  -   4 tests/e2e/fault-schedule.spec.ts:3:1 › scheduled missing cup holds the real pinned mock workflow and offers explicit reconcile
+  -   6 tests/e2e/offline-bv01.spec.ts:6:1 › offline package completes BV01 and exports its pinned report with only loopback requests
+  ✓   5 tests/e2e/controller-report.spec.ts:11:1 › imported controller fixture is read-only and reveals collision only at the recorded cursor (2.1s)
+  -   2 tests/e2e/arm-simulation.spec.ts:6:1 › arm telemetry and ARM03 rows are honest in the mock run; the simulation set is unavailable with a reason
+  -  10 tests/e2e/twin-recovery.spec.ts:16:1 › telemetry stream, stale/frozen states, reconnect, read-only replay, compare, export and a lost session
+  -   7 tests/e2e/twin-inputs.spec.ts:28:1 › UX05/UX18/QA09b: reset, speed-limit draft, saved report reopening and replay remain independent
+  ✓   3 tests/e2e/brand-ui.spec.ts:4:1 › canonical theme, original artwork and keyboard focus (2.7s)
+  -   8 tests/e2e/service-journey.spec.ts:4:1 › paired source runtime drives arrival then human load and handoff
+  -   9 tests/e2e/twin-plan01.spec.ts:10:1 › SYS01: normalized journal/effects are identical at 15/60 FPS and while the browser renderer is debugger-paused
+[WebServer] 7:28:22 PM [vite] http proxy error: /lab/v2/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:22 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:22 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:22 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:22 PM [vite] http proxy error: /lab/v2/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:23 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  11 tests/e2e/ui.spec.ts:3:1 › shell preserves identity, defaults to Vietnamese and offers all screens (1.4s)
+[WebServer] 7:28:23 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  12 tests/e2e/twin-workspace.spec.ts:9:1 › WebGL disabled and reduced motion fall back to a 2D twin with the same controls (2.0s)
+  -  15 tests/e2e/twin-workspace.spec.ts:40:3 › paired source runtime › coffee preset runs on the mock backend with a locked, visible identity
+  -  16 tests/e2e/twin-workspace.spec.ts:59:3 › paired source runtime › layers, legend and one shared selection survive a 3D to 2D switch
+  -  17 tests/e2e/twin-workspace.spec.ts:86:3 › paired source runtime › engineering panel shows units, observed versus commanded and data age
+  -  18 tests/e2e/twin-workspace.spec.ts:114:3 › paired source runtime › mobile layout is operable with the keyboard only
+  ✓  13 tests/e2e/brand-ui.spec.ts:18:40 › six workspaces and three locales at 390px (2.5s)
+[WebServer] 7:28:24 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:24 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  14 tests/e2e/ui.spec.ts:31:1 › configurator links parts, changes estimates and persists with undo (1.6s)
+[WebServer] 7:28:25 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:25 PM [vite] http proxy error: /lab/v2/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  20 tests/e2e/ui.spec.ts:57:1 › world-editor supports coordinate entry and draft export (625ms)
+[WebServer] 7:28:25 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  21 tests/e2e/ui.spec.ts:76:1 › mobile and reduced-motion fallback remain accessible without horizontal overflow (1.1s)
+[WebServer] 7:28:26 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  19 tests/e2e/brand-ui.spec.ts:18:40 › six workspaces and three locales at 1024px (2.6s)
+[WebServer] 7:28:27 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  22 tests/e2e/ui.spec.ts:115:1 › desktop workshop screenshot and WebGL context loss retain configuration (988ms)
+[WebServer] 7:28:27 PM [vite] http proxy error: /lab/v2/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:27 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  24 tests/e2e/ui.spec.ts:170:1 › all three locales fit tablet and desktop, with explicit unmeasured Valetudo values (1.2s)
+[WebServer] 7:28:28 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:29 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  23 tests/e2e/brand-ui.spec.ts:18:40 › six workspaces and three locales at 1512px (2.6s)
+  ✓  25 tests/e2e/ui.spec.ts:205:56 › active imported project survives reload after import (892ms)
+[WebServer] 7:28:29 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:29 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:30 PM [vite] http proxy error: /lab/v2/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  26 tests/e2e/brand-ui.spec.ts:41:1 › primary, disabled and unknown states retain readable semantics (785ms)
+[WebServer] 7:28:30 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  27 tests/e2e/ui.spec.ts:205:56 › active imported project survives reload after undo (1.0s)
+[WebServer] 7:28:30 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:31 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  28 tests/e2e/ui.spec.ts:205:56 › active imported project survives reload after redo (939ms)
+[WebServer] 7:28:31 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+[WebServer] 7:28:32 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  29 tests/e2e/ui.spec.ts:219:1 › failed huge numeric import keeps the usable current and persisted project (1.1s)
+[WebServer] 7:28:32 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  30 tests/e2e/ui.spec.ts:238:1 › empty imported world remains editable through add, undo and redo (899ms)
+[WebServer] 7:28:33 PM [vite] http proxy error: /lab/v1/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:4176
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)
+  ✓  31 tests/e2e/ui.spec.ts:257:1 › changed imported point IDs edit the displayed selection through undo and redo (936ms)
+
+  12 skipped
+  19 passed (17.5s)

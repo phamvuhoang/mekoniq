@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "serve-mobile-stop-v1",
+  "revision": 1,
+  "calibration": "not_calibrated",
+  "maxAbsRollPitchRad": 0.7853981633974483,
+  "belowRestWheelRadii": 0.6,
+  "aboveRestWheelRadii": 4,
+  "loadDropM": 0.1,
+  "loadDropHoldTicks": 5,
+  "assumptions": "Experimental observation cutoffs, not calibrated safety limits. Missing physics/frame/identity is unknown, not a fall. Source journal remains custody authority."
+}

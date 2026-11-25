@@ -1,0 +1,10 @@
+{
+  "profile": "isolated-static-rollback",
+  "commit": "357d6699b2c618d489a054bb23e1c3bcd567f2d9",
+  "buildExitCode": 0,
+  "browserErrors": [],
+  "mainVisible": true,
+  "background": "rgb(11, 21, 26)",
+  "productionChanged": false,
+  "scope": "Clean baseline archive build using existing pinned dependencies; local static boot. Vercel production rollback not executed."
+}

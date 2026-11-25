@@ -1,0 +1,275 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.model-validation-report.v1",
+  "title": "ModelValidationReportV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "model-validation-report"
+    },
+    "reportDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "physicalModelDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "assemblyDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "robotId": {
+      "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+    },
+    "execution": {
+      "enum": [
+        "ran",
+        "not_run",
+        "failed"
+      ]
+    },
+    "result": {
+      "enum": [
+        "pass",
+        "fail",
+        "inconclusive"
+      ]
+    },
+    "mode": {
+      "const": "shadow"
+    },
+    "engine": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "package": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "packageVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "pythonVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "lockDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "adapterVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "policyVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "package",
+            "packageVersion",
+            "pythonVersion",
+            "lockDigest",
+            "adapterVersion",
+            "policyVersion"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "source": {
+            "enum": [
+              "mekoniq",
+              "linkforge",
+              "parity"
+            ]
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "inconclusive",
+              "not_run"
+            ]
+          },
+          "coverageScope": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "result",
+          "coverageScope"
+        ]
+      }
+    },
+    "issues": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "severity": {
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "entityId": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          },
+          "linkId": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          },
+          "jointId": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          },
+          "source": {
+            "enum": [
+              "mekoniq",
+              "linkforge",
+              "parity"
+            ]
+          },
+          "upstreamCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "detail": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "code",
+          "severity",
+          "path",
+          "entityId",
+          "source",
+          "detail"
+        ]
+      }
+    },
+    "nameMapRef": {
+      "anyOf": [
+        {
+          "$ref": "robot-physical-model-v1.schema.json#/definitions/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "inputUrdfRef": {
+      "anyOf": [
+        {
+          "$ref": "robot-physical-model-v1.schema.json#/definitions/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "referenceUrdfRef": {
+      "anyOf": [
+        {
+          "$ref": "robot-physical-model-v1.schema.json#/definitions/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "referenceSrdfRef": {
+      "anyOf": [
+        {
+          "$ref": "robot-physical-model-v1.schema.json#/definitions/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "assumptions": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 1000,
+      "items": {
+        "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "reportDigest",
+    "physicalModelDigest",
+    "assemblyDigest",
+    "robotId",
+    "execution",
+    "result",
+    "mode",
+    "engine",
+    "checks",
+    "issues",
+    "nameMapRef",
+    "inputUrdfRef",
+    "referenceUrdfRef",
+    "referenceSrdfRef",
+    "assumptions",
+    "limitations"
+  ]
+}

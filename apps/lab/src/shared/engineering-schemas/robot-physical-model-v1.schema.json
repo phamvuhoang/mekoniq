@@ -1,0 +1,264 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.robot-physical-model.v1",
+  "title": "RobotPhysicalModelV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "robot-physical-model"
+    },
+    "modelDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "inputs": {
+      "$ref": "robot-physical-model-v1.schema.json#/definitions/InputIdentity"
+    },
+    "robotId": {
+      "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+    },
+    "baseFrameId": {
+      "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+    },
+    "links": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": {
+        "$ref": "engineering-component.schema.json#/definitions/Link"
+      }
+    },
+    "joints": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 1000,
+      "items": {
+        "$ref": "engineering-component.schema.json#/definitions/Joint"
+      }
+    },
+    "drive": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "entityId": {
+              "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+            },
+            "leftJointId": {
+              "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+            },
+            "rightJointId": {
+              "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+            },
+            "wheelRadiusM": {
+              "$ref": "engineering-component.schema.json#/definitions/Scalar"
+            },
+            "wheelSeparationM": {
+              "$ref": "engineering-component.schema.json#/definitions/Scalar"
+            },
+            "actuatorMaxSpeedRadps": {
+              "$ref": "engineering-component.schema.json#/definitions/Scalar"
+            },
+            "driveFrameInBase": {
+              "$ref": "engineering-component.schema.json#/definitions/Pose"
+            }
+          },
+          "required": [
+            "entityId",
+            "leftJointId",
+            "rightJointId",
+            "wheelRadiusM",
+            "wheelSeparationM",
+            "actuatorMaxSpeedRadps",
+            "driveFrameInBase"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sensors": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 16,
+      "items": {
+        "$ref": "robot-physical-model-v1.schema.json#/definitions/SensorMount"
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 1000,
+      "items": {
+        "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+      }
+    },
+    "projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "const": "physical-projection-v1"
+        },
+        "sourceSchemaHash": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "id",
+        "sourceSchemaHash"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "modelDigest",
+    "inputs",
+    "robotId",
+    "baseFrameId",
+    "links",
+    "joints",
+    "drive",
+    "sensors",
+    "assumptions",
+    "projection"
+  ],
+  "definitions": {
+    "InputIdentity": {
+      "title": "InputIdentity",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "project": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "digest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            }
+          },
+          "required": [
+            "id",
+            "revision",
+            "digest"
+          ]
+        },
+        "assemblyDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "world": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "hash": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            }
+          },
+          "required": [
+            "id",
+            "revision",
+            "hash"
+          ]
+        }
+      },
+      "required": [
+        "project",
+        "assemblyDigest",
+        "world"
+      ]
+    },
+    "ArtifactRef": {
+      "title": "ArtifactRef",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "sha256": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "bytes"
+      ]
+    },
+    "Vec2": {
+      "title": "Vec2",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number"
+      }
+    },
+    "SensorMount": {
+      "title": "SensorMount",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sensorId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "sourceInstanceId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "sensorModelDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "parentLinkId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "poseInBase": {
+          "$ref": "engineering-component.schema.json#/definitions/Pose"
+        },
+        "model": {
+          "$ref": "engineering-component.schema.json#/definitions/SensorModel"
+        }
+      },
+      "required": [
+        "sensorId",
+        "sourceInstanceId",
+        "sensorModelDigest",
+        "parentLinkId",
+        "poseInBase",
+        "model"
+      ]
+    }
+  }
+}

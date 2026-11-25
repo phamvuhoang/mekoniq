@@ -1,0 +1,1972 @@
+{
+ "schemaVersion": 1,
+ "note": "Snapshot of source robotics/catalog; every component is a candidate, parameters are assumed unless a document says otherwise.",
+ "components": {
+  "5a8ab24d2eb805573e2a40bb2f0e79120c121c98961cd8c9bb69626435219015": {
+   "schemaVersion": 1,
+   "id": "amr-chassis-ref",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "sku": null,
+    "status": "candidate",
+    "family": "AMR chassis"
+   },
+   "links": [
+    {
+     "id": "base",
+     "visual": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "box",
+        "sizeM": [
+         0.6,
+         0.44,
+         0.18
+        ]
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "collision": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "box",
+        "sizeM": [
+         0.6,
+         0.44,
+         0.18
+        ]
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "massKg": {
+      "value": 18,
+      "unit": "kg",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     },
+     "comM": [
+      0,
+      0,
+      0
+     ],
+     "inertiaKgM2": [
+      0.33899999999999997,
+      0,
+      0,
+      0.5885999999999999,
+      0,
+      0.8304
+     ],
+     "inertialSource": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    }
+   ],
+   "joints": [],
+   "ports": [
+    {
+     "id": "left-axle",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       0,
+       0.25,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "axle-hub",
+     "direction": "bidirectional"
+    },
+    {
+     "id": "right-axle",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       0,
+       -0.25,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "axle-hub",
+     "direction": "bidirectional"
+    },
+    {
+     "id": "caster-front",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       0.25,
+       0,
+       -0.09
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "caster",
+     "direction": "bidirectional"
+    },
+    {
+     "id": "caster-rear",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       -0.25,
+       0,
+       -0.09
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "caster",
+     "direction": "bidirectional"
+    },
+    {
+     "id": "battery-bay",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       -0.1,
+       0,
+       0.09
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "battery-tray",
+     "direction": "bidirectional"
+    },
+    {
+     "id": "tray-plate",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       0.05,
+       0,
+       0.25
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "tray",
+     "direction": "bidirectional"
+    },
+    {
+     "id": "power-in",
+     "kind": "power",
+     "frame": {
+      "xyzM": [
+       -0.2,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "dc-bus",
+     "direction": "in",
+     "voltageRangeV": [
+      18,
+      30
+     ],
+     "continuousCurrentA": {
+      "value": 40,
+      "unit": "A",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     }
+    }
+   ],
+   "models": [
+    {
+     "kind": "actuator",
+     "id": "amr-drive-ref",
+     "digest": "383800387c682e65f0e11a4d7cbb7496a2a1c8544f2a360775b5b1043fe6d301"
+    }
+   ],
+   "documents": [
+    {
+     "id": "selection-worksheet",
+     "url": null,
+     "digest": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb",
+     "license": "internal"
+    }
+   ]
+  },
+  "47e245e6a14c53f3faaca42d35c0bfa8b28870cc78008483ffddb319a215d5cc": {
+   "schemaVersion": 1,
+   "id": "battery-24v-ref",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "sku": null,
+    "status": "candidate",
+    "family": "battery pack"
+   },
+   "links": [
+    {
+     "id": "pack",
+     "visual": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "box",
+        "sizeM": [
+         0.2,
+         0.15,
+         0.1
+        ]
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "collision": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "box",
+        "sizeM": [
+         0.2,
+         0.15,
+         0.1
+        ]
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "massKg": {
+      "value": 6,
+      "unit": "kg",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     },
+     "comM": [
+      0,
+      0,
+      0
+     ],
+     "inertiaKgM2": [
+      0.01625,
+      0,
+      0,
+      0.025000000000000005,
+      0,
+      0.03125
+     ],
+     "inertialSource": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    }
+   ],
+   "joints": [],
+   "ports": [
+    {
+     "id": "mount",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       0,
+       0,
+       -0.05
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "battery-tray",
+     "direction": "bidirectional"
+    },
+    {
+     "id": "out",
+     "kind": "power",
+     "frame": {
+      "xyzM": [
+       0,
+       0,
+       0.05
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "dc-bus",
+     "direction": "out",
+     "voltageRangeV": [
+      22,
+      29
+     ],
+     "continuousCurrentA": {
+      "value": 40,
+      "unit": "A",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     }
+    }
+   ],
+   "models": [],
+   "documents": [
+    {
+     "id": "selection-worksheet",
+     "url": null,
+     "digest": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb",
+     "license": "internal"
+    }
+   ]
+  },
+  "1ef88db2ac5f660e323af5df4645e9661e8bdcd26b842278e0e21d0897e6f5e3": {
+   "schemaVersion": 1,
+   "id": "caster-ref",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "sku": null,
+    "status": "candidate",
+    "family": "caster"
+   },
+   "links": [
+    {
+     "id": "ball",
+     "visual": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "sphere",
+        "radiusM": 0.04
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "collision": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "sphere",
+        "radiusM": 0.04
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "massKg": {
+      "value": 0.4,
+      "unit": "kg",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     },
+     "comM": [
+      0,
+      0,
+      0
+     ],
+     "inertiaKgM2": [
+      0.00005120000000000001,
+      0,
+      0,
+      0.00005120000000000001,
+      0,
+      0.00005120000000000001
+     ],
+     "inertialSource": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    }
+   ],
+   "joints": [],
+   "ports": [
+    {
+     "id": "mount",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       0,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "caster",
+     "direction": "bidirectional"
+    }
+   ],
+   "models": [],
+   "documents": [
+    {
+     "id": "selection-worksheet",
+     "url": null,
+     "digest": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb",
+     "license": "internal"
+    }
+   ]
+  },
+  "bf6e07d519ea737582c39b75c6a1f206af593ad4ab4541cb85f7d3d0e78d2e91": {
+   "schemaVersion": 1,
+   "id": "cup-ref",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "sku": null,
+    "status": "candidate",
+    "family": "paper cup"
+   },
+   "links": [
+    {
+     "id": "body",
+     "visual": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "cylinder",
+        "radiusM": 0.04,
+        "lengthM": 0.1
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "collision": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "cylinder",
+        "radiusM": 0.04,
+        "lengthM": 0.1
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "massKg": {
+      "value": 0.02,
+      "unit": "kg",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     },
+     "comM": [
+      0,
+      0,
+      0
+     ],
+     "inertiaKgM2": [
+      0.00002466666666666667,
+      0,
+      0,
+      0.00002466666666666667,
+      0,
+      0.000016000000000000003
+     ],
+     "inertialSource": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    }
+   ],
+   "joints": [],
+   "ports": [
+    {
+     "id": "base",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       0,
+       0,
+       -0.05
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "cup",
+     "direction": "bidirectional"
+    }
+   ],
+   "models": [],
+   "documents": [
+    {
+     "id": "selection-worksheet",
+     "url": null,
+     "digest": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb",
+     "license": "internal"
+    }
+   ]
+  },
+  "ddce314c28153f83ea998e31c52f20beb1fe20efdef758c782ac174aa93a400c": {
+   "schemaVersion": 1,
+   "id": "drive-wheel-ref",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "sku": null,
+    "status": "candidate",
+    "family": "drive wheel"
+   },
+   "links": [
+    {
+     "id": "hub",
+     "visual": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "box",
+        "sizeM": [
+         0.04,
+         0.04,
+         0.04
+        ]
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "collision": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "box",
+        "sizeM": [
+         0.04,
+         0.04,
+         0.04
+        ]
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "massKg": {
+      "value": 0.2,
+      "unit": "kg",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     },
+     "comM": [
+      0,
+      0,
+      0
+     ],
+     "inertiaKgM2": [
+      0.00005333333333333334,
+      0,
+      0,
+      0.00005333333333333334,
+      0,
+      0.00005333333333333334
+     ],
+     "inertialSource": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    },
+    {
+     "id": "rim",
+     "visual": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0.7071067811865476,
+         0,
+         0,
+         0.7071067811865476
+        ]
+       },
+       "geometry": {
+        "kind": "cylinder",
+        "radiusM": 0.1,
+        "lengthM": 0.05
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "collision": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0.7071067811865476,
+         0,
+         0,
+         0.7071067811865476
+        ]
+       },
+       "geometry": {
+        "kind": "cylinder",
+        "radiusM": 0.1,
+        "lengthM": 0.05
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "massKg": {
+      "value": 1.5,
+      "unit": "kg",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     },
+     "comM": [
+      0,
+      0,
+      0
+     ],
+     "inertiaKgM2": [
+      0.0040625,
+      0,
+      0,
+      0.0075,
+      0,
+      0.0040625
+     ],
+     "inertialSource": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    }
+   ],
+   "joints": [
+    {
+     "id": "axle",
+     "kind": "continuous",
+     "parent": "hub",
+     "child": "rim",
+     "origin": {
+      "xyzM": [
+       0,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "axis": [
+      0,
+      1,
+      0
+     ],
+     "limits": {
+      "velocity": {
+       "value": 18,
+       "unit": "rad/s",
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      },
+      "effort": {
+       "value": 4,
+       "unit": "N*m",
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     }
+    }
+   ],
+   "ports": [
+    {
+     "id": "mount",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       0,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "axle-hub",
+     "direction": "bidirectional"
+    }
+   ],
+   "models": [
+    {
+     "kind": "actuator",
+     "id": "wheel-drive-ref",
+     "digest": "e4807dfc318c09e9fa2d8ce960941e045af53089c9b8814efc8e4bad0883d4c7"
+    }
+   ],
+   "documents": [
+    {
+     "id": "selection-worksheet",
+     "url": null,
+     "digest": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb",
+     "license": "internal"
+    }
+   ]
+  },
+  "eca8af31edb4d80b2eb346ade39df4bb3bdb7df20a98b7dd1c214e1c1250e740": {
+   "schemaVersion": 1,
+   "id": "eversys-cameo",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "Eversys",
+    "family": "Cameo (survey candidate)",
+    "sku": null,
+    "status": "candidate"
+   },
+   "links": [],
+   "joints": [],
+   "ports": [],
+   "models": [],
+   "documents": [
+    {
+     "id": "vendor-page",
+     "url": "https://www.eversys.com/en-us/products/cameo",
+     "digest": "9cb1f5fb1d9d9a11a4faf24fd696ac7e2b5b22cace6cb4381d4f3af1af6ade72",
+     "license": "unreviewed"
+    }
+   ]
+  },
+  "2c79575c38f3694462434e1a784565159090879dec61e231112587a545564fb2": {
+   "schemaVersion": 1,
+   "id": "gripper-jaw-ref",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "sku": null,
+    "status": "candidate",
+    "family": "gripper jaw pad"
+   },
+   "links": [
+    {
+     "id": "pad",
+     "visual": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "box",
+        "sizeM": [
+         0.02,
+         0.06,
+         0.08
+        ]
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "collision": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "box",
+        "sizeM": [
+         0.02,
+         0.06,
+         0.08
+        ]
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "massKg": {
+      "value": 0.05,
+      "unit": "kg",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     },
+     "comM": [
+      0,
+      0,
+      0
+     ],
+     "inertiaKgM2": [
+      0.000041666666666666665,
+      0,
+      0,
+      0.000028333333333333335,
+      0,
+      0.000016666666666666667
+     ],
+     "inertialSource": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    }
+   ],
+   "joints": [],
+   "ports": [
+    {
+     "id": "mount",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       0,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "gripper-finger",
+     "direction": "bidirectional"
+    }
+   ],
+   "models": [],
+   "documents": [
+    {
+     "id": "selection-worksheet",
+     "url": null,
+     "digest": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb",
+     "license": "internal"
+    }
+   ]
+  },
+  "e3acd33c2c36cc336a3e739c07bc85c8e3bda5400879265718f8e97ba33ed3c9": {
+   "schemaVersion": 1,
+   "id": "orientalmotor-blv-r",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "Oriental Motor",
+    "family": "BLV R series",
+    "sku": null,
+    "status": "candidate"
+   },
+   "links": [],
+   "joints": [],
+   "ports": [],
+   "models": [],
+   "documents": [
+    {
+     "id": "vendor-page",
+     "url": "https://catalog.orientalmotor.com/viewitems/blv-r-series-brushless-dc-motor-speed-control/shop-blv-r-series-brushless-dc-motors?pagenum=4&pagesize=25",
+     "digest": "486c69a1f7292191a90b58efb92f916757b7e864f289b9e3dc140a9d51e35fe1",
+     "license": "unreviewed"
+    }
+   ]
+  },
+  "9bdb9c3b7bfc77adfd49166e736d6258f260ddeb59e5f01e18f312b6d0ab32dc": {
+   "schemaVersion": 1,
+   "id": "phidgets-frc4115",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "Phidgets",
+    "family": "FRC4115_0 5 kg load cell",
+    "sku": null,
+    "status": "candidate"
+   },
+   "links": [],
+   "joints": [],
+   "ports": [],
+   "models": [],
+   "documents": [
+    {
+     "id": "vendor-page",
+     "url": "https://www.phidgets.com/?prodid=1193",
+     "digest": "febc5619935c74495b19374e66bb57533bd5966c16f537fe2d5150856fb966df",
+     "license": "unreviewed"
+    }
+   ]
+  },
+  "3579af17453cf900cc13a9ec88188696ffc5b537026f2c0a434e0a5ce10754bc": {
+   "schemaVersion": 1,
+   "id": "service-tray-ref",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "sku": null,
+    "status": "candidate",
+    "family": "service tray"
+   },
+   "links": [
+    {
+     "id": "plate",
+     "visual": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "box",
+        "sizeM": [
+         0.4,
+         0.35,
+         0.01
+        ]
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "collision": [
+      {
+       "pose": {
+        "xyzM": [
+         0,
+         0,
+         0
+        ],
+        "quaternionXyzw": [
+         0,
+         0,
+         0,
+         1
+        ]
+       },
+       "geometry": {
+        "kind": "box",
+        "sizeM": [
+         0.4,
+         0.35,
+         0.01
+        ]
+       },
+       "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+       }
+      }
+     ],
+     "massKg": {
+      "value": 1.2,
+      "unit": "kg",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     },
+     "comM": [
+      0,
+      0,
+      0
+     ],
+     "inertiaKgM2": [
+      0.012259999999999998,
+      0,
+      0,
+      0.01601,
+      0,
+      0.02825
+     ],
+     "inertialSource": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    }
+   ],
+   "joints": [],
+   "ports": [
+    {
+     "id": "mount",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       0,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "tray",
+     "direction": "bidirectional"
+    },
+    {
+     "id": "cup-slot",
+     "kind": "mount",
+     "frame": {
+      "xyzM": [
+       0,
+       0,
+       0.005
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     "mate": "cup",
+     "direction": "bidirectional"
+    }
+   ],
+   "models": [],
+   "documents": [
+    {
+     "id": "selection-worksheet",
+     "url": null,
+     "digest": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb",
+     "license": "internal"
+    }
+   ]
+  },
+  "cda4bb14ebe5e76fb2576f2110cb70583c7e641456c7ee2fe4d45f806ab47a29": {
+   "schemaVersion": 1,
+   "id": "slamtec-rplidar-s2",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "SLAMTEC",
+    "family": "RPLIDAR S2 (variant to be locked)",
+    "sku": null,
+    "status": "candidate"
+   },
+   "links": [],
+   "joints": [],
+   "ports": [],
+   "models": [],
+   "documents": [
+    {
+     "id": "vendor-page",
+     "url": "https://www.slamtec.com/en/s2/spec",
+     "digest": "6154a0c1f5ba71b3f90dfa1fd1aae69075a9e62985010f4ff7d9f12e56e6aab0",
+     "license": "unreviewed"
+    }
+   ]
+  },
+  "322d3992fce141a98be278a525b63bde2dbee56ddf90688e251908fca5b3b323": {
+   "schemaVersion": 1,
+   "id": "ufactory-gripper-g2",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "UFACTORY",
+    "family": "Gripper G2",
+    "sku": null,
+    "status": "candidate"
+   },
+   "links": [],
+   "joints": [],
+   "ports": [],
+   "models": [],
+   "documents": [
+    {
+     "id": "vendor-page",
+     "url": "https://www.ufactory.us/products/gripper-g2",
+     "digest": "d27d619bea6c325747af9e5e89ec1683518809ee2c1e17c9680ae112671ec4ef",
+     "license": "unreviewed"
+    }
+   ]
+  },
+  "842508dfd500f578d9c0b88aa881a1c0d80f230bf5b02f09124122e494216345": {
+   "schemaVersion": 1,
+   "id": "ufactory-xarm6",
+   "revision": "1",
+   "identity": {
+    "manufacturer": "UFACTORY",
+    "family": "xArm 6",
+    "sku": null,
+    "status": "candidate"
+   },
+   "links": [],
+   "joints": [],
+   "ports": [],
+   "models": [],
+   "documents": [
+    {
+     "id": "vendor-page",
+     "url": "https://www.ufactory.cc/en-us/products/ufactory-xarm-series",
+     "digest": "ef9afa0ca7e4cdac2117c518773ebe5eb774e49abd935c1c445009d0f7362f0b",
+     "license": "unreviewed"
+    }
+   ]
+  }
+ },
+ "models": {
+  "383800387c682e65f0e11a4d7cbb7496a2a1c8544f2a360775b5b1043fe6d301": {
+   "schemaVersion": 1,
+   "kind": "actuator",
+   "id": "amr-drive-ref",
+   "jointIds": [
+    "axle"
+   ],
+   "transmission": {
+    "ratio": {
+     "value": 15,
+     "unit": "1",
+     "source": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    },
+    "efficiency": {
+     "value": 0.75,
+     "unit": "1",
+     "source": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    }
+   },
+   "commandInterface": "velocity",
+   "torqueSpeedTable": [
+    {
+     "speed": {
+      "value": 0,
+      "unit": "rad/s",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     },
+     "torque": {
+      "value": 4,
+      "unit": "N*m",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     }
+    },
+    {
+     "speed": {
+      "value": 18,
+      "unit": "rad/s",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     },
+     "torque": {
+      "value": 0,
+      "unit": "N*m",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     }
+    }
+   ],
+   "currentLimit": {
+    "value": 8,
+    "unit": "A",
+    "source": {
+     "kind": "assumed",
+     "documentId": "selection-worksheet",
+     "revision": "1",
+     "locator": "selection.md",
+     "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+    }
+   },
+   "voltageLimit": {
+    "value": 24,
+    "unit": "V",
+    "source": {
+     "kind": "assumed",
+     "documentId": "selection-worksheet",
+     "revision": "1",
+     "locator": "selection.md",
+     "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+    }
+   },
+   "damping": {
+    "value": 0.01,
+    "unit": "N*m",
+    "source": {
+     "kind": "assumed",
+     "documentId": "selection-worksheet",
+     "revision": "1",
+     "locator": "selection.md",
+     "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+    }
+   },
+   "friction": {
+    "value": 0.05,
+    "unit": "N*m",
+    "source": {
+     "kind": "assumed",
+     "documentId": "selection-worksheet",
+     "revision": "1",
+     "locator": "selection.md",
+     "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+    }
+   },
+   "drive": {
+    "wheelRadiusM": {
+     "value": 0.1,
+     "unit": "m",
+     "source": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    },
+    "wheelSeparationM": {
+     "value": 0.5,
+     "unit": "m",
+     "source": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    },
+    "leftMountPort": "left-axle",
+    "rightMountPort": "right-axle"
+   }
+  },
+  "e4807dfc318c09e9fa2d8ce960941e045af53089c9b8814efc8e4bad0883d4c7": {
+   "schemaVersion": 1,
+   "kind": "actuator",
+   "id": "wheel-drive-ref",
+   "jointIds": [
+    "axle"
+   ],
+   "transmission": {
+    "ratio": {
+     "value": 15,
+     "unit": "1",
+     "source": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    },
+    "efficiency": {
+     "value": 0.75,
+     "unit": "1",
+     "source": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+     }
+    }
+   },
+   "commandInterface": "velocity",
+   "torqueSpeedTable": [
+    {
+     "speed": {
+      "value": 0,
+      "unit": "rad/s",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     },
+     "torque": {
+      "value": 4,
+      "unit": "N*m",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     }
+    },
+    {
+     "speed": {
+      "value": 18,
+      "unit": "rad/s",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     },
+     "torque": {
+      "value": 0,
+      "unit": "N*m",
+      "source": {
+       "kind": "assumed",
+       "documentId": "selection-worksheet",
+       "revision": "1",
+       "locator": "selection.md",
+       "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+     }
+    }
+   ],
+   "currentLimit": {
+    "value": 8,
+    "unit": "A",
+    "source": {
+     "kind": "assumed",
+     "documentId": "selection-worksheet",
+     "revision": "1",
+     "locator": "selection.md",
+     "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+    }
+   },
+   "voltageLimit": {
+    "value": 24,
+    "unit": "V",
+    "source": {
+     "kind": "assumed",
+     "documentId": "selection-worksheet",
+     "revision": "1",
+     "locator": "selection.md",
+     "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+    }
+   },
+   "damping": {
+    "value": 0.01,
+    "unit": "N*m",
+    "source": {
+     "kind": "assumed",
+     "documentId": "selection-worksheet",
+     "revision": "1",
+     "locator": "selection.md",
+     "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+    }
+   },
+   "friction": {
+    "value": 0.05,
+    "unit": "N*m",
+    "source": {
+     "kind": "assumed",
+     "documentId": "selection-worksheet",
+     "revision": "1",
+     "locator": "selection.md",
+     "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+    }
+   }
+  }
+ },
+ "quotes": {},
+ "project": {
+  "documentType": "engineering-project",
+  "schemaVersion": 1,
+  "id": "fd01-reference",
+  "revision": 1,
+  "requestedProfile": "engineering-rigid-v1",
+  "runtimeProject": {
+   "schemaVersion": 2,
+   "id": "fd01-reference-runtime",
+   "name": "FD01 reference",
+   "revision": 1,
+   "updatedAt": "2026-11-07T00:00:00Z",
+   "entities": [
+    {
+     "id": "amr-1",
+     "kind": "amr",
+     "assetRef": {
+      "id": "placeholder",
+      "revision": 1,
+      "contentHash": "0000000000000000000000000000000000000000000000000000000000000000"
+     }
+    }
+   ],
+   "world": {
+    "id": "fd01-world",
+    "revision": 1,
+    "width": 8,
+    "height": 5,
+    "points": [
+     {
+      "id": "pass",
+      "name": "Kitchen pass",
+      "kind": "kitchen",
+      "x": 1.2,
+      "y": 3.5
+     },
+     {
+      "id": "bay-1",
+      "name": "Parking",
+      "kind": "parking",
+      "x": 1.2,
+      "y": 1.2
+     },
+     {
+      "id": "t-1",
+      "name": "T01",
+      "kind": "table",
+      "x": 5.5,
+      "y": 2.5
+     }
+    ],
+    "handoffPoints": [],
+    "obstacles": []
+   }
+  },
+  "assembly": {
+   "instances": [
+    {
+     "id": "chassis",
+     "componentDigest": "5a8ab24d2eb805573e2a40bb2f0e79120c121c98961cd8c9bb69626435219015",
+     "pose": {
+      "xyzM": [
+       0,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     }
+    },
+    {
+     "id": "wheel-left",
+     "componentDigest": "ddce314c28153f83ea998e31c52f20beb1fe20efdef758c782ac174aa93a400c",
+     "pose": {
+      "xyzM": [
+       0,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     }
+    },
+    {
+     "id": "wheel-right",
+     "componentDigest": "ddce314c28153f83ea998e31c52f20beb1fe20efdef758c782ac174aa93a400c",
+     "pose": {
+      "xyzM": [
+       0,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     }
+    },
+    {
+     "id": "caster-front",
+     "componentDigest": "1ef88db2ac5f660e323af5df4645e9661e8bdcd26b842278e0e21d0897e6f5e3",
+     "pose": {
+      "xyzM": [
+       0,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     }
+    },
+    {
+     "id": "caster-rear",
+     "componentDigest": "1ef88db2ac5f660e323af5df4645e9661e8bdcd26b842278e0e21d0897e6f5e3",
+     "pose": {
+      "xyzM": [
+       0,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     }
+    },
+    {
+     "id": "battery",
+     "componentDigest": "47e245e6a14c53f3faaca42d35c0bfa8b28870cc78008483ffddb319a215d5cc",
+     "pose": {
+      "xyzM": [
+       0,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     }
+    },
+    {
+     "id": "tray",
+     "componentDigest": "3579af17453cf900cc13a9ec88188696ffc5b537026f2c0a434e0a5ce10754bc",
+     "pose": {
+      "xyzM": [
+       0,
+       0,
+       0
+      ],
+      "quaternionXyzw": [
+       0,
+       0,
+       0,
+       1
+      ]
+     }
+    }
+   ],
+   "connections": [
+    {
+     "from": "chassis/left-axle",
+     "to": "wheel-left/mount",
+     "kind": "mount"
+    },
+    {
+     "from": "chassis/right-axle",
+     "to": "wheel-right/mount",
+     "kind": "mount"
+    },
+    {
+     "from": "chassis/caster-front",
+     "to": "caster-front/mount",
+     "kind": "mount"
+    },
+    {
+     "from": "chassis/caster-rear",
+     "to": "caster-rear/mount",
+     "kind": "mount"
+    },
+    {
+     "from": "chassis/battery-bay",
+     "to": "battery/mount",
+     "kind": "mount"
+    },
+    {
+     "from": "chassis/tray-plate",
+     "to": "tray/mount",
+     "kind": "mount"
+    },
+    {
+     "from": "battery/out",
+     "to": "chassis/power-in",
+     "kind": "power"
+    }
+   ]
+  },
+  "entityBindings": [
+   {
+    "entityId": "amr-1",
+    "instanceIds": [
+     "chassis",
+     "wheel-left",
+     "wheel-right",
+     "caster-front",
+     "caster-rear",
+     "battery",
+     "tray"
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,4176 @@
+{
+  "browser": "Google Chrome 156.0.8078.80",
+  "notPixelGoldenComparison": true,
+  "files": [
+    {
+      "path": "F05-coffee-completed-desktop-vi.png",
+      "sha256": "5c6821551c67d691cf04c684dff190c052e7b18ccd70bcb99a5dab54a8d6a4c8",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F05-coffee-completed-desktop-vi",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 3256
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F05-coffee-run-desktop-vi.png",
+      "sha256": "6badf36cb728a12597fb758e3bc969aa24d38101961ec68a3c3bf48ed1412f71",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F05-coffee-run-desktop-vi",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2496
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F05-coffee-run-mobile-en.png",
+      "sha256": "a9f99bc79f39060944e21c148b7369b506fd966dcfe1ccf35061d1185182e015",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F05-coffee-run-mobile-en",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 390,
+        "height": 4362
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F05-coffee-run-mobile-ja.png",
+      "sha256": "868b0da65e52b6b40a94a3fedb78cea720de3d92b19b357c6dad7bcaac188d06",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F05-coffee-run-mobile-ja",
+      "locale": "ja",
+      "imageDimensions": {
+        "width": 390,
+        "height": 4446
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F05-coffee-run-mobile-vi.png",
+      "sha256": "bfa6a63c636ca7af840e2b01a0cbd9363d67ffceb09009735897eb544b350218",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F05-coffee-run-mobile-vi",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 390,
+        "height": 4469
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F05-engineering-desktop-en.png",
+      "sha256": "ec631385b8d0bc4a0dea6aa0c438e31ee5c936f421b533dfc2823c00ae6249d3",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F05-engineering-desktop-en",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2715
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F05-engineering-desktop-ja.png",
+      "sha256": "71ee458cfcb029a59a1db9c643ffd1f41707e628be4d7469cf03c8a6c21f3daa",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F05-engineering-desktop-ja",
+      "locale": "ja",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2748
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F05-engineering-desktop-vi.png",
+      "sha256": "df33c91efc154d1edad12dec37d78b06ef1bdf168dad1790ec01423ec75a07a1",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F05-engineering-desktop-vi",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2717
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F05-missing-cup-desktop-vi.png",
+      "sha256": "826d77604920cf4fca8bb18b7b622273f30b1141604fec2c7efdc3e61d2b8067",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F05-missing-cup-desktop-vi",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 3008
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F05-webgl-disabled-reduced-motion-desktop-vi.png",
+      "sha256": "f76b5f108c44383809b6f887911ca9ada53fd029572a1bab55141ad2aba359c2",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F05-webgl-disabled-reduced-motion-desktop-vi",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2507
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F06-compare-desktop-vi.png",
+      "sha256": "77f4d2b230d5ced2a8e6686c63f80e1a0dce469f1b3c5f5946db852749881626",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F06-compare-desktop-vi",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 3047
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F06-replay-trace-desktop-vi.png",
+      "sha256": "955720929525b78cc7c58aba3438853f3bd15ad2974e66c9b770fadf216b25cf",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F06-replay-trace-desktop-vi",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 21734
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F06-session-lost-desktop-vi.png",
+      "sha256": "a74bcdd7744f86a816086eca0a5e65b361c99d1fa6d1156b1d9b5136d027b218",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F06-session-lost-desktop-vi",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 3777
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F06-telemetry-disconnected-desktop-vi.png",
+      "sha256": "134cc001554d8efe5456ce575ea12fb372dfba6c1f1b375f4f2ed0ff979c3510",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F06-telemetry-disconnected-desktop-vi",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2195
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F06-telemetry-frozen-sim-desktop-vi.png",
+      "sha256": "77dd56927b9126cbb1aaab8dc6a9b8f0a2f29f10212e8170f3d64ce8b4a9eb81",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F06-telemetry-frozen-sim-desktop-vi",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2195
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "F06-telemetry-stale-heartbeat-desktop-vi.png",
+      "sha256": "165c2d1c30fcf8d219085212b83ccffa16fc5fac4adf10f933aff6f686062523",
+      "repo": "lab",
+      "commit": "3007163fa318c20e25b73dd7648c5f28526d1eb3",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "F06-telemetry-stale-heartbeat-desktop-vi",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2195
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-admin-catalog.png",
+      "sha256": "3368966d62f116a4ec16f0189e4a071bcf0f53667a29af32ce7cba3134e15476",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-admin-catalog",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-admin-chain-configuration.png",
+      "sha256": "11bdb9800d1fffc80ee1f90b71dda9fb9b9d17198536b74e0968522e63c25d12",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-admin-chain-configuration",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-admin-chain-reports.png",
+      "sha256": "0f3a7e8a89846c625b7de4cc42455cf87864535899222644f226063aad4a572d",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-admin-chain-reports",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-admin-customers.png",
+      "sha256": "921fbaed20fae6b73a5944e384e1ba0416416516c5507d6e3d6a9d90d86f31d3",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-admin-customers",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-admin-operations.png",
+      "sha256": "124b59f7339d9142230045ab73afe4cf9f0ecd2d67a4132aa22f66a5c2f476a7",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-admin-operations",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-admin-promotions.png",
+      "sha256": "fe7031efc5a0e42e6c7601c2b6da30e8c3539b8626bf710e9e133283df067a92",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-admin-promotions",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-admin-reservations.png",
+      "sha256": "659199f791fd1315ea509ed754c73d7a95ecd327ff208cf989890f6afd5927d4",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-admin-reservations",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-admin-settings.png",
+      "sha256": "09f18136b3028317a8b550ce2c11e1111cb0854d0f1f8d5fe69d815d812ef292",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-admin-settings",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1958
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-guest-menu.png",
+      "sha256": "d6c49e37d70b3074fc0fa25721824bc9c871d2d2a70fc875f7cca94b3630e686",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-guest-menu",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-guest-order.png",
+      "sha256": "eef9636cb73b42ec6cd21f0f934693af122c0a90a52ba125c8d2c5a8e86c84d2",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-guest-order",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-guest-table.png",
+      "sha256": "d6c4fc2980ff8a0dbc45a4dd96a86662672a1226d47bf3c13ab1af00605e6a30",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-guest-table",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-home.png",
+      "sha256": "c41cf6f535fd604fc84f12c031dfcd4d53f8c8a1fd71b62e2289a1b35881c980",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-home",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/cloud-login.png",
+      "sha256": "1f22492946ab9be1ec13ef2aa3dbb99b3eeb52d7fea93be8e546fd0d7c47796d",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "cloud-login",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/lab-deployment.png",
+      "sha256": "8ca8998d1b7c26b5e7558c1ecf08f1d82c6082d8c2bbd3ad35ed88be97b14fc6",
+      "repo": "lab",
+      "commit": "357d6699b2c618d489a054bb23e1c3bcd567f2d9",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "lab-deployment",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1001
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/lab-design.png",
+      "sha256": "757153369838d294df2ebed6bc0c64cb3dc2320cba9db5e790ceabb1deebab81",
+      "repo": "lab",
+      "commit": "357d6699b2c618d489a054bb23e1c3bcd567f2d9",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "lab-design",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1786
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/lab-restaurant.png",
+      "sha256": "0b4c30131810d744ff95939fe2b98d8cde0947259e363422fb01380d2c397167",
+      "repo": "lab",
+      "commit": "357d6699b2c618d489a054bb23e1c3bcd567f2d9",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "lab-restaurant",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1054
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/lab-results.png",
+      "sha256": "70490eabb03a5f2a9ff594f8fc8b3496735deb0f313ec4304b77181a77a8f347",
+      "repo": "lab",
+      "commit": "357d6699b2c618d489a054bb23e1c3bcd567f2d9",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "lab-results",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/lab-scenarios.png",
+      "sha256": "ac8c84cdab02aa6c0f7894a5db66636217dc85a9dd7305c82b222b297e7e9fe5",
+      "repo": "lab",
+      "commit": "357d6699b2c618d489a054bb23e1c3bcd567f2d9",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "lab-scenarios",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1250
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/lab-twin.png",
+      "sha256": "e98fd625280457f847e3a181f443f0bfe5d2f425ed8b19546d3212d6efecc0ba",
+      "repo": "lab",
+      "commit": "357d6699b2c618d489a054bb23e1c3bcd567f2d9",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "lab-twin",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2418
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-cash.png",
+      "sha256": "41489707a33c84a989fdf495724a5fe4b62cedd9ab4fcf7c91a107b6677f9ad2",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-cash",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-checkout.png",
+      "sha256": "13141aed2a9923625cb673c8331d2821e8ebedb52b7c008b4c3de76001138969",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-checkout",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-customers.png",
+      "sha256": "6da501b49ae88e06b1727159a66060cc6ddbca57246267fada397bdd38c9111b",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-customers",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1008
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-device.png",
+      "sha256": "f011d19cbbd7c79d9bd01a2e486ef3234449803310761bd2a5efad929a8881cb",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-device",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-fleet.png",
+      "sha256": "a585b90f8ede238194456f0ca0366c9d03359e37948b88b2f56fde0c8478e06d",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-fleet",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-guest-requests.png",
+      "sha256": "2bd5cc9bec61a5edf5c11b53fe21c14b7da8f0af499cb7c4ec5c925f3640bd6c",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-guest-requests",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-import.png",
+      "sha256": "26b7cacfbe03acc451c5ff4862da25cecb00ae57ecddb6270a86ff28df919acf",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-import",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1014
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-inventory-reports.png",
+      "sha256": "119e3ecbe77abefa5bc50bba3117ad729678292bfc9843b31cd43af97d26ba6f",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-inventory-reports",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1791
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-inventory.png",
+      "sha256": "af299549643d3560e8be371a162874e51c2892fdd6b5350fd07f130956cc89e6",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-inventory",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 920
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-invoices.png",
+      "sha256": "fb786bf0443536f7b28dce4c90d96442510d1f9d09434c9f8618268c40310b61",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-invoices",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-isolated.png",
+      "sha256": "b4dc8b0122400f07194192e1c79eb431f6aa799771e98be421b1612b460cbe49",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-isolated",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-kiosk.png",
+      "sha256": "c687d8428f74d5484a27e07c44e05208002c50cd34346693f2c825dcb40e31f0",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-kiosk",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-kitchen.png",
+      "sha256": "f7b54db34a92aac53773c74a4b8d4f0a0a5c8c4b8b0d249968ec87f15e1ff4ee",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-kitchen",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-maintenance.png",
+      "sha256": "0c22d72a65d888284b6622fb7e8432fd9448346b2825f69870bbd7f4af286bd7",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-maintenance",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-models.png",
+      "sha256": "aac349da8c5aa95ac9776f4edd3579835176d444232496c9861955386fc3df0d",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-models",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-pos.png",
+      "sha256": "aa9c77ff027eb8252f6ee56027da5f16d65979991f6f4655dda7a5d260691a42",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-pos",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 993
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-print.png",
+      "sha256": "f7a9a9c3c74c62874eb8c5e0122d9b67703e71efd6cc2cf3ffb3a2e44dc5e8a6",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-print",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-promotions.png",
+      "sha256": "89683cbe67178cf6f198b03a2e57faba46a68880f854b8c3828c4074eeffc0ca",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-promotions",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-purchasing.png",
+      "sha256": "4d62d364398ca3fee646553879bf3dfea5a31ed02b57b471d59fb16e58271f02",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-purchasing",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1416
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-recipes.png",
+      "sha256": "1c27e4bc289d5d65a21507118353aaba4977cc9d88e7d103ad6aaf5421c327c9",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-recipes",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-reconciliation.png",
+      "sha256": "8c6c445eed036efcfb430422c1fd41c5ee7b855ef491a3e62211f41d22f54f2f",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-reconciliation",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-recovery.png",
+      "sha256": "750e298e59a394f450668c658efd0a44af6a785e51f459e8eaa28d97113d68de",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-recovery",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-reports.png",
+      "sha256": "4197f83a7077269a941aa14d9fbc8ffdbde556bf4cf59ae04aa808b3b11207dc",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-reports",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2661
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-reservations.png",
+      "sha256": "79c08fae98ae0f8108e78f824b7bdb6761922cb33ee0a30e313e11d7c6daf5a4",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-reservations",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-robot-screen.png",
+      "sha256": "de0981021d6dbd4b8f228106e45b8fc8ccf9ea36202adf73ee80a1c515006c6a",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-robot-screen",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-robot-setup.png",
+      "sha256": "1e54ff00dc7c680029db9f6dbb3323507e36a977431abda0ceaeef7bad36c162",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-robot-setup",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2979
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-robot.png",
+      "sha256": "8843a4a8ad608433326b377400d90e260629af18c449a4578fce01004f3f8058",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-robot",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-settings.png",
+      "sha256": "60908b0d844fdaa469f8462544683a313b9e4beea0d6f57c10676c1399d33759",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-settings",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-staff.png",
+      "sha256": "2e049ba78445b5b5bb789f64956528ad744c7a5654e0c959d42768d8ea0cbcba",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-staff",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/tablet-stocktake.png",
+      "sha256": "a23f3540bbde6d3dd5cf5e1be9f3a63fc8f137bd7bb0af410ede3e0137ae1ae9",
+      "repo": "source",
+      "commit": "5c86337867389c063b4dbf6b9371266ae3f238bb",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "tablet-stocktake",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/trial-index.png",
+      "sha256": "580cd03a7e2697c844c122a4ae6e53c763eeceb7724bfb141922c04294bb1a07",
+      "repo": "trial",
+      "commit": "6298f8315ac0c89cb233024c42b8b9c035dd1d9f",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "trial-index",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1495
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/trial-map.png",
+      "sha256": "7610164f6bd473c8e12f99646498e8a8e150fddccb7763e262e75b86e62d5db8",
+      "repo": "trial",
+      "commit": "6298f8315ac0c89cb233024c42b8b9c035dd1d9f",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "trial-map",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/trial-robot.png",
+      "sha256": "5c1b8d1ecb710a9cb8ff8fe1c3bdb46a92f61e1619b62a7f3fc38bf280e48360",
+      "repo": "trial",
+      "commit": "6298f8315ac0c89cb233024c42b8b9c035dd1d9f",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "trial-robot",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/trial-setup.png",
+      "sha256": "82df51d570d676a5cc5ba3c9e23cd7411d9ef928c903e2e70cdffda69b03b09c",
+      "repo": "trial",
+      "commit": "6298f8315ac0c89cb233024c42b8b9c035dd1d9f",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "trial-setup",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/trial-station.png",
+      "sha256": "5d74fa73c326bd02508afde6a6e9cf2a7b945e9e59a167533f772edcfbce0d9e",
+      "repo": "trial",
+      "commit": "6298f8315ac0c89cb233024c42b8b9c035dd1d9f",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "trial-station",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "baseline/trial-table.png",
+      "sha256": "1653a024c3ff39af4d76cfe9c94b9bee4b2931c77c9f0b2a669f98e0b59c268e",
+      "repo": "trial",
+      "commit": "6298f8315ac0c89cb233024c42b8b9c035dd1d9f",
+      "brandVersion": "pre-v1",
+      "stateIdentifier": "trial-table",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "foundation-gallery.png",
+      "sha256": "6e31016477cac79bae9fb8740a28ef544cc0df738609f402f304eef619a49885",
+      "repo": "source",
+      "commit": "b50e971e2ba677aa1c3be61e7ea9493aac8cf706",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "foundation-gallery",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1273
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-deployment-1024.png",
+      "sha256": "81712e0609f1ba0834d8796b63e5f3bed035e3ed1df22a8edd8cd24450cee750",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-deployment-1024",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1024,
+        "height": 1605
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-deployment-1512.png",
+      "sha256": "9c9cae24ece447dda2fa4fc33b8c31ed742128f07a22a7072236f3322ead3eea",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-deployment-1512",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1512,
+        "height": 1010
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-deployment-390.png",
+      "sha256": "a1d4769852b11f6b2277d6f51fefb3181e2879849dd5268d9c0fb63ea5d7b13c",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-deployment-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1991
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-design-1024.png",
+      "sha256": "b7b0830b549fb25d1d4bbe0d9aee4d6c9a47ef5c20c4a1c86f8223ce7429de8a",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-design-1024",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1024,
+        "height": 2594
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-design-1512.png",
+      "sha256": "2d7653477483791d8fef8db6a6ac8b366edb853e0701f2fff6823322db9fcd43",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-design-1512",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1512,
+        "height": 1936
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-design-390.png",
+      "sha256": "e5adfc0ebe900ce4e97323d603aab8196959a29001803bf49109d3dcb818697a",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-design-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 4047
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-restaurant-1024.png",
+      "sha256": "e45a61d8e3008020ca50105822763f757df67c2cd70281cab283214136ebbe0e",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-restaurant-1024",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1024,
+        "height": 1088
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-restaurant-1512.png",
+      "sha256": "03c49a8727c632904b1ce7dde6c9ae22ed4547018202682fb5e79230fd60c73e",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-restaurant-1512",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1512,
+        "height": 1063
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-restaurant-390.png",
+      "sha256": "504e3ebbe818557c11b72197d1897a7259f0459c9b0be83b1836e760183d510d",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-restaurant-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1682
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-results-1024.png",
+      "sha256": "1b20ce130bac36813bd93a85942b8e6c1cafcd04420232b39f5724a0bad59fbc",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-results-1024",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1024,
+        "height": 1000
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-results-1512.png",
+      "sha256": "9dd8848911c535069951311b530cb70a77794652301850353b652f168d7963b8",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-results-1512",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1512,
+        "height": 1000
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-results-390.png",
+      "sha256": "f00c729079ad3352bca691ea5a446aa9e5ffd525860267341d8394c0f41d90c4",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-results-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1003
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-scenarios-1024.png",
+      "sha256": "80003f8a2d69375feb2cb30c9707272c24270d049f604b44260e4aab1a6e4306",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-scenarios-1024",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1024,
+        "height": 1913
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-scenarios-1512.png",
+      "sha256": "fc7f640d15fc9a2e48b0e4be7652080ecd6f703fc81d02e1c1ecb7a79a9c6cdc",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-scenarios-1512",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1512,
+        "height": 1306
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-scenarios-390.png",
+      "sha256": "9ac0670f2452332a77a7b0490b9567c1f618040ed19faa71128d8e206f18f92a",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-scenarios-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 2146
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-twin-1024.png",
+      "sha256": "a0bee0147c0afbdc35e542f98afba6a1e2c501fe7dfee84f909beccaa9297c76",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-twin-1024",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1024,
+        "height": 3376
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-twin-1512.png",
+      "sha256": "e115f171acc900e5d2127c85c12bf31d8596add7a743a02d45c2f64be75154a9",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-twin-1512",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1512,
+        "height": 2445
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "lab-twin-390.png",
+      "sha256": "4f1c0425f4629ae8458ad80e565b7e9750855f9e8b022f2f8185157027735674",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "lab-twin-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 3999
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "preview-lab-deployment.png",
+      "sha256": "091319db064689979589bd104efa4e4a0d6abc4a6ad4f63405553656430d1a85",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "preview-lab-deployment",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1004
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "preview-lab-design.png",
+      "sha256": "d39c77608964b9ce355c00080e3614755bdbeeb24a5e69cd8ed794f1313da3ab",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "preview-lab-design",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1936
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "preview-lab-restaurant.png",
+      "sha256": "52f8dcb282c0672dfc2f3c84d1c938227a571726ccd45eb26e4f884ef16b3054",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "preview-lab-restaurant",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1063
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "preview-lab-results.png",
+      "sha256": "5ae5e519c788d432923e9f7343eff6a54d4a813b15addda8245fda6ba3240dc0",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "preview-lab-results",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "preview-lab-scenarios.png",
+      "sha256": "062c61e4ed3c5b6d2cc2607cd414d574651d17b1271596aeb873a9227004cd35",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "preview-lab-scenarios",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 1306
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "preview-lab-twin.png",
+      "sha256": "d36b437d52dedf62910a8cc8bdebc0233286289dd77dfb26ab9245ae8be7efe1",
+      "repo": "lab",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "preview-lab-twin",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2446
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "preview-source-.png",
+      "sha256": "992cb5f80ca909d6269caf0a2c3cc39a68fc9d1d39f99535dbf1b35d17a90d08",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "preview-source-",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "preview-source-login.png",
+      "sha256": "47684c6f8c02aa8d9fa80d6d416c7e7cb080acbb2b3a3191d3cefc12ccfc15c1",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "preview-source-login",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-catalog-1280.png",
+      "sha256": "fa8969e098049d64851c729b8862f4aa2e94eb974fe1f32881829784f8842b9c",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-catalog-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1724
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-catalog-390.png",
+      "sha256": "2a11fd3e62584ff9ec90a89a2cffbce9668c91ecebbb5d284a1edbab1c2ebd64",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-catalog-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 2282
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-catalog-800.png",
+      "sha256": "c2b121528cf930ed1c0c4afb1fd4d8032d58f343fd7c021abbd52bd28ef02364",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-catalog-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1828
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-catalog-pending.png",
+      "sha256": "d78dbd19022fce474738eb5202c52f93298b9143d157bc5b66da29a94598eeff",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-catalog-pending",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1684
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-chain-configuration-1280.png",
+      "sha256": "9e4945cbc4b6cf33c6dc257cafb2a52fcebc456b7aa49e12a582476e1c9276f6",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-chain-configuration-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1025
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-chain-configuration-390.png",
+      "sha256": "ebe367d83265d55a9d8fde14a309974bb273dc309cc04436cf921844efb44d42",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-chain-configuration-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1536
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-chain-configuration-800.png",
+      "sha256": "d70fcecaa1c3c626ce76d4baaad01a84ef2499bafd9377373eae3151f9caadbd",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-chain-configuration-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1337
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-chain-reports-1280.png",
+      "sha256": "fedb9b5054096907c4c7dc0d9e882e17eae255089ffd8a773d1fee9934e84d6f",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-chain-reports-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-chain-reports-390.png",
+      "sha256": "af9b39a1ae0cfeeac1acff41a1c7f6318c385295601da5564ab5b1ff57db6a74",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-chain-reports-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-chain-reports-800.png",
+      "sha256": "fbc528341fc757e79df17f9b2abb687c8c588e41c163e9db24a7b59f88d8aad7",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-chain-reports-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-customers-1280.png",
+      "sha256": "39e119c70b9d530f048176b45df9f692ac3b8adacf10cdc7804f3844285121cb",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-customers-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 912
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-customers-390.png",
+      "sha256": "6487fc69b3ecffd00803f20aed7e6deb1b26df975f77f298b3f0ebbbd248206e",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-customers-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1269
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-customers-800.png",
+      "sha256": "e1440b8961a22665fea9b59f3decd5f37bceaffa432de35b24244e4fb1113b82",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-customers-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1194
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-operations-1280.png",
+      "sha256": "7f3fc3584137fd2e45351ddb10f475eac29112919891a7940ede15797665414e",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-operations-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-operations-390.png",
+      "sha256": "4caa52a1c3cd78797c36b024008e71bbb0580d0eb5bf53f6fd6875badb1b4046",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-operations-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 970
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-operations-800.png",
+      "sha256": "5a88598155cfd8d1928cfd30e911c6a3ea3532e91202978357a5c594762de66d",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-operations-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-promotions-1280.png",
+      "sha256": "3d64f5105d2b76401ee65b5fe41cfa2b586415e8817bf099b5b6148b160a45c5",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-promotions-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1905
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-promotions-390.png",
+      "sha256": "080af0b028609cb0f7ee8f2ce7570378353befd9b5767b18aa5c2668007ffb85",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-promotions-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 2230
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-promotions-800.png",
+      "sha256": "5ee63cd8aeeda1fb5ad179f4729a4909fa8243d9b47e01b1473d726e3d561f5a",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-promotions-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 2163
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-reservations-1280.png",
+      "sha256": "752284ec0d585d792d828431b2fb83d861b8ea67772f164f52553f7e643ad137",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-reservations-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1429
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-reservations-390.png",
+      "sha256": "f0eba39946f1851889e4746212064ee95144c0ce0e26cf696166338dcc61ab46",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-reservations-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1808
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-reservations-800.png",
+      "sha256": "a43f2559eca5bad1bf987d70eaab555c022872cbba64464d08b46a337d0e411f",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-reservations-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1509
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-settings-1280.png",
+      "sha256": "8eed6d8e4c81eccb358caabe5d53fb8957bbccfc7cddb77e357a4065febcf0db",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-settings-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 4245
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-settings-390.png",
+      "sha256": "35fdc9779afb93214ca81c5b8e43586abbd45cb718cc55c733e9068119068b61",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-settings-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 4682
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-admin-settings-800.png",
+      "sha256": "a4a36f2837dcef9b8c7ca9e0425949495ece0906d844726ca44bbd195996fc60",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-admin-settings-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 4515
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-guest-table-unknown.png",
+      "sha256": "a5c0af9d89f7f405f74fa146f7c2e0f720275d13eb06a8db8f8272fb47f52d40",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-guest-table-unknown",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1147
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-login-error.png",
+      "sha256": "457bb234af48f82fac1e07826897f3eef4b74cb08daddfb622532039b0b34527",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-login-error",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-login.png",
+      "sha256": "d375de2dd9841b969d07562cc5b028438a6fe51d8eaca5a62604dec09e7cf8ba",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-login",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-home-1280.png",
+      "sha256": "1d8f0e9e5c05fc528ab7a7160f85053325f6211d5e4a9257d89efb53a1416993",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-home-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-home-390.png",
+      "sha256": "7a002eb12b8f3098cd3fcb776cba57b675bee30a315a1dc790a7ce79fc22bda8",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-home-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-home-800.png",
+      "sha256": "86ee051d797fd7ce1c4d467d85759c7c9bad5f09b98c5c09961405ec58de9f0c",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-home-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-login-1280.png",
+      "sha256": "7888572686d3cd21b3c45ea8eabfdcfc83e0ecda6ef3d9531a4ce874f3b8a5b9",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-login-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-login-390.png",
+      "sha256": "032934429350ba25fb974cbf4ea4ee553d2daa89c364a71a189f899c17352c81",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-login-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-login-800.png",
+      "sha256": "fa87d592922325a39a78e6972cc4cf0d2b94f9522df9230082720dce255d2eae",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-login-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-menu-1280.png",
+      "sha256": "145d009c852dc593a404b23da5ba628ede6093a46b72a5794a7cc9ffa28d8c15",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-menu-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-menu-390.png",
+      "sha256": "470b3acf4db120b2829d4ca133cbecd738062431adf35bb32c53add11f43317e",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-menu-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-menu-800.png",
+      "sha256": "3b00aaa91f765f7f1c8756e3964a4390955dea40317a57b1d1cc1dfcc94896cb",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-menu-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-order-1280.png",
+      "sha256": "93239c131d538b1ba266f1e4930b1bd9ec4fb73c9b39da0e6d44a371979de037",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-order-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-order-390.png",
+      "sha256": "7e264b4685247113846b5a8909bcc5e429c4eb211170d4f51b6d4b4aeeb6699a",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-order-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-order-800.png",
+      "sha256": "0adc245a4071c5e21f4aac5a6ab06c7ceb8c666d02344ecadc60c8e244c10e46",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-order-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-table-1280.png",
+      "sha256": "70229f0d3ece955a8fcbc545314f80a893dbc46db538ed7f3d62df3aeb742209",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-table-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-table-390.png",
+      "sha256": "b59f8ac0a0dea37ec90f68c651f62bef8c912897198465e1b470f535e51f8fb9",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-table-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/cloud-public-table-800.png",
+      "sha256": "e6a3d686770a6fa2bec4dbd84d9399e27045d4b56331019a8b5420c5497a2c6c",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "cloud-public-table-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 900
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-cash-1280.png",
+      "sha256": "5b4a8b703897d421648e055107b01c11a31df8872743e9a2d78f93b075005ceb",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-cash-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-cash-390.png",
+      "sha256": "58e2b24da145b432d874c9a84deb61e67113cb93c6281cd9c89a96733ac11fa0",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-cash-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-cash-800.png",
+      "sha256": "50818ab525be93fab7d88d6bf845bb700c186d887b16765695a0862ea309e3fd",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-cash-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-checkout-1280.png",
+      "sha256": "4d98d2947871efb1faa140c882f9f5ce664e5b80b249c5fbb7e427aae0f0a4a2",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-checkout-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-checkout-390.png",
+      "sha256": "95e1221f61010bff5cf022c36b6902794fa8dc99ea785a4fd2ef2782d198e132",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-checkout-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-checkout-800.png",
+      "sha256": "40d2bc59289ebe6a898b441b6593a1bc9635d951c0baccf925022a3c0d958b00",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-checkout-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-checkout-populated-danger.png",
+      "sha256": "82228685183e8f25ba13151d318e46df7ecc0b156c629ec7a88e1ecedfaa24c1",
+      "repo": "source",
+      "commit": "8a52cb6d2d2c5b1a46199642699775caf704b21a",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-checkout-populated-danger",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 2892
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-customers-1280.png",
+      "sha256": "a92ed96c46eeeaa7ff4988e9f6e70af8f1324d53cdb8d2657f582b30262249bc",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-customers-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-customers-390.png",
+      "sha256": "b42cfb7846d82fc8811a1c33b6c673779ef08008ba5396eec0381ae32587eff6",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-customers-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1625
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-customers-800.png",
+      "sha256": "b55e8f9009045584211edd90df28c3d165541f96c8cd64175b0e71a2eab5707e",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-customers-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1303
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-device-1280.png",
+      "sha256": "0794684eaaac8b44b1f9d9588550b518af358f3609792d10ba3b89d17f5d5922",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-device-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-device-390.png",
+      "sha256": "7f936b2a942f7d540c1e930ec378ae9e8b6e18efaaed60077cf908e573eaac84",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-device-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1300
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-device-800.png",
+      "sha256": "05b00fe72a59ae7189f53936c58d22968317a71268c77bbdf8e6e8e9fc5af54b",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-device-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-enrollment.png",
+      "sha256": "de1d5417078dc19a959346595018749305d997caaa1157fe1458dde8d6d2062f",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-enrollment",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-fleet-1280.png",
+      "sha256": "a729464481f99d0308098c1d4eaadaced2d3e2700c2b51b198f4e1e22bea5dca",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-fleet-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-fleet-390.png",
+      "sha256": "253b67758e513542220b7faae3dbe46ad31716deb53aa7e3e91e241e9703db33",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-fleet-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1512
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-fleet-800.png",
+      "sha256": "c625d45878e640b55e2939e804f83f9d1bcfffc52de6f4defd06a89b04aa23a0",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-fleet-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-guest-requests-1280.png",
+      "sha256": "6990193322a6caea517f2ce457e2b0b49fde850205c10a248e7c20483d3ea534",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-guest-requests-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-guest-requests-390.png",
+      "sha256": "47aaebf3306b1fecee75fab9b872e00b0518b1d033962d1e4a7bdabdc74c7568",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-guest-requests-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-guest-requests-800.png",
+      "sha256": "f3d152a5a17ec80e91e9883e4e735b2e00ffab5759c194cb53d93281a482b832",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-guest-requests-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-import-1280.png",
+      "sha256": "012e4788df5fa5668393edf7e94bf87cddb7aa1c08320233289a450a84cf064d",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-import-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-import-390.png",
+      "sha256": "92659d55bac901b5725429d07806115c1195a01dbfda9ffe30e6e36f4eeea039",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-import-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-import-800.png",
+      "sha256": "22c01e802836feba6a20799ce5a7f47ecf8fb36be4b83b7e5c79311f67b7fa57",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-import-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-inventory-1280.png",
+      "sha256": "566f4269433c2d0045dcfed6a6551a1c07f2e1d02b974810135564a189ae6d96",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-inventory-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-inventory-390.png",
+      "sha256": "090adb5524f4b77043868dcfd19ac92000f6b0a4fcc479bc407b9ea4f5264716",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-inventory-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1882
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-inventory-800.png",
+      "sha256": "a5efe91b77345ad345ca22d86795b8b4cf744dbbe2b3b3f6bc4f3d57cc072869",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-inventory-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1347
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-inventory-reports-1280.png",
+      "sha256": "e3a37c0bf86d027435814b8fff7a16d75cf28380b9f5d2d3c8b3791530530425",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-inventory-reports-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1889
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-inventory-reports-390.png",
+      "sha256": "be5692704507b6eac1cf4164cbd2d89d9108dbfcc43fe9e4739eb0290999895c",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-inventory-reports-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 2430
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-inventory-reports-800.png",
+      "sha256": "14adc5e79edb87842482399b681736e70171813b5e900b92c98d263eb5251a6d",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-inventory-reports-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1932
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-invoices-1280.png",
+      "sha256": "d5befbe317e67c84ee0f15956e7b6f1f50338e648fd47a3cfd80b2321d88e3c7",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-invoices-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-invoices-390.png",
+      "sha256": "0fe1437f033ee00b78827d81ff01137a9d79b3be1a46bfabf597491b2b3cc8e0",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-invoices-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-invoices-800.png",
+      "sha256": "35b6b85804ee760a0be9873fcced93c7893ee15b1b239d72846d52e9ce02964a",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-invoices-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-isolated-1280.png",
+      "sha256": "9252fd30e7da8a609b957a5d367ed3cec666caa4f5fcd88881078ed3113d1c7c",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-isolated-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-isolated-390.png",
+      "sha256": "ab9ce2e1ca79c9fdc8b3f11fde2b07b3502e4690d5048032b7e47c01d43ec252",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-isolated-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-isolated-800.png",
+      "sha256": "2af91079deafe9ee0424caf14d663c9e23de2e86bc4dda4dd37b7735e08e2bc0",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-isolated-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-isolated.png",
+      "sha256": "f6a38d757a1aff45c4736ad4d678a072b7570aa8ccc2596ffab42a6a7ee9458b",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-isolated",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-keyboard-draft.png",
+      "sha256": "6fa8d516ac3d426285273697de6cd7f19a07fed22233683bbb81d3357f755a77",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-keyboard-draft",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1063
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-kiosk-1280.png",
+      "sha256": "04d58730682fc6bd85f60d4319ab02c207f578426aaf8dd630bc0275890dc31f",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-kiosk-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-kiosk-390.png",
+      "sha256": "3f5e40fe06d634e08889828b4798207dbb223f8edd0a2599b0f90210ffe8fa87",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-kiosk-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-kiosk-800.png",
+      "sha256": "6f907f09de247d3cd31ebd3a5f487eb600875c6bb57cb468d4a4ef867743aa72",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-kiosk-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-kitchen-1280.png",
+      "sha256": "77bd3c4d39feb026dfe5704ab0fef154b2b05ab3f3056dffb4da95dd16a31760",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-kitchen-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-kitchen-390.png",
+      "sha256": "5c6e2dfc3eea97c0a74cbc137153e9ae93bcfcecb7bcd006c26dcf87bcc349b0",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-kitchen-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-kitchen-800.png",
+      "sha256": "d3804354477f0953c91e895f73d7cce23c80d65449d14752d86cda16b49ca567",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-kitchen-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-maintenance-1280.png",
+      "sha256": "cc5bfe4113468949c854cd467d61ebc631136c822d1abbfd57aa3201a588a5c5",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-maintenance-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-maintenance-390.png",
+      "sha256": "4b5d4c2c324be1ab9ac3a7beb309ad69ed4aadbaa8689842a6d604228a77e7c4",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-maintenance-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-maintenance-800.png",
+      "sha256": "7b6a4cb193a76f7b751546c1d19fabca7a73767fe3188a7cd25acc7f744b6a53",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-maintenance-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-models-1280.png",
+      "sha256": "22c24ae2c0bc656ae79f148768119f26b2daf182d605a26ff2906f8896c1c64d",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-models-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-models-390.png",
+      "sha256": "23e1019fa4ddb2730b5057876861e2d88ccce5d6cb0ffcc20b394ba476c4c331",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-models-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-models-800.png",
+      "sha256": "1d58e28ca48597328396f232862e6d245e4b830696e41139816e2fc6f1d9299c",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-models-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-pos-1280.png",
+      "sha256": "45ecf49b4e340b369c88d38fad47479737a6fdc6e742e705c120333186954427",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-pos-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-pos-390.png",
+      "sha256": "d4fb20098c162cd6272b877d42c0d9540e3dc429d3f16b3eb2f6bdfc9da212ed",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-pos-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1405
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-pos-800.png",
+      "sha256": "fd50d69d8ef83b2d450769d6db3a9cbd83ad152e49d765aab4cb9f7fc0907924",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-pos-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1395
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-print-1280.png",
+      "sha256": "be00cf0a7531451f3919101c58d0cd64a46cda93dc9a4f0000285d9980db8cda",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-print-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-print-390.png",
+      "sha256": "f8f43ad16d26681db7e00213fe3679b36e3885d35b871705f48a8a77c057cb68",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-print-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-print-800.png",
+      "sha256": "2f5b62e2f6fd94411bc709483a886703eb5ab9d85f65dc416208ed9804c9b735",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-print-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-promotions-1280.png",
+      "sha256": "f5bd763e30bb49fbc53f666554e3fbc50a65c56d671b6e522d5553efb9513555",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-promotions-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-promotions-390.png",
+      "sha256": "9b5962fdae45b544e07e5c3e8cd754c64b959f71020565ac8b9f28579a0d3952",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-promotions-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-promotions-800.png",
+      "sha256": "64393865393036684a4c690ed1f97d7ab3d54049d576e399218aa7678eda2337",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-promotions-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-purchasing-1280.png",
+      "sha256": "cac30ed3288785a86e51d95bea0883ca0884a7766a6af8dd626fdaf4a5b0ea2d",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-purchasing-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1613
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-purchasing-390.png",
+      "sha256": "d7c6214cc58cca009d5ac74ada90a94f7f009174362d71768893498cae391bef",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-purchasing-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 2257
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-purchasing-800.png",
+      "sha256": "79f54f672ee82ab36115caca921b6189ce9987cc3a2d49fbd149a5d394ef1b90",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-purchasing-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1860
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-recipes-1280.png",
+      "sha256": "a508c95f2d3386871fec8cfe081a6b215576bf991c1c79f5ee72b6fe0cce7a1f",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-recipes-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-recipes-390.png",
+      "sha256": "c4b4483d433668c91346446f76425408890afb96c6dae2c7345fae0dc85c8a11",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-recipes-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1326
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-recipes-800.png",
+      "sha256": "3a4cfd48d7b3b8132a01855284d421d60a3ff28f654c6a6c99e5689aa501a1a7",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-recipes-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-reconciliation-1280.png",
+      "sha256": "045ae84918cf16ff796c2e8d8eaa83d065cf3ddef9345ade4111f8ce829f255d",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-reconciliation-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-reconciliation-390.png",
+      "sha256": "f19eb4e7ab8d393f8b94e593daf6d3891a9cb6a9cea6a005882052ebd8c8ca81",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-reconciliation-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-reconciliation-800.png",
+      "sha256": "70a23d2461d3dcea55297f002cd914fae431ba3e0d7206f6914dd8be7c50bebe",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-reconciliation-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-recovery-1280.png",
+      "sha256": "9441f371aee13bced7bb164d2a3ee92613c817d71525e8c6aacba6dd2359996e",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-recovery-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-recovery-390.png",
+      "sha256": "ca75d2bf906f08aee352056c559cbd9f997d5bda4a3284d26453f3409551f14c",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-recovery-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-recovery-800.png",
+      "sha256": "283f96c65acda048475fa443bbead99c067b12d0d3cdbd67843dee754207f6a2",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-recovery-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-reports-1280.png",
+      "sha256": "d9d479de1af87dffac72c6bb75c52a9028fd71e51f0dc6ece262f012f9194c88",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-reports-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 2681
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-reports-390.png",
+      "sha256": "5a4ad3fd4bcdb755798ee7da3296f409eb9c17749bb79eb05fde33844066857a",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-reports-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 3756
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-reports-800.png",
+      "sha256": "0bd65482f5f2bee8926acf513fdf5cd00ef0a670e8b21a03852284050263a6e2",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-reports-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 3655
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-reservations-1280.png",
+      "sha256": "992cfce8b714cfc7e906e5451b526aed75dbd5f1696f04475ddafaa039f0e0be",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-reservations-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-reservations-390.png",
+      "sha256": "0dd50675967f62303fe42aa31dd738b2e1b3d8b514bc5fce999ec5f5915d2b72",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-reservations-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1860
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-reservations-800.png",
+      "sha256": "9fc30bf124197cd3f0764ec917c35dbe09e4db2a7a85a51b45f407efaf63f773",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-reservations-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1325
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-reservations-populated-danger.png",
+      "sha256": "3fc197073cc9ffb100a003b5f152e881de633782e2078b81fe65870ad3a40d2b",
+      "repo": "source",
+      "commit": "8a52cb6d2d2c5b1a46199642699775caf704b21a",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-reservations-populated-danger",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1546
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-robot-1280.png",
+      "sha256": "ba94a225584dfc2185753da91cc329d01db87221f149d584d4808f254fe29f08",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-robot-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-robot-390.png",
+      "sha256": "545958c24d15b2c08a02392ad83c3e3ee182c2c1e060bd0a70270b89b06b1726",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-robot-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1512
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-robot-800.png",
+      "sha256": "2edde32686a43a29b29b42d4b831f262a4568733b7a3a00ab53ae4c9f5c028f8",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-robot-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-robot-screen-1280.png",
+      "sha256": "4f1ad3a87f45a24417a6424b3ff4f9fe3a7046b651df9c4b89ef30634c1e21c6",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-robot-screen-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-robot-screen-390.png",
+      "sha256": "0e5411764a58251428ec19063ef9928153714aab571873bb3676c5828ac09a88",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-robot-screen-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-robot-screen-800.png",
+      "sha256": "6992803e4417134a57c38eb8d2ead92aec54b02f4d4ac0002eb33206b1f165fa",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-robot-screen-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-robot-setup-1280.png",
+      "sha256": "b9e3c347475f30fc38d100e33ae76765c1c51fd57996b43b1513a1c8c28d22cf",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-robot-setup-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 3153
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-robot-setup-390.png",
+      "sha256": "936a40b0e9592389dcc6d8f1aa1e3c99e8496a0dca11b410198bb71bdfefa719",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-robot-setup-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 3424
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-robot-setup-800.png",
+      "sha256": "275ff93ef39ae3899663022f78ac5be4f528d59813ea65fe8fc647c72b7aac2f",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-robot-setup-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 3121
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-settings-1280.png",
+      "sha256": "4322bf13a78664bea3128db76aa2dd47f2558db6179ae84b6be07b0eb306a6cc",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-settings-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-settings-390.png",
+      "sha256": "546bed0b73c4c1c77fd902072682679cd0d9800a29ca26cc909c5be9190784d5",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-settings-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-settings-800.png",
+      "sha256": "96d603ea2c85cc91e45ff3403988064f534c116b85d5c3b5110a12ca0e20fa67",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-settings-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-staff-1280.png",
+      "sha256": "444296cc35a6256124661895cf1b03ffcd895e4fb65b9fc2409a491c6d4b095f",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-staff-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-staff-390.png",
+      "sha256": "e9fbec443caaffadf42a701ad2c0c00d29b5d83740ebda35af5eeed0c262c258",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-staff-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1444
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-staff-800.png",
+      "sha256": "00b528da0d852c5cf2d1cfff28fbcb5214f9aafa560c3d69c22d7fe785cc2419",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-staff-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-stocktake-1280.png",
+      "sha256": "b5d778b3f128809522ffcc972d1d0f3e3f4a0df6daddf917974ee6c3b08d122c",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-stocktake-1280",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-stocktake-390.png",
+      "sha256": "8adfe2e69909937a319474953a57ebfeed258d0ce0d7bbdc03746cb3b7fedea7",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-stocktake-390",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "source/tablet-stocktake-800.png",
+      "sha256": "8b293c73c39aedd539a7b02a7470fcb3b82e620613c589be1caf537fe3178691",
+      "repo": "source",
+      "commit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "tablet-stocktake-800",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/final-defaults-armed.png",
+      "sha256": "9b4062e4a41f75f2f38fef6396b7910329f5e78d2ea9937e8e3bb842c521ee16",
+      "repo": "trial",
+      "commit": "23cc7cecf1dd503b9730e3573252e279b439649b",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "final-defaults-armed",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/final-reset-armed.png",
+      "sha256": "efd384ac2a566a2f1eb5193d3e36bc253a540639b0572218d03f9bee66d8c007",
+      "repo": "trial",
+      "commit": "23cc7cecf1dd503b9730e3573252e279b439649b",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "final-reset-armed",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/guest-en-offline-390.png",
+      "sha256": "46c5e12fbe4dc05e9ab03fc4cc25601b8a974775a36a250e6a96aa41f3c08b7d",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "guest-en-offline-390",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/index-en-1280.png",
+      "sha256": "cb06ee1a388cb599763a04921af2869ed1b27f6f7eba6f7eedaf08ceeb3d1749",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "index-en-1280",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1540
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/index-en-390.png",
+      "sha256": "96af13e093f32388499bd172dade203cf46dc3250a5f233ff4413ccc0d125eba",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "index-en-390",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 390,
+        "height": 2436
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/index-en-800.png",
+      "sha256": "5ce49c8da86106ce4b8cd48778ee789ee9e83b9a3c8280238df6f401ea246d42",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "index-en-800",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1598
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/index-vi-1280.png",
+      "sha256": "cb06ee1a388cb599763a04921af2869ed1b27f6f7eba6f7eedaf08ceeb3d1749",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "index-vi-1280",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 1540
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/index-vi-390.png",
+      "sha256": "96af13e093f32388499bd172dade203cf46dc3250a5f233ff4413ccc0d125eba",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "index-vi-390",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 390,
+        "height": 2436
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/index-vi-800.png",
+      "sha256": "5ce49c8da86106ce4b8cd48778ee789ee9e83b9a3c8280238df6f401ea246d42",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "index-vi-800",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1598
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/map-en-1280.png",
+      "sha256": "d0dc1229a4e0cfbe780407570c503b36ac812a40f6320c8e4b3e275a4f3006d8",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "map-en-1280",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/map-en-390.png",
+      "sha256": "54cd6f87d9797fdbb9e9df9b2bdaccc4f99662c463eaf7a648f8c2809ddec8f7",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "map-en-390",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 390,
+        "height": 981
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/map-en-800.png",
+      "sha256": "cdc0e423756adac44bfa9f87515a32c0f2f211e7693dae7946e3e570320a6ed4",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "map-en-800",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/map-vi-1280.png",
+      "sha256": "d0dc1229a4e0cfbe780407570c503b36ac812a40f6320c8e4b3e275a4f3006d8",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "map-vi-1280",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/map-vi-390.png",
+      "sha256": "54cd6f87d9797fdbb9e9df9b2bdaccc4f99662c463eaf7a648f8c2809ddec8f7",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "map-vi-390",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 390,
+        "height": 981
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/map-vi-800.png",
+      "sha256": "cdc0e423756adac44bfa9f87515a32c0f2f211e7693dae7946e3e570320a6ed4",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "map-vi-800",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/robot-en-1280.png",
+      "sha256": "6115228d8124d1cbadb9b75b17f31fbb68e9c5fdf1067ef2ad2b8fb3a0b664ac",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "robot-en-1280",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/robot-en-390.png",
+      "sha256": "33c4e05f4c9f6b899321f016e6ef1836363f3a3062ba39df32b2065c8f6ea1e5",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "robot-en-390",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 390,
+        "height": 967
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/robot-en-800.png",
+      "sha256": "ba882cf4290635b1e2a0e1dcdbcf73dbb523671221ddc7e2f2b90c2e700e356e",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "robot-en-800",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/robot-order-active.png",
+      "sha256": "0b886a7a7941b3f4987ddac6fa83ab49e5f5a39680b0684537c9a0e70f41e44e",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "robot-order-active",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/robot-trays-active.png",
+      "sha256": "3487a185552634f2c951df8b132ef3e4814080b49bdab69d765bfbe459d6a1ff",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "robot-trays-active",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/robot-vi-1280.png",
+      "sha256": "6115228d8124d1cbadb9b75b17f31fbb68e9c5fdf1067ef2ad2b8fb3a0b664ac",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "robot-vi-1280",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/robot-vi-390.png",
+      "sha256": "33c4e05f4c9f6b899321f016e6ef1836363f3a3062ba39df32b2065c8f6ea1e5",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "robot-vi-390",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 390,
+        "height": 967
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/robot-vi-800.png",
+      "sha256": "ba882cf4290635b1e2a0e1dcdbcf73dbb523671221ddc7e2f2b90c2e700e356e",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "robot-vi-800",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/setup-en-1280.png",
+      "sha256": "dd9123f915e773ba2a40adf5b6a2b2c92403484339a6327966308d5d55cb357c",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "setup-en-1280",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/setup-en-390.png",
+      "sha256": "08d0cd4f4ba87aca663b01320a8a26a99b49700de3fe82428f22a67492a67b0f",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "setup-en-390",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 390,
+        "height": 2885
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/setup-en-800.png",
+      "sha256": "565d079ea9f09f729b9325ffa12e810b17cd93ad9e67f4b9325578f31ec0be03",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "setup-en-800",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/setup-enabled-save.png",
+      "sha256": "b2a208ffb975a16521b3f40f906db73389eefe8d5bafaa193b1e006bd0e42abc",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "setup-enabled-save",
+      "locale": "fixture-default/bilingual",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/setup-vi-1280.png",
+      "sha256": "dd9123f915e773ba2a40adf5b6a2b2c92403484339a6327966308d5d55cb357c",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "setup-vi-1280",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/setup-vi-390.png",
+      "sha256": "08d0cd4f4ba87aca663b01320a8a26a99b49700de3fe82428f22a67492a67b0f",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "setup-vi-390",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 390,
+        "height": 2885
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/setup-vi-800.png",
+      "sha256": "6e070d6a2c86c963933b9ed736ab4e7fc2de62e3c07b842fe499db950245ea2b",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "setup-vi-800",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/station-en-1280.png",
+      "sha256": "04a3e3f5e56bab4de5da03a96edc6f4fad34d280d60fbd044af5973cc713e3e8",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "station-en-1280",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/station-en-390.png",
+      "sha256": "31e215fe62e2c8b8e1ced0c9e48246f99a05e23b0c41df296db1c05e3627bfca",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "station-en-390",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1160
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/station-en-800.png",
+      "sha256": "565b3bf89e16bc24d2e956164507b8cfaa9b81caa62ede5e6a60363850ec4c13",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "station-en-800",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/station-vi-1280.png",
+      "sha256": "04a3e3f5e56bab4de5da03a96edc6f4fad34d280d60fbd044af5973cc713e3e8",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "station-vi-1280",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/station-vi-390.png",
+      "sha256": "31e215fe62e2c8b8e1ced0c9e48246f99a05e23b0c41df296db1c05e3627bfca",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "station-vi-390",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 390,
+        "height": 1160
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/station-vi-800.png",
+      "sha256": "565b3bf89e16bc24d2e956164507b8cfaa9b81caa62ede5e6a60363850ec4c13",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "station-vi-800",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/table-en-1280.png",
+      "sha256": "b7a851a373cdd6decc25a55f0b0d66159f7159826d8c5e8ba6d0a92d60814b4f",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "table-en-1280",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/table-en-390.png",
+      "sha256": "860345b1ba1a0b936d2466b5d528dda39dc40464363088a2dd0b4333758d72b5",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "table-en-390",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/table-en-800.png",
+      "sha256": "0737670195cdb2614ea46ec98a3fd9e735bbcdb49931b31d314570496b2ea0d6",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "table-en-800",
+      "locale": "en",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/table-vi-1280.png",
+      "sha256": "f212fee22a5d4f2ee3099a02708d0d3727a1ce114049be0ea7e5fb5041421f48",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "table-vi-1280",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/table-vi-390.png",
+      "sha256": "98c30beff3870fe3b86c39661cec935ccbe03189a51d08ab55519fdb498f95bc",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "table-vi-390",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    },
+    {
+      "path": "trial/table-vi-800.png",
+      "sha256": "970b156d00ca894e27a910d7ca284271de7ff55988a896d00928f83a9862d14d",
+      "repo": "trial",
+      "commit": "7a4a8969f627146ee5ce70097353dceea4e71faa",
+      "brandVersion": "1.0.1",
+      "stateIdentifier": "table-vi-800",
+      "locale": "vi",
+      "imageDimensions": {
+        "width": 800,
+        "height": 1280
+      },
+      "capture": "full-page; image height may exceed viewport",
+      "fidelity": "browser/local fixture or anonymous protected preview; no hardware"
+    }
+  ]
+}

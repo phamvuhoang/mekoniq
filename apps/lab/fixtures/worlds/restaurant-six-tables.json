@@ -1,0 +1,115 @@
+{
+  "id": "restaurant-six-tables",
+  "revision": 1,
+  "width": 12,
+  "height": 8,
+  "points": [
+    {
+      "id": "table-1",
+      "name": "T01",
+      "kind": "table",
+      "x": 3,
+      "y": 1.1
+    },
+    {
+      "id": "table-2",
+      "name": "T02",
+      "kind": "table",
+      "x": 6,
+      "y": 1.1
+    },
+    {
+      "id": "table-3",
+      "name": "T03",
+      "kind": "table",
+      "x": 9,
+      "y": 1.1
+    },
+    {
+      "id": "table-4",
+      "name": "T04",
+      "kind": "table",
+      "x": 3,
+      "y": 4.1
+    },
+    {
+      "id": "table-5",
+      "name": "T05",
+      "kind": "table",
+      "x": 6,
+      "y": 4.1
+    },
+    {
+      "id": "table-6",
+      "name": "T06",
+      "kind": "table",
+      "x": 9,
+      "y": 4.1
+    },
+    {
+      "id": "kitchen",
+      "name": "Kitchen",
+      "kind": "kitchen",
+      "x": 1,
+      "y": 6.8
+    },
+    {
+      "id": "parking",
+      "name": "Parking",
+      "kind": "parking",
+      "x": 1,
+      "y": 1
+    },
+    {
+      "id": "dock",
+      "name": "Dock",
+      "kind": "dock",
+      "x": 11,
+      "y": 7
+    }
+  ],
+  "obstacles": [
+    {
+      "id": "furniture-1",
+      "x": 2.4,
+      "y": 1.55,
+      "width": 1.2,
+      "height": 0.9
+    },
+    {
+      "id": "furniture-2",
+      "x": 5.4,
+      "y": 1.55,
+      "width": 1.2,
+      "height": 0.9
+    },
+    {
+      "id": "furniture-3",
+      "x": 8.4,
+      "y": 1.55,
+      "width": 1.2,
+      "height": 0.9
+    },
+    {
+      "id": "furniture-4",
+      "x": 2.4,
+      "y": 4.55,
+      "width": 1.2,
+      "height": 0.9
+    },
+    {
+      "id": "furniture-5",
+      "x": 5.4,
+      "y": 4.55,
+      "width": 1.2,
+      "height": 0.9
+    },
+    {
+      "id": "furniture-6",
+      "x": 8.4,
+      "y": 4.55,
+      "width": 1.2,
+      "height": 0.9
+    }
+  ]
+}

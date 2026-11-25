@@ -1,0 +1,5 @@
+
+> mekoniq-platform@ contracts:check <workspace>/source
+> node scripts/generate-contracts.mjs --check
+
+Contract generation matches schema.

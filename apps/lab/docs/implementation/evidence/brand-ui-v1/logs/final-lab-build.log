@@ -1,0 +1,30 @@
+
+> mekoniq-robot-lab@0.1.0 build /Users/hoangpham/source/prv/robot/lab
+> npm run check:brand && tsc --noEmit && vite build
+
+npm warn Unknown env config "npm-globalconfig". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "verify-deps-before-run". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "_jsr-registry". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> mekoniq-robot-lab@0.1.0 check:brand
+> node scripts/check-brand.mjs --dir public/brand
+
+MEKONIQ 1.0.1 verified (22 files)
+vite v7.3.1 building client environment for production...
+transforming...
+✓ 208 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/source-runtime.lock.json            0.44 kB │ gzip:   0.32 kB
+dist/index.html                          0.84 kB │ gzip:   0.43 kB
+dist/assets/index-B4zph25L.css          42.88 kB │ gzip:   8.92 kB
+dist/assets/twin3d-DT0ekcPa.js           3.97 kB │ gzip:   1.96 kB
+dist/assets/robot-BxVGYvhQ.js            5.53 kB │ gzip:   2.63 kB
+dist/assets/index-C6xncctI.js          390.15 kB │ gzip: 129.23 kB
+dist/assets/OrbitControls-C-Pz9gO_.js  501.52 kB │ gzip: 125.29 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.01s

@@ -1,0 +1,8 @@
+{
+  "route": "/admin/operations",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "violations": []
+}

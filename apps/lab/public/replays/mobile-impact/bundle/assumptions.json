@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "serve-payload-v1-assumptions",
+  "revision": 1,
+  "calibration": "not_calibrated",
+  "cup": {
+    "massDistribution": "uniform solid cylinder centered at geometric center",
+    "inertiaAboutCOMKgM2": {
+      "xx": "m*(3*r*r+h*h)/12",
+      "yy": "m*(3*r*r+h*h)/12",
+      "zz": "m*r*r/2",
+      "xy": 0,
+      "xz": 0,
+      "yz": 0
+    },
+    "attachment": "free body on lower tray; no weld",
+    "initialOffsetsYM": [
+      0,
+      0.05
+    ]
+  },
+  "drive": {
+    "velocityGainNmsPerRad": 2,
+    "brakeTorqueNm": 6,
+    "curveKneeRadS": 10,
+    "requiresB02MeasurementLock": false
+  },
+  "contact": {
+    "sliding": 0.6,
+    "torsionalM": 0.005,
+    "rollingM": 0.0001
+  },
+  "solver": {
+    "integrator": "implicitfast",
+    "iterations": 100,
+    "tolerance": 1e-8,
+    "tickMs": 20,
+    "timestepMs": 2,
+    "substeps": 10
+  }
+}

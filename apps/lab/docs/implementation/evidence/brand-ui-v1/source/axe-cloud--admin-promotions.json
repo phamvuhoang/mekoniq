@@ -1,0 +1,8 @@
+{
+  "route": "/admin/promotions",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "violations": []
+}

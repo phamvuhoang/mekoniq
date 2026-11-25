@@ -1,0 +1,378 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.coffee-recipe.v2",
+  "title": "CoffeeRecipe",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "outputType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "cupType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          },
+          "kind": {
+            "enum": [
+              "grind",
+              "brew",
+              "add_ice",
+              "add_milk",
+              "add_water",
+              "stir",
+              "clean"
+            ]
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]{1,9})?$"
+                  },
+                  "tolerance": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]{1,9})?$"
+                  },
+                  "unit": {
+                    "enum": [
+                      "kg",
+                      "m3",
+                      "K",
+                      "s"
+                    ]
+                  },
+                  "provenance": {
+                    "enum": [
+                      "measured",
+                      "vendor_spec",
+                      "vendor_cad",
+                      "assumed",
+                      "illustrative"
+                    ]
+                  }
+                },
+                "required": [
+                  "amount",
+                  "tolerance",
+                  "unit",
+                  "provenance"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requires": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            }
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3600000
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "target",
+          "requires",
+          "timeoutMs"
+        ]
+      }
+    },
+    "resources": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "resourceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          },
+          "kind": {
+            "enum": [
+              "water",
+              "coffee_beans",
+              "ice",
+              "milk",
+              "cup",
+              "machine"
+            ]
+          },
+          "requiredAmount": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]{1,9})?$"
+                  },
+                  "tolerance": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]{1,9})?$"
+                  },
+                  "unit": {
+                    "enum": [
+                      "kg",
+                      "m3",
+                      "K",
+                      "s"
+                    ]
+                  },
+                  "provenance": {
+                    "enum": [
+                      "measured",
+                      "vendor_spec",
+                      "vendor_cad",
+                      "assumed",
+                      "illustrative"
+                    ]
+                  }
+                },
+                "required": [
+                  "amount",
+                  "tolerance",
+                  "unit",
+                  "provenance"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "allocations": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "stepId": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_.:-]{1,200}$"
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,18})?$"
+                }
+              },
+              "required": [
+                "stepId",
+                "amount"
+              ]
+            }
+          }
+        },
+        "required": [
+          "resourceId",
+          "kind",
+          "requiredAmount"
+        ]
+      }
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "onTimeout": {
+          "enum": [
+            "hold_and_reconcile",
+            "quarantine"
+          ]
+        },
+        "autoRetry": {
+          "const": false
+        }
+      },
+      "required": [
+        "onTimeout",
+        "autoRetry"
+      ]
+    },
+    "policies": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cup": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "provenance": {
+              "enum": [
+                "measured",
+                "vendor_spec",
+                "assumed",
+                "illustrative"
+              ]
+            },
+            "capacityM3": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,18})?$"
+            },
+            "headspaceM3": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,18})?$"
+            },
+            "iceVolumeM3PerKg": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,18})?$"
+            }
+          },
+          "required": [
+            "revision",
+            "provenance",
+            "capacityM3",
+            "headspaceM3",
+            "iceVolumeM3PerKg"
+          ]
+        },
+        "milk": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "provenance": {
+              "enum": [
+                "measured",
+                "vendor_spec",
+                "assumed",
+                "illustrative"
+              ]
+            },
+            "maxOpenMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "minTemperatureK": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,18})?$"
+            },
+            "maxTemperatureK": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,18})?$"
+            },
+            "temperatureMaxAgeMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "revision",
+            "provenance",
+            "maxOpenMs",
+            "minTemperatureK",
+            "maxTemperatureK",
+            "temperatureMaxAgeMs"
+          ]
+        },
+        "measurement": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "provenance": {
+              "enum": [
+                "measured",
+                "vendor_spec",
+                "assumed",
+                "illustrative"
+              ]
+            },
+            "maxTargetMultiplier": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,18})?$"
+            }
+          },
+          "required": [
+            "revision",
+            "provenance",
+            "maxTargetMultiplier"
+          ]
+        }
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "revision",
+    "hash",
+    "outputType",
+    "cupType",
+    "steps",
+    "resources",
+    "recovery"
+  ]
+}

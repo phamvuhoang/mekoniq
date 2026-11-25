@@ -1,0 +1,3 @@
+
+> mekoniq-platform@ lint <workspace>/source
+> eslint .

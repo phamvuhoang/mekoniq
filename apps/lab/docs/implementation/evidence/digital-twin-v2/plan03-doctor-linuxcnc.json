@@ -1,0 +1,53 @@
+{
+  "backend": "linuxcnc_sim",
+  "host": {
+    "platform": "darwin",
+    "node": "24.22.2",
+    "python": "Python 3.13.3"
+  },
+  "image": null,
+  "checks": [
+    {
+      "id": "node24",
+      "ok": true,
+      "detail": "node 24.22.2"
+    },
+    {
+      "id": "linux",
+      "ok": false,
+      "detail": "platform darwin (LinuxCNC runs on Linux only)"
+    },
+    {
+      "id": "python3",
+      "ok": true,
+      "detail": "Python 3.13.3"
+    },
+    {
+      "id": "linuxcnc",
+      "ok": false,
+      "detail": "ENOENT"
+    },
+    {
+      "id": "linuxcnc-python",
+      "ok": false,
+      "detail": "Traceback (most recent call last):"
+    },
+    {
+      "id": "bridge-deps",
+      "ok": false,
+      "detail": "Traceback (most recent call last):"
+    },
+    {
+      "id": "profile",
+      "ok": true,
+      "detail": "configs/sim/puma560/profile.json + models/puma560-reference/manifest.json"
+    },
+    {
+      "id": "checker",
+      "ok": false,
+      "detail": "Traceback (most recent call last):"
+    }
+  ],
+  "prerequisitesMet": false,
+  "reportSha256": "32280f034a1bc8a1c9596dcfc067f3347d28b491d94ebaf36e59fb149d8b3dca"
+}

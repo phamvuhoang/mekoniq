@@ -1,0 +1,22 @@
+{
+  "status": "build_verified",
+  "nativeWebView": "blocked_external: no connected enrolled devices",
+  "apk": "apps/tablet-android/android/app/build/outputs/apk/debug/app-debug.apk",
+  "sha256": "6d3df6f0cb36d34d03e71a78d6732a0425cfe05c7e498f6e6491c38ed76b87cf",
+  "fontEntries": [
+    "assets/public/fonts/BeVietnamPro-400-latin.woff2",
+    "assets/public/fonts/BeVietnamPro-400-vi.woff2",
+    "assets/public/fonts/BeVietnamPro-700-latin.woff2",
+    "assets/public/fonts/BeVietnamPro-700-vi.woff2",
+    "assets/public/assets/BeVietnamPro-400-latin-OEyTajQY.woff2",
+    "assets/public/assets/BeVietnamPro-400-vi-SOx6iaFb.woff2",
+    "assets/public/assets/BeVietnamPro-700-latin-CPfR8Jz_.woff2",
+    "assets/public/assets/BeVietnamPro-700-vi-DptIoWwl.woff2",
+    "assets/public/assets/JetBrainsMono-500-D1jhc3sc.woff2",
+    "assets/public/brand/fonts/BeVietnamPro-400-latin.woff2",
+    "assets/public/brand/fonts/BeVietnamPro-400-vi.woff2",
+    "assets/public/brand/fonts/BeVietnamPro-700-latin.woff2",
+    "assets/public/brand/fonts/BeVietnamPro-700-vi.woff2",
+    "assets/public/brand/fonts/JetBrainsMono-500.woff2"
+  ]
+}

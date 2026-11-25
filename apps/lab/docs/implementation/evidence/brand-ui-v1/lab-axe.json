@@ -1,0 +1,108 @@
+{
+  "axeVersion": "4.14.0",
+  "scope": "sixroutes desktop/mobile preview fixture; canvas remains manual",
+  "results": [
+    {
+      "route": "design",
+      "width": 1440,
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "route": "restaurant",
+      "width": 1440,
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "route": "scenarios",
+      "width": 1440,
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "route": "twin",
+      "width": 1440,
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr"
+      ]
+    },
+    {
+      "route": "results",
+      "width": 1440,
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr"
+      ]
+    },
+    {
+      "route": "deployment",
+      "width": 1440,
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr"
+      ]
+    },
+    {
+      "route": "design",
+      "width": 390,
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "route": "restaurant",
+      "width": 390,
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "route": "scenarios",
+      "width": 390,
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "route": "twin",
+      "width": 390,
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr"
+      ]
+    },
+    {
+      "route": "results",
+      "width": 390,
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr"
+      ]
+    },
+    {
+      "route": "deployment",
+      "width": 390,
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr"
+      ]
+    }
+  ]
+}

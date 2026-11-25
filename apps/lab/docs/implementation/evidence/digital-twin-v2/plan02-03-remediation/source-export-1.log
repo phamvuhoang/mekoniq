@@ -1,0 +1,64 @@
+{
+  "output": "/tmp/robot-remediation-runtime-a89a077",
+  "sourceCommit": "a89a077ed12648931a857333f899e3d6c1ea9719",
+  "schemaHash": "8b398544fdeb8127da0697a086283f055126075696a573dd4e8be40b00d56881",
+  "protocolMajor": 2,
+  "protocolMajors": [
+    1,
+    2
+  ],
+  "artifactSha256": "fe49fcea31da67630fa50e6fe75418967092cee57ab9144959413a529129ce15",
+  "entrypoint": "runtime.mjs",
+  "nodeMajor": 24,
+  "packageVersion": "0.1.0",
+  "dirty": false,
+  "schemas": [
+    "arm-command.schema.json",
+    "arm-observation.schema.json",
+    "asset-manifest.schema.json",
+    "asset-revision.schema.json",
+    "authority-provision.schema.json",
+    "cell-command.schema.json",
+    "cell-observation.schema.json",
+    "coffee-recipe.schema.json",
+    "command.schema.json",
+    "commit-batch.schema.json",
+    "grant-return.schema.json",
+    "journal.schema.json",
+    "lab-action-v2.schema.json",
+    "lab-deployment.schema.json",
+    "lab-evidence-v2.schema.json",
+    "lab-project-v2.schema.json",
+    "lab-project.schema.json",
+    "lab-run-v2.schema.json",
+    "lab-run.schema.json",
+    "money.schema.json",
+    "offline-grant.schema.json",
+    "ownership-grant.schema.json",
+    "pairing-grant.schema.json",
+    "robot-command.schema.json",
+    "robot-manifest.schema.json",
+    "settlement-grant.schema.json",
+    "sync-ack.schema.json",
+    "twin-sample-v2.schema.json",
+    "wire.schema.json"
+  ],
+  "toolchain": {
+    "node": "v24.22.2"
+  },
+  "simulationTools": {
+    "distribution": "separate",
+    "path": "robotics/simulation",
+    "digest": "2102ba087776b9935f54b43c9eaeff760dbe306d55c5b17ed95b14e68026b78d",
+    "files": 33,
+    "image": "ros:jazzy-ros-base",
+    "imageDigest": "sha256:8eed0a4669bbf43ee331878a4c39bd8ebddea8e3312a58b4fae8edb14526b617",
+    "requires": [
+      "linux",
+      "ros2-jazzy",
+      "gazebo-harmonic",
+      "python3+rfc8785+jsonschema"
+    ],
+    "note": "not bundled; verify with scripts/lab-sil.mjs doctor on the Linux host"
+  }
+}

@@ -1,0 +1,1166 @@
+{
+  "entities": [
+    {
+      "entityId": "amr-1",
+      "instanceIds": [
+        "battery",
+        "chassis",
+        "tray",
+        "wheel-left",
+        "wheel-right"
+      ],
+      "kind": "amr",
+      "rootLinkId": "chassis/base"
+    }
+  ],
+  "fixedJointMapping": [
+    {
+      "jointId": "mount:chassis/battery-bay:battery/mount",
+      "linkId": "battery/pack",
+      "mergedInto": "chassis/base"
+    },
+    {
+      "jointId": "mount:chassis/left-axle:wheel-left/mount",
+      "linkId": "wheel-left/hub",
+      "mergedInto": "chassis/base"
+    },
+    {
+      "jointId": "mount:chassis/right-axle:wheel-right/mount",
+      "linkId": "wheel-right/hub",
+      "mergedInto": "chassis/base"
+    },
+    {
+      "jointId": "mount:chassis/tray-plate:tray/mount",
+      "linkId": "tray/plate",
+      "mergedInto": "chassis/base"
+    }
+  ],
+  "frames": [
+    {
+      "id": "battery/pack",
+      "parent": "chassis/base",
+      "pose": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          -0.1,
+          0,
+          0.125
+        ]
+      }
+    },
+    {
+      "id": "chassis/base",
+      "parent": null,
+      "pose": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "tray/plate",
+      "parent": "chassis/base",
+      "pose": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0.05,
+          0,
+          0.2
+        ]
+      }
+    },
+    {
+      "id": "wheel-left/hub",
+      "parent": "chassis/base",
+      "pose": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0.225,
+          0
+        ]
+      }
+    },
+    {
+      "id": "wheel-left/rim",
+      "parent": "wheel-left/hub",
+      "pose": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "wheel-right/hub",
+      "parent": "chassis/base",
+      "pose": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          -0.225,
+          0
+        ]
+      }
+    },
+    {
+      "id": "wheel-right/rim",
+      "parent": "wheel-right/hub",
+      "pose": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  ],
+  "geometryRefs": [
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "visual",
+      "linkId": "battery/pack"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "collision",
+      "linkId": "battery/pack"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "visual",
+      "linkId": "chassis/base"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "collision",
+      "linkId": "chassis/base"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "visual",
+      "linkId": "tray/plate"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "collision",
+      "linkId": "tray/plate"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "visual",
+      "linkId": "wheel-left/hub"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "collision",
+      "linkId": "wheel-left/hub"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "visual",
+      "linkId": "wheel-left/rim"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "collision",
+      "linkId": "wheel-left/rim"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "visual",
+      "linkId": "wheel-right/hub"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "collision",
+      "linkId": "wheel-right/hub"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "visual",
+      "linkId": "wheel-right/rim"
+    },
+    {
+      "blobSha256": null,
+      "index": 0,
+      "kind": "collision",
+      "linkId": "wheel-right/rim"
+    }
+  ],
+  "joints": [
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "battery/pack",
+      "id": "mount:chassis/battery-bay:battery/mount",
+      "kind": "fixed",
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          -0.1,
+          0,
+          0.125
+        ]
+      },
+      "parent": "chassis/base"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "wheel-left/hub",
+      "id": "mount:chassis/left-axle:wheel-left/mount",
+      "kind": "fixed",
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0.225,
+          0
+        ]
+      },
+      "parent": "chassis/base"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "wheel-right/hub",
+      "id": "mount:chassis/right-axle:wheel-right/mount",
+      "kind": "fixed",
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          -0.225,
+          0
+        ]
+      },
+      "parent": "chassis/base"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "tray/plate",
+      "id": "mount:chassis/tray-plate:tray/mount",
+      "kind": "fixed",
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0.05,
+          0,
+          0.2
+        ]
+      },
+      "parent": "chassis/base"
+    },
+    {
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "child": "wheel-left/rim",
+      "id": "wheel-left/axle",
+      "kind": "continuous",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          },
+          "unit": "N*m",
+          "value": 8
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          },
+          "unit": "rad/s",
+          "value": 30
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0,
+          0
+        ]
+      },
+      "parent": "wheel-left/hub"
+    },
+    {
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "child": "wheel-right/rim",
+      "id": "wheel-right/axle",
+      "kind": "continuous",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          },
+          "unit": "N*m",
+          "value": 8
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          },
+          "unit": "rad/s",
+          "value": 30
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0,
+          0
+        ]
+      },
+      "parent": "wheel-right/hub"
+    }
+  ],
+  "links": [
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.2,
+              0.15,
+              0.1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "id": "battery/pack",
+      "inertiaKgM2": [
+        0.01625,
+        0,
+        0,
+        0.025000000000000005,
+        0,
+        0.03125
+      ],
+      "inertialSource": {
+        "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+        "documentId": "fixture-assumptions",
+        "kind": "assumed",
+        "locator": "tests/support/engineering.ts",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+          "documentId": "fixture-assumptions",
+          "kind": "assumed",
+          "locator": "tests/support/engineering.ts",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 6
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.2,
+              0.15,
+              0.1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.5,
+              0.4,
+              0.15
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "id": "chassis/base",
+      "inertiaKgM2": [
+        0.3041666666666667,
+        0,
+        0,
+        0.45416666666666666,
+        0,
+        0.6833333333333335
+      ],
+      "inertialSource": {
+        "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+        "documentId": "fixture-assumptions",
+        "kind": "assumed",
+        "locator": "tests/support/engineering.ts",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+          "documentId": "fixture-assumptions",
+          "kind": "assumed",
+          "locator": "tests/support/engineering.ts",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 20
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.5,
+              0.4,
+              0.15
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.4,
+              0.35,
+              0.01
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "id": "tray/plate",
+      "inertiaKgM2": [
+        0.012259999999999998,
+        0,
+        0,
+        0.01601,
+        0,
+        0.02825
+      ],
+      "inertialSource": {
+        "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+        "documentId": "fixture-assumptions",
+        "kind": "assumed",
+        "locator": "tests/support/engineering.ts",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+          "documentId": "fixture-assumptions",
+          "kind": "assumed",
+          "locator": "tests/support/engineering.ts",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 1.2
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.4,
+              0.35,
+              0.01
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.04,
+              0.04,
+              0.04
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "id": "wheel-left/hub",
+      "inertiaKgM2": [
+        5.333333333333334e-05,
+        0,
+        0,
+        5.333333333333334e-05,
+        0,
+        5.333333333333334e-05
+      ],
+      "inertialSource": {
+        "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+        "documentId": "fixture-assumptions",
+        "kind": "assumed",
+        "locator": "tests/support/engineering.ts",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+          "documentId": "fixture-assumptions",
+          "kind": "assumed",
+          "locator": "tests/support/engineering.ts",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 0.2
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.04,
+              0.04,
+              0.04
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "cylinder",
+            "lengthM": 0.05,
+            "radiusM": 0.1
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0.7071067811865476,
+              0,
+              0,
+              0.7071067811865476
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "id": "wheel-left/rim",
+      "inertiaKgM2": [
+        0.004062500000000001,
+        0,
+        0,
+        0.0075000000000000015,
+        0,
+        0.004062500000000001
+      ],
+      "inertialSource": {
+        "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+        "documentId": "fixture-assumptions",
+        "kind": "assumed",
+        "locator": "tests/support/engineering.ts",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+          "documentId": "fixture-assumptions",
+          "kind": "assumed",
+          "locator": "tests/support/engineering.ts",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 1.5
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "cylinder",
+            "lengthM": 0.05,
+            "radiusM": 0.1
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0.7071067811865476,
+              0,
+              0,
+              0.7071067811865476
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.04,
+              0.04,
+              0.04
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "id": "wheel-right/hub",
+      "inertiaKgM2": [
+        5.333333333333334e-05,
+        0,
+        0,
+        5.333333333333334e-05,
+        0,
+        5.333333333333334e-05
+      ],
+      "inertialSource": {
+        "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+        "documentId": "fixture-assumptions",
+        "kind": "assumed",
+        "locator": "tests/support/engineering.ts",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+          "documentId": "fixture-assumptions",
+          "kind": "assumed",
+          "locator": "tests/support/engineering.ts",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 0.2
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.04,
+              0.04,
+              0.04
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "cylinder",
+            "lengthM": 0.05,
+            "radiusM": 0.1
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0.7071067811865476,
+              0,
+              0,
+              0.7071067811865476
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "id": "wheel-right/rim",
+      "inertiaKgM2": [
+        0.004062500000000001,
+        0,
+        0,
+        0.0075000000000000015,
+        0,
+        0.004062500000000001
+      ],
+      "inertialSource": {
+        "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+        "documentId": "fixture-assumptions",
+        "kind": "assumed",
+        "locator": "tests/support/engineering.ts",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+          "documentId": "fixture-assumptions",
+          "kind": "assumed",
+          "locator": "tests/support/engineering.ts",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 1.5
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "cylinder",
+            "lengthM": 0.05,
+            "radiusM": 0.1
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0.7071067811865476,
+              0,
+              0,
+              0.7071067811865476
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c1ddf15086b0750ef8e99e1a4f8872adbecb615ee0ac9adaee9c771b869c7bc6",
+            "documentId": "fixture-assumptions",
+            "kind": "assumed",
+            "locator": "tests/support/engineering.ts",
+            "revision": "1"
+          }
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "wheelBindings": [
+    {
+      "entityId": "amr-1",
+      "id": "amr-1/left",
+      "jointId": "wheel-left/axle",
+      "radiusM": 0.1,
+      "side": "left"
+    },
+    {
+      "entityId": "amr-1",
+      "id": "amr-1/right",
+      "jointId": "wheel-right/axle",
+      "radiusM": 0.1,
+      "side": "right"
+    }
+  ],
+  "world": {
+    "fixtures": [],
+    "hash": "25e8ab13587c2d9cb1e6a0c82c1033f6d804c830a4ea88f60f3803fb03c28e29",
+    "heightM": 4,
+    "id": "fixture-world",
+    "revision": 1,
+    "walls": [
+      {
+        "height": 4,
+        "width": 0.1,
+        "x": 0.0,
+        "y": 0.0
+      },
+      {
+        "height": 4,
+        "width": 0.1,
+        "x": 5.9,
+        "y": 0.0
+      },
+      {
+        "height": 0.1,
+        "width": 6,
+        "x": 0.0,
+        "y": 0.0
+      },
+      {
+        "height": 0.1,
+        "width": 6,
+        "x": 0.0,
+        "y": 3.9
+      }
+    ],
+    "widthM": 6
+  }
+}

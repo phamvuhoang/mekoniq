@@ -1,0 +1,34 @@
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source c1d1ea70e42937d421070674f07d00edc7c41245 · artifact 21986126e194 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>
+Owned processes: runtime pid 88607, UI pid 88608
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 453 ms. Press Ctrl-C to stop.
+Running twin-recovery.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/twin-recovery.spec.ts:16:1 › telemetry stream, stale/frozen states, reconnect, read-only replay, compare, export and a lost session (11.4s)
+
+  1 passed (12.2s)
+
+Stopping the runtime and UI this launcher started…
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source c1d1ea70e42937d421070674f07d00edc7c41245 · artifact 21986126e194 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>
+Owned processes: runtime pid 88637, UI pid 88638
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 447 ms. Press Ctrl-C to stop.
+Running coffee-journey.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/coffee-journey.spec.ts:7:1 › missing cup: visible reason and entity, confirmed reconcile, corrected run completes (13.7s)
+
+  1 passed (14.7s)
+
+Stopping the runtime and UI this launcher started…
+(node:88620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:88650) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

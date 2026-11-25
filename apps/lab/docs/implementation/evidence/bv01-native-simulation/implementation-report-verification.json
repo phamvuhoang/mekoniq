@@ -1,0 +1,27 @@
+{
+  "recordedAt": "2026-11-06T07:00:14.960Z",
+  "execution": "ran",
+  "result": "pass",
+  "scope": "Standalone HTML presentation only; no native engine claim",
+  "checks": [
+    {
+      "viewport": 1440,
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": 768,
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": 390,
+      "horizontalOverflow": false
+    }
+  ],
+  "search": true,
+  "filter": true,
+  "printAllRows": true,
+  "javascriptErrors": [],
+  "externalRequests": [],
+  "artifactSha256": "c4227ab93b130a917698d6cc56db841807fe082237da34c724106f07f748b210",
+  "previewSha256": "3d9fa46fed1a20c209b214f3f5537400a77cb5136cd85df2fb7dee113ea6a655"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "platform": "Darwin",
+  "architecture": "arm64",
+  "kernel": "25.5.0",
+  "python": {
+    "version": "3.13.3",
+    "executable": {
+      "path": "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/bin/python3.13",
+      "sha256": "f6ec6ad29d65dcb9609fb93f9e9a114d8f654b020cbe8d925f7f01d3bc2ce44b"
+    }
+  },
+  "packages": null,
+  "executables": {
+    "linuxcnc": null,
+    "halcmd": null,
+    "qtvcp": null
+  },
+  "modules": {
+    "linuxcnc": null,
+    "PyQt5.QtCore": null,
+    "PyQt5.Qsci": null
+  },
+  "qualification": "not_run",
+  "claims": "inventory only; no controller, GUI, timing or hardware assertion"
+}

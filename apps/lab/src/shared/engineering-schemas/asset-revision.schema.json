@@ -1,0 +1,365 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.asset-revision.v2",
+  "title": "AssetRevision",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "contentHash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "hashAlgorithm": {
+      "const": "sha256-canonical-json-v1"
+    },
+    "kind": {
+      "enum": [
+        "amr",
+        "arm",
+        "coffee_machine",
+        "fixture",
+        "cup",
+        "sensor",
+        "tool"
+      ]
+    },
+    "visual": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "contentHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "mediaType": {
+              "enum": [
+                "model/gltf-binary",
+                "model/gltf+json",
+                "application/x-mekoniq-geometry"
+              ]
+            }
+          },
+          "required": [
+            "contentHash",
+            "mediaType"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "collision": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "contentHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "mediaType": {
+              "enum": [
+                "model/gltf-binary",
+                "model/gltf+json",
+                "application/x-mekoniq-geometry"
+              ]
+            }
+          },
+          "required": [
+            "contentHash",
+            "mediaType"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "frames": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          },
+          "parentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "translationM": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "quaternionXyzw": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "parentId",
+          "translationM",
+          "quaternionXyzw"
+        ]
+      }
+    },
+    "geometry": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "box"
+              },
+              "frameId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              },
+              "sizeM": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              }
+            },
+            "required": [
+              "kind",
+              "frameId",
+              "sizeM"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "cylinder"
+              },
+              "frameId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              },
+              "radiusM": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "heightM": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "kind",
+              "frameId",
+              "radiusM",
+              "heightM"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "sphere"
+              },
+              "frameId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              },
+              "radiusM": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "kind",
+              "frameId",
+              "radiusM"
+            ]
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind"
+        }
+      }
+    },
+    "kinematics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "convention": {
+          "enum": [
+            "modified_dh",
+            "urdf"
+          ]
+        },
+        "jointCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        }
+      },
+      "required": [
+        "convention",
+        "jointCount"
+      ]
+    },
+    "inertial": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "massKg": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "massKg"
+      ]
+    },
+    "sensorRefs": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "pattern": "^[A-Za-z0-9_.:-]+$"
+      }
+    },
+    "toolRefs": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "pattern": "^[A-Za-z0-9_.:-]+$"
+      }
+    },
+    "provenance": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "parameter": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "source": {
+            "enum": [
+              "measured",
+              "vendor_spec",
+              "vendor_cad",
+              "assumed",
+              "illustrative"
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "license": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "parameter",
+          "source"
+        ],
+        "if": {
+          "properties": {
+            "source": {
+              "const": "vendor_cad"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "license": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "license"
+          ]
+        }
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "revision",
+    "contentHash",
+    "hashAlgorithm",
+    "kind",
+    "visual",
+    "collision",
+    "frames",
+    "geometry",
+    "provenance"
+  ]
+}

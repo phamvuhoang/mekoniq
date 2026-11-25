@@ -1,0 +1,502 @@
+{
+ "schemaVersion": 1,
+ "purpose": "Plan 01 software completion, tested on the recorded mock host; owner acceptance and external gates remain open. Provider interface revision 2 binds the updated cell observation, project and recipe contracts; a simulation/hardware provider must verify these hashes and supply its own evidence. Plan 02 (2026-11-05) adds the simulation layer in source: world compiler, Gazebo/Nav2 worker bridge, clock barrier, telemetry ingest, fault schedule, actors/metrics, coffee_io_sim process coupling, cup transfer evidence, the ARM03 swept-path checker, the scenario matrix, LabEvidenceV2 records and SIL campaign tooling. Every SIL run on the recorded macOS host is not_run (no Linux/ROS 2/Gazebo); physics rows carry no pass. Plan 03 (2026-11-05/06) adds the arm controller package in source (pinned PUMA 560 reference model, LinuxCNC simulation profile, token-bound one-owner bridge/arbiter, QtVCP HMI through the arbiter, LinuxCNC adapter + arm session with ARM03 evidence from the plan 02 checker, signed-artifact export/verify/install chain). Every Linux-only check (LinuxCNC smoke, GUI smoke, clean-host install/rollback, systemd) stays blocked_external on the recorded macOS host; no controller run, no R-SIM, no hardware claim. Remediation 2026-11-06 closes independent review findings R01–R12 with regression tests and a clean runtime re-pin; external gates are unchanged.",
+ "frozenAt": "2026-11-05T22:03:35.743993+00:00",
+ "gates": {
+  "R-MOCK": "software_complete_tested_not_accepted",
+  "R-SIM": "blocked_external",
+  "G-SIM-NAV": "blocked_external",
+  "G-SIM-ARM": "blocked_external",
+  "G-HW-READY": "not_started",
+  "G-HW-ACCEPT": "blocked_external",
+  "G-SIM-E2E": "blocked_external",
+  "CONTROLLER-POC": "software_complete_tested_not_run_on_linux"
+ },
+ "codeRevisions": {
+  "source": {
+   "branch": "feat/lab-digital-twin-v2",
+   "artifactCommit": "a89a077ed12648931a857333f899e3d6c1ea9719",
+   "finalHead": "a89a077ed12648931a857333f899e3d6c1ea9719",
+   "dirty": false,
+   "pinNote": "Remediation checks/export use this exact clean source HEAD; Plan 02/03 pins and evidence below remain historical.",
+   "packagesDiffAfterPin": "empty",
+   "plan02Commits": [
+    "02c416a",
+    "a8d9e6e",
+    "f558db1",
+    "d9fcde6",
+    "9f20184",
+    "413c40a",
+    "ff6c2eb",
+    "71bc783",
+    "0101d6c"
+   ],
+   "reviewFixCommit": "0101d6c",
+   "plan03Commits": [
+    "a10993c",
+    "f0e7236",
+    "6549363",
+    "281be7b",
+    "48dd86c",
+    "6bf0834",
+    "99ebf5d",
+    "1495188",
+    "14d62c4"
+   ],
+   "plan03ReviewFixCommit": "14d62c4",
+   "plan0203RemediationCommit": "a89a077ed12648931a857333f899e3d6c1ea9719"
+  },
+  "lab": {
+   "branch": "feat/robot-lab",
+   "baseCommit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+   "note": "Regression code baseline aa70d65; plan 02 Lab changes (campaign fixture, support matrix helper, capability test, docs) start after 730bd1c and are allowed only by the explicit Lab code identity guard. Plan 03 Lab changes (arm telemetry/view, inspector ARM03 row, arm evidence test, arm e2e spec, re-pin, docs) start after the plan 02 re-pin 2d5fed3. Remediation changes only runtime pin, compatibility metadata and review/evidence docs; UI/source/tests unchanged.",
+   "plan02BaseCommit": "730bd1ce5b44848b9becae93f6ab78e7b32329da",
+   "plan03BaseCommit": "2d5fed3",
+   "remediationBaseCommit": "a0a02d205a0996fdc160269b8c742cb6c1f70dcb"
+  },
+  "artifact": {
+   "entrypoint": "runtime.mjs",
+   "schemaHash": "8b398544fdeb8127da0697a086283f055126075696a573dd4e8be40b00d56881",
+   "protocolMajors": [
+    1,
+    2
+   ],
+   "nodeMajor": 24,
+   "sha256": "fe49fcea31da67630fa50e6fe75418967092cee57ab9144959413a529129ce15",
+   "simulationTools": {
+    "distribution": "separate",
+    "path": "source/robotics/simulation",
+    "digest": "2102ba087776b9935f54b43c9eaeff760dbe306d55c5b17ed95b14e68026b78d",
+    "files": 33,
+    "note": "Linux SIL tools are not in runtime.mjs; the export manifest records their digest and the pinned ROS image so a Linux host proves the same revision (scripts/lab-sil.mjs doctor). Plan 03 adds collision/__main__.py (JSON entry of the ARM03 checker for the arm session)."
+   }
+  },
+  "toolchain": {
+   "node": "v24.22.2",
+   "pnpm": "10.32.1"
+  }
+ },
+ "contracts": {
+  "note": "sha256 of the schema file bytes in source/packages/contracts/schemas; plan 02 extends cell-observation with an optional recipeRevision (compatible), the other v2 schemas are unchanged; plan 03 adds arm-command (arm.command.v1 around the cell-command authority envelope) and arm-observation (arm.status/event/reply v1) — both new files, no v1/v2 byte change",
+  "schemas": {
+   "asset-manifest.schema.json": "df1bb9f365c767f9ae2cc3108a54162fa3fa2bd05cb78e1b7b700147fe4829b8",
+   "asset-revision.schema.json": "ff741ad719244d9f16cd971b9fc8dc4e9a9462270e130cfd6f89f679c741721d",
+   "cell-command.schema.json": "45d327b86a8b7afd2cf482caf7a6cd552f8958fd597d9355866a17b6def8a7be",
+   "cell-observation.schema.json": "79282ad4053a8b600929ce6e6706d6a371ee3a4595c8f1b3bf78a01eae6db616",
+   "coffee-recipe.schema.json": "e9ff88cb242ea4dad6beeea5e75f33601b40a411590a88ce8a72c17f07a53873",
+   "lab-action-v2.schema.json": "f5b46205cca373193f27efc4433323333d6308857884be719dcbd12bb818cf1a",
+   "lab-evidence-v2.schema.json": "b9ebf24647539f91a6b9d112210282f46f5d568a739be77603b9ff19ef1c77e3",
+   "lab-project-v2.schema.json": "205ca36a12b6514218a263c10481ec9d2115c874b03c9bbd4dc61675e8aa9cd7",
+   "lab-run-v2.schema.json": "eba3cff43425db498fde279deef316e74c9be459ba872d59ad52a934c654c800",
+   "twin-sample-v2.schema.json": "84b86d2f33099860c82ece0da34a061f0eb669d96e78712165d12573eb53f525",
+   "robot-command.schema.json": "9a39142ea1cbc4087dc04fc4af2204e6431e826d33d82321375b0206d985bc06",
+   "robot-manifest.schema.json": "63660819ee65df2ff0d005ddcc61fdd34dcfde116cbd586677487655507953f5",
+   "arm-command.schema.json": "56ef93965ea6d6f10ad569d821e3cd7d76288304e12b34a478ca3fe033bbf232",
+   "arm-observation.schema.json": "ade3a90e1ccd602bb130f5346ce314e8f26d6ac4db581cd14e78500250e7a62a"
+  }
+ },
+ "fixtures": {
+  "note": "sha256 of file bytes under lab/fixtures (twins, recipes, catalog, worlds); all synthetic/illustrative",
+  "files": {
+   "fixtures/catalog/service-illustrative.json": "ae2c26a11647c2dce5e6615e561bfc1f29df9a4830a1f018aaf2f9297f70750a",
+   "fixtures/recipes/espresso.json": "b45007dce32524b89882546e209883e9676a28ffac2e5b01d9913a7d96094879",
+   "fixtures/recipes/iced-milk-coffee.json": "a846d38fc3d0eace2832419e433fba29e482ebc9625a1d1e0d4bda31cacf8695",
+   "fixtures/twins/coffee-cell-v2.json": "63ff2f515a8f6b24d6d965c55e08ff4fc1a64c07cb4ceedf2b8b0cbc745b58e3",
+   "fixtures/twins/negative-v2.json": "f80a1f71e1c54e8d8976f7c6e7f097b9bba86c011f0cac85b63e43f6eb82afdb",
+   "fixtures/twins/restaurant-v2.json": "900ffaeec5fa0e669e180edb53f7a537c4a5897dcfd565fec6aefaf4b877b6ff",
+   "fixtures/twins/v1-legacy.json": "aa8e23d559dbfa5a2389b7541e118bd893ea341a88e70f95e426ff45c264afb9",
+   "fixtures/worlds/restaurant-six-tables.json": "9748983965bf231103a01a24296cf1ddc2159ed5e91b3d48c8cd399cc6745386",
+   "fixtures/scenarios/food-beverage-campaign.json": "7f2f2cf3ca118dabf0ae546766b4e0063d55ce547c515d5dba32471acb402ad4"
+  }
+ },
+ "providerInterface": {
+  "version": "lab-v2-provider/2",
+  "note": "Revision 2 adds versioned milk/quantity observation metadata, recipe policies and declared arm collision scene inputs. Retain legacy fields; native providers must explicitly report provenance/readiness and commission measured geometry. See docs/simulation-compatibility.md. Plan 02 adds the simulation backend set coffee-simulation and the simulationBackends list; validation of every simulation profile is `simulated`.",
+  "robotAdapterContract": {
+   "file": "source/packages/robot-adapters/src/contract.ts",
+   "sha256": "71bf5f40c4dc3dd6d0d2c42e2cfe49ff304462e13c3816779b4c2b4b3e93b52f"
+  },
+  "cellAdapterContract": {
+   "file": "source/packages/cell-adapters/src/contract.ts",
+   "sha256": "130b0dfcc4cc8c9b3ec1884c9ee2686676d4e8db554b3ca07a4eb1ee7d7ab001"
+  },
+  "capabilityCatalog": {
+   "file": "source/packages/lab-runtime/src/v2/capabilities.ts",
+   "sha256": "45b007721eec9804081254cd79049fb56a2b8f1d6ea3ba6ec307ede8bd088637",
+   "backendSets": {
+    "mock-default": {
+     "mode": "mock",
+     "access": "simulated",
+     "backends": [
+      "mock_amr",
+      "mock_coffee",
+      "mock_arm"
+     ]
+    },
+    "mock-amr": {
+     "mode": "mock",
+     "access": "simulated",
+     "backends": [
+      "mock_amr"
+     ]
+    },
+    "simulation-default": {
+     "mode": "simulation",
+     "access": "simulated",
+     "backends": [
+      "gazebo_nav2",
+      "linuxcnc_sim",
+      "coffee_io_sim"
+     ]
+    },
+    "hardware-shadow": {
+     "mode": "hardware",
+     "access": "shadow",
+     "backends": [
+      "valetudo_native"
+     ]
+    },
+    "hardware-hil": {
+     "mode": "hardware",
+     "access": "hil",
+     "backends": [
+      "valetudo_native",
+      "cell_native"
+     ]
+    },
+    "hardware-live": {
+     "mode": "hardware",
+     "access": "live",
+     "backends": [
+      "valetudo_native",
+      "cell_native"
+     ]
+    },
+    "coffee-simulation": {
+     "mode": "simulation",
+     "access": "simulated",
+     "backends": [
+      "gazebo_nav2",
+      "linuxcnc_sim",
+      "coffee_io_sim"
+     ]
+    }
+   }
+  },
+  "mockBackends": [
+   {
+    "id": "mock_amr",
+    "version": "1",
+    "model": "mock_kinematic",
+    "dynamics": false
+   },
+   {
+    "id": "mock_coffee",
+    "version": "1",
+    "model": "mock_process",
+    "dynamics": false
+   },
+   {
+    "id": "mock_arm",
+    "version": "2",
+    "model": "mock_kinematic",
+    "dynamics": false
+   }
+  ],
+  "clock": {
+   "tickMs": 20,
+   "source": "virtual mock clock; simulation providers must publish their own clock mapping"
+  },
+  "prng": {
+   "algorithm": "xoshiro128**",
+   "seeding": "sha256(seed:actorId)",
+   "version": 1
+  },
+  "featureGate": {
+   "feature": "beverage",
+   "dependencies": [
+    "kitchen",
+    "inventory"
+   ],
+   "note": "Coffee.RegisterRecipe/ReserveJob/StartJob need the beverage feature enabled; the Lab v2 fixture enables it"
+  },
+  "simulationBackends": [
+   {
+    "id": "gazebo_nav2",
+    "implemented": "orchestrator + worker bridge (source/robotics/simulation/bridge, packages/lab-runtime/src/v2/backends)",
+    "evidence": "sil only with a real worker on Linux; protocol doubles are business evidence"
+   },
+   {
+    "id": "coffee_io_sim",
+    "implemented": "F04 process model behind the simulation backend id (packages/cell-adapters/src/coffee-io-sim.ts); modelled measurements, no fluid/thermal model"
+   },
+   {
+    "id": "linuxcnc_sim",
+    "implemented": "Plan 03 adapter/session and bridge/arbiter implemented; controller-backed BV01 campaign remains unavailable and no LinuxCNC run has been recorded."
+   }
+  ]
+ },
+ "scenarios": [
+  {
+   "id": "FD01",
+   "revision": 1,
+   "hash": "602d9e643cff7b70457aef44050b674c6c01053d9ec937a07add2521823fa875"
+  },
+  {
+   "id": "FD07",
+   "revision": 1,
+   "hash": "532ac5b0f7ca1e968f2715d2f5382b18e4e2a2a2d12b742c82af34c7b0f798f1"
+  },
+  {
+   "id": "FD02",
+   "revision": 1,
+   "hash": "4581308265f7fae8a860dc9bb7ddf584dcc632db416446b1f87fecdd04b799e8"
+  },
+  {
+   "id": "FD03",
+   "revision": 1,
+   "hash": "f04ddbae90b79d2a88f84e67329c12c86fc42f3091623a32c8933561000f55be"
+  },
+  {
+   "id": "FD04",
+   "revision": 1,
+   "hash": "ba082db82be5c7e2f23085dcacd018f86b5d9150a0f095a55d5175c3962b87dd"
+  },
+  {
+   "id": "FD04-blocked",
+   "revision": 1,
+   "hash": "d99b6c8548959e647688a4e70f95721ef8183e175bc131f638621132577030e3"
+  },
+  {
+   "id": "FD04-reopen",
+   "revision": 1,
+   "hash": "1f62e04470ef50ae8c466b03f5ed0813abc39df6c2522235ddca48b604ed447c"
+  },
+  {
+   "id": "FD05-payload",
+   "revision": 1,
+   "hash": "bb5022e0a5319cdbe99df0676a3b708c36bbb98e59393389dd756d047ee503ee"
+  },
+  {
+   "id": "FD05-battery",
+   "revision": 1,
+   "hash": "ef0b3d953b75d9d4bdb04f95c3880669b473233e9e1fa5538086c4952b54c626"
+  },
+  {
+   "id": "FD05-capability",
+   "revision": 1,
+   "hash": "a39e77c9a54413cb5068e8e931cde033fea09eb1f63d2b744c12ba4bf4525f05"
+  },
+  {
+   "id": "FD05-binding",
+   "revision": 1,
+   "hash": "df67cf7d4c300293449548427adb1b2f268cbf27dda3a3cb5d491a00c3cf828a"
+  },
+  {
+   "id": "BV01",
+   "revision": 1,
+   "hash": "4bee2981b8992bd1426ce0013c50650cc165dd863761af321c8f5cf506d29412"
+  },
+  {
+   "id": "FD02-cups",
+   "revision": 1,
+   "hash": "4901f45a2e00d3b12f0b8ace7acf958ea516152a3ba17431e0730e53570532cb"
+  },
+  {
+   "id": "CAMPAIGN-FD02-FD07-BV01-BV03",
+   "revision": 1,
+   "hash": "9d279e9af90f19890f72e908d6ea1ee15e6d5df1d49852e5ae79f21c0b26891f"
+  }
+ ],
+ "recipes": [
+  {
+   "id": "espresso",
+   "revision": 2,
+   "hash": "79967849905e6a95f2b5f0cc19e1f449c6a40e5df7a2645b29e4fae3a2c5af96"
+  },
+  {
+   "id": "iced-milk-coffee",
+   "revision": 2,
+   "hash": "455651aa0850a7547f14afce86da3ea9c6c926b2a5ff9466ed31aac18d71df72"
+  }
+ ],
+ "evidence": {
+  "report": "docs/implementation/evidence/digital-twin-v2/mock-report.md",
+  "results": {
+   "file": "docs/implementation/evidence/digital-twin-v2/F08-mock-acceptance.json",
+   "sha256": "1683c53841bc4aab6145f175cf1527924541ff068a39a5ba0eec53395578dd20"
+  },
+  "regression": {
+   "file": "docs/implementation/evidence/digital-twin-v2/regression/manifest.json",
+   "sha256": "a28613610a1c80864fdf4db3e4336af48ab11ef5c5d37c61c0d8d10c1bc3e788",
+   "recorder": "scripts/record-regression.mjs --ci"
+  },
+  "offlineRelease": {
+   "file": "docs/implementation/evidence/digital-twin-v2/plan01-offline-release.json",
+   "sha256": "214be8151f6dd34910db6fe77841f6714d865a4219bddfb8d2e82c43506a7a7f"
+  },
+  "plan02": {
+   "report": "docs/implementation/evidence/digital-twin-v2/plan02-simulation.md",
+   "silCampaign": {
+    "file": "docs/implementation/evidence/digital-twin-v2/plan02-sil-campaign.json",
+    "sha256": "b34ae6f7f2d436db9d65e957439152ae953387759efd058f6cb6ddd30b29d156",
+    "result": "not_run (exit 2): PREREQUISITE_MISSING linux/python-deps/compiler/ros2/gz; BV01 and the campaign scenario blocked by BACKEND_MISSING linuxcnc_sim,coffee_io_sim and SIL_FIXTURE_MISSING"
+   },
+   "silDoctor": {
+    "file": "docs/implementation/evidence/digital-twin-v2/plan02-sil-doctor.json",
+    "sha256": "506cb6653188c25e1b4508fa76788cf4d5509487a3ea213391d9717de992e74b"
+   },
+   "silRuns": {
+    "plan02-sil-fd07.json": {
+     "file": "docs/implementation/evidence/digital-twin-v2/plan02-sil-fd07.json",
+     "sha256": "63d6eeca2cedf1aca0b60d2841a5cefed9d3cdfb55e382d5f867e5d8c7d098cf",
+     "result": "not_run (exit 2)"
+    },
+    "plan02-sil-fd03.json": {
+     "file": "docs/implementation/evidence/digital-twin-v2/plan02-sil-fd03.json",
+     "sha256": "fee2bec1a8c45095f5904c54d7f93c508aab23b77c88b846a61fc6ee794c9831",
+     "result": "not_run (exit 2)"
+    },
+    "plan02-sil-fd04.json": {
+     "file": "docs/implementation/evidence/digital-twin-v2/plan02-sil-fd04.json",
+     "sha256": "24dd27b99916e606efdd44cdc356ddef17f8ffc1fa0367a2c9cbb830773b5353",
+     "result": "not_run (exit 2)"
+    }
+   },
+   "reviewFixPass": "source 0101d6c: capability lifecycle health, honest physics rows (liveness + computed separation), worker scene loop (telemetry/contacts/separation/actors/blockers/faults), barriers, journal-before-send, Nav2 overlay params file, stdio guards, per-run ROS/GZ partition, one requiredBackends formula, allowed-contact validation; every SIL run on this host still not_run."
+  },
+  "plan03": {
+   "report": "docs/implementation/evidence/digital-twin-v2/plan03-arm-hardware.md",
+   "armSmoke": {
+    "file": "docs/implementation/evidence/digital-twin-v2/plan03-arm-smoke.json",
+    "sha256": "655f6819d559dcc31522781a2d981c75a3cfc73bb606faeebcab194dfe8ab0bf"
+   },
+   "doctorLinuxcnc": {
+    "file": "docs/implementation/evidence/digital-twin-v2/plan03-doctor-linuxcnc.json",
+    "sha256": "6d95650442553311aeebe7fe82f2e0643047a4f8cfac2868d9fa452a5a89e44b"
+   },
+   "armArtifactManifest": {
+    "file": "docs/implementation/evidence/digital-twin-v2/plan03-arm-artifact-manifest.json",
+    "sha256": "9cfee7559234ce1e904365bfd42203acf54790a321e93614b956da1401b04879"
+   },
+   "armTrustRefusals": {
+    "file": "docs/implementation/evidence/digital-twin-v2/plan03-arm-trust-refusals.json",
+    "sha256": "070f0c4ffddaabdeeaf24453795e4e69daf806bb9190bd4ab1964b0c02c50d83"
+   }
+  },
+  "plan0203Remediation": {
+   "report": "docs/reviews/2026-11-06-plan-02-03-remediation.md",
+   "file": "docs/implementation/evidence/digital-twin-v2/plan02-03-remediation/manifest.json",
+   "sha256": "730c23cdd3b1e066f4c912126c7c34042c5e4c2dd018afb616d7f250cf7a2c77",
+   "result": "R01–R12 addressed; software checks pass; external gates unchanged"
+  }
+ },
+ "handoff": [
+  "Plans 02/03 bind to the provider/2 hashes above; mock evidence cannot establish physical safety or hardware acceptance.",
+  "Mock durations and S01 completion timing are not physical cycle-time baselines.",
+  "ARM03 uses conservative illustrative capsule sweeps with a declared map profile and current/static AMR proxies; native collision planning, calibration, dynamics, physical grip and stopping require separate evidence.",
+  "Plan 02: SIL tooling, the scenario matrix, evidence records and coffee process coupling are implemented and tested in software; no SIL run executed on the recorded host (macOS, no ROS 2/Gazebo), so G-SIM-NAV, G-SIM-ARM and G-SIM-E2E stay blocked_external and no physics row passes.",
+  "Plan 02: the arm side of BV01 remains the F04 mock arm as open_loop_visualization; the LinuxCNC controller loop, closed-loop checkbox and BV01 SIL fixture belong to plan 03.",
+  "Plan 02 review fix pass (source 0101d6c): the SIL path can no longer pass a physics row without a live worker reporting sensor liveness and separation; the real RosPorts scene node has still never executed (Linux/ROS 2 required).",
+  "Plan 03: the arm controller package (model pin, LinuxCNC sim profile, bridge/arbiter, HMI, adapter/session, export/trust chain) is implemented and tested in software (Python unittest 86, TS arm suites incl. a real bridge over a Unix socket and Python/TS checker parity); no LinuxCNC process, no GUI, no Linux install ran on the recorded host, so the controller PoC, G-SIM-ARM and R-SIM stay blocked_external and no transfer over linuxcnc_sim is verified (the sim profile has no gripper/cup sensor).",
+  "Plan 03: ARM03 evidence comes only from the plan 02 geometric checker over the controller trace (not_run without checker/trace/geometry revision); the SIL campaign orchestrator still has no controller-backed BV01 run (known gap)."
+ ],
+ "gMockBlockers": {
+  "note": "All 18 former software gaps have executed evidence. Acceptance still requires owner review and the human/Linux gates below; unsupported physical fidelity remains explicit.",
+  "notImplemented": [],
+  "requiredByGMockOnlyWithChecker": [],
+  "needsHuman": [
+   "UX-01-time",
+   "R-MOCK-fresh-macos",
+   "R-MOCK-network-off",
+   "R-MOCK-cold-boot",
+   "UI-perf-physical-tablet"
+  ],
+  "blockedExternal": [
+   "R-MOCK-linux"
+  ],
+  "openFindings": []
+ },
+ "scenarioMatrix": {
+  "file": "source/packages/lab-runtime/src/v2/scenario-matrix.ts",
+  "rows": [
+   "ARM01",
+   "ARM02",
+   "ARM03",
+   "ARM04",
+   "ARM05",
+   "ARM06",
+   "FD01",
+   "FD02",
+   "FD03",
+   "FD04",
+   "FD05",
+   "FD06",
+   "FD07",
+   "FD08",
+   "BV01",
+   "BV02",
+   "BV03",
+   "BV04",
+   "BV05",
+   "BV06",
+   "BV07",
+   "BV08",
+   "SYS01",
+   "SYS02",
+   "SYS03",
+   "SYS04",
+   "SYS05",
+   "SYS06",
+   "CAMPAIGN-FD02-FD07-BV01-BV03"
+  ],
+  "hardwareSupport": "false for every row in this runtime (plan 03+)",
+  "note": "admitScenario answers before any effect; BACKEND_MISSING is unavailable, never a mock fallback. Business invariants are evaluated on the journal-backed report in every mode; physics measurements are not_run without a real SIL worker. Plan 03 adds ARM01–ARM06 (mock+simulation support, hardware false; no runner scenario — test-covered rows)."
+ },
+ "armController": {
+  "package": "source/integrations/arm-controller",
+  "version": "0.1.0+a89a077",
+  "exportedFrom": "a89a077ed12648931a857333f899e3d6c1ea9719",
+  "signed": false,
+  "note": "Exported with --allow-unsigned for this record only: no release signing key exists; the installer refuses it (fail closed). Signed install, downgrade and rollback paths are proven by tests with ephemeral keys.",
+  "model": {
+   "id": "puma560-reference",
+   "revision": 1,
+   "manifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5",
+   "origin": "LinuxCNC 2.9 sample puma560 (commit 135b0ce5220bef8f8a34b6825723108b8b9740f1), modified DH per Craig, inch/rad/deg source, SI at the Lab boundary",
+   "labIllustrativeModelRevision": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3"
+  },
+  "profile": {
+   "id": "puma560-sim-1",
+   "path": "configs/sim/puma560/profile.json",
+   "sha256": "a2a9588e148346d5ecfea91821d0293e47e3de38eef20d736380f109224a0520"
+  },
+  "dependencyLock": {
+   "status": "candidate",
+   "sha256": "6bf53b3e448d113d340cae5cc80120621e27c9d8cd70e768900d4097b2f7ee55",
+   "note": "candidate pins (LinuxCNC v2.9.10 / bookworm 2.9.0~pre1, PyQt5 5.15.9, QScintilla 2.13.3, Debian 12 amd64); verified:false until a clean host records a run"
+  },
+  "files": 44,
+  "schemasShipped": [
+   "arm-command.schema.json",
+   "arm-observation.schema.json",
+   "cell-command.schema.json",
+   "cell-observation.schema.json"
+  ],
+  "fixtures": {
+   "messages": "0d1f3fd29599ccaccf05063d98a5b4fba67a8ceb5eb12a170e5ce6e85ed8932b",
+   "coffeeHandoff": "6ab4b1af3e087bb291a96dbf76fa1f3da61d9601bc11b2771b146b014bb1a58e"
+  },
+  "trustPolicy": {
+   "keys": 0,
+   "note": "NO_ACTIVE_KEY in the repository copy; provisioning supplies the real public keys; every install fails closed until then. Template revision 0; provision a signed positive policyRevision and preserve the accepted revision floor."
+  },
+  "blockedExternal": [
+   "LinuxCNC smoke (scripts/smoke-sim.sh)",
+   "QtVCP GUI smoke (docs/hmi-acceptance.md)",
+   "clean Linux host install/rollback/systemd (scripts/install-sim.sh)",
+   "release signing by the signing station",
+   "controller-backed BV01 in the SIL campaign (orchestrator gap)"
+  ]
+ }
+}

@@ -1,0 +1,5 @@
+
+> mekoniq-robot-lab@0.1.0 check:source <workspace>/lab
+> node scripts/check-source.mjs
+
+Verified source a89a077ed12648931a857333f899e3d6c1ea9719; schema 8b398544fdeb8127da0697a086283f055126075696a573dd4e8be40b00d56881; protocol 1/2; Node 24

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "documentType": "sim3d-fixture-manifest",
+  "id": "serve-3d-v1",
+  "generator": "scripts/export-sim3d-fixtures.ts",
+  "note": "Serve plus two passive ball casters for the 3D plants. Dimensions, masses, caster size and the world3d heights and frictions are assumed inputs; inertia is derived from them. Nothing here is a measured or vendor-locked value.",
+  "files": [
+    {
+      "path": "serve-3d-project.json",
+      "sha256": "f1c97e1bd6b6bd1258b08e82a9da3c565e398cfd7572d837d89c67d3a1340147",
+      "bytes": 12009
+    },
+    {
+      "path": "serve-3d-fleet-project.json",
+      "sha256": "40a9aad4a8ae5888a280a2baadc034cdc6a544bbf4fbdf3dec5459935e71fb0a",
+      "bytes": 17745
+    },
+    {
+      "path": "serve-3d-components.json",
+      "sha256": "475a785832cb1a54d588781075c86bfda7a5e9d965365469f7e48fac47f53f2b",
+      "bytes": 61944
+    },
+    {
+      "path": "world3d.json",
+      "sha256": "68a6c28f4faf93da908c3c7f862e5d554fe605ddf91a84b96bdf6d34c0ec7808",
+      "bytes": 129
+    },
+    {
+      "path": "navigation-scene.json",
+      "sha256": "94f215d4ff81ea4889f41bd9a794d0a065d7102b76e839d62cec05886846645c",
+      "bytes": 13156
+    },
+    {
+      "path": "navigation-scene-two-robot.json",
+      "sha256": "6f027d5f0f78d7e834e88eff7669e3ea731ca2afc7cece5b0886af6462de21f4",
+      "bytes": 18801
+    },
+    {
+      "path": "physical-model-amr-1.json",
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "bytes": 47385
+    },
+    {
+      "path": "physical-model-robot01.json",
+      "sha256": "eed63815e489c890dc8ad608900bec0c9d1fe4dc52f64474bebb6471902460b8",
+      "bytes": 47581
+    },
+    {
+      "path": "physical-model-robot02.json",
+      "sha256": "b35d2070dcc93f43f7d4c26703b15c75e7db33aebb8fe1571443f714b14d0f88",
+      "bytes": 47520
+    }
+  ]
+}

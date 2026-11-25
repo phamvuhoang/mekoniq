@@ -1,0 +1,17 @@
+{
+  "deployment": "dpl_GCMxdN65ZPfmVBEsiJF7S64o83xr",
+  "url": "https://mekoniq-pcioivxhv-henry-projects.vercel.app",
+  "target": "preview",
+  "state": "READY",
+  "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+  "brandVersion": "1.0.1",
+  "http": {
+    "home": 200,
+    "release": 200
+  },
+  "manifestMatches": true,
+  "manifestSha256": "4798ca3aedd18d08bfab9a9222fbf31c7a7110a44f814fe1e0c24fef5fd4bf85",
+  "browserRemote": "passed: six routes; authenticated deployment-protection cookie, anonymous app session",
+  "productionChanged": false,
+  "browserEvidence": "preview-lab-browser.json"
+}

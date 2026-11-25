@@ -1,0 +1,59 @@
+
+> mekoniq-robot-lab@0.1.0 test:twin-e2e /Users/hoangpham/source/prv/robot/lab
+> node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts
+
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source f82b2057cae89b0029968212753df01f86f334ad · artifact 470a404c6171 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal /var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-mock-e2e-ZoT0Sd/runs-twin-workspace.spec.ts
+Owned processes: runtime pid 66775, UI pid 66776
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 567 ms. Press Ctrl-C to stop.
+Running twin-workspace.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 5 tests using 1 worker
+
+(node:66795) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/twin-workspace.spec.ts:9:1 › WebGL disabled and reduced motion fall back to a 2D twin with the same controls (707ms)
+  ✓  2 tests/e2e/twin-workspace.spec.ts:40:3 › paired source runtime › coffee preset runs on the mock backend with a locked, visible identity (1.3s)
+  ✓  3 tests/e2e/twin-workspace.spec.ts:59:3 › paired source runtime › layers, legend and one shared selection survive a 3D to 2D switch (487ms)
+  ✓  4 tests/e2e/twin-workspace.spec.ts:86:3 › paired source runtime › engineering panel shows units, observed versus commanded and data age (2.6s)
+  ✓  5 tests/e2e/twin-workspace.spec.ts:115:3 › paired source runtime › mobile layout is operable with the keyboard only (1.5s)
+
+  5 passed (7.8s)
+
+Stopping the runtime and UI this launcher started…
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source f82b2057cae89b0029968212753df01f86f334ad · artifact 470a404c6171 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal /var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-mock-e2e-ZoT0Sd/runs-coffee-journey.spec.ts
+Owned processes: runtime pid 66816, UI pid 66817
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 558 ms. Press Ctrl-C to stop.
+Running coffee-journey.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+(node:66836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/coffee-journey.spec.ts:7:1 › missing cup: visible reason and entity, confirmed reconcile, corrected run completes (13.4s)
+
+  1 passed (14.3s)
+
+Stopping the runtime and UI this launcher started…
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source f82b2057cae89b0029968212753df01f86f334ad · artifact 470a404c6171 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal /var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-mock-e2e-ZoT0Sd/runs-twin-recovery.spec.ts
+Owned processes: runtime pid 66857, UI pid 66859
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 563 ms. Press Ctrl-C to stop.
+Running twin-recovery.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+(node:66879) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/twin-recovery.spec.ts:16:1 › telemetry stream, stale/frozen states, reconnect, read-only replay, compare, export and a lost session (13.4s)
+
+  1 passed (14.3s)
+
+Stopping the runtime and UI this launcher started…

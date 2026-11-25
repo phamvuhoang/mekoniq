@@ -1,0 +1,25 @@
+
+> mekoniq-platform@ test:e2e /Users/hoangpham/source/prv/robot/source
+> node scripts/test-runner.mjs e2e tablet-destructive-brand cash-print full-pos device-status
+
+[WebServer] (node:82006) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:82007) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:82022) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:82029) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/cash-print.spec.ts:3:1 › cash shift and print queue screens render from real snapshots, with the fixture printer labelled as not physical (498ms)
+  ✓  2 tests/e2e/device-status.spec.ts:3:1 › venue receipt does not claim a cloud commit and pending journal prevents reset (252ms)
+  ✓  3 tests/e2e/device-status.spec.ts:9:1 › local commit is presented separately from venue or cloud acknowledgement (417ms)
+  ✓  4 tests/e2e/device-status.spec.ts:15:1 › chef route guards and language work on a portrait tablet (296ms)
+  ✓  5 tests/e2e/full-pos.spec.ts:20:1 › QR order, amendment to two stations, three-way split, two tenders, partial refund, reconciled shift and the matching report (2.5s)
+  ✓  6 tests/e2e/full-pos.spec.ts:108:1 › reports: permission denial, offline and unsynced states, recovery, and touch layout in portrait and landscape (1.2s)
+  ✓  7 tests/e2e/tablet-destructive-brand.spec.ts:4:1 › populated unpaid bills and bookings keep destructive styling while original cancellation commands complete (767ms)
+  ✓  8 tests/e2e/tablet-destructive-brand.spec.ts:49:1 › ordinary text links use Aqua underline while navigation retains its current treatment (265ms)
+
+  8 passed (8.5s)

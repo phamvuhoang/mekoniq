@@ -1,0 +1,9 @@
+{
+  "labCommit": "66445c5acf24f90cc17449bae561dbc45965eba7",
+  "result": "failed",
+  "reason": "ENOSPC in Vitest temporary transform cache",
+  "passed": 179,
+  "failed": 9,
+  "skipped": 1,
+  "resolution": "Remove only this task obsolete offline/export artifacts; do not delete user data or other Docker projects. Retry same revision after checking storage."
+}

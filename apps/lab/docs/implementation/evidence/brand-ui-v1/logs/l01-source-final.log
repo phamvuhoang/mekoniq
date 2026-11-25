@@ -1,0 +1,5 @@
+
+> mekoniq-robot-lab@0.1.0 check:source /Users/hoangpham/source/prv/robot/lab
+> node scripts/check-source.mjs
+
+Verified source f82b2057cae89b0029968212753df01f86f334ad; schema ebc4b1f05c57f1dbbbca9e376bd815dd20277a9fe8a7d4c8365ab566cc8f63fe; protocol 1/2; Node 24

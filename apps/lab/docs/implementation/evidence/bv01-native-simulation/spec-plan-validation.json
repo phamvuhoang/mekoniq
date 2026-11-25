@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-06T01:48:42.876693+00:00",
+  "scope": "Documentation validation only; no product/native test suite executed",
+  "result": "pass",
+  "checks": {
+    "markdownFiles": 9,
+    "localLinks": 34,
+    "shellBlocksSyntaxOnly": 19,
+    "jsonBlocks": 1,
+    "requirementsMapped": 12,
+    "placeholderScan": "pass"
+  },
+  "errors": [],
+  "documents": [
+    {
+      "path": "docs/plans/2026-11-06-bv01-native-simulation/01-golden-path.md",
+      "sha256": "f3f5ff0715c3afb8e88331ff09765ecaea604cc50422fdd5ba0164834beaea39"
+    },
+    {
+      "path": "docs/plans/2026-11-06-bv01-native-simulation/02-native-simulation.md",
+      "sha256": "d416f67a695087e2c0a5f78c0281de7d4dc369625ad27e58cecdc8320270d602"
+    },
+    {
+      "path": "docs/plans/2026-11-06-bv01-native-simulation/03-release-acceptance.md",
+      "sha256": "15594dfb92fe7afec00cd67133602b7487db2e686e027c3c7975432a97b500cc"
+    },
+    {
+      "path": "docs/plans/2026-11-06-bv01-native-simulation/README.md",
+      "sha256": "0ee7b4e85c288a43cfd6eaaf2c755968ec0623aabc8081712c8fde17043fda38"
+    },
+    {
+      "path": "docs/plans/2026-11-06-bv01-native-simulation/utm-runbook.md",
+      "sha256": "8c9088070ef839b2c90ac0477fb36f12d94348b2c225e941889004b8cf247f48"
+    },
+    {
+      "path": "docs/research/2026-11-06-bv01-native-simulation.md",
+      "sha256": "43f867389154e8fec6cc21b6c36f5a5cc41d009dba34ae760fcbc6587ab6a378"
+    },
+    {
+      "path": "docs/specs/2026-11-06-bv01-native-simulation/README.md",
+      "sha256": "1abe6c80e83df900c299a2e253f835716ddb9e53b23907b7aa6ea900c7d426a7"
+    },
+    {
+      "path": "docs/specs/2026-11-06-bv01-native-simulation/contracts-and-evidence.md",
+      "sha256": "48677dbf492ce8ff27ba480a86c851369bdd75014ac369070be397f956bd5723"
+    },
+    {
+      "path": "docs/specs/2026-11-06-bv01-native-simulation/verification.md",
+      "sha256": "446356e50daa7922e6ea5a2e3a169e128b943439332aa2344956fe685ce3307d"
+    }
+  ]
+}

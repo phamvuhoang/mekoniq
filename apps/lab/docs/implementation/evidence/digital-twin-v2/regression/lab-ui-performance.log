@@ -1,0 +1,5 @@
+Capturing desktop-3d: 60s; 2 AMRs + 1 arm + 6 tables, 10 Hz samples.
+desktop-3d: p95 frame 16.80 ms, paint 19.10 ms; valid.
+Capturing tablet-2d-emulated: 60s; 2 AMRs + 1 arm + 6 tables, 10 Hz samples.
+tablet-2d-emulated: p95 frame 16.70 ms, paint 1.50 ms; valid.
+Saved <workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-ui-performance.json

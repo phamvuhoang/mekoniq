@@ -1,0 +1,31 @@
+{
+ "schemaVersion": 1,
+ "backend": "linuxcnc_sim",
+ "status": "blocked_external",
+ "result": "not_run",
+ "reasons": [
+  "HOST_NOT_LINUX",
+  "LINUXCNC_MISSING",
+  "LINUXCNC_PYTHON_MODULE_MISSING"
+ ],
+ "host": {
+  "platform": "Darwin",
+  "release": "25.5.0",
+  "machine": "arm64",
+  "python": "3.13.3"
+ },
+ "profile": {
+  "path": "configs/sim/puma560/mekoniq.ini",
+  "sha256": "e500350bc2294d5ae43c0a5179584f5bb1d2bedda5a80a2ff4b398506a4696d2"
+ },
+ "modelManifest": {
+  "path": "<workspace>/source/integrations/arm-controller/models/puma560-reference/manifest.json",
+  "sha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+ },
+ "dependenciesLock": {
+  "path": "<workspace>/source/integrations/arm-controller/packaging/dependencies.lock.json",
+  "sha256": "6bf53b3e448d113d340cae5cc80120621e27c9d8cd70e768900d4097b2f7ee55"
+ },
+ "recordedAt": "2026-11-05T19:35:05.932846+00:00",
+ "claims": "software sequence on a virtual HAL at most; no drive, timing, load or safety evidence"
+}

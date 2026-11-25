@@ -1,0 +1,911 @@
+{
+  "cloudCommit": "af7505cf912e12acfa6f033a8d6c7ab235200d86",
+  "tabletCommit": "d9ebd82ae91da1d2cb80fb7d1bdd72f8df99d556",
+  "brandVersion": "1.0.1",
+  "matrixScreenshots": 129,
+  "selectedScreenshots": 136,
+  "axeReports": 43,
+  "axeViolations": 0,
+  "files": [
+    {
+      "path": "cloud-admin-catalog-1280.png",
+      "sha256": "fa8969e098049d64851c729b8862f4aa2e94eb974fe1f32881829784f8842b9c",
+      "bytes": 157982
+    },
+    {
+      "path": "cloud-admin-catalog-390.png",
+      "sha256": "2a11fd3e62584ff9ec90a89a2cffbce9668c91ecebbb5d284a1edbab1c2ebd64",
+      "bytes": 130922
+    },
+    {
+      "path": "cloud-admin-catalog-800.png",
+      "sha256": "c2b121528cf930ed1c0c4afb1fd4d8032d58f343fd7c021abbd52bd28ef02364",
+      "bytes": 142445
+    },
+    {
+      "path": "cloud-admin-catalog-pending.png",
+      "sha256": "d78dbd19022fce474738eb5202c52f93298b9143d157bc5b66da29a94598eeff",
+      "bytes": 152802
+    },
+    {
+      "path": "cloud-admin-chain-configuration-1280.png",
+      "sha256": "9e4945cbc4b6cf33c6dc257cafb2a52fcebc456b7aa49e12a582476e1c9276f6",
+      "bytes": 121612
+    },
+    {
+      "path": "cloud-admin-chain-configuration-390.png",
+      "sha256": "ebe367d83265d55a9d8fde14a309974bb273dc309cc04436cf921844efb44d42",
+      "bytes": 99068
+    },
+    {
+      "path": "cloud-admin-chain-configuration-800.png",
+      "sha256": "d70fcecaa1c3c626ce76d4baaad01a84ef2499bafd9377373eae3151f9caadbd",
+      "bytes": 153373
+    },
+    {
+      "path": "cloud-admin-chain-reports-1280.png",
+      "sha256": "fedb9b5054096907c4c7dc0d9e882e17eae255089ffd8a773d1fee9934e84d6f",
+      "bytes": 59206
+    },
+    {
+      "path": "cloud-admin-chain-reports-390.png",
+      "sha256": "af9b39a1ae0cfeeac1acff41a1c7f6318c385295601da5564ab5b1ff57db6a74",
+      "bytes": 53101
+    },
+    {
+      "path": "cloud-admin-chain-reports-800.png",
+      "sha256": "fbc528341fc757e79df17f9b2abb687c8c588e41c163e9db24a7b59f88d8aad7",
+      "bytes": 63304
+    },
+    {
+      "path": "cloud-admin-customers-1280.png",
+      "sha256": "39e119c70b9d530f048176b45df9f692ac3b8adacf10cdc7804f3844285121cb",
+      "bytes": 83210
+    },
+    {
+      "path": "cloud-admin-customers-390.png",
+      "sha256": "6487fc69b3ecffd00803f20aed7e6deb1b26df975f77f298b3f0ebbbd248206e",
+      "bytes": 75398
+    },
+    {
+      "path": "cloud-admin-customers-800.png",
+      "sha256": "e1440b8961a22665fea9b59f3decd5f37bceaffa432de35b24244e4fb1113b82",
+      "bytes": 87088
+    },
+    {
+      "path": "cloud-admin-operations-1280.png",
+      "sha256": "7f3fc3584137fd2e45351ddb10f475eac29112919891a7940ede15797665414e",
+      "bytes": 67788
+    },
+    {
+      "path": "cloud-admin-operations-390.png",
+      "sha256": "4caa52a1c3cd78797c36b024008e71bbb0580d0eb5bf53f6fd6875badb1b4046",
+      "bytes": 61745
+    },
+    {
+      "path": "cloud-admin-operations-800.png",
+      "sha256": "5a88598155cfd8d1928cfd30e911c6a3ea3532e91202978357a5c594762de66d",
+      "bytes": 63067
+    },
+    {
+      "path": "cloud-admin-promotions-1280.png",
+      "sha256": "3d64f5105d2b76401ee65b5fe41cfa2b586415e8817bf099b5b6148b160a45c5",
+      "bytes": 185563
+    },
+    {
+      "path": "cloud-admin-promotions-390.png",
+      "sha256": "080af0b028609cb0f7ee8f2ce7570378353befd9b5767b18aa5c2668007ffb85",
+      "bytes": 116254
+    },
+    {
+      "path": "cloud-admin-promotions-800.png",
+      "sha256": "5ee63cd8aeeda1fb5ad179f4729a4909fa8243d9b47e01b1473d726e3d561f5a",
+      "bytes": 210597
+    },
+    {
+      "path": "cloud-admin-reservations-1280.png",
+      "sha256": "752284ec0d585d792d828431b2fb83d861b8ea67772f164f52553f7e643ad137",
+      "bytes": 145777
+    },
+    {
+      "path": "cloud-admin-reservations-390.png",
+      "sha256": "f0eba39946f1851889e4746212064ee95144c0ce0e26cf696166338dcc61ab46",
+      "bytes": 104776
+    },
+    {
+      "path": "cloud-admin-reservations-800.png",
+      "sha256": "a43f2559eca5bad1bf987d70eaab555c022872cbba64464d08b46a337d0e411f",
+      "bytes": 111969
+    },
+    {
+      "path": "cloud-admin-settings-1280.png",
+      "sha256": "8eed6d8e4c81eccb358caabe5d53fb8957bbccfc7cddb77e357a4065febcf0db",
+      "bytes": 252951
+    },
+    {
+      "path": "cloud-admin-settings-390.png",
+      "sha256": "35fdc9779afb93214ca81c5b8e43586abbd45cb718cc55c733e9068119068b61",
+      "bytes": 235157
+    },
+    {
+      "path": "cloud-admin-settings-800.png",
+      "sha256": "a4a36f2837dcef9b8c7ca9e0425949495ece0906d844726ca44bbd195996fc60",
+      "bytes": 249102
+    },
+    {
+      "path": "cloud-guest-table-unknown.png",
+      "sha256": "a5c0af9d89f7f405f74fa146f7c2e0f720275d13eb06a8db8f8272fb47f52d40",
+      "bytes": 84194
+    },
+    {
+      "path": "cloud-login-error.png",
+      "sha256": "457bb234af48f82fac1e07826897f3eef4b74cb08daddfb622532039b0b34527",
+      "bytes": 40685
+    },
+    {
+      "path": "cloud-login.png",
+      "sha256": "d375de2dd9841b969d07562cc5b028438a6fe51d8eaca5a62604dec09e7cf8ba",
+      "bytes": 30864
+    },
+    {
+      "path": "cloud-public-home-1280.png",
+      "sha256": "1d8f0e9e5c05fc528ab7a7160f85053325f6211d5e4a9257d89efb53a1416993",
+      "bytes": 24222
+    },
+    {
+      "path": "cloud-public-home-390.png",
+      "sha256": "7a002eb12b8f3098cd3fcb776cba57b675bee30a315a1dc790a7ce79fc22bda8",
+      "bytes": 16210
+    },
+    {
+      "path": "cloud-public-home-800.png",
+      "sha256": "86ee051d797fd7ce1c4d467d85759c7c9bad5f09b98c5c09961405ec58de9f0c",
+      "bytes": 24424
+    },
+    {
+      "path": "cloud-public-login-1280.png",
+      "sha256": "7888572686d3cd21b3c45ea8eabfdcfc83e0ecda6ef3d9531a4ce874f3b8a5b9",
+      "bytes": 31456
+    },
+    {
+      "path": "cloud-public-login-390.png",
+      "sha256": "032934429350ba25fb974cbf4ea4ee553d2daa89c364a71a189f899c17352c81",
+      "bytes": 19996
+    },
+    {
+      "path": "cloud-public-login-800.png",
+      "sha256": "fa87d592922325a39a78e6972cc4cf0d2b94f9522df9230082720dce255d2eae",
+      "bytes": 27932
+    },
+    {
+      "path": "cloud-public-menu-1280.png",
+      "sha256": "145d009c852dc593a404b23da5ba628ede6093a46b72a5794a7cc9ffa28d8c15",
+      "bytes": 39927
+    },
+    {
+      "path": "cloud-public-menu-390.png",
+      "sha256": "470b3acf4db120b2829d4ca133cbecd738062431adf35bb32c53add11f43317e",
+      "bytes": 24657
+    },
+    {
+      "path": "cloud-public-menu-800.png",
+      "sha256": "3b00aaa91f765f7f1c8756e3964a4390955dea40317a57b1d1cc1dfcc94896cb",
+      "bytes": 33684
+    },
+    {
+      "path": "cloud-public-order-1280.png",
+      "sha256": "93239c131d538b1ba266f1e4930b1bd9ec4fb73c9b39da0e6d44a371979de037",
+      "bytes": 52398
+    },
+    {
+      "path": "cloud-public-order-390.png",
+      "sha256": "7e264b4685247113846b5a8909bcc5e429c4eb211170d4f51b6d4b4aeeb6699a",
+      "bytes": 42516
+    },
+    {
+      "path": "cloud-public-order-800.png",
+      "sha256": "0adc245a4071c5e21f4aac5a6ab06c7ceb8c666d02344ecadc60c8e244c10e46",
+      "bytes": 54184
+    },
+    {
+      "path": "cloud-public-table-1280.png",
+      "sha256": "70229f0d3ece955a8fcbc545314f80a893dbc46db538ed7f3d62df3aeb742209",
+      "bytes": 21262
+    },
+    {
+      "path": "cloud-public-table-390.png",
+      "sha256": "b59f8ac0a0dea37ec90f68c651f62bef8c912897198465e1b470f535e51f8fb9",
+      "bytes": 11294
+    },
+    {
+      "path": "cloud-public-table-800.png",
+      "sha256": "e6a3d686770a6fa2bec4dbd84d9399e27045d4b56331019a8b5420c5497a2c6c",
+      "bytes": 19924
+    },
+    {
+      "path": "tablet-cash-1280.png",
+      "sha256": "5b4a8b703897d421648e055107b01c11a31df8872743e9a2d78f93b075005ceb",
+      "bytes": 48707
+    },
+    {
+      "path": "tablet-cash-390.png",
+      "sha256": "58e2b24da145b432d874c9a84deb61e67113cb93c6281cd9c89a96733ac11fa0",
+      "bytes": 40937
+    },
+    {
+      "path": "tablet-cash-800.png",
+      "sha256": "50818ab525be93fab7d88d6bf845bb700c186d887b16765695a0862ea309e3fd",
+      "bytes": 54731
+    },
+    {
+      "path": "tablet-checkout-1280.png",
+      "sha256": "4d98d2947871efb1faa140c882f9f5ce664e5b80b249c5fbb7e427aae0f0a4a2",
+      "bytes": 49567
+    },
+    {
+      "path": "tablet-checkout-390.png",
+      "sha256": "95e1221f61010bff5cf022c36b6902794fa8dc99ea785a4fd2ef2782d198e132",
+      "bytes": 45196
+    },
+    {
+      "path": "tablet-checkout-800.png",
+      "sha256": "40d2bc59289ebe6a898b441b6593a1bc9635d951c0baccf925022a3c0d958b00",
+      "bytes": 56577
+    },
+    {
+      "path": "tablet-customers-1280.png",
+      "sha256": "a92ed96c46eeeaa7ff4988e9f6e70af8f1324d53cdb8d2657f582b30262249bc",
+      "bytes": 66689
+    },
+    {
+      "path": "tablet-customers-390.png",
+      "sha256": "b42cfb7846d82fc8811a1c33b6c673779ef08008ba5396eec0381ae32587eff6",
+      "bytes": 60028
+    },
+    {
+      "path": "tablet-customers-800.png",
+      "sha256": "b55e8f9009045584211edd90df28c3d165541f96c8cd64175b0e71a2eab5707e",
+      "bytes": 65119
+    },
+    {
+      "path": "tablet-device-1280.png",
+      "sha256": "0794684eaaac8b44b1f9d9588550b518af358f3609792d10ba3b89d17f5d5922",
+      "bytes": 80238
+    },
+    {
+      "path": "tablet-device-390.png",
+      "sha256": "7f936b2a942f7d540c1e930ec378ae9e8b6e18efaaed60077cf908e573eaac84",
+      "bytes": 65717
+    },
+    {
+      "path": "tablet-device-800.png",
+      "sha256": "05b00fe72a59ae7189f53936c58d22968317a71268c77bbdf8e6e8e9fc5af54b",
+      "bytes": 76082
+    },
+    {
+      "path": "tablet-enrollment.png",
+      "sha256": "de1d5417078dc19a959346595018749305d997caaa1157fe1458dde8d6d2062f",
+      "bytes": 38127
+    },
+    {
+      "path": "tablet-fleet-1280.png",
+      "sha256": "a729464481f99d0308098c1d4eaadaced2d3e2700c2b51b198f4e1e22bea5dca",
+      "bytes": 76212
+    },
+    {
+      "path": "tablet-fleet-390.png",
+      "sha256": "253b67758e513542220b7faae3dbe46ad31716deb53aa7e3e91e241e9703db33",
+      "bytes": 67285
+    },
+    {
+      "path": "tablet-fleet-800.png",
+      "sha256": "c625d45878e640b55e2939e804f83f9d1bcfffc52de6f4defd06a89b04aa23a0",
+      "bytes": 73541
+    },
+    {
+      "path": "tablet-guest-requests-1280.png",
+      "sha256": "6990193322a6caea517f2ce457e2b0b49fde850205c10a248e7c20483d3ea534",
+      "bytes": 71599
+    },
+    {
+      "path": "tablet-guest-requests-390.png",
+      "sha256": "47aaebf3306b1fecee75fab9b872e00b0518b1d033962d1e4a7bdabdc74c7568",
+      "bytes": 60136
+    },
+    {
+      "path": "tablet-guest-requests-800.png",
+      "sha256": "f3d152a5a17ec80e91e9883e4e735b2e00ffab5759c194cb53d93281a482b832",
+      "bytes": 59714
+    },
+    {
+      "path": "tablet-import-1280.png",
+      "sha256": "012e4788df5fa5668393edf7e94bf87cddb7aa1c08320233289a450a84cf064d",
+      "bytes": 81931
+    },
+    {
+      "path": "tablet-import-390.png",
+      "sha256": "92659d55bac901b5725429d07806115c1195a01dbfda9ffe30e6e36f4eeea039",
+      "bytes": 63642
+    },
+    {
+      "path": "tablet-import-800.png",
+      "sha256": "22c01e802836feba6a20799ce5a7f47ecf8fb36be4b83b7e5c79311f67b7fa57",
+      "bytes": 78529
+    },
+    {
+      "path": "tablet-inventory-1280.png",
+      "sha256": "566f4269433c2d0045dcfed6a6551a1c07f2e1d02b974810135564a189ae6d96",
+      "bytes": 67032
+    },
+    {
+      "path": "tablet-inventory-390.png",
+      "sha256": "090adb5524f4b77043868dcfd19ac92000f6b0a4fcc479bc407b9ea4f5264716",
+      "bytes": 62130
+    },
+    {
+      "path": "tablet-inventory-800.png",
+      "sha256": "a5efe91b77345ad345ca22d86795b8b4cf744dbbe2b3b3f6bc4f3d57cc072869",
+      "bytes": 65273
+    },
+    {
+      "path": "tablet-inventory-reports-1280.png",
+      "sha256": "e3a37c0bf86d027435814b8fff7a16d75cf28380b9f5d2d3c8b3791530530425",
+      "bytes": 188093
+    },
+    {
+      "path": "tablet-inventory-reports-390.png",
+      "sha256": "be5692704507b6eac1cf4164cbd2d89d9108dbfcc43fe9e4739eb0290999895c",
+      "bytes": 171584
+    },
+    {
+      "path": "tablet-inventory-reports-800.png",
+      "sha256": "14adc5e79edb87842482399b681736e70171813b5e900b92c98d263eb5251a6d",
+      "bytes": 179082
+    },
+    {
+      "path": "tablet-invoices-1280.png",
+      "sha256": "d5befbe317e67c84ee0f15956e7b6f1f50338e648fd47a3cfd80b2321d88e3c7",
+      "bytes": 48800
+    },
+    {
+      "path": "tablet-invoices-390.png",
+      "sha256": "0fe1437f033ee00b78827d81ff01137a9d79b3be1a46bfabf597491b2b3cc8e0",
+      "bytes": 41726
+    },
+    {
+      "path": "tablet-invoices-800.png",
+      "sha256": "35b6b85804ee760a0be9873fcced93c7893ee15b1b239d72846d52e9ce02964a",
+      "bytes": 46677
+    },
+    {
+      "path": "tablet-isolated-1280.png",
+      "sha256": "9252fd30e7da8a609b957a5d367ed3cec666caa4f5fcd88881078ed3113d1c7c",
+      "bytes": 74715
+    },
+    {
+      "path": "tablet-isolated-390.png",
+      "sha256": "ab9ce2e1ca79c9fdc8b3f11fde2b07b3502e4690d5048032b7e47c01d43ec252",
+      "bytes": 56017
+    },
+    {
+      "path": "tablet-isolated-800.png",
+      "sha256": "2af91079deafe9ee0424caf14d663c9e23de2e86bc4dda4dd37b7735e08e2bc0",
+      "bytes": 70514
+    },
+    {
+      "path": "tablet-isolated.png",
+      "sha256": "f6a38d757a1aff45c4736ad4d678a072b7570aa8ccc2596ffab42a6a7ee9458b",
+      "bytes": 91352
+    },
+    {
+      "path": "tablet-keyboard-draft.png",
+      "sha256": "6fa8d516ac3d426285273697de6cd7f19a07fed22233683bbb81d3357f755a77",
+      "bytes": 76379
+    },
+    {
+      "path": "tablet-kiosk-1280.png",
+      "sha256": "04d58730682fc6bd85f60d4319ab02c207f578426aaf8dd630bc0275890dc31f",
+      "bytes": 48283
+    },
+    {
+      "path": "tablet-kiosk-390.png",
+      "sha256": "3f5e40fe06d634e08889828b4798207dbb223f8edd0a2599b0f90210ffe8fa87",
+      "bytes": 29911
+    },
+    {
+      "path": "tablet-kiosk-800.png",
+      "sha256": "6f907f09de247d3cd31ebd3a5f487eb600875c6bb57cb468d4a4ef867743aa72",
+      "bytes": 36652
+    },
+    {
+      "path": "tablet-kitchen-1280.png",
+      "sha256": "77bd3c4d39feb026dfe5704ab0fef154b2b05ab3f3056dffb4da95dd16a31760",
+      "bytes": 52962
+    },
+    {
+      "path": "tablet-kitchen-390.png",
+      "sha256": "5c6e2dfc3eea97c0a74cbc137153e9ae93bcfcecb7bcd006c26dcf87bcc349b0",
+      "bytes": 36761
+    },
+    {
+      "path": "tablet-kitchen-800.png",
+      "sha256": "d3804354477f0953c91e895f73d7cce23c80d65449d14752d86cda16b49ca567",
+      "bytes": 42037
+    },
+    {
+      "path": "tablet-maintenance-1280.png",
+      "sha256": "cc5bfe4113468949c854cd467d61ebc631136c822d1abbfd57aa3201a588a5c5",
+      "bytes": 69782
+    },
+    {
+      "path": "tablet-maintenance-390.png",
+      "sha256": "4b5d4c2c324be1ab9ac3a7beb309ad69ed4aadbaa8689842a6d604228a77e7c4",
+      "bytes": 62484
+    },
+    {
+      "path": "tablet-maintenance-800.png",
+      "sha256": "7b6a4cb193a76f7b751546c1d19fabca7a73767fe3188a7cd25acc7f744b6a53",
+      "bytes": 67654
+    },
+    {
+      "path": "tablet-models-1280.png",
+      "sha256": "22c24ae2c0bc656ae79f148768119f26b2daf182d605a26ff2906f8896c1c64d",
+      "bytes": 48195
+    },
+    {
+      "path": "tablet-models-390.png",
+      "sha256": "23e1019fa4ddb2730b5057876861e2d88ccce5d6cb0ffcc20b394ba476c4c331",
+      "bytes": 41191
+    },
+    {
+      "path": "tablet-models-800.png",
+      "sha256": "1d58e28ca48597328396f232862e6d245e4b830696e41139816e2fc6f1d9299c",
+      "bytes": 46648
+    },
+    {
+      "path": "tablet-pos-1280.png",
+      "sha256": "45ecf49b4e340b369c88d38fad47479737a6fdc6e742e705c120333186954427",
+      "bytes": 77349
+    },
+    {
+      "path": "tablet-pos-390.png",
+      "sha256": "d4fb20098c162cd6272b877d42c0d9540e3dc429d3f16b3eb2f6bdfc9da212ed",
+      "bytes": 66766
+    },
+    {
+      "path": "tablet-pos-800.png",
+      "sha256": "fd50d69d8ef83b2d450769d6db3a9cbd83ad152e49d765aab4cb9f7fc0907924",
+      "bytes": 73900
+    },
+    {
+      "path": "tablet-print-1280.png",
+      "sha256": "be00cf0a7531451f3919101c58d0cd64a46cda93dc9a4f0000285d9980db8cda",
+      "bytes": 72311
+    },
+    {
+      "path": "tablet-print-390.png",
+      "sha256": "f8f43ad16d26681db7e00213fe3679b36e3885d35b871705f48a8a77c057cb68",
+      "bytes": 54074
+    },
+    {
+      "path": "tablet-print-800.png",
+      "sha256": "2f5b62e2f6fd94411bc709483a886703eb5ab9d85f65dc416208ed9804c9b735",
+      "bytes": 68368
+    },
+    {
+      "path": "tablet-promotions-1280.png",
+      "sha256": "f5bd763e30bb49fbc53f666554e3fbc50a65c56d671b6e522d5553efb9513555",
+      "bytes": 59078
+    },
+    {
+      "path": "tablet-promotions-390.png",
+      "sha256": "9b5962fdae45b544e07e5c3e8cd754c64b959f71020565ac8b9f28579a0d3952",
+      "bytes": 50714
+    },
+    {
+      "path": "tablet-promotions-800.png",
+      "sha256": "64393865393036684a4c690ed1f97d7ab3d54049d576e399218aa7678eda2337",
+      "bytes": 55942
+    },
+    {
+      "path": "tablet-purchasing-1280.png",
+      "sha256": "cac30ed3288785a86e51d95bea0883ca0884a7766a6af8dd626fdaf4a5b0ea2d",
+      "bytes": 91097
+    },
+    {
+      "path": "tablet-purchasing-390.png",
+      "sha256": "d7c6214cc58cca009d5ac74ada90a94f7f009174362d71768893498cae391bef",
+      "bytes": 82273
+    },
+    {
+      "path": "tablet-purchasing-800.png",
+      "sha256": "79f54f672ee82ab36115caca921b6189ce9987cc3a2d49fbd149a5d394ef1b90",
+      "bytes": 116000
+    },
+    {
+      "path": "tablet-recipes-1280.png",
+      "sha256": "a508c95f2d3386871fec8cfe081a6b215576bf991c1c79f5ee72b6fe0cce7a1f",
+      "bytes": 60258
+    },
+    {
+      "path": "tablet-recipes-390.png",
+      "sha256": "c4b4483d433668c91346446f76425408890afb96c6dae2c7345fae0dc85c8a11",
+      "bytes": 52024
+    },
+    {
+      "path": "tablet-recipes-800.png",
+      "sha256": "3a4cfd48d7b3b8132a01855284d421d60a3ff28f654c6a6c99e5689aa501a1a7",
+      "bytes": 66072
+    },
+    {
+      "path": "tablet-reconciliation-1280.png",
+      "sha256": "045ae84918cf16ff796c2e8d8eaa83d065cf3ddef9345ade4111f8ce829f255d",
+      "bytes": 45905
+    },
+    {
+      "path": "tablet-reconciliation-390.png",
+      "sha256": "f19eb4e7ab8d393f8b94e593daf6d3891a9cb6a9cea6a005882052ebd8c8ca81",
+      "bytes": 38414
+    },
+    {
+      "path": "tablet-reconciliation-800.png",
+      "sha256": "70a23d2461d3dcea55297f002cd914fae431ba3e0d7206f6914dd8be7c50bebe",
+      "bytes": 43655
+    },
+    {
+      "path": "tablet-recovery-1280.png",
+      "sha256": "9441f371aee13bced7bb164d2a3ee92613c817d71525e8c6aacba6dd2359996e",
+      "bytes": 82556
+    },
+    {
+      "path": "tablet-recovery-390.png",
+      "sha256": "ca75d2bf906f08aee352056c559cbd9f997d5bda4a3284d26453f3409551f14c",
+      "bytes": 66801
+    },
+    {
+      "path": "tablet-recovery-800.png",
+      "sha256": "283f96c65acda048475fa443bbead99c067b12d0d3cdbd67843dee754207f6a2",
+      "bytes": 81744
+    },
+    {
+      "path": "tablet-reports-1280.png",
+      "sha256": "d9d479de1af87dffac72c6bb75c52a9028fd71e51f0dc6ece262f012f9194c88",
+      "bytes": 228150
+    },
+    {
+      "path": "tablet-reports-390.png",
+      "sha256": "5a4ad3fd4bcdb755798ee7da3296f409eb9c17749bb79eb05fde33844066857a",
+      "bytes": 206590
+    },
+    {
+      "path": "tablet-reports-800.png",
+      "sha256": "0bd65482f5f2bee8926acf513fdf5cd00ef0a670e8b21a03852284050263a6e2",
+      "bytes": 246541
+    },
+    {
+      "path": "tablet-reservations-1280.png",
+      "sha256": "992cfce8b714cfc7e906e5451b526aed75dbd5f1696f04475ddafaa039f0e0be",
+      "bytes": 76008
+    },
+    {
+      "path": "tablet-reservations-390.png",
+      "sha256": "0dd50675967f62303fe42aa31dd738b2e1b3d8b514bc5fce999ec5f5915d2b72",
+      "bytes": 63972
+    },
+    {
+      "path": "tablet-reservations-800.png",
+      "sha256": "9fc30bf124197cd3f0764ec917c35dbe09e4db2a7a85a51b45f407efaf63f773",
+      "bytes": 79046
+    },
+    {
+      "path": "tablet-robot-1280.png",
+      "sha256": "ba94a225584dfc2185753da91cc329d01db87221f149d584d4808f254fe29f08",
+      "bytes": 75397
+    },
+    {
+      "path": "tablet-robot-390.png",
+      "sha256": "545958c24d15b2c08a02392ad83c3e3ee182c2c1e060bd0a70270b89b06b1726",
+      "bytes": 66815
+    },
+    {
+      "path": "tablet-robot-800.png",
+      "sha256": "2edde32686a43a29b29b42d4b831f262a4568733b7a3a00ab53ae4c9f5c028f8",
+      "bytes": 72738
+    },
+    {
+      "path": "tablet-robot-screen-1280.png",
+      "sha256": "4f1ad3a87f45a24417a6424b3ff4f9fe3a7046b651df9c4b89ef30634c1e21c6",
+      "bytes": 50119
+    },
+    {
+      "path": "tablet-robot-screen-390.png",
+      "sha256": "0e5411764a58251428ec19063ef9928153714aab571873bb3676c5828ac09a88",
+      "bytes": 32218
+    },
+    {
+      "path": "tablet-robot-screen-800.png",
+      "sha256": "6992803e4417134a57c38eb8d2ead92aec54b02f4d4ac0002eb33206b1f165fa",
+      "bytes": 38315
+    },
+    {
+      "path": "tablet-robot-setup-1280.png",
+      "sha256": "b9e3c347475f30fc38d100e33ae76765c1c51fd57996b43b1513a1c8c28d22cf",
+      "bytes": 246157
+    },
+    {
+      "path": "tablet-robot-setup-390.png",
+      "sha256": "936a40b0e9592389dcc6d8f1aa1e3c99e8496a0dca11b410198bb71bdfefa719",
+      "bytes": 137469
+    },
+    {
+      "path": "tablet-robot-setup-800.png",
+      "sha256": "275ff93ef39ae3899663022f78ac5be4f528d59813ea65fe8fc647c72b7aac2f",
+      "bytes": 146940
+    },
+    {
+      "path": "tablet-settings-1280.png",
+      "sha256": "4322bf13a78664bea3128db76aa2dd47f2558db6179ae84b6be07b0eb306a6cc",
+      "bytes": 68522
+    },
+    {
+      "path": "tablet-settings-390.png",
+      "sha256": "546bed0b73c4c1c77fd902072682679cd0d9800a29ca26cc909c5be9190784d5",
+      "bytes": 55788
+    },
+    {
+      "path": "tablet-settings-800.png",
+      "sha256": "96d603ea2c85cc91e45ff3403988064f534c116b85d5c3b5110a12ca0e20fa67",
+      "bytes": 66426
+    },
+    {
+      "path": "tablet-staff-1280.png",
+      "sha256": "444296cc35a6256124661895cf1b03ffcd895e4fb65b9fc2409a491c6d4b095f",
+      "bytes": 75989
+    },
+    {
+      "path": "tablet-staff-390.png",
+      "sha256": "e9fbec443caaffadf42a701ad2c0c00d29b5d83740ebda35af5eeed0c262c258",
+      "bytes": 64878
+    },
+    {
+      "path": "tablet-staff-800.png",
+      "sha256": "00b528da0d852c5cf2d1cfff28fbcb5214f9aafa560c3d69c22d7fe785cc2419",
+      "bytes": 71048
+    },
+    {
+      "path": "tablet-stocktake-1280.png",
+      "sha256": "b5d778b3f128809522ffcc972d1d0f3e3f4a0df6daddf917974ee6c3b08d122c",
+      "bytes": 48084
+    },
+    {
+      "path": "tablet-stocktake-390.png",
+      "sha256": "8adfe2e69909937a319474953a57ebfeed258d0ce0d7bbdc03746cb3b7fedea7",
+      "bytes": 41353
+    },
+    {
+      "path": "tablet-stocktake-800.png",
+      "sha256": "8b293c73c39aedd539a7b02a7470fcb3b82e620613c589be1caf537fe3178691",
+      "bytes": 46101
+    },
+    {
+      "path": "axe-cloud--.json",
+      "sha256": "b979f718cecc86b2057bb8bc69fae4490f5fd1e2243cdda8666e7dfdd3eb18e6",
+      "bytes": 96
+    },
+    {
+      "path": "axe-cloud--admin-catalog.json",
+      "sha256": "31ce2de3265c76667f5d1353e7780ed25dd95f1c8fb7e2dcb8d80b48cfa4d40e",
+      "bytes": 109
+    },
+    {
+      "path": "axe-cloud--admin-chain-configuration.json",
+      "sha256": "ba5e9697d6308ab559054ece547537d26d2dca7c4b48445663a8e397fc7e550b",
+      "bytes": 121
+    },
+    {
+      "path": "axe-cloud--admin-chain-reports.json",
+      "sha256": "d3b893cc071714a41f2e1d1e0a7a628c6e9ba20d932ed69c3258a95d01e27c9c",
+      "bytes": 115
+    },
+    {
+      "path": "axe-cloud--admin-customers.json",
+      "sha256": "7822a02ce74c7247e61eae7c55431c167c615abb17c88eae126bbf1b4deb73c5",
+      "bytes": 111
+    },
+    {
+      "path": "axe-cloud--admin-operations.json",
+      "sha256": "28a317eed58f8e92377f7d043d03e8ce9da0a25ae201c212bf4f4277c31b9a26",
+      "bytes": 112
+    },
+    {
+      "path": "axe-cloud--admin-promotions.json",
+      "sha256": "db150860e5f18a5bba1d0608c06f99509ba484763728b76ea334d42eac2a883d",
+      "bytes": 112
+    },
+    {
+      "path": "axe-cloud--admin-reservations.json",
+      "sha256": "6d58959124f62fd61bbd4e5fe3f9cf865cbad3077223dd5d798044c6ea22f731",
+      "bytes": 114
+    },
+    {
+      "path": "axe-cloud--admin-settings.json",
+      "sha256": "52c10f1746f3606ff071f44f3fb6180251c2789f6529faa0815b8fde5e5f873b",
+      "bytes": 110
+    },
+    {
+      "path": "axe-cloud--login.json",
+      "sha256": "da29be096572afe798b7df97467fb86b39388291aaed05a6b98777c8b0dc5e14",
+      "bytes": 101
+    },
+    {
+      "path": "axe-cloud--menu.json",
+      "sha256": "f88c061ca3c4104179316f4021df2085f2a1662ee194e576d26e1d07ee1fcea4",
+      "bytes": 100
+    },
+    {
+      "path": "axe-cloud--order.json",
+      "sha256": "14c64d8d1c9572031e0a42f6f3084e52dc4c07ecfad33d55a72c62a6bb2e17b2",
+      "bytes": 101
+    },
+    {
+      "path": "axe-cloud--table.json",
+      "sha256": "74678f73dd78250a8aeedb8c053151cf69155ecc3c056cbc32ad106705c79080",
+      "bytes": 101
+    },
+    {
+      "path": "axe-tablet--cash.json",
+      "sha256": "56fc7fa3b592153804418067a8d7423ac9042c0d7345f0cdb90fbd3de59d971f",
+      "bytes": 101
+    },
+    {
+      "path": "axe-tablet--checkout.json",
+      "sha256": "bbdf137b31076c4f4dc2b564706d85b53d48aef288ceaf9f093ba38707b1a054",
+      "bytes": 105
+    },
+    {
+      "path": "axe-tablet--customers.json",
+      "sha256": "5f6897f6a537052dc6b41dbb6dfc220b292833fd1261580359b2daef78f52f05",
+      "bytes": 106
+    },
+    {
+      "path": "axe-tablet--device.json",
+      "sha256": "f20f52411252894ca006673cda820d46f7c5d77122e4b52c452d62a3a3d1175b",
+      "bytes": 102
+    },
+    {
+      "path": "axe-tablet--fleet.json",
+      "sha256": "af49403e34a21b31a8bad9f875092427ce404df7df9a7b122fe651ff1cc680a2",
+      "bytes": 102
+    },
+    {
+      "path": "axe-tablet--guest-requests.json",
+      "sha256": "a0b1c7431f11830ca41851e72399e5ee9c186f495b236db135efc715be91bb11",
+      "bytes": 111
+    },
+    {
+      "path": "axe-tablet--import.json",
+      "sha256": "c273077ab711c20e16effe73603295b7ef7e118d3aae373f15926391d770380f",
+      "bytes": 103
+    },
+    {
+      "path": "axe-tablet--inventory-reports.json",
+      "sha256": "41d18ad4a34d55fe7659b33ab3ed466d22667f39bff6bba75adda698b85a1795",
+      "bytes": 114
+    },
+    {
+      "path": "axe-tablet--inventory.json",
+      "sha256": "ca06764a17f3b6b29cb975f3ad9595ae9db2da39b8137b4e5fe73b955c783a80",
+      "bytes": 106
+    },
+    {
+      "path": "axe-tablet--invoices.json",
+      "sha256": "07cea8f8e21ac96e1f2e029f5e32154279d0c278fa49d68b5fd62602e3bd8d0f",
+      "bytes": 105
+    },
+    {
+      "path": "axe-tablet--isolated.json",
+      "sha256": "5eb4611b3ee86791ff3bcc375b3109b580ae8d95f88aecf96afdb4dd1997e00f",
+      "bytes": 105
+    },
+    {
+      "path": "axe-tablet--kiosk.json",
+      "sha256": "581d1a717cb850534733a088b9f5e4aa51aa87e7c3fee8b739ed97c512500c81",
+      "bytes": 102
+    },
+    {
+      "path": "axe-tablet--kitchen.json",
+      "sha256": "1c40b576f3bcbb0bbe0d2fe89b0f4f35850941401dc48d1e91352bd08af59798",
+      "bytes": 104
+    },
+    {
+      "path": "axe-tablet--maintenance.json",
+      "sha256": "62b5a22b44bc2277a1e59f46c41e305116f6f3ebcfbd2b02a4c5a4cbda088b4a",
+      "bytes": 108
+    },
+    {
+      "path": "axe-tablet--models.json",
+      "sha256": "0245a4159292936a8a257e80ba2cf7356573c0a667bda6471f2b3baf25539608",
+      "bytes": 103
+    },
+    {
+      "path": "axe-tablet--pos.json",
+      "sha256": "d9e2057ca16fb40f9cf515e4c1061bc845f6acdd5958b24f8d663bfe04366b63",
+      "bytes": 100
+    },
+    {
+      "path": "axe-tablet--print.json",
+      "sha256": "efa7453b28daef9261d8363cc94c557d0ccc4db492290db539819d46148c2544",
+      "bytes": 102
+    },
+    {
+      "path": "axe-tablet--promotions.json",
+      "sha256": "a5601c80cb7baa0ada3522f22312774c87adb2a9fa98f3118d6868a63bc0d1fc",
+      "bytes": 107
+    },
+    {
+      "path": "axe-tablet--purchasing.json",
+      "sha256": "86904b09762082f56555a5e6ce3da83a4a685c5b377a9aab95a320c7f794b76a",
+      "bytes": 107
+    },
+    {
+      "path": "axe-tablet--recipes.json",
+      "sha256": "9f60a764e1c8f3d208d2fdd6753210034857ec6e32b7c3570591f1fc47614932",
+      "bytes": 104
+    },
+    {
+      "path": "axe-tablet--reconciliation.json",
+      "sha256": "9a0a9f3973822497ebc42cc3108e7d6e543128b3a02bd62fdfdbed43837f35b6",
+      "bytes": 111
+    },
+    {
+      "path": "axe-tablet--recovery.json",
+      "sha256": "c6e160616c2e1914eb50d5e351a107bc161d1420978c4d15f3a45edecd060e14",
+      "bytes": 105
+    },
+    {
+      "path": "axe-tablet--reports.json",
+      "sha256": "25818f8a112bdf981d7931babbac0011c9122c58f25196f345da8182ec8c8691",
+      "bytes": 104
+    },
+    {
+      "path": "axe-tablet--reservations.json",
+      "sha256": "fb4379dd7ce60cc98fa7decbf4d57fadb002446879a329e2b5fa5f07c8553e36",
+      "bytes": 109
+    },
+    {
+      "path": "axe-tablet--robot-screen.json",
+      "sha256": "b646aa403a97bd297fa141ea23cbddbcfd174d8bfad8a2613a80724c72fee38a",
+      "bytes": 109
+    },
+    {
+      "path": "axe-tablet--robot-setup.json",
+      "sha256": "83b3d4c8377375b78811dc2ff3ad83c247bfc88467d1094d3636de0eedb5bd20",
+      "bytes": 108
+    },
+    {
+      "path": "axe-tablet--robot.json",
+      "sha256": "04d6be34fd028b6274df7a2a2067f85e299cbbf9987c5e6f0a6896c5411d7227",
+      "bytes": 102
+    },
+    {
+      "path": "axe-tablet--settings.json",
+      "sha256": "0c533337ee10d9ba7d9afeeb6205f6f95ed02e525293401e4fc11890247c744b",
+      "bytes": 105
+    },
+    {
+      "path": "axe-tablet--staff.json",
+      "sha256": "3dc94893113b45d4c3d8808d310a7e4054d0c1a741549d9c0d7c247c468ff8bf",
+      "bytes": 102
+    },
+    {
+      "path": "axe-tablet--stocktake.json",
+      "sha256": "0404b2ae5585b70dc8d3e4eab62ea9fc0e45f7e3df865705be10304c3fa1c305",
+      "bytes": 106
+    },
+    {
+      "path": "android-build.json",
+      "sha256": "dd97882f1afbaa4327b7ca06280997b6c069df5ee31f9ff8880cd72f6482bf92",
+      "bytes": 1124
+    }
+  ]
+}

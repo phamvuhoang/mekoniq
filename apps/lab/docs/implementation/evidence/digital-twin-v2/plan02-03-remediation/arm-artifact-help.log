@@ -1,0 +1,12 @@
+usage: run.py [-h] --profile PROFILE --journal JOURNAL [--socket SOCKET]
+              [--local-socket LOCAL_SOCKET] [--lab-group LAB_GROUP]
+              [--local-group LOCAL_GROUP]
+
+options:
+  -h, --help            show this help message and exit
+  --profile PROFILE
+  --journal JOURNAL
+  --socket SOCKET
+  --local-socket LOCAL_SOCKET
+  --lab-group LAB_GROUP
+  --local-group LOCAL_GROUP

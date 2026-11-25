@@ -1,0 +1,494 @@
+[
+  {
+    "name": "index-vi-1280",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "setup-vi-1280",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "station-vi-1280",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "robot-vi-1280",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": [
+        {
+          "h": 92,
+          "required": 92
+        },
+        {
+          "h": 92,
+          "required": 92
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "table-vi-1280",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": [
+        {
+          "h": 56,
+          "required": 56
+        },
+        {
+          "h": 64,
+          "required": 56
+        },
+        {
+          "h": 64,
+          "required": 56
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "map-vi-1280",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "index-en-1280",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "setup-en-1280",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "station-en-1280",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "robot-en-1280",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": [
+        {
+          "h": 92,
+          "required": 92
+        },
+        {
+          "h": 92,
+          "required": 92
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "table-en-1280",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": [
+        {
+          "h": 56,
+          "required": 56
+        },
+        {
+          "h": 64,
+          "required": 56
+        },
+        {
+          "h": 64,
+          "required": 56
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "map-en-1280",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "index-vi-800",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "setup-vi-800",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "station-vi-800",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "robot-vi-800",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": [
+        {
+          "h": 92,
+          "required": 92
+        },
+        {
+          "h": 92,
+          "required": 92
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "table-vi-800",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": [
+        {
+          "h": 56,
+          "required": 56
+        },
+        {
+          "h": 64,
+          "required": 56
+        },
+        {
+          "h": 64,
+          "required": 56
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "map-vi-800",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "index-en-800",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "setup-en-800",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "station-en-800",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "robot-en-800",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": [
+        {
+          "h": 92,
+          "required": 92
+        },
+        {
+          "h": 92,
+          "required": 92
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "table-en-800",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": [
+        {
+          "h": 56,
+          "required": 56
+        },
+        {
+          "h": 64,
+          "required": 56
+        },
+        {
+          "h": 64,
+          "required": 56
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "map-en-800",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "index-vi-390",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "setup-vi-390",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "station-vi-390",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "robot-vi-390",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": [
+        {
+          "h": 92,
+          "required": 92
+        },
+        {
+          "h": 92,
+          "required": 92
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "table-vi-390",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": [
+        {
+          "h": 56,
+          "required": 56
+        },
+        {
+          "h": 64,
+          "required": 56
+        },
+        {
+          "h": 64,
+          "required": 56
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "map-vi-390",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "index-en-390",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "setup-en-390",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "station-en-390",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  },
+  {
+    "name": "robot-en-390",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": [
+        {
+          "h": 92,
+          "required": 92
+        },
+        {
+          "h": 92,
+          "required": 92
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "table-en-390",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": [
+        {
+          "h": 56,
+          "required": 56
+        },
+        {
+          "h": 64,
+          "required": 56
+        },
+        {
+          "h": 64,
+          "required": 56
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "map-en-390",
+    "layout": {
+      "bg": "rgb(7, 29, 33)",
+      "overflow": false,
+      "font": true,
+      "acts": []
+    },
+    "violations": []
+  }
+]

@@ -1,0 +1,579 @@
+{
+  "project": {
+    "schemaVersion": 2,
+    "id": "native-bv01",
+    "name": "BV01 native PUMA560 SIM",
+    "revision": 1,
+    "updatedAt": "2026-11-05T00:00:00.000Z",
+    "entities": [
+      {
+        "id": "amr-1",
+        "kind": "amr",
+        "assetRef": {
+          "id": "service-robot-sil",
+          "revision": 1,
+          "contentHash": "7af1195f91369d6af801a9ea582255bb9ea891ed52b6bfbb95823c6356e9bec2"
+        }
+      },
+      {
+        "id": "arm-1",
+        "kind": "arm",
+        "assetRef": {
+          "id": "arm-puma-reference",
+          "revision": 1,
+          "contentHash": "f12c8e962d74dcab35734e0e14f00e0a1168e6906b377fa530b27a4e4b2f79ef"
+        }
+      },
+      {
+        "id": "coffee-1",
+        "kind": "coffee_machine",
+        "assetRef": {
+          "id": "coffee-machine-illustrative",
+          "revision": 1,
+          "contentHash": "18771958e98006dd7cb6bd9352611ce0bbd37aaacaaa159f67ef70124d7d9faa"
+        }
+      },
+      {
+        "id": "cups-1",
+        "kind": "cup_station",
+        "assetRef": {
+          "id": "cup-paper-illustrative",
+          "revision": 1,
+          "contentHash": "a58680ada2a4f5befb241b9abd6f3ee38a4dc60639038e07cd69b0e1fbd3633e"
+        }
+      }
+    ],
+    "world": {
+      "id": "native-bv01-world",
+      "revision": 1,
+      "width": 6,
+      "height": 4,
+      "points": [
+        {
+          "id": "parking",
+          "name": "Parking",
+          "kind": "parking",
+          "x": 0.8,
+          "y": 0.8
+        },
+        {
+          "id": "coffee-pickup",
+          "name": "Coffee pickup",
+          "kind": "coffee_pickup",
+          "x": 2.0103000007659912,
+          "y": 2.330557457353138
+        },
+        {
+          "id": "table-1",
+          "name": "T01",
+          "kind": "table",
+          "x": 5,
+          "y": 3
+        }
+      ],
+      "handoffPoints": [
+        {
+          "id": "coffee-pickup",
+          "name": "Coffee pickup",
+          "kind": "coffee_pickup",
+          "position": [
+            3,
+            1,
+            0
+          ],
+          "yawRad": 1.5707963267948966
+        }
+      ],
+      "obstacles": []
+    }
+  },
+  "assets": [
+    {
+      "schemaVersion": 2,
+      "id": "service-robot-sil",
+      "revision": 1,
+      "contentHash": "7af1195f91369d6af801a9ea582255bb9ea891ed52b6bfbb95823c6356e9bec2",
+      "hashAlgorithm": "sha256-canonical-json-v1",
+      "kind": "amr",
+      "visual": {
+        "contentHash": "1111111111111111111111111111111111111111111111111111111111111111",
+        "mediaType": "model/gltf-binary"
+      },
+      "collision": {
+        "contentHash": "2222222222222222222222222222222222222222222222222222222222222222",
+        "mediaType": "application/x-mekoniq-geometry"
+      },
+      "frames": [
+        {
+          "id": "base_link",
+          "parentId": null,
+          "translationM": [
+            0,
+            0,
+            0
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "chassis",
+          "parentId": "base_link",
+          "translationM": [
+            0,
+            0,
+            0.2
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "drive",
+          "parentId": "base_link",
+          "translationM": [
+            0,
+            0,
+            0.1
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "sensor",
+          "parentId": "base_link",
+          "translationM": [
+            0.2,
+            0,
+            0.28
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "tray_1",
+          "parentId": "base_link",
+          "translationM": [
+            0,
+            0,
+            0.5
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "geometry": [
+        {
+          "kind": "box",
+          "frameId": "chassis",
+          "sizeM": [
+            0.6,
+            0.55,
+            0.15
+          ]
+        },
+        {
+          "kind": "box",
+          "frameId": "drive",
+          "sizeM": [
+            0.2,
+            0.42,
+            0.2
+          ]
+        },
+        {
+          "kind": "cylinder",
+          "frameId": "sensor",
+          "radiusM": 0.04,
+          "heightM": 0.06
+        },
+        {
+          "kind": "box",
+          "frameId": "tray_1",
+          "sizeM": [
+            0.4,
+            0.45,
+            0.02
+          ]
+        }
+      ],
+      "inertial": {
+        "massKg": 20
+      },
+      "sensorRefs": [
+        "sensor"
+      ],
+      "provenance": [
+        {
+          "parameter": "geometry",
+          "source": "illustrative",
+          "reference": "SIL fixture; not a measured robot"
+        },
+        {
+          "parameter": "frames",
+          "source": "illustrative"
+        },
+        {
+          "parameter": "inertial.massKg",
+          "source": "illustrative",
+          "reference": "20 kg illustrative chassis mass for Gazebo physics; not measured"
+        }
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "revision": 1,
+      "contentHash": "f12c8e962d74dcab35734e0e14f00e0a1168e6906b377fa530b27a4e4b2f79ef",
+      "hashAlgorithm": "sha256-canonical-json-v1",
+      "visual": null,
+      "collision": null,
+      "id": "arm-puma-reference",
+      "kind": "arm",
+      "frames": [
+        {
+          "id": "arm_base",
+          "parentId": null,
+          "translationM": [
+            0,
+            0,
+            0
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "link_1",
+          "parentId": "arm_base",
+          "translationM": [
+            0,
+            0,
+            0
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "link_2",
+          "parentId": "link_1",
+          "translationM": [
+            0,
+            0,
+            0
+          ],
+          "quaternionXyzw": [
+            -0.7071067811865475,
+            0,
+            0,
+            0.7071067811865476
+          ]
+        },
+        {
+          "id": "link_3",
+          "parentId": "link_2",
+          "translationM": [
+            0.43179999999999996,
+            0,
+            0.14986
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "link_4",
+          "parentId": "link_3",
+          "translationM": [
+            -0.020320000000000005,
+            0.4318,
+            1.1102230246251565e-16
+          ],
+          "quaternionXyzw": [
+            -0.7071067811865475,
+            0,
+            0,
+            0.7071067811865476
+          ]
+        },
+        {
+          "id": "link_5",
+          "parentId": "link_4",
+          "translationM": [
+            0,
+            0,
+            0
+          ],
+          "quaternionXyzw": [
+            0.7071067811865475,
+            0,
+            0,
+            0.7071067811865476
+          ]
+        },
+        {
+          "id": "link_6",
+          "parentId": "link_5",
+          "translationM": [
+            0,
+            0,
+            0
+          ],
+          "quaternionXyzw": [
+            -0.7071067811865475,
+            0,
+            0,
+            0.7071067811865476
+          ]
+        },
+        {
+          "id": "flange",
+          "parentId": "link_6",
+          "translationM": [
+            0,
+            0,
+            0
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "tcp",
+          "parentId": "flange",
+          "translationM": [
+            0,
+            0,
+            0
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "geometry": [
+        {
+          "kind": "cylinder",
+          "frameId": "arm_base",
+          "radiusM": 0.09,
+          "heightM": 0.25
+        },
+        {
+          "kind": "sphere",
+          "frameId": "link_2",
+          "radiusM": 0.06
+        },
+        {
+          "kind": "sphere",
+          "frameId": "link_3",
+          "radiusM": 0.05
+        },
+        {
+          "kind": "sphere",
+          "frameId": "link_4",
+          "radiusM": 0.045
+        },
+        {
+          "kind": "box",
+          "frameId": "flange",
+          "sizeM": [
+            0.06,
+            0.06,
+            0.1
+          ]
+        }
+      ],
+      "kinematics": {
+        "convention": "modified_dh",
+        "jointCount": 6
+      },
+      "provenance": [
+        {
+          "parameter": "geometry",
+          "source": "illustrative",
+          "reference": "joint envelopes only; not link meshes"
+        },
+        {
+          "parameter": "kinematics",
+          "source": "illustrative",
+          "reference": "puma560-reference@bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3; not a MEKONIQ robot"
+        },
+        {
+          "parameter": "frames",
+          "source": "illustrative",
+          "reference": "link frames at q=0 from the pinned model"
+        }
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "revision": 1,
+      "contentHash": "18771958e98006dd7cb6bd9352611ce0bbd37aaacaaa159f67ef70124d7d9faa",
+      "hashAlgorithm": "sha256-canonical-json-v1",
+      "visual": null,
+      "collision": null,
+      "id": "coffee-machine-illustrative",
+      "kind": "coffee_machine",
+      "frames": [
+        {
+          "id": "machine_base",
+          "parentId": null,
+          "translationM": [
+            0,
+            0,
+            0
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "body",
+          "parentId": "machine_base",
+          "translationM": [
+            0,
+            0,
+            0.225
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "pickup_zone",
+          "parentId": "machine_base",
+          "translationM": [
+            0.2,
+            0,
+            0.05
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "geometry": [
+        {
+          "kind": "box",
+          "frameId": "body",
+          "sizeM": [
+            0.4,
+            0.3,
+            0.45
+          ]
+        },
+        {
+          "kind": "cylinder",
+          "frameId": "pickup_zone",
+          "radiusM": 0.05,
+          "heightM": 0.01
+        }
+      ],
+      "provenance": [
+        {
+          "parameter": "geometry",
+          "source": "illustrative"
+        }
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "revision": 1,
+      "contentHash": "a58680ada2a4f5befb241b9abd6f3ee38a4dc60639038e07cd69b0e1fbd3633e",
+      "hashAlgorithm": "sha256-canonical-json-v1",
+      "visual": null,
+      "collision": null,
+      "id": "cup-paper-illustrative",
+      "kind": "cup",
+      "frames": [
+        {
+          "id": "cup_base",
+          "parentId": null,
+          "translationM": [
+            0,
+            0,
+            0
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "cup_body",
+          "parentId": "cup_base",
+          "translationM": [
+            0,
+            0,
+            0.05
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "geometry": [
+        {
+          "kind": "cylinder",
+          "frameId": "cup_body",
+          "radiusM": 0.04,
+          "heightM": 0.1
+        }
+      ],
+      "provenance": [
+        {
+          "parameter": "geometry",
+          "source": "illustrative",
+          "reference": "no capacity or volume claim"
+        }
+      ]
+    }
+  ]
+}

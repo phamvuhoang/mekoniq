@@ -1,0 +1,391 @@
+{
+ "schemaVersion": 1,
+ "artifact": "mekoniq-arm-controller",
+ "version": "0.1.0+14d62c4",
+ "sourceCommit": "14d62c471fed0560d6a84921371240e6f4470e6f",
+ "dirty": false,
+ "signed": false,
+ "exportedAt": "2026-11-05T19:35:05.488Z",
+ "nodeVersion": "v24.22.2",
+ "mode": "simulation",
+ "hardwareEnabled": false,
+ "profile": {
+  "id": "puma560-sim-1",
+  "path": "configs/sim/puma560/profile.json",
+  "sha256": "a2a9588e148346d5ecfea91821d0293e47e3de38eef20d736380f109224a0520"
+ },
+ "model": {
+  "id": "puma560-reference",
+  "revision": 1,
+  "manifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+ },
+ "files": [
+  {
+   "path": "README.md",
+   "sha256": "a5f4bcfc4e243daebfb0884b74f96b0ba5d1ed51417bf0a336a24df613863355",
+   "bytes": 4214
+  },
+  {
+   "path": "bridge/__init__.py",
+   "sha256": "467438a81ada2fd406c99b783fb83dcc20f451280eadc26bb6fb5baeb3c2bf76",
+   "bytes": 148
+  },
+  {
+   "path": "bridge/arbiter.py",
+   "sha256": "db35e2c07b32f0a023b7fad84dd06be9d7e25623ef88f5c3dcd6dc16988a82b6",
+   "bytes": 25574
+  },
+  {
+   "path": "bridge/handoff.py",
+   "sha256": "e5dc01716229e75a440c767958fadd7c841e4b3cd8bbb1505b83bd561621a3e8",
+   "bytes": 2090
+  },
+  {
+   "path": "bridge/journal.py",
+   "sha256": "28cc18eea72c405c25b9c93221ed8213ae4bd22dbd2b92cb26eb70f6137c4348",
+   "bytes": 2496
+  },
+  {
+   "path": "bridge/linuxcnc_port.py",
+   "sha256": "8dbeccf399bdf6fa7b86ebea01a2f91471a4ecc862fc20fb21fb4a4563969905",
+   "bytes": 6348
+  },
+  {
+   "path": "bridge/protocol.py",
+   "sha256": "ccb1a873f7d4b7e83e4a5b332ce25d44e29477488ad5a38b39d89e7da477f541",
+   "bytes": 8906
+  },
+  {
+   "path": "bridge/run.py",
+   "sha256": "56aa2c11eb89c11b8dd337698b157ac72e537f7231ed789403a7fd953ee60f28",
+   "bytes": 1520
+  },
+  {
+   "path": "bridge/service.py",
+   "sha256": "0994ae8482c26af7909e14af61b57c6396a5b84175c16148831eb3b98a8beedb",
+   "bytes": 13988
+  },
+  {
+   "path": "configs/sim/puma560/machine.hal",
+   "sha256": "4452a056caf03d526c2f94392eab18f0dd928aa95541b12068486f1570feb603",
+   "bytes": 1477
+  },
+  {
+   "path": "configs/sim/puma560/mekoniq.ini",
+   "sha256": "e500350bc2294d5ae43c0a5179584f5bb1d2bedda5a80a2ff4b398506a4696d2",
+   "bytes": 3152
+  },
+  {
+   "path": "configs/sim/puma560/profile.json",
+   "sha256": "a2a9588e148346d5ecfea91821d0293e47e3de38eef20d736380f109224a0520",
+   "bytes": 2990
+  },
+  {
+   "path": "configs/sim/puma560/puma560-dh.hal",
+   "sha256": "1d27c5fc14a611e722a0742c4cec63580242f7abe808c7eee4451a921296deb4",
+   "bytes": 681
+  },
+  {
+   "path": "configs/sim/puma560/tool.tbl",
+   "sha256": "c9a68097999276d075140993dd58b0ddc49c33d6a158dfdc702ddc1d35938b38",
+   "bytes": 135
+  },
+  {
+   "path": "docs/hmi-acceptance.md",
+   "sha256": "a46481718bb6b65789d0294696392fb6d4d5f4314b2128739c2b0f2828c25269",
+   "bytes": 3593
+  },
+  {
+   "path": "docs/model-conventions.md",
+   "sha256": "2f9f47ec6f7327fc7fcbb5e1db42f6b6685b2942450517a63f302cf8d6d60303",
+   "bytes": 4284
+  },
+  {
+   "path": "docs/restore-runbook.md",
+   "sha256": "9e5231d2ad25d25fccd19b4d5ea41d70ae559846ceb7220785b32f5c3968e07e",
+   "bytes": 4595
+  },
+  {
+   "path": "hmi/__init__.py",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "bytes": 0
+  },
+  {
+   "path": "hmi/mekoniq_arm/__init__.py",
+   "sha256": "eb8649ca0267d1f31cd44c29fbeffc62cf14e99ba0e49d847e20c06fa092ee3b",
+   "bytes": 118
+  },
+  {
+   "path": "hmi/mekoniq_arm/mekoniq_arm.qss",
+   "sha256": "10c3938313da1f2693646e2795eb8c1b58a30a0348328692a4c82194617f4905",
+   "bytes": 1458
+  },
+  {
+   "path": "hmi/mekoniq_arm/mekoniq_arm.ui",
+   "sha256": "4a154a480dd885cef25ba41ed738b8455ef8fb28387a30a713f24f4667067f9e",
+   "bytes": 9088
+  },
+  {
+   "path": "hmi/mekoniq_arm/mekoniq_arm_handler.py",
+   "sha256": "47887fdc2d03b3ab10419f85f96b111c479b92b777ef18ed8c7e1644a49e929b",
+   "bytes": 19396
+  },
+  {
+   "path": "models/puma560-reference/frames.json",
+   "sha256": "7f93c97d985d31365d8e4897c5aaa53dc61f3e2b6f55cb1d2fcaaebdd73cb5de",
+   "bytes": 2390
+  },
+  {
+   "path": "models/puma560-reference/manifest.json",
+   "sha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5",
+   "bytes": 3839
+  },
+  {
+   "path": "models/puma560-reference/modified-dh.json",
+   "sha256": "d0269d04828d26893f52087c5fcda8ab36a0f9333307a3ae0e100253b0bf171a",
+   "bytes": 1764
+  },
+  {
+   "path": "models/puma560-reference/origin/puma560_dh.hal",
+   "sha256": "dae628cb0d84ffbf858bfef12a9238e21a3e353029262d38174699a6e0efb80e",
+   "bytes": 536
+  },
+  {
+   "path": "models/puma560-reference/reference-poses.json",
+   "sha256": "4bd03c8d89715c4fb3d9b391474cf3cee5da1317bcc891f6e286af916eaa6ab1",
+   "bytes": 4220
+  },
+  {
+   "path": "packaging/dependencies.lock.json",
+   "sha256": "6bf53b3e448d113d340cae5cc80120621e27c9d8cd70e768900d4097b2f7ee55",
+   "bytes": 3211
+  },
+  {
+   "path": "packaging/release-manifest.schema.json",
+   "sha256": "1e74c671a21b6988ea1194d367ff1e1bc53d61d6ae1db43e5307da352b0ce357",
+   "bytes": 4380
+  },
+  {
+   "path": "packaging/systemd/mekoniq-arm-bridge.service",
+   "sha256": "8b910abc4a291781dcb2a39209fbb4cdd1beb9809bee38698a4b97b5eeba53a3",
+   "bytes": 1235
+  },
+  {
+   "path": "packaging/trust-policy.json",
+   "sha256": "83d715774e20abb9dc35d265637088a9ff708a95441d261e0a7fdeff114b9055",
+   "bytes": 904
+  },
+  {
+   "path": "programs/cup-pick.ngc",
+   "sha256": "c7501b526ba63c1a872ec7a2804e0f1bf0dcc7cf49ad18f1dc2b17e8d419cdff",
+   "bytes": 473
+  },
+  {
+   "path": "programs/cup-place.ngc",
+   "sha256": "94872d1197af4c7453d697ba9e2d2f9b422c05956f7c55ef6c4205383b604f75",
+   "bytes": 507
+  },
+  {
+   "path": "programs/demo-six-axis.ngc",
+   "sha256": "632f6da013644a03804dc3d4f68cd79227d584c63c3654cab21c640de6d710b9",
+   "bytes": 529
+  },
+  {
+   "path": "schemas/arm-command.schema.json",
+   "sha256": "56ef93965ea6d6f10ad569d821e3cd7d76288304e12b34a478ca3fe033bbf232",
+   "bytes": 5402
+  },
+  {
+   "path": "schemas/arm-observation.schema.json",
+   "sha256": "ade3a90e1ccd602bb130f5346ce314e8f26d6ac4db581cd14e78500250e7a62a",
+   "bytes": 16838
+  },
+  {
+   "path": "schemas/cell-command.schema.json",
+   "sha256": "45d327b86a8b7afd2cf482caf7a6cd552f8958fd597d9355866a17b6def8a7be",
+   "bytes": 20421
+  },
+  {
+   "path": "schemas/cell-observation.schema.json",
+   "sha256": "79282ad4053a8b600929ce6e6706d6a371ee3a4595c8f1b3bf78a01eae6db616",
+   "bytes": 1986
+  },
+  {
+   "path": "scripts/install-sim.sh",
+   "sha256": "bb1be102909d5ca1a9189c8771d13488effdad6f90ecbd4cf0f1934c1a878e3d",
+   "bytes": 6859
+  },
+  {
+   "path": "scripts/smoke-sim.sh",
+   "sha256": "90a41d83f54da17b69314e57903a40592981eab51c81b9a4ee0cac82935ec1c4",
+   "bytes": 4189
+  },
+  {
+   "path": "scripts/smoke_driver.py",
+   "sha256": "c3dd8eab3be4f9ebfba8d5b1f57e1ebc73c7d4312bd31e8f6cbaf5ca99c0da00",
+   "bytes": 5177
+  },
+  {
+   "path": "scripts/verify-install.sh",
+   "sha256": "8d93401dbc30cf9369d4282c4bde0c10128a000bd40c4aee70a65b68862ca8d4",
+   "bytes": 1363
+  },
+  {
+   "path": "scripts/verify-signature.py",
+   "sha256": "2f18788d0c97c5b4a6ae10225ecb77fae05fa95c1c42abba74499950663962ab",
+   "bytes": 9843
+  }
+ ],
+ "dependencies": {
+  "lockSha256": "6bf53b3e448d113d340cae5cc80120621e27c9d8cd70e768900d4097b2f7ee55",
+  "status": "candidate",
+  "components": [
+   {
+    "id": "linuxcnc",
+    "version": "v2.9.10",
+    "status": "candidate"
+   },
+   {
+    "id": "python3",
+    "version": "3.11 (bookworm default)",
+    "status": "candidate"
+   },
+   {
+    "id": "python3-pyqt5",
+    "version": "5.15.9+dfsg-1",
+    "status": "candidate"
+   },
+   {
+    "id": "python3-pyqt5.qsci",
+    "version": "2.13.3+dfsg-3",
+    "status": "candidate"
+   },
+   {
+    "id": "qtvcp",
+    "version": "bundled with linuxcnc",
+    "status": "candidate"
+   },
+   {
+    "id": "virtual-hal",
+    "version": "configs/sim/puma560 (machine.hal loopbacks)",
+    "status": "candidate"
+   },
+   {
+    "id": "model",
+    "version": "puma560-reference r1",
+    "status": "candidate"
+   }
+  ]
+ },
+ "sbom": {
+  "format": "mekoniq-sbom-v1",
+  "components": [
+   {
+    "name": "linuxcnc",
+    "version": "v2.9.10",
+    "source": "https://github.com/LinuxCNC/linuxcnc",
+    "license": "GPL-2.0-only",
+    "licenseReviewed": false
+   },
+   {
+    "name": "python3",
+    "version": "3.11 (bookworm default)",
+    "source": "debian",
+    "license": "PSF-2.0",
+    "licenseReviewed": false
+   },
+   {
+    "name": "python3-pyqt5",
+    "version": "5.15.9+dfsg-1",
+    "source": "debian",
+    "license": "GPL-3.0-only",
+    "licenseReviewed": false
+   },
+   {
+    "name": "python3-pyqt5.qsci",
+    "version": "2.13.3+dfsg-3",
+    "source": "debian",
+    "license": "GPL-3.0-only",
+    "licenseReviewed": false
+   },
+   {
+    "name": "qtvcp",
+    "version": "bundled with linuxcnc",
+    "source": "debian",
+    "license": "GPL-2.0-only",
+    "licenseReviewed": false
+   },
+   {
+    "name": "virtual-hal",
+    "version": "configs/sim/puma560 (machine.hal loopbacks)",
+    "source": "debian",
+    "license": "MEKONIQ (this repository)",
+    "licenseReviewed": false
+   },
+   {
+    "name": "model",
+    "version": "puma560-reference r1",
+    "source": "debian",
+    "license": "LinuxCNC sample (GPL-2.0-only); MEKONIQ manifest",
+    "licenseReviewed": false
+   },
+   {
+    "name": "jsonschema",
+    "version": "per packaging/dependencies.lock.json / requirements",
+    "source": "pypi",
+    "license": "MIT",
+    "licenseReviewed": false
+   },
+   {
+    "name": "referencing",
+    "version": "per packaging/dependencies.lock.json / requirements",
+    "source": "pypi",
+    "license": "MIT",
+    "licenseReviewed": false
+   },
+   {
+    "name": "rfc8785",
+    "version": "per packaging/dependencies.lock.json / requirements",
+    "source": "pypi",
+    "license": "MIT",
+    "licenseReviewed": false
+   }
+  ]
+ },
+ "schemas": [
+  {
+   "name": "arm-command.schema.json",
+   "sha256": "56ef93965ea6d6f10ad569d821e3cd7d76288304e12b34a478ca3fe033bbf232"
+  },
+  {
+   "name": "arm-observation.schema.json",
+   "sha256": "ade3a90e1ccd602bb130f5346ce314e8f26d6ac4db581cd14e78500250e7a62a"
+  },
+  {
+   "name": "cell-command.schema.json",
+   "sha256": "45d327b86a8b7afd2cf482caf7a6cd552f8958fd597d9355866a17b6def8a7be"
+  },
+  {
+   "name": "cell-observation.schema.json",
+   "sha256": "79282ad4053a8b600929ce6e6706d6a371ee3a4595c8f1b3bf78a01eae6db616"
+  }
+ ],
+ "compatibleCalibrationSchemas": [
+  1
+ ],
+ "machineOverlay": {
+  "path": "machine/",
+  "note": "per-machine identity and calibration are provisioned on the IPC, never shipped in the artifact; the installer keeps them across releases"
+ },
+ "trust": {
+  "keyId": "unsigned",
+  "algorithm": "Ed25519",
+  "signatureFile": "manifest.sig.json",
+  "canonicalization": "sorted-keys compact JSON (JCS-equivalent for this manifest)"
+ },
+ "claims": {
+  "softwareSil": "not_run_until_linux_smoke",
+  "hardware": "not_accepted",
+  "note": "simulation install; LinuxCNC smoke, HMI acceptance and every hardware gate are recorded separately; this artifact carries no production claim"
+ }
+}

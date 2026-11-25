@@ -1,0 +1,47 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/unit/lab-regression-identity.test.ts (10 tests) 7056ms
+   ✓ recording rejects dirty source code before executing suites  599ms
+   ✓ recording rejects dirty lab code before executing suites  850ms
+   ✓ staged code changes remain dirty when the working copy has been restored to HEAD  621ms
+   ✓ the recorder rejects a clean mid-run revision change, including documentation-only commits  653ms
+   ✓ command checkpoints reject sampled code changes even if the final tree is restored  566ms
+   ✓ documentation/evidence outputs can change during recording and documentation-only Lab HEADs remain acceptable later  1044ms
+   ✓ stored results are stale after a clean Lab code commit  679ms
+   ✓ the pinned source runtime lock is code identity, not mutable evidence metadata  816ms
+   ✓ source must stay fully clean and at the exact recorded HEAD even for documentation changes  849ms
+   ✓ recorded dirty Lab state and incomplete command checkpoints cannot be accepted  377ms
+ ✓ tests/unit/lab-sil-cli.test.ts (3 tests) 4705ms
+   ✓ run stops at the doctor gate on a host without the simulation stack and writes a not_run manifest (never a pass)  3842ms
+   ✓ verify: not_run is 2, zero samples or a failed assertion or a bad hash is 1, a complete sil bundle is 0  649ms
+ ✓ tests/unit/export-arm-controller.test.ts (3 tests) 1860ms
+   ✓ a signed export hashes every file, validates against the manifest schema and verifies under a policy with the key  1278ms
+   ✓ the exporter refuses to empty a directory that is not an empty dir or a previous artifact of its own  334ms
+ ✓ tests/unit/cloud-network-cancellation.test.ts (3 tests) 199ms
+ ✓ tests/contracts/robot-executor-vectors.test.ts (23 tests) 157ms
+ ✓ tests/unit/backup-verification.test.ts (1 test) 127ms
+ ✓ tests/contracts/wire.test.ts (6 tests) 66ms
+ ✓ tests/unit/pricing.test.ts (15 tests) 30ms
+ ✓ tests/contracts/signing.test.ts (1 test) 49ms
+ ✓ tests/unit/line-cancellation.test.ts (1 test) 37ms
+ ✓ tests/unit/business-date.test.ts (1 test) 17ms
+ ✓ tests/unit/money.test.ts (5 tests) 38ms
+ ✓ tests/contracts/arm-bridge-messages.test.ts (2 tests) 15ms
+ ✓ tests/unit/lab-evidence-literal-refs.test.ts (1 test) 9ms
+ ✓ tests/security/lab-v2-arm-authority.test.ts (3 tests) 17ms
+ ✓ tests/unit/restaurant-models.test.ts (8 tests) 10ms
+ ✓ tests/contracts/provider-profile.test.ts (7 tests) 9ms
+ ✓ tests/unit/printing.test.ts (4 tests) 7ms
+ ✓ tests/unit/restaurant-domain.test.ts (6 tests) 5ms
+ ✓ tests/unit/lab-human-wait.test.ts (4 tests) 3ms
+ ✓ tests/unit/lab-v2-worker-argv.test.ts (1 test) 3ms
+ ✓ tests/unit/lab-process-metrics.test.ts (1 test) 4ms
+ ✓ tests/unit/guest-surfaces.test.ts (2 tests) 2ms
+ ✓ tests/unit/coordinator-health.test.ts (2 tests) 2ms
+ ✓ tests/unit/native-session.test.ts (1 test) 1ms
+
+ Test Files  25 passed (25)
+      Tests  114 passed (114)
+   Start at  04:58:11
+   Duration  20.33s (transform 1.56s, setup 0ms, import 3.42s, tests 14.43s, environment 2ms)

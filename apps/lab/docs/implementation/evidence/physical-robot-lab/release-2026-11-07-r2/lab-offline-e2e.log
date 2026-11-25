@@ -1,0 +1,39 @@
+Offline mock ready: http://127.0.0.1:4175
+Enter this one-use pairing code (expires in 5 minutes): <redacted>
+Source 899a83769726aa6840c40a32fb0e89d17a137cb7.
+Ready in 383 ms. Press Ctrl-C to stop.
+Running twin-recovery.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/twin-recovery.spec.ts:16:1 › telemetry stream, stale/frozen states, reconnect, read-only replay, compare, export and a lost session (13.3s)
+
+  1 passed (14.4s)
+Offline mock ready: http://127.0.0.1:4175
+Enter this one-use pairing code (expires in 5 minutes): <redacted>
+Source 899a83769726aa6840c40a32fb0e89d17a137cb7.
+Ready in 366 ms. Press Ctrl-C to stop.
+Running coffee-journey.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/coffee-journey.spec.ts:7:1 › missing cup: visible reason and entity, confirmed reconcile, corrected run completes (24.9s)
+
+  1 passed (25.9s)
+Offline mock ready: http://127.0.0.1:4175
+Enter this one-use pairing code (expires in 5 minutes): <redacted>
+Source 899a83769726aa6840c40a32fb0e89d17a137cb7.
+Ready in 602 ms. Press Ctrl-C to stop.
+Running offline-bv01.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/offline-bv01.spec.ts:6:1 › offline package completes BV01 and exports its pinned report with only loopback requests (29.8s)
+
+  1 passed (31.0s)
+(node:39947) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40012) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40049) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

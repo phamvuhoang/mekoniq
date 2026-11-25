@@ -1,0 +1,8 @@
+{
+  "route": "/checkout",
+  "viewport": {
+    "width": 1280,
+    "height": 1280
+  },
+  "violations": []
+}

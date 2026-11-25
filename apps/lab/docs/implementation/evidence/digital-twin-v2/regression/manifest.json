@@ -1,0 +1,1223 @@
+{
+ "schema": "lab-v2-regression/1",
+ "recorder": "lab/scripts/record-regression.mjs --ci",
+ "note": "Synthetic test data only; absolute paths scrubbed to <workspace>/<home>/<tmp>, key/token shapes to <jwt>/<supabase-key>. sha256 is of the stored (scrubbed) file.",
+ "host": {
+  "platform": "darwin",
+  "release": "25.5.0",
+  "arch": "arm64",
+  "cpu": "Apple M2 Pro",
+  "cpus": 10,
+  "memGiB": 16,
+  "node": "v24.22.2",
+  "pnpm": "10.32.1",
+  "python": {
+   "executable": "<workspace>/source/.lab/plan01-python312/bin/python",
+   "version": "Python 3.12.12"
+  }
+ },
+ "revisions": {
+  "source": "c1d1ea70e42937d421070674f07d00edc7c41245",
+  "sourceDirty": false,
+  "lab": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+  "labDirty": false
+ },
+ "identity": {
+  "schema": "regression-identity/1",
+  "mutableLabPaths": [
+   "docs/",
+   "README.md",
+   "config/simulation-compatibility.json"
+  ],
+  "start": {
+   "source": {
+    "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+    "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+    "dirtyCodePaths": []
+   },
+   "lab": {
+    "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+    "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+    "dirtyCodePaths": []
+   }
+  },
+  "end": {
+   "source": {
+    "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+    "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+    "dirtyCodePaths": []
+   },
+   "lab": {
+    "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+    "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+    "dirtyCodePaths": []
+   }
+  },
+  "checkpoints": [
+   {
+    "id": "source-typecheck:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-typecheck:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-lint:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-lint:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-contracts-check:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-contracts-check:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-unit:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-unit:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-contracts:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-contracts:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-build:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-build:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-adapters:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-adapters:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-integration:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-integration:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-pytest:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-pytest:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-check-source:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-check-source:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-typecheck:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-typecheck:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-vitest:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-vitest:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-build:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-build:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-e2e-ui:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-e2e-ui:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-twin-e2e:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-twin-e2e:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-mock-e2e:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-mock-e2e:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-runtime-e2e:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-runtime-e2e:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-plan01-e2e:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-plan01-e2e:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-ui-performance:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-ui-performance:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-offline-build:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-offline-build:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-offline-e2e:before",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-offline-e2e:after",
+    "identity": {
+     "source": {
+      "commit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+      "codeHash": "8a2a0c3a78e30109ae7cf189b21d98599e7ab557947acfd8f7b2945ac57e97c9",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "aa70d65fdb72f16b64ee7002fbb05c15ee1e690f",
+      "codeHash": "2cfd12a05b99bfbef7ec236abd99bea85dbbca6dcc0a97477aa6624e3cec47e9",
+      "dirtyCodePaths": []
+     }
+    }
+   }
+  ],
+  "observation": "Identity is sampled at start, before and after every command, and at end; this is not continuous filesystem monitoring."
+ },
+ "runs": [
+  {
+   "id": "source-unit:source-unit.json",
+   "repo": "source",
+   "kind": "vitest",
+   "command": "node node_modules/vitest/vitest.mjs run tests/unit --reporter=json --outputFile=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/source-unit.json",
+   "startedAt": "2026-11-05T10:17:17.951Z",
+   "finishedAt": "2026-11-05T10:17:26.920Z",
+   "exitCode": 0,
+   "file": "source-unit.json",
+   "sha256": "7b72a75dac5b962c95de5ef2a09e94eabddfe01300bfd8b937e0c8f8e7ff6d78",
+   "summary": {
+    "passed": 65,
+    "failed": 0,
+    "skipped": 0,
+    "total": 65
+   }
+  },
+  {
+   "id": "source-contracts:source-contracts.json",
+   "repo": "source",
+   "kind": "vitest",
+   "command": "node node_modules/vitest/vitest.mjs run tests/contracts --reporter=json --outputFile=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/source-contracts.json",
+   "startedAt": "2026-11-05T10:17:27.250Z",
+   "finishedAt": "2026-11-05T10:17:28.303Z",
+   "exitCode": 0,
+   "file": "source-contracts.json",
+   "sha256": "815baa6fa4317209b055c33acfa352f46dff01109d1a5455509fd7d6445c7656",
+   "summary": {
+    "passed": 37,
+    "failed": 0,
+    "skipped": 0,
+    "total": 37
+   }
+  },
+  {
+   "id": "source-adapters:source-adapters.json",
+   "repo": "source",
+   "kind": "vitest",
+   "command": "node node_modules/vitest/vitest.mjs run tests/adapters --reporter=json --outputFile=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/source-adapters.json",
+   "startedAt": "2026-11-05T10:17:47.410Z",
+   "finishedAt": "2026-11-05T10:17:49.260Z",
+   "exitCode": 0,
+   "file": "source-adapters.json",
+   "sha256": "8d59ab6695a56a7fda86e0e4d8ba8b1c99eae4cb06e595fdb9a34e4e0b07e493",
+   "summary": {
+    "passed": 50,
+    "failed": 0,
+    "skipped": 0,
+    "total": 50
+   }
+  },
+  {
+   "id": "source-integration:source-integration.json",
+   "repo": "source",
+   "kind": "vitest",
+   "command": "LAB_V2_CLEAN_EXPORT=1 node node_modules/vitest/vitest.mjs run tests/integration --reporter=json --outputFile=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/source-integration.json",
+   "startedAt": "2026-11-05T10:17:49.553Z",
+   "finishedAt": "2026-11-05T10:22:40.090Z",
+   "exitCode": 0,
+   "file": "source-integration.json",
+   "sha256": "99f3be464a3d087b8ed3ecf36529075a8f87102e63bbba4b14d55e6880b2598e",
+   "summary": {
+    "passed": 689,
+    "failed": 0,
+    "skipped": 1,
+    "total": 690
+   }
+  },
+  {
+   "id": "source-pytest:source-pytest.xml",
+   "repo": "source",
+   "kind": "junit",
+   "command": "<workspace>/source/.lab/plan01-python312/bin/python -m pytest robotics/agent/tests tests/hardware tests/contracts/test_schema_python.py -q --junitxml=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/source-pytest.xml",
+   "startedAt": "2026-11-05T10:22:40.498Z",
+   "finishedAt": "2026-11-05T10:22:41.799Z",
+   "exitCode": 0,
+   "file": "source-pytest.xml",
+   "sha256": "8e943bc8cabf9d4a8cd8f2656938fb318f470b6561b1116cf311ff176eb1de2d",
+   "summary": {
+    "tests": 178,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+   }
+  },
+  {
+   "id": "lab-vitest:lab-vitest.json",
+   "repo": "lab",
+   "kind": "vitest",
+   "command": "<workspace>/lab/node_modules/.bin/vitest run tests/unit tests/integration --reporter=json --outputFile=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-vitest.json",
+   "startedAt": "2026-11-05T10:22:44.864Z",
+   "finishedAt": "2026-11-05T10:22:47.881Z",
+   "exitCode": 0,
+   "file": "lab-vitest.json",
+   "sha256": "eb9cf71118b3b1353abd84ced1d595e10e211a89db48a79cf9bcefa625aa5871",
+   "summary": {
+    "passed": 153,
+    "failed": 0,
+    "skipped": 1,
+    "total": 154
+   }
+  },
+  {
+   "id": "lab-e2e-ui:lab-pw-ui.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-ui.json pnpm exec playwright test ui.spec.ts",
+   "startedAt": "2026-11-05T10:22:50.985Z",
+   "finishedAt": "2026-11-05T10:23:05.874Z",
+   "exitCode": 0,
+   "file": "lab-pw-ui.json",
+   "sha256": "b0220594cc58813b3ad2d65827ece422a834539a539fd42ddfd2b4ddd65c7820",
+   "summary": {
+    "expected": 12,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-twin-e2e:lab-pw-twin-twin-workspace.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-twin.json pnpm -s test:twin-e2e --evidence",
+   "startedAt": "2026-11-05T10:23:06.247Z",
+   "finishedAt": "2026-11-05T10:23:49.046Z",
+   "exitCode": 0,
+   "file": "lab-pw-twin-twin-workspace.json",
+   "sha256": "a6ee088d88b3d3c12aa04a852815126ebe837e909a7a0cd87d22054fbc0235ef",
+   "summary": {
+    "expected": 5,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-twin-e2e:lab-pw-twin-coffee-journey.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-twin.json pnpm -s test:twin-e2e --evidence",
+   "startedAt": "2026-11-05T10:23:06.247Z",
+   "finishedAt": "2026-11-05T10:23:49.046Z",
+   "exitCode": 0,
+   "file": "lab-pw-twin-coffee-journey.json",
+   "sha256": "225ac6e474845fb4d02877d75dac5925e4eae27d8604c817483deb9759561086",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-twin-e2e:lab-pw-twin-twin-recovery.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-twin.json pnpm -s test:twin-e2e --evidence",
+   "startedAt": "2026-11-05T10:23:06.247Z",
+   "finishedAt": "2026-11-05T10:23:49.046Z",
+   "exitCode": 0,
+   "file": "lab-pw-twin-twin-recovery.json",
+   "sha256": "e29f4b70010101834cb681870efb97550de282785001e82ea1686aaa6b51d842",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-mock-e2e:lab-pw-mock-twin-recovery.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-mock.json pnpm -s test:mock-e2e",
+   "startedAt": "2026-11-05T10:23:49.478Z",
+   "finishedAt": "2026-11-05T10:24:18.701Z",
+   "exitCode": 0,
+   "file": "lab-pw-mock-twin-recovery.json",
+   "sha256": "b7034572a0905246925aff7b28205b6c159d7101b062e5122850f14c9bd98cde",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-mock-e2e:lab-pw-mock-coffee-journey.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-mock.json pnpm -s test:mock-e2e",
+   "startedAt": "2026-11-05T10:23:49.478Z",
+   "finishedAt": "2026-11-05T10:24:18.701Z",
+   "exitCode": 0,
+   "file": "lab-pw-mock-coffee-journey.json",
+   "sha256": "f30bd0716e933d309f228542bd2d4c8ad39c33a1bdc26aed3de76dac3d485677",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-runtime-e2e:lab-pw-runtime.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-runtime.json pnpm -s test:runtime-e2e",
+   "startedAt": "2026-11-05T10:24:19.099Z",
+   "finishedAt": "2026-11-05T10:24:23.702Z",
+   "exitCode": 0,
+   "file": "lab-pw-runtime.json",
+   "sha256": "c66c70ed54c1c0e6538a00c235b9789665f652c5771b604805503732daecb218",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-plan01-e2e:lab-pw-plan01-twin-plan01.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-plan01.json node scripts/test-mock-e2e.mjs --evidence twin-plan01.spec.ts twin-inputs.spec.ts",
+   "startedAt": "2026-11-05T10:24:24.090Z",
+   "finishedAt": "2026-11-05T10:24:51.287Z",
+   "exitCode": 0,
+   "file": "lab-pw-plan01-twin-plan01.json",
+   "sha256": "f178982f58f14d24b9e962d55b9c59f03d785e98efc82d5d3493b9c1c606bcb9",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-plan01-e2e:lab-pw-plan01-twin-inputs.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-plan01.json node scripts/test-mock-e2e.mjs --evidence twin-plan01.spec.ts twin-inputs.spec.ts",
+   "startedAt": "2026-11-05T10:24:24.090Z",
+   "finishedAt": "2026-11-05T10:24:51.287Z",
+   "exitCode": 0,
+   "file": "lab-pw-plan01-twin-inputs.json",
+   "sha256": "ed6fad4609f123660cfaa900536867476b8a83cdcc726686b70a1a0544135a42",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-ui-performance:lab-ui-performance.json",
+   "repo": "lab",
+   "kind": "measurement",
+   "command": "node scripts/measure-twin-ui.mjs --duration-ms 60000 --output <workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-ui-performance.json",
+   "startedAt": "2026-11-05T10:24:51.650Z",
+   "finishedAt": "2026-11-05T10:26:57.138Z",
+   "exitCode": 0,
+   "file": "lab-ui-performance.json",
+   "sha256": "0518660e664f3d9d972eb992418ae8fe736b589b2f5b9566c9dfc206bb610751",
+   "summary": {
+    "durationMs": 60000,
+    "minimumDurationMet": true,
+    "profiles": [
+     {
+      "id": "desktop-3d",
+      "p95Ms": 16.799999999995634,
+      "paintP95Ms": 19.100000143051147,
+      "meetsTarget": true
+     },
+     {
+      "id": "tablet-2d-emulated",
+      "p95Ms": 16.700000000004366,
+      "paintP95Ms": 1.5,
+      "meetsTarget": true
+     }
+    ]
+   }
+  },
+  {
+   "id": "lab-offline-e2e:lab-pw-offline-twin-recovery.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-offline.json node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts",
+   "startedAt": "2026-11-05T10:26:58.611Z",
+   "finishedAt": "2026-11-05T10:27:28.361Z",
+   "exitCode": 0,
+   "file": "lab-pw-offline-twin-recovery.json",
+   "sha256": "d6f3c3d671158edf35b905d46e7986dfc76c121b5112c67e3da67f147bbd8dd3",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-offline-e2e:lab-pw-offline-coffee-journey.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-offline.json node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts",
+   "startedAt": "2026-11-05T10:26:58.611Z",
+   "finishedAt": "2026-11-05T10:27:28.361Z",
+   "exitCode": 0,
+   "file": "lab-pw-offline-coffee-journey.json",
+   "sha256": "910223c429718514b8568bf8db036f50d72b29b70e6ae1b19aa94c2164477dc2",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  }
+ ],
+ "commands": [
+  {
+   "id": "source-typecheck",
+   "repo": "source",
+   "command": "pnpm -s typecheck",
+   "startedAt": "2026-11-05T10:17:05.876Z",
+   "finishedAt": "2026-11-05T10:17:12.191Z",
+   "exitCode": 0,
+   "log": "source-typecheck.log",
+   "logSha256": "adba4af9194e10e47dda75ff0fd0f8c2b756474896d0eba5612799c527ff372a"
+  },
+  {
+   "id": "source-lint",
+   "repo": "source",
+   "command": "pnpm -s lint",
+   "startedAt": "2026-11-05T10:17:12.484Z",
+   "finishedAt": "2026-11-05T10:17:16.984Z",
+   "exitCode": 0,
+   "log": "source-lint.log",
+   "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "id": "source-contracts-check",
+   "repo": "source",
+   "command": "pnpm -s contracts:check",
+   "startedAt": "2026-11-05T10:17:17.282Z",
+   "finishedAt": "2026-11-05T10:17:17.656Z",
+   "exitCode": 0,
+   "log": "source-contracts-check.log",
+   "logSha256": "3e8bf9225a03bd72709aba63c895580240a4737d43068ce350b8c0ed5e6b18cd"
+  },
+  {
+   "id": "source-unit",
+   "repo": "source",
+   "command": "node node_modules/vitest/vitest.mjs run tests/unit --reporter=json --outputFile=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/source-unit.json",
+   "startedAt": "2026-11-05T10:17:17.951Z",
+   "finishedAt": "2026-11-05T10:17:26.920Z",
+   "exitCode": 0,
+   "log": "source-unit.log",
+   "logSha256": "2c1678e2d2283042a996ba5517084161e112da4f0095e68349ecd6610db02f5d"
+  },
+  {
+   "id": "source-contracts",
+   "repo": "source",
+   "command": "node node_modules/vitest/vitest.mjs run tests/contracts --reporter=json --outputFile=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/source-contracts.json",
+   "startedAt": "2026-11-05T10:17:27.250Z",
+   "finishedAt": "2026-11-05T10:17:28.303Z",
+   "exitCode": 0,
+   "log": "source-contracts.log",
+   "logSha256": "0e958da068ccb431059c36741f411b7f92b08f2c2fa628e8dc5cec8baa798219"
+  },
+  {
+   "id": "source-build",
+   "repo": "source",
+   "command": "pnpm -s build",
+   "startedAt": "2026-11-05T10:17:28.599Z",
+   "finishedAt": "2026-11-05T10:17:47.060Z",
+   "exitCode": 0,
+   "log": "source-build.log",
+   "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "id": "source-adapters",
+   "repo": "source",
+   "command": "node node_modules/vitest/vitest.mjs run tests/adapters --reporter=json --outputFile=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/source-adapters.json",
+   "startedAt": "2026-11-05T10:17:47.410Z",
+   "finishedAt": "2026-11-05T10:17:49.260Z",
+   "exitCode": 0,
+   "log": "source-adapters.log",
+   "logSha256": "219bfaa5ab650f1ec4cbd694afcc60689080fae9ebabc3b82a2923594c0aa839"
+  },
+  {
+   "id": "source-integration",
+   "repo": "source",
+   "command": "LAB_V2_CLEAN_EXPORT=1 node node_modules/vitest/vitest.mjs run tests/integration --reporter=json --outputFile=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/source-integration.json",
+   "startedAt": "2026-11-05T10:17:49.553Z",
+   "finishedAt": "2026-11-05T10:22:40.090Z",
+   "exitCode": 0,
+   "log": "source-integration.log",
+   "logSha256": "6f6c94f6f7895b3f1d5dede968af0b6e30c92ec945185612498ba5bcdc1dd263"
+  },
+  {
+   "id": "source-pytest",
+   "repo": "source",
+   "command": "<workspace>/source/.lab/plan01-python312/bin/python -m pytest robotics/agent/tests tests/hardware tests/contracts/test_schema_python.py -q --junitxml=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/source-pytest.xml",
+   "startedAt": "2026-11-05T10:22:40.498Z",
+   "finishedAt": "2026-11-05T10:22:41.799Z",
+   "exitCode": 0,
+   "log": "source-pytest.log",
+   "logSha256": "da8a21134ecbf5e379d6db59c642446229ce360d409b630419e0f5f3a9e50fef"
+  },
+  {
+   "id": "lab-check-source",
+   "repo": "lab",
+   "command": "pnpm -s check:source",
+   "startedAt": "2026-11-05T10:22:42.135Z",
+   "finishedAt": "2026-11-05T10:22:42.377Z",
+   "exitCode": 0,
+   "log": "lab-check-source.log",
+   "logSha256": "61b4e0c54aae1a5b2d171f1ff5be09896afea2b8c3ce5b073f99835570ac3c05"
+  },
+  {
+   "id": "lab-typecheck",
+   "repo": "lab",
+   "command": "pnpm -s typecheck",
+   "startedAt": "2026-11-05T10:22:42.716Z",
+   "finishedAt": "2026-11-05T10:22:44.550Z",
+   "exitCode": 0,
+   "log": "lab-typecheck.log",
+   "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "id": "lab-vitest",
+   "repo": "lab",
+   "command": "<workspace>/lab/node_modules/.bin/vitest run tests/unit tests/integration --reporter=json --outputFile=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-vitest.json",
+   "startedAt": "2026-11-05T10:22:44.864Z",
+   "finishedAt": "2026-11-05T10:22:47.881Z",
+   "exitCode": 0,
+   "log": "lab-vitest.log",
+   "logSha256": "ca36a027d87cf5fb8052c99708e96df2fe419df60faebfad367767119633e4df"
+  },
+  {
+   "id": "lab-build",
+   "repo": "lab",
+   "command": "pnpm -s build",
+   "startedAt": "2026-11-05T10:22:48.197Z",
+   "finishedAt": "2026-11-05T10:22:50.697Z",
+   "exitCode": 0,
+   "log": "lab-build.log",
+   "logSha256": "b8c3cb21250ad3174107abc54b04119b5874c9c3f042077bd5dfffbf594d654b"
+  },
+  {
+   "id": "lab-e2e-ui",
+   "repo": "lab",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-ui.json pnpm exec playwright test ui.spec.ts",
+   "startedAt": "2026-11-05T10:22:50.985Z",
+   "finishedAt": "2026-11-05T10:23:05.874Z",
+   "exitCode": 0,
+   "log": "lab-e2e-ui.log",
+   "logSha256": "b8f4e871a7d664da5b10f9b8c2ec64a38f9aa45ccceb844d31e5e8a82506747d"
+  },
+  {
+   "id": "lab-twin-e2e",
+   "repo": "lab",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-twin.json pnpm -s test:twin-e2e --evidence",
+   "startedAt": "2026-11-05T10:23:06.247Z",
+   "finishedAt": "2026-11-05T10:23:49.046Z",
+   "exitCode": 0,
+   "log": "lab-twin-e2e.log",
+   "logSha256": "f4b4afcb0d5d1be2f11257cfad699efb78a90949fa1df16ef60bebebf81f18fe"
+  },
+  {
+   "id": "lab-mock-e2e",
+   "repo": "lab",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-mock.json pnpm -s test:mock-e2e",
+   "startedAt": "2026-11-05T10:23:49.478Z",
+   "finishedAt": "2026-11-05T10:24:18.701Z",
+   "exitCode": 0,
+   "log": "lab-mock-e2e.log",
+   "logSha256": "fa93c692246dc0822578d4a033e13cbff821985491f853ee815a4009b7156651"
+  },
+  {
+   "id": "lab-runtime-e2e",
+   "repo": "lab",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-runtime.json pnpm -s test:runtime-e2e",
+   "startedAt": "2026-11-05T10:24:19.099Z",
+   "finishedAt": "2026-11-05T10:24:23.702Z",
+   "exitCode": 0,
+   "log": "lab-runtime-e2e.log",
+   "logSha256": "a2746c0ca5be778d2b840bdb422f114ba67278a1d0d9fb4ddeeee7f474f87e5f"
+  },
+  {
+   "id": "lab-plan01-e2e",
+   "repo": "lab",
+   "command": "LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-plan01.json node scripts/test-mock-e2e.mjs --evidence twin-plan01.spec.ts twin-inputs.spec.ts",
+   "startedAt": "2026-11-05T10:24:24.090Z",
+   "finishedAt": "2026-11-05T10:24:51.287Z",
+   "exitCode": 0,
+   "log": "lab-plan01-e2e.log",
+   "logSha256": "62d20e9d3273815d4029cef57652c56175e3eb72a880c8fd42cbe79c4c745fb6"
+  },
+  {
+   "id": "lab-ui-performance",
+   "repo": "lab",
+   "command": "node scripts/measure-twin-ui.mjs --duration-ms 60000 --output <workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-ui-performance.json",
+   "startedAt": "2026-11-05T10:24:51.650Z",
+   "finishedAt": "2026-11-05T10:26:57.138Z",
+   "exitCode": 0,
+   "log": "lab-ui-performance.log",
+   "logSha256": "755c6f80203010ee3ffc750d102b0dff2757f4847abcfc09405cdfdddc4820f0"
+  },
+  {
+   "id": "lab-offline-build",
+   "repo": "lab",
+   "command": "node scripts/build-offline.mjs --out <tmp>",
+   "startedAt": "2026-11-05T10:26:57.668Z",
+   "finishedAt": "2026-11-05T10:26:58.311Z",
+   "exitCode": 0,
+   "log": "lab-offline-build.log",
+   "logSha256": "bb498a4334308f862c3df8fc8fcccf86229e5026df4db38fa2cff32919e1b2d2"
+  },
+  {
+   "id": "lab-offline-e2e",
+   "repo": "lab",
+   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/lab/docs/implementation/evidence/digital-twin-v2/regression/lab-pw-offline.json node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts",
+   "startedAt": "2026-11-05T10:26:58.611Z",
+   "finishedAt": "2026-11-05T10:27:28.361Z",
+   "exitCode": 0,
+   "log": "lab-offline-e2e.log",
+   "logSha256": "10c98c9ca9f21feac3836c174a80cf68cfc00ed428f05e5e36e4028d5493eeb3"
+  }
+ ],
+ "notRun": []
+}

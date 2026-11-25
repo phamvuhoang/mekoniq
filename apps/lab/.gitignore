@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.runtime/
+runs/
+test-results/
+playwright-report/
+.superpowers/
+releases/
+.DS_Store
+.vercel/

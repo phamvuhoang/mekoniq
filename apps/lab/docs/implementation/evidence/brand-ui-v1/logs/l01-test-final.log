@@ -1,0 +1,13 @@
+
+> mekoniq-robot-lab@0.1.0 test /Users/hoangpham/source/prv/robot/lab
+> vitest run
+
+
+ RUN  v4.1.12 /Users/hoangpham/source/prv/robot/lab
+
+
+ Test Files  29 passed | 1 skipped (30)
+      Tests  188 passed | 1 skipped (189)
+   Start at  19:30:57
+   Duration  2.78s (transform 1.66s, setup 0ms, import 4.10s, tests 6.93s, environment 2ms)
+

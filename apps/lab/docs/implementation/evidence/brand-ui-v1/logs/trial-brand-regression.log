@@ -1,0 +1,7 @@
+✓ Node-RED pages at 1280×800
+✓ Node-RED pages at 800×1280
+✓ competing save preserves browser draft and reports conflict
+✓ own save acknowledgement
+✓ map topic change, stale HTTP responses and teaching guard
+✓ web mobile layout
+BROWSER_OK

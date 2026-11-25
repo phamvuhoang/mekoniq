@@ -1,0 +1,36 @@
+[
+  {
+    "id": "reset",
+    "state": {
+      "armed": true,
+      "label": "Chạm lần nữa để khôi phục",
+      "fg": "rgb(7, 29, 33)",
+      "bg": "rgb(255, 170, 160)"
+    },
+    "resets": [],
+    "violations": []
+  },
+  {
+    "id": "defaults",
+    "state": {
+      "armed": true,
+      "label": "Chạm lần nữa để khôi phục",
+      "fg": "rgb(246, 248, 244)",
+      "bg": "rgb(255, 170, 160)"
+    },
+    "resets": [],
+    "violations": [
+      {
+        "id": "color-contrast",
+        "nodes": [
+          {
+            "target": [
+              "#defaults"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.7 (foreground color: #f6f8f4, background color: #ffaaa0, font size: 9.8pt (13px), font weight: bold). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  }
+]

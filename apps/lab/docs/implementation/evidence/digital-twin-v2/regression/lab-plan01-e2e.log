@@ -1,0 +1,34 @@
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source c1d1ea70e42937d421070674f07d00edc7c41245 · artifact 21986126e194 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>
+Owned processes: runtime pid 88976, UI pid 88977
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 445 ms. Press Ctrl-C to stop.
+Running twin-plan01.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/twin-plan01.spec.ts:10:1 › SYS01: normalized journal/effects are identical at 15/60 FPS and while the browser renderer is debugger-paused (20.5s)
+
+  1 passed (21.5s)
+
+Stopping the runtime and UI this launcher started…
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source c1d1ea70e42937d421070674f07d00edc7c41245 · artifact 21986126e194 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>
+Owned processes: runtime pid 89015, UI pid 89016
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 450 ms. Press Ctrl-C to stop.
+Running twin-inputs.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/twin-inputs.spec.ts:28:1 › UX05/UX18/QA09b: reset, speed-limit draft, saved report reopening and replay remain independent (2.6s)
+
+  1 passed (3.5s)
+
+Stopping the runtime and UI this launcher started…
+(node:88987) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:89026) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

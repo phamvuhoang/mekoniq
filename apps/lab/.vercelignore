@@ -1,0 +1,9 @@
+.runtime/
+runs/
+releases/
+docs/
+tests/
+test-results/
+playwright-report/
+.superpowers/
+playwright*.config.ts

@@ -1,0 +1,26 @@
+Offline mock ready: http://127.0.0.1:4175
+Enter this one-use pairing code (expires in 5 minutes): <redacted>
+Source c1d1ea70e42937d421070674f07d00edc7c41245.
+Ready in 397 ms. Press Ctrl-C to stop.
+Running twin-recovery.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/twin-recovery.spec.ts:16:1 › telemetry stream, stale/frozen states, reconnect, read-only replay, compare, export and a lost session (11.1s)
+
+  1 passed (12.2s)
+Offline mock ready: http://127.0.0.1:4175
+Enter this one-use pairing code (expires in 5 minutes): <redacted>
+Source c1d1ea70e42937d421070674f07d00edc7c41245.
+Ready in 307 ms. Press Ctrl-C to stop.
+Running coffee-journey.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/coffee-journey.spec.ts:7:1 › missing cup: visible reason and entity, confirmed reconcile, corrected run completes (13.6s)
+
+  1 passed (14.4s)
+(node:89498) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:89532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

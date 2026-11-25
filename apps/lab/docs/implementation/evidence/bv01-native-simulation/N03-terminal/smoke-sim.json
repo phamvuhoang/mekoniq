@@ -1,0 +1,57 @@
+{
+ "schemaVersion": 1,
+ "backend": "linuxcnc_sim",
+ "status": "blocked_external",
+ "result": "not_run",
+ "reasons": [
+  "HOST_NOT_LINUX",
+  "LINUXCNC_MISSING",
+  "LINUXCNC_PYTHON_MODULE_MISSING"
+ ],
+ "host": {
+  "platform": "Darwin",
+  "release": "25.5.0",
+  "machine": "arm64",
+  "python": "3.13.3"
+ },
+ "profile": {
+  "path": "configs/sim/puma560/mekoniq.ini",
+  "sha256": "e500350bc2294d5ae43c0a5179584f5bb1d2bedda5a80a2ff4b398506a4696d2"
+ },
+ "modelManifest": {
+  "path": "/Users/hoangpham/source/prv/robot/source/integrations/arm-controller/models/puma560-reference/manifest.json",
+  "sha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+ },
+ "dependenciesLock": {
+  "path": "packaging/dependencies.arm64-vm.lock.json",
+  "sha256": "fce4e96d7c4dd70a9620810cf6f1ae3714a403d9c5f07f5a31e6d5060ca39f13"
+ },
+ "recordedAt": "2026-11-06T03:14:55.136070+00:00",
+ "runtimeInventory": {
+  "schemaVersion": 1,
+  "platform": "Darwin",
+  "architecture": "arm64",
+  "kernel": "25.5.0",
+  "python": {
+   "version": "3.13.3",
+   "executable": {
+    "path": "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/bin/python3.13",
+    "sha256": "f6ec6ad29d65dcb9609fb93f9e9a114d8f654b020cbe8d925f7f01d3bc2ce44b"
+   }
+  },
+  "packages": null,
+  "executables": {
+   "linuxcnc": null,
+   "halcmd": null,
+   "qtvcp": null
+  },
+  "modules": {
+   "linuxcnc": null,
+   "PyQt5.QtCore": null,
+   "PyQt5.Qsci": null
+  },
+  "qualification": "not_run",
+  "claims": "inventory only; no controller, GUI, timing or hardware assertion"
+ },
+ "claims": "software sequence on a virtual HAL at most; no drive, timing, load or safety evidence"
+}

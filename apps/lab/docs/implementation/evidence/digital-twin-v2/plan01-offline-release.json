@@ -1,0 +1,10 @@
+{
+ "schema": "mekoniq-offline-release/1",
+ "sourceCommit": "c1d1ea70e42937d421070674f07d00edc7c41245",
+ "archive": "releases/mekoniq-lab-plan01-macos-arm64-c1d1ea7.tar.gz",
+ "bytes": 40022790,
+ "sha256": "4f4f126d438a0bcb87246941b9b266cff9e47934cb67790a79589395f696cf81",
+ "manifestSha256": "2b7433a48abed2cfe626ae3b3d4ab865db1a7fff0a9872c9523037e583312803",
+ "bootOnlyExit": 0,
+ "scope": "darwin/arm64; bundled Node; loopback boot on current host; fresh OS, physical network-off and cold boot remain human gates"
+}

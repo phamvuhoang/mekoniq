@@ -1,0 +1,71 @@
+
+> mekoniq-platform@ build <workspace>/source
+> pnpm -r --if-present build
+
+Scope: 10 of 11 workspace projects
+apps/tablet-web build$ vite build
+apps/cloud-web build$ next build --webpack
+packages/contracts build$ tsc --noEmit -p ../../tsconfig.json
+apps/tablet-web build: vite v7.3.1 building client environment for production...
+apps/tablet-web build: transforming...
+apps/cloud-web build: ▲ Next.js 16.4.3 (webpack)
+apps/cloud-web build: ✓ Running next.config.ts took 83ms
+apps/cloud-web build:   Creating an optimized production build ...
+apps/tablet-web build: ✓ 343 modules transformed.
+apps/tablet-web build: rendering chunks...
+apps/tablet-web build: computing gzip size...
+apps/tablet-web build: dist/index.html                       0.51 kB │ gzip:   0.37 kB
+apps/tablet-web build: dist/assets/index-DOpyCzZU.css        6.18 kB │ gzip:   1.99 kB
+apps/tablet-web build: dist/assets/lan-bridge-DfTkGmEi.js    0.13 kB │ gzip:   0.13 kB
+apps/tablet-web build: dist/assets/ui-entry-BlJ2EP-Q.js    223.42 kB │ gzip:  63.31 kB
+apps/tablet-web build: dist/assets/index-Dc5VRt22.js       444.16 kB │ gzip: 138.57 kB
+apps/tablet-web build: ✓ built in 1.44s
+apps/tablet-web build: Done
+apps/cloud-web build: ✓ Compiled successfully in 2.1s
+apps/cloud-web build:   Running TypeScript ...
+apps/cloud-web build:   Finished TypeScript in 1106ms ...
+apps/cloud-web build:   Collecting page data using 9 workers ...
+apps/cloud-web build:   Generating static pages using 9 workers (0/4) ...
+apps/cloud-web build:   Generating static pages using 9 workers (1/4)
+apps/cloud-web build:   Generating static pages using 9 workers (2/4)
+apps/cloud-web build:   Generating static pages using 9 workers (3/4)
+apps/cloud-web build: ✓ Generating static pages using 9 workers (4/4) in 396ms
+apps/cloud-web build:   Finalizing page optimization ...
+apps/cloud-web build:   Collecting build traces ...
+packages/contracts build: Done
+apps/cloud-web build: Route (app)
+apps/cloud-web build: ┌ ○ /
+apps/cloud-web build: ├ ○ /_not-found
+apps/cloud-web build: ├ ƒ /admin/catalog
+apps/cloud-web build: ├ ƒ /admin/chain/configuration
+apps/cloud-web build: ├ ƒ /admin/chain/reports
+apps/cloud-web build: ├ ƒ /admin/customers
+apps/cloud-web build: ├ ƒ /admin/operations
+apps/cloud-web build: ├ ƒ /admin/promotions
+apps/cloud-web build: ├ ƒ /admin/reservations
+apps/cloud-web build: ├ ƒ /admin/settings
+apps/cloud-web build: ├ ƒ /health/live
+apps/cloud-web build: ├ ƒ /health/ready
+apps/cloud-web build: ├ ƒ /internal/jobs/run
+apps/cloud-web build: ├ ○ /login
+apps/cloud-web build: ├ ƒ /menu/[venueId]
+apps/cloud-web build: ├ ƒ /order/[venueId]
+apps/cloud-web build: ├ ƒ /table/[token]
+apps/cloud-web build: └ ƒ /v1/[...path]
+apps/cloud-web build: ○  (Static)   prerendered as static content
+apps/cloud-web build: ƒ  (Dynamic)  server-rendered on demand
+apps/cloud-web build: Done
+apps/tablet-android build$ cap sync android
+packages/cell-adapters build$ tsc --noEmit -p ../../tsconfig.json
+packages/domain build$ tsc --noEmit -p ../../tsconfig.json
+packages/robot-adapters build$ tsc --noEmit -p ../../tsconfig.json
+apps/tablet-android build: ✔ Copying web assets from dist to android/app/src/main/assets/public in 17.08ms
+apps/tablet-android build: ✔ Creating capacitor.config.json in android/app/src/main/assets in 957.25μs
+apps/tablet-android build: ✔ copy android in 24.89ms
+apps/tablet-android build: ✔ Updating Android plugins in 294.33μs
+apps/tablet-android build: ✔ update android in 22.06ms
+apps/tablet-android build: [info] Sync finished in 0.056s
+apps/tablet-android build: Done
+packages/domain build: Done
+packages/robot-adapters build: Done
+packages/cell-adapters build: Done

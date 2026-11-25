@@ -1,0 +1,33 @@
+Offline mock ready: http://127.0.0.1:4175
+Enter this one-use pairing code (expires in 5 minutes): <redacted>
+Source 37b9e8ae28c5eebff0d5a2c4574cea10eb0d7a58.
+Ready in 433 ms. Press Ctrl-C to stop.
+Running twin-recovery.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/twin-recovery.spec.ts:16:1 › telemetry stream, stale/frozen states, reconnect, read-only replay, compare, export and a lost session (13.4s)
+
+  1 passed (14.5s)
+Offline mock ready: http://127.0.0.1:4175
+Enter this one-use pairing code (expires in 5 minutes): <redacted>
+Source 37b9e8ae28c5eebff0d5a2c4574cea10eb0d7a58.
+Ready in 421 ms. Press Ctrl-C to stop.
+Running coffee-journey.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/coffee-journey.spec.ts:7:1 › missing cup: visible reason and entity, confirmed reconcile, corrected run completes (13.7s)
+
+  1 passed (14.6s)
+Offline mock ready: http://127.0.0.1:4175
+Enter this one-use pairing code (expires in 5 minutes): <redacted>
+Source 37b9e8ae28c5eebff0d5a2c4574cea10eb0d7a58.
+Ready in 418 ms. Press Ctrl-C to stop.
+Running offline-bv01.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/offline-bv01.spec.ts:6:1 › offline package completes BV01 and exports its pinned report with only loopback requests (15.3s)
+
+  1 passed (16.1s)

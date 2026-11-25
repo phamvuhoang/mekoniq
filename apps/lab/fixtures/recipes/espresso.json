@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "revision": 2,
+  "cupType": "cup-paper-illustrative",
+  "recovery": {
+    "onTimeout": "hold_and_reconcile",
+    "autoRetry": false
+  },
+  "id": "espresso",
+  "outputType": "espresso",
+  "policies": {
+    "cup": {
+      "revision": 1,
+      "provenance": "illustrative",
+      "capacityM3": "0.0003",
+      "headspaceM3": "0.00002",
+      "iceVolumeM3PerKg": "0.0011"
+    },
+    "measurement": {
+      "revision": 1,
+      "provenance": "illustrative",
+      "maxTargetMultiplier": "2"
+    }
+  },
+  "steps": [
+    {
+      "id": "brew",
+      "kind": "brew",
+      "target": {
+        "amount": "0.00003",
+        "tolerance": "0.000003",
+        "unit": "m3",
+        "provenance": "illustrative"
+      },
+      "requires": [
+        "machine"
+      ],
+      "timeoutMs": 40000
+    }
+  ],
+  "resources": [
+    {
+      "resourceId": "coffee-beans",
+      "kind": "coffee_beans",
+      "requiredAmount": {
+        "amount": "0.018",
+        "tolerance": "0.001",
+        "unit": "kg",
+        "provenance": "illustrative"
+      }
+    },
+    {
+      "resourceId": "cup-paper",
+      "kind": "cup",
+      "requiredAmount": null
+    },
+    {
+      "resourceId": "machine",
+      "kind": "machine",
+      "requiredAmount": null
+    }
+  ],
+  "hash": "79967849905e6a95f2b5f0cc19e1f449c6a40e5df7a2645b29e4fae3a2c5af96"
+}

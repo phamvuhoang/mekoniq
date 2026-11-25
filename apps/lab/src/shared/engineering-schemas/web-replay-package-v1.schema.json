@@ -1,0 +1,497 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "web-replay-package-v1.schema.json",
+  "title": "WebReplayPackageV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "runId",
+    "horizon",
+    "provenance",
+    "coverage",
+    "assets",
+    "streams",
+    "licensing"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "web-replay-package"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "horizon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tick",
+        "tickMs"
+      ],
+      "properties": {
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30000
+        },
+        "tickMs": {
+          "const": 20
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "accepted",
+        "calibration",
+        "scope",
+        "rawReportSha256",
+        "reportTransform"
+      ],
+      "properties": {
+        "kind": {
+          "const": "imported_integrity_only"
+        },
+        "accepted": {
+          "const": false
+        },
+        "calibration": {
+          "const": "not_calibrated"
+        },
+        "scope": {
+          "const": "display_only_not_requalification"
+        },
+        "rawReportSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "reportTransform": {
+          "const": "credential_redaction_v1"
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prefixCovered",
+        "streamFinalized",
+        "sampled",
+        "terminal",
+        "gaps",
+        "issues"
+      ],
+      "properties": {
+        "prefixCovered": {
+          "type": "boolean"
+        },
+        "streamFinalized": {
+          "type": "boolean"
+        },
+        "sampled": {
+          "const": false
+        },
+        "terminal": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "gaps": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "targetTick",
+                  "lastCommittedTick",
+                  "ackTick",
+                  "reason"
+                ],
+                "properties": {
+                  "targetTick": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 30001
+                  },
+                  "lastCommittedTick": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 30001
+                  },
+                  "ackTick": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 30001
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "firstTick",
+                  "lastTick",
+                  "reason"
+                ],
+                "properties": {
+                  "firstTick": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 30001
+                  },
+                  "lastTick": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 30001
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "issues": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "maxItems": 512,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "sha256",
+          "decodedSha256",
+          "bytes",
+          "decodedBytes",
+          "encoding",
+          "role",
+          "mediaType"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 220,
+            "pattern": "^[A-Za-z0-9_-][A-Za-z0-9_./-]*$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "decodedSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8388608
+          },
+          "decodedBytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16777216
+          },
+          "encoding": {
+            "enum": [
+              "identity",
+              "gzip"
+            ]
+          },
+          "role": {
+            "enum": [
+              "report",
+              "events",
+              "scene",
+              "model",
+              "profile",
+              "notice",
+              "vendor",
+              "trace",
+              "world",
+              "physics",
+              "navigation"
+            ]
+          },
+          "mediaType": {
+            "enum": [
+              "application/json",
+              "application/x-ndjson",
+              "model/stl",
+              "text/plain"
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "properties": {
+                  "role": {
+                    "enum": [
+                      "report",
+                      "events",
+                      "scene",
+                      "profile",
+                      "vendor",
+                      "trace",
+                      "model"
+                    ]
+                  },
+                  "mediaType": {
+                    "const": "application/json"
+                  },
+                  "path": {
+                    "pattern": "\\.json(?:\\.gz)?$"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "role": {
+                    "const": "model"
+                  },
+                  "mediaType": {
+                    "const": "model/stl"
+                  },
+                  "encoding": {
+                    "const": "identity"
+                  },
+                  "path": {
+                    "pattern": "\\.stl$"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "role": {
+                    "const": "notice"
+                  },
+                  "mediaType": {
+                    "const": "text/plain"
+                  },
+                  "encoding": {
+                    "const": "identity"
+                  },
+                  "path": {
+                    "pattern": "(?:^|/)(?:NOTICE|LICENSE)(?:\\.txt)?$|\\.txt$"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "role": {
+                    "enum": [
+                      "world",
+                      "physics",
+                      "navigation"
+                    ]
+                  },
+                  "mediaType": {
+                    "const": "application/x-ndjson"
+                  },
+                  "path": {
+                    "pattern": "\\.ndjson(?:\\.gz)?$"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "if": {
+              "properties": {
+                "encoding": {
+                  "const": "identity"
+                },
+                "mediaType": {
+                  "const": "application/json"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "path": {
+                  "pattern": "\\.json$"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "encoding": {
+                  "const": "identity"
+                },
+                "mediaType": {
+                  "const": "application/x-ndjson"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "path": {
+                  "pattern": "\\.ndjson$"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "encoding": {
+                  "const": "gzip"
+                },
+                "mediaType": {
+                  "const": "application/x-ndjson"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "path": {
+                  "pattern": "\\.ndjson\\.gz$"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "streams": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "chunks",
+          "firstTick",
+          "lastTick",
+          "samples"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "world",
+              "physics",
+              "navigation"
+            ]
+          },
+          "chunks": {
+            "type": "array",
+            "maxItems": 256,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 220
+            }
+          },
+          "firstTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30000
+          },
+          "lastTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30000
+          },
+          "samples": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30001
+          }
+        }
+      }
+    },
+    "licensing": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "repository",
+          "commit",
+          "recordPath",
+          "noticePath",
+          "matchedAssets"
+        ],
+        "properties": {
+          "kind": {
+            "const": "supplemental_licensing"
+          },
+          "repository": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "commit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "recordPath": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 220
+          },
+          "noticePath": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 220
+          },
+          "matchedAssets": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 220
+            }
+          }
+        }
+      }
+    }
+  }
+}

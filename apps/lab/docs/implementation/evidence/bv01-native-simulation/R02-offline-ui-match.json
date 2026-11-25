@@ -1,0 +1,15 @@
+{
+  "recordedAt": "2026-11-06T06:58:05.602626+00:00",
+  "result": "pass",
+  "scope": "Packaged UI bytes equal the final Lab build; clean-machine installation is separate",
+  "files": {
+    "index.html": "d7f7a05b9f4b9d6a939d3e17f4774accdc792319bb8b962ccdfae152b2673bdb",
+    "source-runtime.lock.json": "c49a5a0301d3edfc53b54e4d9ba448bf57db980c559e9f28ce6dd0efbfd7325b",
+    "business-plan.html": "47a2c17581cc5e6edf1dc8e66e16a8df28de178f00bb30629187a5347b04ea14",
+    "assets/robot-D0j24iU5.js": "79a3387d04fd7771f890b5931e50ca4bd14751352bbd2492d5e3631fd3d8cc70",
+    "assets/index-PYyXtPLc.css": "42e5986bb0c09e25e114b46cb30de6f3339f51b657bf548e2883d6a4379871a7",
+    "assets/index-WQkdyzA4.js": "c269aeca918dbf1f6f52924fb49e9ecf76731943712939d5c710527197c855fe",
+    "assets/twin3d-BH9YEtRj.js": "be0e9b8f9ced53960ed8323a9b8683cca0e29eaeb32de29d2976b94b96a7a284",
+    "assets/OrbitControls-C-Pz9gO_.js": "698f8294427026c04ec6277d441ccf0099893dea441d27b143b7f663e13d555d"
+  }
+}

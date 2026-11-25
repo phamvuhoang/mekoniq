@@ -1,0 +1,1104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.engineering-component.v1",
+  "title": "ComponentRevision",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "$ref": "#/definitions/EngineeringId"
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manufacturer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "family": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sku": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "candidate",
+            "model_ready",
+            "calibrated"
+          ]
+        }
+      },
+      "required": [
+        "manufacturer",
+        "family",
+        "sku",
+        "status"
+      ]
+    },
+    "links": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "$ref": "#/definitions/Link"
+      }
+    },
+    "joints": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "$ref": "#/definitions/Joint"
+      }
+    },
+    "ports": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "$ref": "#/definitions/Port"
+      }
+    },
+    "models": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "$ref": "#/definitions/ModelRef"
+      }
+    },
+    "documents": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/definitions/ComponentDocument"
+      }
+    },
+    "payloadRatings": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "$ref": "#/definitions/PayloadRating"
+      }
+    },
+    "battery": {
+      "$ref": "#/definitions/BatteryRating"
+    },
+    "supportPoints": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "$ref": "#/definitions/SupportPoint"
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "revision",
+    "identity",
+    "links",
+    "joints",
+    "ports",
+    "models",
+    "documents"
+  ],
+  "definitions": {
+    "Digest": {
+      "title": "Digest",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "EngineeringId": {
+      "title": "EngineeringId",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:/-]+$"
+    },
+    "Vec3": {
+      "title": "Vec3",
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "additionalItems": false
+    },
+    "Quaternion": {
+      "title": "Quaternion",
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "additionalItems": false
+    },
+    "Pose": {
+      "title": "Pose",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "xyzM": {
+          "$ref": "#/definitions/Vec3"
+        },
+        "quaternionXyzw": {
+          "$ref": "#/definitions/Quaternion"
+        }
+      },
+      "required": [
+        "xyzM",
+        "quaternionXyzw"
+      ]
+    },
+    "SourceRef": {
+      "title": "SourceRef",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "manufacturer",
+            "measured",
+            "derived",
+            "assumed"
+          ]
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "contentSha256": {
+          "$ref": "#/definitions/Digest"
+        },
+        "uncertaintyAbs": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "kind",
+        "documentId",
+        "revision",
+        "locator",
+        "contentSha256"
+      ]
+    },
+    "Scalar": {
+      "title": "Scalar",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "source": {
+          "$ref": "#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "value",
+        "unit",
+        "source"
+      ]
+    },
+    "Geometry": {
+      "title": "Geometry",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "box"
+            },
+            "sizeM": {
+              "$ref": "#/definitions/Vec3"
+            }
+          },
+          "required": [
+            "kind",
+            "sizeM"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "cylinder"
+            },
+            "radiusM": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "lengthM": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "kind",
+            "radiusM",
+            "lengthM"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "sphere"
+            },
+            "radiusM": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "kind",
+            "radiusM"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "mesh"
+            },
+            "blobSha256": {
+              "$ref": "#/definitions/Digest"
+            },
+            "scale": {
+              "$ref": "#/definitions/Vec3"
+            }
+          },
+          "required": [
+            "kind",
+            "blobSha256",
+            "scale"
+          ]
+        }
+      ]
+    },
+    "Shape": {
+      "title": "Shape",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pose": {
+          "$ref": "#/definitions/Pose"
+        },
+        "geometry": {
+          "$ref": "#/definitions/Geometry"
+        },
+        "source": {
+          "$ref": "#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "pose",
+        "geometry",
+        "source"
+      ]
+    },
+    "Link": {
+      "title": "Link",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "visual": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "#/definitions/Shape"
+          }
+        },
+        "collision": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "#/definitions/Shape"
+          }
+        },
+        "massKg": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "comM": {
+          "$ref": "#/definitions/Vec3"
+        },
+        "inertiaKgM2": {
+          "anyOf": [
+            {
+              "type": "array",
+              "minItems": 6,
+              "maxItems": 6,
+              "items": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "additionalItems": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inertialSource": {
+          "$ref": "#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "id",
+        "visual",
+        "collision",
+        "massKg",
+        "comM",
+        "inertiaKgM2",
+        "inertialSource"
+      ]
+    },
+    "JointLimitsContinuous": {
+      "title": "JointLimitsContinuous",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "velocity": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "effort": {
+          "$ref": "#/definitions/Scalar"
+        }
+      },
+      "required": [
+        "velocity",
+        "effort"
+      ]
+    },
+    "JointLimitsBounded": {
+      "title": "JointLimitsBounded",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lower": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "upper": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "velocity": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "effort": {
+          "$ref": "#/definitions/Scalar"
+        }
+      },
+      "required": [
+        "lower",
+        "upper",
+        "velocity",
+        "effort"
+      ]
+    },
+    "Joint": {
+      "title": "Joint",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/EngineeringId"
+            },
+            "parent": {
+              "$ref": "#/definitions/EngineeringId"
+            },
+            "child": {
+              "$ref": "#/definitions/EngineeringId"
+            },
+            "origin": {
+              "$ref": "#/definitions/Pose"
+            },
+            "axis": {
+              "$ref": "#/definitions/Vec3"
+            },
+            "kind": {
+              "const": "fixed"
+            }
+          },
+          "required": [
+            "id",
+            "parent",
+            "child",
+            "origin",
+            "axis",
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/EngineeringId"
+            },
+            "parent": {
+              "$ref": "#/definitions/EngineeringId"
+            },
+            "child": {
+              "$ref": "#/definitions/EngineeringId"
+            },
+            "origin": {
+              "$ref": "#/definitions/Pose"
+            },
+            "axis": {
+              "$ref": "#/definitions/Vec3"
+            },
+            "kind": {
+              "const": "continuous"
+            },
+            "limits": {
+              "$ref": "#/definitions/JointLimitsContinuous"
+            }
+          },
+          "required": [
+            "id",
+            "parent",
+            "child",
+            "origin",
+            "axis",
+            "kind",
+            "limits"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/EngineeringId"
+            },
+            "parent": {
+              "$ref": "#/definitions/EngineeringId"
+            },
+            "child": {
+              "$ref": "#/definitions/EngineeringId"
+            },
+            "origin": {
+              "$ref": "#/definitions/Pose"
+            },
+            "axis": {
+              "$ref": "#/definitions/Vec3"
+            },
+            "kind": {
+              "enum": [
+                "revolute",
+                "prismatic"
+              ]
+            },
+            "limits": {
+              "$ref": "#/definitions/JointLimitsBounded"
+            }
+          },
+          "required": [
+            "id",
+            "parent",
+            "child",
+            "origin",
+            "axis",
+            "kind",
+            "limits"
+          ]
+        }
+      ]
+    },
+    "Port": {
+      "title": "Port",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "kind": {
+          "enum": [
+            "mount",
+            "power",
+            "data"
+          ]
+        },
+        "frame": {
+          "$ref": "#/definitions/Pose"
+        },
+        "mate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "direction": {
+          "enum": [
+            "in",
+            "out",
+            "bidirectional"
+          ]
+        },
+        "voltageRangeV": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "additionalItems": false
+        },
+        "continuousCurrentA": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "protocol": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "pinoutRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "link": {
+          "$ref": "#/definitions/EngineeringId"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "frame",
+        "mate",
+        "direction"
+      ]
+    },
+    "ModelRef": {
+      "title": "ModelRef",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "actuator",
+            "sensor",
+            "process"
+          ]
+        },
+        "id": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "digest": {
+          "$ref": "#/definitions/Digest"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "digest"
+      ]
+    },
+    "ComponentDocument": {
+      "title": "ComponentDocument",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "digest": {
+          "$ref": "#/definitions/Digest"
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "id",
+        "url",
+        "digest",
+        "license"
+      ]
+    },
+    "ActuatorModel": {
+      "title": "ActuatorModel",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "const": "actuator"
+        },
+        "id": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "jointIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/definitions/EngineeringId"
+          }
+        },
+        "transmission": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "ratio": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "efficiency": {
+              "$ref": "#/definitions/Scalar"
+            }
+          },
+          "required": [
+            "ratio",
+            "efficiency"
+          ]
+        },
+        "commandInterface": {
+          "enum": [
+            "velocity",
+            "position",
+            "effort"
+          ]
+        },
+        "torqueSpeedTable": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "speed": {
+                "$ref": "#/definitions/Scalar"
+              },
+              "torque": {
+                "$ref": "#/definitions/Scalar"
+              }
+            },
+            "required": [
+              "speed",
+              "torque"
+            ]
+          }
+        },
+        "currentLimit": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "voltageLimit": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "damping": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "friction": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "drive": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "wheelRadiusM": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "wheelSeparationM": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "leftMountPort": {
+              "$ref": "#/definitions/EngineeringId"
+            },
+            "rightMountPort": {
+              "$ref": "#/definitions/EngineeringId"
+            }
+          },
+          "required": [
+            "wheelRadiusM",
+            "wheelSeparationM",
+            "leftMountPort",
+            "rightMountPort"
+          ]
+        },
+        "torqueConstantNmPerA": {
+          "$ref": "#/definitions/Scalar"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "kind",
+        "id",
+        "jointIds",
+        "transmission",
+        "commandInterface",
+        "torqueSpeedTable",
+        "currentLimit",
+        "voltageLimit",
+        "damping",
+        "friction"
+      ]
+    },
+    "SensorModel": {
+      "title": "SensorModel",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "const": "sensor"
+        },
+        "id": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "frame": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "rateHz": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "range": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "max": {
+              "$ref": "#/definitions/Scalar"
+            }
+          },
+          "required": [
+            "min",
+            "max"
+          ]
+        },
+        "fieldOfView": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "noise": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "distribution": {
+              "enum": [
+                "none",
+                "gaussian",
+                "uniform"
+              ]
+            },
+            "stddev": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "seed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          },
+          "required": [
+            "distribution",
+            "stddev",
+            "seed"
+          ]
+        },
+        "latency": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "dropoutProbability": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "sensorType": {
+          "const": "lidar_2d"
+        },
+        "lidar2d": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "beamCount": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 1080
+            },
+            "beamCountSource": {
+              "$ref": "#/definitions/SourceRef"
+            }
+          },
+          "required": [
+            "beamCount",
+            "beamCountSource"
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "kind",
+        "id",
+        "frame",
+        "rateHz",
+        "range",
+        "fieldOfView",
+        "noise",
+        "latency",
+        "dropoutProbability"
+      ],
+      "dependencies": {
+        "sensorType": [
+          "lidar2d"
+        ],
+        "lidar2d": [
+          "sensorType"
+        ]
+      }
+    },
+    "ProcessModel": {
+      "title": "ProcessModel",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "const": "process"
+        },
+        "id": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "processKind": {
+          "const": "coffee"
+        },
+        "reservoirs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "resourceId": {
+                "$ref": "#/definitions/EngineeringId"
+              },
+              "capacityMl": {
+                "$ref": "#/definitions/Scalar"
+              },
+              "initialMl": {
+                "$ref": "#/definitions/Scalar"
+              }
+            },
+            "required": [
+              "resourceId",
+              "capacityMl",
+              "initialMl"
+            ]
+          }
+        },
+        "flowMlPerSec": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "startupDelaySec": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "maxDurationSec": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "densityKgPerM3": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "temperature": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "initialC": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "targetC": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "thermalTimeConstantSec": {
+              "$ref": "#/definitions/Scalar"
+            }
+          },
+          "required": [
+            "initialC",
+            "targetC"
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "kind",
+        "id",
+        "processKind",
+        "reservoirs",
+        "flowMlPerSec",
+        "startupDelaySec",
+        "maxDurationSec",
+        "densityKgPerM3"
+      ]
+    },
+    "PayloadRating": {
+      "title": "PayloadRating",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "portId": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "maxMassKg": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "maxMomentNm": {
+          "$ref": "#/definitions/Scalar"
+        }
+      },
+      "required": [
+        "portId",
+        "maxMassKg",
+        "maxMomentNm"
+      ]
+    },
+    "BatteryRating": {
+      "title": "BatteryRating",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "portId": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "capacityAh": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "usableFraction": {
+          "$ref": "#/definitions/Scalar"
+        }
+      },
+      "required": [
+        "portId",
+        "capacityAh",
+        "usableFraction"
+      ]
+    },
+    "SupportPoint": {
+      "title": "SupportPoint",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "linkId": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "pointM": {
+          "$ref": "#/definitions/Vec3"
+        },
+        "source": {
+          "$ref": "#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "linkId",
+        "pointM",
+        "source"
+      ]
+    }
+  }
+}

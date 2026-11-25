@@ -1,0 +1,187 @@
+{
+  "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+  "result": "failed",
+  "reason": "Host ENOSPC coincided with Docker service restarts; PostgreSQL tests also received ECONNREFUSED at 127.0.0.1:57422. Failed environment attempt, not software qualification.",
+  "passed": 668,
+  "failed": 46,
+  "skipped": 73,
+  "failedFiles": [
+    {
+      "file": "integration/atomic-command.test.ts",
+      "message": ""
+    },
+    {
+      "file": "integration/chain-reporting.test.ts",
+      "message": "connect ECONNREFUSED 127.0.0.1:57422"
+    },
+    {
+      "file": "integration/chain-rollout.test.ts",
+      "message": "connect ECONNREFUSED 127.0.0.1:57422"
+    },
+    {
+      "file": "integration/cloud-authority.test.ts",
+      "message": "connect ECONNREFUSED 127.0.0.1:57422"
+    },
+    {
+      "file": "integration/cloud-backoffice-relay.test.ts",
+      "message": "connect ECONNREFUSED 127.0.0.1:57422"
+    },
+    {
+      "file": "integration/cloud-catalog.test.ts",
+      "message": "connect ECONNREFUSED 127.0.0.1:57422"
+    },
+    {
+      "file": "integration/cloud-health.test.ts",
+      "message": ""
+    },
+    {
+      "file": "integration/cloud-review-fixes.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947489504-edfqwh7r3f'"
+    },
+    {
+      "file": "integration/cloud-unavailable.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947489585-okvx2xizvwc'"
+    },
+    {
+      "file": "integration/coffee-policy.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947489749-53uy3t00zea'"
+    },
+    {
+      "file": "integration/coffee-review.test.ts",
+      "message": ""
+    },
+    {
+      "file": "integration/coffee-transfer.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947488909-ae2rhpzcrz4'"
+    },
+    {
+      "file": "integration/device-grants.test.ts",
+      "message": "connect ECONNREFUSED 127.0.0.1:57422"
+    },
+    {
+      "file": "integration/external-orders.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947489084-e4blc73j2ft'"
+    },
+    {
+      "file": "integration/feature-policy.test.ts",
+      "message": "connect ECONNREFUSED 127.0.0.1:57422"
+    },
+    {
+      "file": "integration/guest-cloud.test.ts",
+      "message": "connect ECONNREFUSED 127.0.0.1:57422"
+    },
+    {
+      "file": "integration/lab-v2-arm-faults.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947484716-ta7iqmr7cy8'"
+    },
+    {
+      "file": "integration/lab-v2-arm-inactive-scene.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947484801-b8f4ivtp4mk'"
+    },
+    {
+      "file": "integration/lab-v2-bv01-ports.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947484470-b2kwf622h8m'"
+    },
+    {
+      "file": "integration/lab-v2-bv01-recovery.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947485132-c1wlo4kioei'"
+    },
+    {
+      "file": "integration/lab-v2-checkpoint-compat.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947489419-vavu9vdzsfi'"
+    },
+    {
+      "file": "integration/lab-v2-fault-schedule.test.ts",
+      "message": ""
+    },
+    {
+      "file": "integration/lab-v2-mixed.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947484617-9hz9fs8s97q'"
+    },
+    {
+      "file": "integration/lab-v2-mock.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947485025-9rbejfz2a3'"
+    },
+    {
+      "file": "integration/lab-v2-reclaim-targets.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947489665-aap4repnkn'"
+    },
+    {
+      "file": "integration/lab-v2-recovery.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947489259-q0b8ge3vxge'"
+    },
+    {
+      "file": "integration/lab-v2-report.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947488991-mp60sser8ec'"
+    },
+    {
+      "file": "integration/lab-v2-sil-physics.test.ts",
+      "message": ""
+    },
+    {
+      "file": "integration/lab-v2-sil-review.test.ts",
+      "message": ""
+    },
+    {
+      "file": "integration/lab-v2-simulation-report.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947488825-gggv7s49gb9'"
+    },
+    {
+      "file": "integration/lab-v2-stream.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947489171-s3dqkfbvxid'"
+    },
+    {
+      "file": "integration/local-bootstrap.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947489336-0w29k8ioeor'"
+    },
+    {
+      "file": "integration/partition-conflicts.test.ts",
+      "message": ""
+    },
+    {
+      "file": "integration/realtime-jobs.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947485221-9c577slwkig'"
+    },
+    {
+      "file": "integration/relay-effects.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947489903-kwrabwkpcu'"
+    },
+    {
+      "file": "integration/report-routes.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947489826-p77no7aobjf'"
+    },
+    {
+      "file": "integration/review-fixes-4.test.ts",
+      "message": ""
+    },
+    {
+      "file": "integration/review-fixes.test.ts",
+      "message": ""
+    },
+    {
+      "file": "integration/storage-free-profile.test.ts",
+      "message": "connect ECONNREFUSED 127.0.0.1:57422"
+    },
+    {
+      "file": "integration/sync-replay.test.ts",
+      "message": "connect ECONNREFUSED 127.0.0.1:57422"
+    },
+    {
+      "file": "integration/tablet-cloud-sync.test.ts",
+      "message": "ENOSPC: no space left on device, open '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/CymO1OYCUHKsAwdWfRV3U/ssr/.tmp-1793947484896-13es4jtdejvf'"
+    },
+    {
+      "file": "integration/tenant-auth.test.ts",
+      "message": "connect ECONNREFUSED 127.0.0.1:57422"
+    },
+    {
+      "file": "integration/upgrade-recovery.test.ts",
+      "message": "write CONNECTION_CLOSED 127.0.0.1:57422"
+    },
+    {
+      "file": "integration/wan-outage-journey.test.ts",
+      "message": ""
+    }
+  ],
+  "resolution": "Retry suites serially after checking recovered free space; no user data or other Docker project removed."
+}

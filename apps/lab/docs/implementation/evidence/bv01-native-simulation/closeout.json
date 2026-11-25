@@ -1,0 +1,18 @@
+{
+  "recordedAt": "2026-11-06T07:01:30.707113+00:00",
+  "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+  "testedLabCommit": "66445c5acf24f90cc17449bae561dbc45965eba7",
+  "supabase": {
+    "project": "mekoniq-w00-w04",
+    "stopCommand": "pnpm supabase:stop",
+    "exitCode": 0,
+    "remainingRunningContainers": []
+  },
+  "preserved": [
+    "existing source/artifacts working-tree changes",
+    "other Docker projects",
+    "trial and operational robot ports"
+  ],
+  "releaseAccepted": false,
+  "nativeExecution": "not_run"
+}

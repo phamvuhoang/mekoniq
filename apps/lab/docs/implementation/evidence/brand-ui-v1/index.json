@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "brandVersion": "1.0.1",
+  "implementation": "implemented",
+  "humanAccepted": false,
+  "productionDeployed": false,
+  "branches": {
+    "lab": "feat/brand-ui-v1",
+    "source": "feat/brand-ui-v1",
+    "trial": "feat/brand-ui-v1"
+  },
+  "codeCommits": {
+    "lab": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+    "source": "8a52cb6d2d2c5b1a46199642699775caf704b21a",
+    "trial": "23cc7cecf1dd503b9730e3573252e279b439649b"
+  },
+  "environment": {
+    "node": "24.22.2",
+    "pnpm": "10.32.1",
+    "os": "macOS 26.5 arm64",
+    "browser": "Google Chrome 156.0.8078.80",
+    "axe": "4.14.0"
+  },
+  "gates": [
+    {
+      "gate": "G-UI-ASSET",
+      "requirements": [
+        "UI-01",
+        "UI-03",
+        "UI-10"
+      ],
+      "status": "passed",
+      "profile": "canonical and four consumer exports",
+      "artifacts": [
+        "brand-checks.json",
+        "reviews/foundation-review.md"
+      ]
+    },
+    {
+      "gate": "G-UI-TOKEN",
+      "requirements": [
+        "UI-01",
+        "UI-02",
+        "UI-04"
+      ],
+      "status": "passed",
+      "profile": "automated token contrast and gallery; app scans separate",
+      "artifacts": [
+        "foundation-axe.json",
+        "foundation-gallery.png"
+      ]
+    },
+    {
+      "gate": "G-UI-LAB",
+      "requirements": [
+        "UI-05",
+        "UI-08"
+      ],
+      "status": "passed",
+      "profile": "browser/local mock",
+      "commit": "c806dcc5d2443c677a2a4d6bf29ebb799ddcc0c7",
+      "command": "pnpm test; pnpm test:e2e; pnpm test:twin-e2e; pnpm build; pnpm check:source",
+      "exitCode": 0,
+      "results": {
+        "unitPassed": 188,
+        "unitSkipped": 1,
+        "browserPassed": 27,
+        "browserSkippedNeedsRuntime": 12,
+        "pairedMockPassed": 7,
+        "offlineBV01Passed": 1
+      },
+      "artifacts": [
+        "logs/final-lab-unit.log",
+        "logs/final-lab-e2e.log",
+        "logs/offline-smoke.log",
+        "lab-axe.json"
+      ]
+    },
+    {
+      "gate": "G-UI-SOURCE",
+      "requirements": [
+        "UI-06",
+        "UI-08",
+        "UI-11"
+      ],
+      "status": "passed",
+      "profile": "browser/local Supabase/coordinator",
+      "commit": "8a52cb6d2d2c5b1a46199642699775caf704b21a",
+      "command": "pnpm test:unit; pnpm test:e2e; pnpm contracts:check; pnpm typecheck; pnpm lint; pnpm build; targeted review tests",
+      "exitCode": 0,
+      "results": {
+        "fullSuiteCommit": "d9ebd82",
+        "unitPassed": 137,
+        "browserPassed": 34,
+        "physicalPilotSkipped": 1,
+        "finalFixTargetedBrowserPassed": 8,
+        "axeReports": 43,
+        "axeViolations": 0
+      },
+      "artifacts": [
+        "source/index.json",
+        "source/review-fix.json",
+        "logs/source-final-e2e.log",
+        "logs/source-review-green.log"
+      ]
+    },
+    {
+      "gate": "G-UI-TRIAL",
+      "requirements": [
+        "UI-07",
+        "UI-08",
+        "UI-11"
+      ],
+      "status": "passed",
+      "profile": "isolated Node-RED/browser",
+      "commit": "23cc7cecf1dd503b9730e3573252e279b439649b",
+      "artifacts": [
+        "trial/index.json",
+        "trial/final-armed.json",
+        "logs/trial-brand-final-review-green.log",
+        "reviews/T01-review.md",
+        "reviews/final-review.md"
+      ],
+      "command": "npm test; smoke-review.js; smoke-browser.js; smoke-brand.js; final armed-state checks",
+      "exitCode": 0,
+      "results": {
+        "integrationPassed": 7,
+        "browserRegressionPassed": 6,
+        "matrixScans": 36,
+        "activatedScans": 3,
+        "finalArmedScans": 2,
+        "axeSeriousCritical": 0
+      }
+    },
+    {
+      "gate": "G-UI-A11Y",
+      "requirements": [
+        "UI-04",
+        "UI-09"
+      ],
+      "status": "not_run",
+      "profile": "full manual acceptance",
+      "verified": [
+        "automated rendered contrast/scans on recorded fixtures",
+        "responsive matrix",
+        "keyboard probes",
+        "reduced-motion",
+        "print ink"
+      ],
+      "remaining": [
+        "manual 200% browser zoom",
+        "exhaustive dialog focus return",
+        "guided usability"
+      ],
+      "reason": "Automated fixture scope is verified; full manual acceptance not completed."
+    },
+    {
+      "gate": "G-UI-PACKAGE",
+      "requirements": [
+        "UI-09",
+        "UI-10"
+      ],
+      "status": "passed",
+      "profile": "macOS Lab offline mock / Trial isolated LAN static package / Android APK compile",
+      "artifacts": [
+        "logs/offline-build.log",
+        "logs/offline-smoke.log",
+        "trial/export.json",
+        "trial/pack.json",
+        "trial/rollback.json",
+        "source/android-build-review-fix.json"
+      ],
+      "limits": "No Android native runtime or Linux clean-install acceptance."
+    },
+    {
+      "gate": "G-UI-ANDROID",
+      "status": "blocked_external",
+      "reason": "No connected enrolled test devices; APK build passed, device runtime not run."
+    },
+    {
+      "gate": "G-UI-PREVIEW",
+      "status": "passed",
+      "profile": "Vercel protected previews; anonymous application session",
+      "artifacts": [
+        "preview-lab-smoke.json",
+        "preview-lab-browser.json",
+        "preview-source-smoke.json",
+        "preview-source-browser.json"
+      ],
+      "hostedDataMutations": false
+    },
+    {
+      "gate": "G-UI-RELEASE",
+      "requirements": [
+        "UI-10",
+        "UI-12"
+      ],
+      "status": "not_run",
+      "reason": "Production promotion and operational acceptance are outside this implementation rollout; previews and local rollback rehearsals separately verified.",
+      "artifacts": [
+        "release.md",
+        "rollback-lab.json",
+        "trial/rollback.json"
+      ]
+    }
+  ],
+  "production": {
+    "lab": {
+      "commit": "357d669",
+      "deployment": "dpl_8mrCQrioNr5KxJemSLsipT69TdxY",
+      "brandVersion": "pre-brand-ui-v1"
+    },
+    "source": {
+      "commit": "5c86337",
+      "deployment": "dpl_CcBZLcno1LHvP3YvZu4GY8KQyhf2",
+      "brandVersion": "pre-brand-ui-v1"
+    },
+    "trial": {
+      "status": "unchanged",
+      "brandVersion": "pre-brand-ui-v1"
+    }
+  },
+  "finalCodeReview": "approved",
+  "finalCodeReviewArtifact": "reviews/final-review.md"
+}

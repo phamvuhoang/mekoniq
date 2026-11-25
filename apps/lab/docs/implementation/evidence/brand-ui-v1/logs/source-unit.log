@@ -1,0 +1,60 @@
+
+> mekoniq-platform@ test:unit /Users/hoangpham/source/prv/robot/source
+> node scripts/test-runner.mjs unit
+
+
+ RUN  v4.1.12 /Users/hoangpham/source/prv/robot/source
+
+ ✓ tests/unit/lab-regression-identity.test.ts (10 tests) 7028ms
+   ✓ recording rejects dirty source code before executing suites  698ms
+   ✓ recording rejects dirty lab code before executing suites  584ms
+   ✓ staged code changes remain dirty when the working copy has been restored to HEAD  606ms
+   ✓ the recorder rejects a clean mid-run revision change, including documentation-only commits  702ms
+   ✓ command checkpoints reject sampled code changes even if the final tree is restored  508ms
+   ✓ documentation/evidence outputs can change during recording and documentation-only Lab HEADs remain acceptable later  931ms
+   ✓ stored results are stale after a clean Lab code commit  738ms
+   ✓ the pinned source runtime lock is code identity, not mutable evidence metadata  857ms
+   ✓ source must stay fully clean and at the exact recorded HEAD even for documentation changes  954ms
+   ✓ recorded dirty Lab state and incomplete command checkpoints cannot be accepted  448ms
+ ✓ tests/unit/lab-sil-cli.test.ts (4 tests) 6525ms
+   ✓ run stops at the doctor gate on a host without the simulation stack and writes a not_run manifest (never a pass)  5449ms
+   ✓ verify: not_run is 2, zero samples or a failed assertion or a bad hash is 1, a complete sil bundle is 0  442ms
+   ✓ verify requires the declared negative-case assessment, safety rows and native provenance  361ms
+ ✓ tests/unit/native-arm-tunnel.test.ts (5 tests) 2318ms
+   ✓ owns a private per-run socket, pins host keys, forwards only bridge and cleans its own resources  448ms
+   ✓ bounds a silent SSH process and rejects early exit without reporting ready  841ms
+   ✓ marks an established tunnel failed when its SSH process exits and never respawns it  751ms
+ ✓ tests/unit/export-arm-controller.test.ts (3 tests) 1624ms
+   ✓ a signed export hashes every file, validates against the manifest schema and verifies under a policy with the key  1171ms
+ ✓ tests/unit/brand-app-build.test.ts (1 test) 432ms
+   ✓ filtered app builds validate canonical and public releases before compiling  431ms
+ ✓ tests/unit/brand-export.test.ts (3 tests) 1249ms
+   ✓ safe deterministic export and standalone receipt verification  760ms
+ ✓ tests/unit/cloud-network-cancellation.test.ts (3 tests) 144ms
+ ✓ tests/unit/backup-verification.test.ts (1 test) 138ms
+ ✓ tests/unit/pricing.test.ts (15 tests) 25ms
+ ✓ tests/unit/line-cancellation.test.ts (1 test) 32ms
+ ✓ tests/unit/native-sim-host-preflight.test.ts (2 tests) 18ms
+ ✓ tests/unit/native-fault-oracle.test.ts (45 tests) 15ms
+ ✓ tests/unit/business-date.test.ts (1 test) 14ms
+ ✓ tests/unit/lab-evidence-literal-refs.test.ts (1 test) 7ms
+ ✓ tests/unit/money.test.ts (5 tests) 15ms
+ ✓ tests/unit/brand-contrast.test.ts (3 tests) 5ms
+ ✓ tests/unit/restaurant-models.test.ts (8 tests) 9ms
+ ✓ tests/unit/printing.test.ts (4 tests) 7ms
+ ✓ tests/unit/lab-sil-routing.test.ts (1 test) 6ms
+ ✓ tests/unit/restaurant-domain.test.ts (6 tests) 5ms
+ ✓ tests/unit/lab-v2-readiness-probes.test.ts (3 tests) 5ms
+ ✓ tests/unit/brand-assets.test.ts (1 test) 3ms
+ ✓ tests/unit/lab-human-wait.test.ts (4 tests) 3ms
+ ✓ tests/unit/lab-v2-worker-argv.test.ts (1 test) 3ms
+ ✓ tests/unit/lab-process-metrics.test.ts (1 test) 3ms
+ ✓ tests/unit/guest-surfaces.test.ts (2 tests) 2ms
+ ✓ tests/unit/coordinator-health.test.ts (2 tests) 1ms
+ ✓ tests/unit/native-session.test.ts (1 test) 1ms
+
+ Test Files  28 passed (28)
+      Tests  137 passed (137)
+   Start at  19:42:07
+   Duration  24.12s (transform 950ms, setup 0ms, import 2.06s, tests 19.64s, environment 1ms)
+

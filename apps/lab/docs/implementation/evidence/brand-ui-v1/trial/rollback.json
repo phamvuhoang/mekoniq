@@ -1,0 +1,8 @@
+{
+  "temp": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/trial-brand-rollback-final-r1q8u5cr",
+  "baselineCommit": "6298f83",
+  "baseline8HashesMatched": true,
+  "restoredAllPublicFileHashesMatched": true,
+  "restoredFiles": 56,
+  "brandVersion": "1.0.1"
+}

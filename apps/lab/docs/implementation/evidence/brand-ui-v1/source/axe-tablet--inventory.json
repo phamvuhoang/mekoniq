@@ -1,0 +1,8 @@
+{
+  "route": "/inventory",
+  "viewport": {
+    "width": 1280,
+    "height": 1280
+  },
+  "violations": []
+}

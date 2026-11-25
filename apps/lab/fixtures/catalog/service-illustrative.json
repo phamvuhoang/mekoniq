@@ -1,0 +1,21 @@
+{
+  "id": "service-differential-illustrative",
+  "revision": 1,
+  "provenance": "illustrative",
+  "notice": "Original mathematical fixture. Prices are arbitrary planning inputs in VND, not supplier quotations. Dimensions, electrical data and masses are unmeasured and must not be used as hardware acceptance evidence.",
+  "nominalVolts": 24,
+  "usableFraction": 0.8,
+  "batteryDerating": 0.9,
+  "averageBatteryWatts": 120,
+  "items": [
+    {"id":"base","name":"Chassis","massKg":18,"priceMinor":"12000000","widthM":0.55,"lengthM":0.6,"heightM":0.15},
+    {"id":"drive","name":"Drive and wheels","massKg":6,"priceMinor":"5000000","widthM":0.5,"lengthM":0.2,"heightM":0.15},
+    {"id":"battery","name":"Battery","massKg":4.4,"priceMinor":"3200000","widthM":0.2,"lengthM":0.25,"heightM":0.12},
+    {"id":"power","name":"Power distribution","massKg":0.8,"priceMinor":"700000","widthM":0.12,"lengthM":0.1,"heightM":0.05},
+    {"id":"compute","name":"Compute","massKg":0.5,"priceMinor":"1800000","widthM":0.1,"lengthM":0.1,"heightM":0.03},
+    {"id":"lidar","name":"LiDAR","massKg":0.3,"priceMinor":null,"widthM":0.08,"lengthM":0.08,"heightM":0.06},
+    {"id":"depth","name":"Depth sensor","massKg":0.2,"priceMinor":null,"widthM":0.09,"lengthM":0.03,"heightM":0.03},
+    {"id":"tray","name":"Tray","massKg":1.1,"priceMinor":"450000","widthM":0.45,"lengthM":0.4,"heightM":0.02},
+    {"id":"tablet","name":"Tablet","massKg":0.7,"priceMinor":null,"widthM":0.2,"lengthM":0.12,"heightM":0.01}
+  ]
+}

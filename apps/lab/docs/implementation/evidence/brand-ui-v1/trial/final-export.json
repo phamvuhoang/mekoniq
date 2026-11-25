@@ -1,0 +1,12 @@
+{
+  "temp": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/trial-brand-export-1bb3yor1",
+  "preserved": {
+    "transport.js": "fe069aa3897e27e1352c4ce8d12671558c790054f3db891842ca841ccbe3433b",
+    "index.html": "38ecbc9fb71d6036452dd590f450239adfe808d39a900282c6440772bbe69129",
+    "showcase.html": "2b1aa81fea4cea9e43d5e9c0f98d57b75d414e13f51e5c141a7767bbeb8d6e86"
+  },
+  "publicFilesMatch": true,
+  "matchedPublicFiles": 54,
+  "implementationCommit": "23cc7cecf1dd503b9730e3573252e279b439649b",
+  "currentBrandCssSha256": "006f6f2a75375df506d6579f1925c58e64f113168db96952ed17bdf656f84c64"
+}

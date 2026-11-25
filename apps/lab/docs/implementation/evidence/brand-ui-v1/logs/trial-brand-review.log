@@ -1,0 +1,9 @@
+✓ simulator broker outage silent
+✓ late robot gets retained status, battery, Wi-Fi, map
+✓ MQTT-only redeploy restores subscriptions
+✓ topic change invalidates old map
+✓ removed topic cannot overwrite map
+✓ real outage alerts; last real robot removal resolves
+✓ live delivery kitchen → T01 round trip
+SMOKE_OK /var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/robot-review-btmbm8
+HOLD for browser tests
