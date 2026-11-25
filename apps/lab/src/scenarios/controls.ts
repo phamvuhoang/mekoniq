@@ -211,7 +211,8 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
    if(r.reportDigest!==digest)throw new TwinRuntimeError('MODEL_VALIDATION_DIGEST_MISMATCH',[],502);
    return r;
   },
-  compileElectrical:(ref,design)=>request<ElectricalBundleV1>('/engineering/electrical',{ref,design}),
+  // the compile answers with a receipt (state, digest, problems); the page shows the bundle the server holds under that digest
+  async compileElectrical(ref,design){const r=await request<{digest:string}>('/engineering/electrical',{ref,design});return request<ElectricalBundleV1>(`/engineering/electrical/${encodeURIComponent(r.digest)}`);},
   compareElectrical:digests=>request<TcoComparisonV1>('/engineering/electrical/compare',{digests}),
   packageElectrical:digest=>request<{manifest:HardwareCandidateV1;files:{path:string;bytes:number;contentBase64:string}[]}>(`/engineering/electrical/${encodeURIComponent(digest)}/package`),
   engineeringManifest:digest=>request<EngineeringManifest>(`/engineering/bundles/${encodeURIComponent(digest)}/manifest`),

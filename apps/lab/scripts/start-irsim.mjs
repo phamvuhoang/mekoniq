@@ -94,14 +94,16 @@ async function writeCatalog(fixtureFile,catalog,id,source){
  const entries=[];
  for(const [digest,c] of Object.entries(fixture.components)){const file=`components/${digest}.json`;await writeFile(join(catalog,file),JSON.stringify(c));entries.push({file,digest});}
  for(const [digest,m] of Object.entries(fixture.models??{}))await writeFile(join(catalog,'models',`${digest}.json`),JSON.stringify(m));
- // R5: with a source tree the catalog also carries the device profiles, their documents and the electrical fixtures, so the runtime advertises electrical_bundle_v1
- let deviceProfiles;
+ // R5: with a source tree the catalog is the source's whole catalog (parts, models, device profiles, their documents, the electrical fixtures) plus this fixture's parts;
+ // a device profile names its part by digest, so the profiles load only next to the parts they describe, and the runtime then advertises electrical_bundle_v1
+ let extra={};
  if(source){
-  const base=join(source,'robotics/catalog');
-  deviceProfiles=JSON.parse(await readFile(join(base,'catalog.json'),'utf8')).deviceProfiles;
-  for(const d of ['devices','documents','electrical','descriptions'])await cp(join(base,d),join(catalog,d),{recursive:true}).catch(e=>{if(e.code!=='ENOENT')throw e;});
+  const base=join(source,'robotics/catalog'),all=JSON.parse(await readFile(join(base,'catalog.json'),'utf8'));
+  await cp(base,catalog,{recursive:true,filter:f=>f!==join(base,'catalog.json')});
+  const have=new Set(entries.map(e=>e.digest));for(const e of all.components??[])if(!have.has(e.digest))entries.push(e);
+  extra={deviceProfiles:all.deviceProfiles??[],quotes:all.quotes??[]};
  }
- await writeFile(join(catalog,'catalog.json'),JSON.stringify({schemaVersion:1,id,components:entries,quotes:[],...deviceProfiles?{deviceProfiles}:{}}));
+ await writeFile(join(catalog,'catalog.json'),JSON.stringify({schemaVersion:1,id,components:entries,quotes:[],...extra}));
  return catalog;
 }
 /** Every check before a process is spawned; returns the runtime argv and env for the verified tools. */
@@ -128,7 +130,7 @@ export async function prepareWebots(o,launch_,lock,track=()=>{}){
  const {tool,root}=await verifiedTools(o,launch_,lock,'webots_worker','the pinned runtime predates the Webots provider; import an export that carries the webots_worker tool.',[['webots_worker',o.webotsPython,'WEBOTS'],['irsim_worker',o.irsimPython,'IRSIM']],track);
  const host=await webotsProblem(o.webotsHome);
  if(host)throw new Error(host);
- const catalog=await writeCatalog(join(root('webots_worker'),'fixtures/serve-3d-v1/serve-3d-components.json'),join(launch_.dataDir,'webots-catalog'),'serve-3d-v1');
+ const catalog=await writeCatalog(join(root('webots_worker'),'fixtures/serve-3d-v1/serve-3d-components.json'),join(launch_.dataDir,'webots-catalog'),'serve-3d-v1',o.source);
  const simulation=join(o.source,tool('description_helper').root,'..');
  return {readyMs:120000,backends:[...MOCK_BACKENDS,WEBOTS_BACKEND,WEBOTS_ARM_BACKEND].join(', '),env:{MEKONIQ_LAB_WEBOTS:'1',MEKONIQ_WEBOTS_HOME:o.webotsHome},
   args:['--engineering-catalog',catalog,'--engineering-simulation',simulation,'--engineering-python',o.irsimPython,'--webots-python',o.webotsPython,'--webots-worker',root('webots_worker'),

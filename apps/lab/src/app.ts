@@ -970,7 +970,7 @@ ${p ? `<label class="field-label" for="world-object">${tr("Chọn đối tượn
       const a = b.dataset.action,
         v = b.dataset.value;
       if (a?.startsWith("twin-")) return this.twin.click(a, v);
-      if (a?.startsWith("asm-")) return this.assembly.click(a, v);
+      if (a?.startsWith("asm-") || a?.startsWith("el-")) return this.assembly.click(a, v);
       if (a === "locale") {
         setLocale(v as Locale);
         this.render();
