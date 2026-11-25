@@ -275,6 +275,7 @@ export function createEngineeringService(options:EngineeringServiceOptions){
   async packageElectrical(sessionId:string,digest:string){
    const bundle=await this.readElectrical(sessionId,digest);
    if(bundle.state!=='compiled')throw new EngineeringError('ELECTRICAL_BUNDLE_BLOCKED',409,bundle.checks.filter(c=>c.level==='blocking').map(c=>c.ruleId).slice(0,20));
+   if(!bundle.driveModelDraft)throw new EngineeringError('DRIVE_MODEL_DRAFT_MISSING',409);
    const design=await electricalStore.readDesign(sessionId,digest);
    if(!design)throw new EngineeringError('NOT_FOUND',404);
    const cat=await loadedCatalog(),docs=await loadElectricalDocuments(options.catalogRoot),all=Object.values(cat.deviceProfiles);
