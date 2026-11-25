@@ -16,11 +16,11 @@ Image R2b vẫn `null` (chưa build), WEB05 `not_run` theo R76 vì Docker không
 
 ## Shared cell, replay và bằng chứng ngày16/11/2026
 
-Bản ghi sau N1 dùng Source `0d46403` / Lab `7c97b20`, runtime `73ca9b…`, build `1f968cd6…`; commit tài liệu sau đó có identity riêng. [Kết quả hiện tại](../source/docs/implementation/web-lab-to-physical/post-n1-final-recording/status.md), [tái hiện đúng tuple](../source/docs/implementation/web-lab-to-physical/post-n1-final-recording/reproduce.md) và [phạm vi còn mở](../source/docs/implementation/web-lab-to-physical/post-n1-final-recording/dispositions.md) giữ mọi lần failed/not_run. Whole-branch/scoped/N1 review giữ verdict lịch sử theo tuple/scope; capture mới và bốn assertions mock vẫn chưa giải quyết, không có nghĩa mọi gate đã đóng. Đây vẫn là mô phỏng `accepted:false` / `not_calibrated`, chưa nghiệm thu Linux/native/phần cứng hay D0.
+Bản ghi sau N1 dùng Source `0d46403` / Lab `7c97b20`, runtime `73ca9b…`, build `1f968cd6…`; commit tài liệu sau đó có identity riêng. [Kết quả hiện tại](../../docs/implementation/web-lab-to-physical/post-n1-final-recording/status.md), [tái hiện đúng tuple](../../docs/implementation/web-lab-to-physical/post-n1-final-recording/reproduce.md) và [phạm vi còn mở](../../docs/implementation/web-lab-to-physical/post-n1-final-recording/dispositions.md) giữ mọi lần failed/not_run. Whole-branch/scoped/N1 review giữ verdict lịch sử theo tuple/scope; capture mới và bốn assertions mock vẫn chưa giải quyết, không có nghĩa mọi gate đã đóng. Đây vẫn là mô phỏng `accepted:false` / `not_calibrated`, chưa nghiệm thu Linux/native/phần cứng hay D0.
 
 ### Một world tay máy + AMR + hai cốc
 
-Cần Node24.22.2/pnpm10.32.1, runtime đã import đúng pin và các môi trường Python3.11 đúng lock trong Source sibling (`.venv-mujoco`, `.venv-irsim`). Launcher kiểm dependency/closure/port; không tự cài, tải, đổi mô hình hay chuyển sang backend khác.
+Cần Node24.22.2/pnpm10.32.1, runtime đã import đúng pin và các môi trường Python3.11 đúng lock ở root repository (`.venv-mujoco`, `.venv-irsim`). Launcher kiểm dependency/closure/port; không tự cài, tải, đổi mô hình hay chuyển sang backend khác.
 
 ```sh
 pnpm check:source
@@ -196,22 +196,22 @@ Runtime chỉ bind `127.0.0.1:4176`; Vite proxy cùng origin. Không dùng cổn
 
 Revision runtime thực đang cài nằm trong [`config/source-runtime.lock.json`](config/source-runtime.lock.json): source commit, schema hash, artifact SHA-256 và protocol majors. Lab dùng protocol 1 cho S01 và 2 cho twin. `.runtime/rollback.lock.json` giữ đúng một pin trước đó; muốn quay xa hơn cần export/import revision cũ. Runtime không tự theo source HEAD. Pin hiện tại lấy từ lock này, không từ revision trong các báo cáo lịch sử. Kết quả đợt BV01 continuation nằm trong [evidence index](docs/implementation/evidence/bv01-native-simulation/README.md); [bản ghi Plan 01](docs/reviews/2026-11-05-plan-01-remediation.md) giữ hash và kết quả của đợt cũ.
 
-Dùng Node 24, dependencies của source và một checkout sạch. Chạy **từ thư mục source**:
+Dùng Node 24, dependencies của repository và một checkout sạch ở phía source (mọi đường dẫn ngoài `apps/lab`). Chạy **từ root repository**:
 
 ```sh
 node scripts/export-lab-runtime.mjs /tmp/mekoniq-source-runtime-artifact
 ```
 
-Nếu `../source/` có thay đổi chưa commit, thêm `--clean-checkout`: exporter tạo git worktree tạm tại `HEAD` đã commit, cài dependencies `--frozen-lockfile --offline` từ store pnpm cục bộ, export rồi xóa worktree; không đụng tới thay đổi đang làm dở. Không dùng `--allow-dirty` cho artifact sẽ import. Exporter cũng từ chối bundle import thứ khác ngoài built-in của Node hoặc chứa mẫu khóa bí mật.
+Nếu phía source (ngoài `apps/lab`) có thay đổi chưa commit, thêm `--clean-checkout`: exporter tạo git worktree tạm tại `HEAD` đã commit, cài dependencies `--frozen-lockfile --offline` từ store pnpm cục bộ, export rồi xóa worktree; không đụng tới thay đổi đang làm dở. Không dùng `--allow-dirty` cho artifact sẽ import. Exporter cũng từ chối bundle import thứ khác ngoài built-in của Node hoặc chứa mẫu khóa bí mật.
 
-Từ `lab/`:
+Từ `apps/lab/`:
 
 ```sh
 node scripts/import-runtime.mjs /tmp/mekoniq-source-runtime-artifact
 pnpm check:source
 ```
 
-Importer là một giao dịch: kiểm metadata, protocol major (Lab hỗ trợ 1 và 2; major lạ bị từ chối `UNSUPPORTED_PROTOCOL`), SHA-256 runtime, băm lại các schema hợp đồng đi kèm so với `schemaHash`, chép vào `.runtime/<sha256>/` qua thư mục staging rồi mới đổi lock bằng một lần rename. Lỗi ở bất kỳ bước nào giữ nguyên lock và artifact cũ. Import lại cùng một SHA thì giữ nguyên thư mục đã kiểm hash. Bản ghi rollback chỉ được ghi (nguyên tử) sau khi lock mới đã thay xong. Importer từ chối artifact build từ source bẩn. Quay lại pin trước: `node scripts/import-runtime.mjs --rollback` (artifact cũ vẫn nằm trong `.runtime/`). Sau mỗi lần đổi lock, chạy `pnpm test`, `pnpm build ` và `pnpm test:runtime-e2e`. `pnpm check:source` kiểm tính toàn vẹn artifact đã pin, không kiểm đó có phải HEAD mới nhất hay không. Runtime đóng gói chạy độc lập, không đọc source đang được chỉnh sửa ở bên cạnh. Xem thêm [README runtime source](../source/packages/lab-runtime/README.md) và [bằng chứng cập nhật W11](docs/implementation/evidence/2026-11-04-source-w11.md).
+Importer là một giao dịch: kiểm metadata, protocol major (Lab hỗ trợ 1 và 2; major lạ bị từ chối `UNSUPPORTED_PROTOCOL`), SHA-256 runtime, băm lại các schema hợp đồng đi kèm so với `schemaHash`, chép vào `.runtime/<sha256>/` qua thư mục staging rồi mới đổi lock bằng một lần rename. Lỗi ở bất kỳ bước nào giữ nguyên lock và artifact cũ. Import lại cùng một SHA thì giữ nguyên thư mục đã kiểm hash. Bản ghi rollback chỉ được ghi (nguyên tử) sau khi lock mới đã thay xong. Importer từ chối artifact build từ source bẩn. Quay lại pin trước: `node scripts/import-runtime.mjs --rollback` (artifact cũ vẫn nằm trong `.runtime/`). Sau mỗi lần đổi lock, chạy `pnpm test`, `pnpm build ` và `pnpm test:runtime-e2e`. `pnpm check:source` kiểm tính toàn vẹn artifact đã pin, không kiểm đó có phải HEAD mới nhất hay không. Runtime đóng gói chạy độc lập, không đọc source đang được chỉnh sửa ở bên cạnh. Xem thêm [README runtime source](../../packages/lab-runtime/README.md) và [bằng chứng cập nhật W11](docs/implementation/evidence/2026-11-04-source-w11.md).
 
 ## Kiểm thử
 
@@ -240,17 +240,17 @@ Code W00–W11 trong source không tự trở thành scenario hoặc backend Lab
 
 ## Tài liệu
 
-- **[Đề xuất LinkForge + IR-SIM — 2026-11-08](docs/plans/2026-11-08-linkforge-irsim.md)**: nghiên cứu, spec và plan tích hợp model validation/2D navigation trên Mac. Đề xuất lịch sử; provider IR-SIM/LinkForge và các bản ghi phần mềm hiện có được nêu trong [trạng thái cuối](../source/docs/implementation/web-lab-to-physical/final-recording-status.md). R-MOCK, native và hardware vẫn có gate nghiệm thu riêng.
+- **[Đề xuất LinkForge + IR-SIM — 2026-11-08](docs/plans/2026-11-08-linkforge-irsim.md)**: nghiên cứu, spec và plan tích hợp model validation/2D navigation trên Mac. Đề xuất lịch sử; provider IR-SIM/LinkForge và các bản ghi phần mềm hiện có được nêu trong [trạng thái cuối](../../docs/implementation/web-lab-to-physical/final-recording-status.md). R-MOCK, native và hardware vẫn có gate nghiệm thu riêng.
 - **[Physical Robot Lab — lắp ráp và mô phỏng vật lý](docs/specs/2026-11-06-physical-robot-lab/README.md)**: đã có contracts/catalog, resolver/compiler, bundle gateway, trang Lắp ráp, lưu/nhập/xuất archive và đánh giá bằng chứng. Runtime engineering bật bằng các cờ opt-in; compile preview không phải một lần chạy vật lý. Xem [kế hoạch triển khai](docs/plans/2026-11-06-physical-robot-lab/README.md) và [bằng chứng, giới hạn hiện tại](docs/implementation/evidence/physical-robot-lab/README.md). Linux/Gazebo/MoveIt, G1–G3 và nghiệm thu phần cứng vẫn chưa hoàn thành.
 - [Remediation Plan 01 và trạng thái các gate](docs/reviews/2026-11-05-plan-01-remediation.md).
 - [Tương thích runtime và giới hạn bằng chứng](docs/simulation-compatibility.md); [record pin/hash máy đọc](config/simulation-compatibility.json).
 
 - **[Đề xuất nâng cấp Digital Twin v2 — 2026-11-05](docs/specs/2026-11-05-digital-twin/README.md)**: food delivery + coffee cell (máy pha, đá/sữa, arm), mock/simulation/hardware; [bộ implementation plan](docs/plans/2026-11-05-digital-twin/README.md). Plan 01 có implementation mock; Plans 02/03 và các gate simulation/hardware giữ phạm vi riêng.
 
-- [Giới thiệu Lab bằng hình ảnh — HTML tương tác, mở offline](../source/artifacts/robot-lab.html): 9 trang, Việt/Nhật/Anh; cấu hình robot, mặt bằng, S01, thử lỗi, replay và xuất draft.
+- [Giới thiệu Lab bằng hình ảnh — HTML tương tác, mở offline](../../artifacts/robot-lab.html): 9 trang, Việt/Nhật/Anh; cấu hình robot, mặt bằng, S01, thử lỗi, replay và xuất draft.
 - [Khảo sát Drone Lab/OOMWOO và code nền](docs/research/2026-11-01-baseline-and-references.md).
 - [Spec sản phẩm, trải nghiệm, kiến trúc](docs/specs/2026-11-01-mekoniq-robot-lab.md).
 - [Hợp đồng source và đường tới robot thật](docs/specs/2026-11-01-source-integration.md).
 - [Plan L00–L11 và các gate nghiệm thu](docs/plans/2026-11-01-mekoniq-robot-lab.md).
 
-`lab/` và `source/` là Git repository riêng. `trial/` cùng robot đang vận hành không bị thay đổi bởi Lab.
+Lab nằm trong repository `mekoniq` tại `apps/lab` (thành viên workspace pnpm, một lockfile ở root). Định danh theo đường dẫn: "commit source" là commit cuối cùng đụng tới đường dẫn ngoài `apps/lab`, "commit Lab" là commit cuối cùng đụng tới `apps/lab` (`scripts/repo-identity.mjs`). Quy tắc pin không đổi: sau một commit source đổi runtime, schema hoặc portable tools thì export, import và commit `chore: pin source runtime <sha>` chỉ đụng `apps/lab`; recorder từ chối tới khi pin bằng commit source. `trial/` cùng robot đang vận hành không bị thay đổi bởi Lab.

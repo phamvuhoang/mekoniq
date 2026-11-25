@@ -2,9 +2,9 @@
 
 This package is a **development-only** local business simulator. It reuses `createProductionRegistry`, `authorizeVenueCommand`, `processCommand`, the production SQLite journal, outbox dispatcher, and `SimulatorAdapter`. It does not import `tests/support`, connect to robot endpoints, or provide physical safety evidence.
 
-The runtime is integrated with the W00–W11 code on `source/main`. The separate `lab/` repository selects an exported artifact through `config/source-runtime.lock.json`; updating source does not update an installed Lab runtime. Synthetic waypoints and the robot's `bindingRevision` come from the same Lab world revision. Observations use the server-owned `simulator:sim-1` identity on `lab-coordinator`, as required by W06 observer ownership checks. Production admission and observation checks remain unchanged. The presence of native adapters and later restaurant modules in source does not enable additional Lab backends or scenarios; this gateway still exposes only S01 business simulation. Source release/UAT acceptance remains governed by the [implementation gates](../../docs/implementation/gates/D-full-scope.md).
+The runtime is integrated with the W00–W11 code on `source/main`. The Lab (`apps/lab` in this repository) selects an exported artifact through `config/source-runtime.lock.json`; updating source does not update an installed Lab runtime. Synthetic waypoints and the robot's `bindingRevision` come from the same Lab world revision. Observations use the server-owned `simulator:sim-1` identity on `lab-coordinator`, as required by W06 observer ownership checks. Production admission and observation checks remain unchanged. The presence of native adapters and later restaurant modules in source does not enable additional Lab backends or scenarios; this gateway still exposes only S01 business simulation. Source release/UAT acceptance remains governed by the [implementation gates](../../docs/implementation/gates/D-full-scope.md).
 
-Use Node 24. From a clean source checkout:
+Use Node 24. From a clean source checkout (the source side is every path outside `apps/lab`; the manifest's `sourceCommit` is the last commit touching it, see `scripts/repo-identity.mjs`):
 
 ```sh
 node scripts/export-lab-runtime.mjs /tmp/mekoniq-lab-runtime
