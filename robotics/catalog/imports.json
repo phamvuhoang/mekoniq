@@ -166,5 +166,21 @@
     "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
     "license": "BSD-3-Clause",
     "file": "documents/d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55"
+  },
+  {
+    "documentId": "vendor:hp5140",
+    "url": "https://www.orientalmotor.com/products/pdfs/opmanuals/HP-5140-8E.pdf",
+    "sha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd",
+    "commit": "n/a (vendor PDF)",
+    "license": "unreviewed",
+    "file": "documents/7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+  },
+  {
+    "documentId": "vendor:hp5143",
+    "url": "https://www.orientalmotor.com/products/pdfs/opmanuals/HP-5143-3E.pdf",
+    "sha256": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258",
+    "commit": "n/a (vendor PDF)",
+    "license": "unreviewed",
+    "file": "documents/03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
   }
 ]

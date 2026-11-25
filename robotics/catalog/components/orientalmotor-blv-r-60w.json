@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "orientalmotor-blv-r-60w",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "Oriental Motor",
+    "family": "BLV R series 60 W brushless motor (round shaft)",
+    "sku": "BLMR260HK-A",
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [],
+  "models": [],
+  "documents": [
+    {
+      "id": "hp5140",
+      "url": "https://www.orientalmotor.com/products/pdfs/opmanuals/HP-5140-8E.pdf",
+      "digest": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd",
+      "license": "unreviewed"
+    }
+  ]
+}

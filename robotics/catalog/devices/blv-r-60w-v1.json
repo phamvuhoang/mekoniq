@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "documentType": "device-profile",
+  "id": "blv-r-60w-v1",
+  "revision": 1,
+  "component": {
+    "id": "orientalmotor-blv-r-60w",
+    "revision": "1",
+    "digest": "38e9860cfd6fdaa3cabd3abe6b0d9243f4f5d3511dd19f61ea49c24a899e636d"
+  },
+  "variant": {
+    "orderCode": "BLMR260HK-A",
+    "hardwareRevision": null,
+    "firmware": null
+  },
+  "kind": "motor",
+  "documents": [
+    {
+      "id": "hp5140",
+      "kind": "manual",
+      "title": "BLV Series R Type Operating Manual, Installation and Connection Edition (HP-5140-8E)",
+      "revision": "8E",
+      "url": "https://www.orientalmotor.com/products/pdfs/opmanuals/HP-5140-8E.pdf",
+      "digest": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd",
+      "license": "unreviewed"
+    }
+  ],
+  "connectors": [
+    {
+      "id": "MOTOR",
+      "label": "Motor cable to driver CN2",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "MOTOR",
+          "role": "motor_phase",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.17: motor cable into CN2; pin list not in this manual",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ENC",
+      "label": "Encoder and brake cable to driver CN3",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "ENC/MB",
+          "role": "encoder",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.17: encoder and brake cable into CN3; pin list not in this manual",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        }
+      ]
+    }
+  ],
+  "ioPoints": [],
+  "interfaces": [],
+  "drive": null,
+  "digest": "ddfef645872ce5dbc0ee1284518ca5e3a76a4e7f949626d1ae8807385b94c8a2"
+}

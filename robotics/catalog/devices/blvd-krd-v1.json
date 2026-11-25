@@ -1,0 +1,1059 @@
+{
+  "schemaVersion": 1,
+  "documentType": "device-profile",
+  "id": "blvd-krd-v1",
+  "revision": 1,
+  "component": {
+    "id": "orientalmotor-blvd-krd",
+    "revision": "1",
+    "digest": "71a21f08beef8232735f88b40f206aeb1629813a14f65923f248ab72a2e96131"
+  },
+  "variant": {
+    "orderCode": "BLVD-KRD",
+    "hardwareRevision": null,
+    "firmware": null
+  },
+  "kind": "servo_drive",
+  "documents": [
+    {
+      "id": "hp5140",
+      "kind": "manual",
+      "title": "BLV Series R Type Operating Manual, Installation and Connection Edition (HP-5140-8E)",
+      "revision": "8E",
+      "url": "https://www.orientalmotor.com/products/pdfs/opmanuals/HP-5140-8E.pdf",
+      "digest": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd",
+      "license": "unreviewed"
+    },
+    {
+      "id": "hp5143",
+      "kind": "manual",
+      "title": "BLV Series R Type Driver CANopen Communication Profile (HP-5143-3E)",
+      "revision": "3E",
+      "url": "https://www.orientalmotor.com/products/pdfs/opmanuals/HP-5143-3E.pdf",
+      "digest": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258",
+      "license": "unreviewed"
+    }
+  ],
+  "connectors": [
+    {
+      "id": "CN1",
+      "label": "Main power supply",
+      "matingPart": "F32FSS-03V-KX with LF3F-41GF-P2.0 contacts (J.S.T.); cable LC03D06A sold separately",
+      "pins": [
+        {
+          "pin": "1",
+          "name": "VIN",
+          "role": "power",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.16, CN1 pin assignment",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "2",
+          "name": "GND",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.16, CN1 pin assignment",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "3",
+          "name": "FG",
+          "role": "pe",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.16, CN1 pin assignment",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        }
+      ]
+    },
+    {
+      "id": "CN2",
+      "label": "Motor",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "MOTOR",
+          "role": "motor_phase",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.17: motor cable or connection cable into CN2; pin list not in this manual",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        }
+      ]
+    },
+    {
+      "id": "CN3",
+      "label": "Encoder / electromagnetic brake",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "ENC/MB",
+          "role": "encoder",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.17: encoder and brake connector CN3; pin list not in this manual",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        }
+      ]
+    },
+    {
+      "id": "CN4",
+      "label": "I/O, CAN, RS-485, power removal",
+      "matingPart": "DFMC 0,5/14-ST-2,54 (PHOENIX CONTACT), AWG26 to 20",
+      "pins": [
+        {
+          "pin": "1",
+          "name": "OUT0+",
+          "role": "do",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "2",
+          "name": "OUT0-",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "3",
+          "name": "OUT1+",
+          "role": "do",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "4",
+          "name": "OUT1-",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "5",
+          "name": "CAN_L",
+          "role": "bus",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "6",
+          "name": "CAN_H",
+          "role": "bus",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "7",
+          "name": "CAN_GND",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "8",
+          "name": "485GND",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "9",
+          "name": "TR+",
+          "role": "bus",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "10",
+          "name": "TR-",
+          "role": "bus",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "11",
+          "name": "HWTO1+",
+          "role": "sto",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "12",
+          "name": "HWTO1-",
+          "role": "sto",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "13",
+          "name": "0V",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "14",
+          "name": "EDM-",
+          "role": "do",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "15",
+          "name": "IN-COM",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "16",
+          "name": "IN0",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "17",
+          "name": "IN1",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "18",
+          "name": "IN2",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "19",
+          "name": "IN3",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "20",
+          "name": "NET-VIN",
+          "role": "power",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "21",
+          "name": "NET-GND",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "22",
+          "name": "485GND",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "23",
+          "name": "TR+",
+          "role": "bus",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "24",
+          "name": "TR-",
+          "role": "bus",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "25",
+          "name": "+V",
+          "role": "power",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "26",
+          "name": "HWTO2+",
+          "role": "sto",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "27",
+          "name": "HWTO2-",
+          "role": "sto",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        },
+        {
+          "pin": "28",
+          "name": "EDM+",
+          "role": "do",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.18, CN4 pin assignments",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        }
+      ]
+    }
+  ],
+  "ioPoints": [
+    {
+      "pointId": "IN0",
+      "direction": "input",
+      "pin": "CN4/16",
+      "commonPin": "CN4/15",
+      "electrical": {
+        "type": "dry_contact_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "ID-SEL0"
+      ],
+      "defaultFunction": "ID-SEL0",
+      "reassignable": true,
+      "assignmentPersistence": "retained",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": "HP-5143-3E p.113: object 60FDh reports limit, home and HWTO status and the remote outputs, not the state of this input; the Function Edition manual is not pinned",
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.18 (CN4 pin list, initial functions in parentheses), p.19-20 (photocoupler inputs), p.35 (12 to 30 VDC)",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    },
+    {
+      "pointId": "IN1",
+      "direction": "input",
+      "pin": "CN4/17",
+      "commonPin": "CN4/15",
+      "electrical": {
+        "type": "dry_contact_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "ID-SEL1"
+      ],
+      "defaultFunction": "ID-SEL1",
+      "reassignable": true,
+      "assignmentPersistence": "retained",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": "HP-5143-3E p.113: object 60FDh reports limit, home and HWTO status and the remote outputs, not the state of this input; the Function Edition manual is not pinned",
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.18 (CN4 pin list, initial functions in parentheses), p.19-20 (photocoupler inputs), p.35 (12 to 30 VDC)",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    },
+    {
+      "pointId": "IN2",
+      "direction": "input",
+      "pin": "CN4/18",
+      "commonPin": "CN4/15",
+      "electrical": {
+        "type": "dry_contact_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "STOP"
+      ],
+      "defaultFunction": "STOP",
+      "reassignable": true,
+      "assignmentPersistence": "retained",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": "HP-5143-3E p.113: object 60FDh reports limit, home and HWTO status and the remote outputs, not the state of this input; the Function Edition manual is not pinned",
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.18 (CN4 pin list, initial functions in parentheses), p.19-20 (photocoupler inputs), p.35 (12 to 30 VDC)",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    },
+    {
+      "pointId": "IN3",
+      "direction": "input",
+      "pin": "CN4/19",
+      "commonPin": "CN4/15",
+      "electrical": {
+        "type": "dry_contact_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "FREE"
+      ],
+      "defaultFunction": "FREE",
+      "reassignable": true,
+      "assignmentPersistence": "retained",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": "HP-5143-3E p.113: object 60FDh reports limit, home and HWTO status and the remote outputs, not the state of this input; the Function Edition manual is not pinned",
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.18 (CN4 pin list, initial functions in parentheses), p.19-20 (photocoupler inputs), p.35 (12 to 30 VDC)",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    },
+    {
+      "pointId": "OUT0",
+      "direction": "output",
+      "pin": "CN4/1",
+      "commonPin": "CN4/2",
+      "electrical": {
+        "type": "isolated_transistor_output",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": {
+          "value": 0.01,
+          "unit": "A",
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.20 and p.35: 12 to 30 VDC, 10 mA or less, saturated voltage 2.0 VDC maximum",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        }
+      },
+      "functions": [
+        "COMM-PWR"
+      ],
+      "defaultFunction": "COMM-PWR",
+      "reassignable": true,
+      "assignmentPersistence": "retained",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": "HP-5143-3E p.114: 60FEh writes remote inputs; whether it can drive this output depends on the function assignment in the Function Edition manual, which is not pinned",
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.18 and p.20",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    },
+    {
+      "pointId": "OUT1",
+      "direction": "output",
+      "pin": "CN4/3",
+      "commonPin": "CN4/4",
+      "electrical": {
+        "type": "isolated_transistor_output",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": {
+          "value": 0.01,
+          "unit": "A",
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.20 and p.35: 12 to 30 VDC, 10 mA or less, saturated voltage 2.0 VDC maximum",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        }
+      },
+      "functions": [
+        "ALM-B"
+      ],
+      "defaultFunction": "ALM-B",
+      "reassignable": true,
+      "assignmentPersistence": "retained",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": "HP-5143-3E p.114: 60FEh writes remote inputs; whether it can drive this output depends on the function assignment in the Function Edition manual, which is not pinned",
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.18 and p.20",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    },
+    {
+      "pointId": "HWTO1",
+      "direction": "input",
+      "pin": "CN4/11",
+      "commonPin": "CN4/12",
+      "electrical": {
+        "type": "dry_contact_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "power_removal"
+      ],
+      "defaultFunction": "power_removal",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": "HP-5143-3E p.113: either HWTO input being active is reported together as bit 3 of 60FDh",
+        "updatePeriodMs": null
+      },
+      "safety": {
+        "function": "safe_input",
+        "claim": "Provide individual contacts for operating the HWTO1 input and the HWTO2 input.",
+        "documentId": "hp5140",
+        "locator": "HP-5140-8E p.23",
+        "certificate": null
+      },
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.23, input voltage 12 to 30 VDC",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    },
+    {
+      "pointId": "HWTO2",
+      "direction": "input",
+      "pin": "CN4/26",
+      "commonPin": "CN4/27",
+      "electrical": {
+        "type": "dry_contact_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "power_removal"
+      ],
+      "defaultFunction": "power_removal",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": "HP-5143-3E p.113: either HWTO input being active is reported together as bit 3 of 60FDh",
+        "updatePeriodMs": null
+      },
+      "safety": {
+        "function": "safe_input",
+        "claim": "Provide individual contacts for operating the HWTO1 input and the HWTO2 input.",
+        "documentId": "hp5140",
+        "locator": "HP-5140-8E p.23",
+        "certificate": null
+      },
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.23, input voltage 12 to 30 VDC",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    },
+    {
+      "pointId": "EDM",
+      "direction": "output",
+      "pin": "CN4/28",
+      "commonPin": "CN4/14",
+      "electrical": {
+        "type": "isolated_transistor_output",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": {
+          "value": 0.01,
+          "unit": "A",
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "hp5140",
+            "revision": "8E",
+            "locator": "HP-5140-8E p.23: 10 mA or less, saturated voltage 2.0 V maximum",
+            "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+          }
+        }
+      },
+      "functions": [
+        "edm"
+      ],
+      "defaultFunction": "edm",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": null,
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.23: \"The EDM output is not an output signal to ensure the safety\"; monitoring a failure only",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "can0",
+      "portId": "CN4/5,6,7",
+      "protocol": "canopen",
+      "profile": "cia402",
+      "descriptionDocumentId": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5143",
+        "revision": "3E",
+        "locator": "HP-5143-3E: CANopen communication profile of the BLV R driver; EDS file not pinned",
+        "contentSha256": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
+      }
+    },
+    {
+      "id": "rs485",
+      "portId": "CN4/9,10,8",
+      "protocol": "modbus_rtu",
+      "profile": null,
+      "descriptionDocumentId": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.3 and p.18: RS-485 (Modbus RTU) on CN4",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    }
+  ],
+  "drive": {
+    "axes": 1,
+    "modes": [
+      "pp",
+      "pv"
+    ],
+    "ratedCurrentA": {
+      "value": 3.3,
+      "unit": "A",
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.35: supply-side rated current, 60 W, at 24 VDC (1.7 A at 48 VDC)",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    },
+    "peakCurrentA": {
+      "value": 5.5,
+      "unit": "A",
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.35: supply-side maximum input current, 60 W",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    },
+    "profileAccelerationRadS2": {
+      "value": 104.71975511965977,
+      "unit": "rad/s^2",
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5143",
+        "revision": "3E",
+        "locator": "HP-5143-3E p.103: 6083h default 1,000 (r/min)/s, range 1 to 1,000,000,000; converted to rad/s^2",
+        "contentSha256": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
+      }
+    },
+    "feedback": {
+      "kinds": [
+        "encoder in motor (CN3)"
+      ],
+      "countsPerRev": null
+    },
+    "watchdog": {
+      "kind": "heartbeat",
+      "rangeMs": [
+        0,
+        65535
+      ],
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5143",
+        "revision": "3E",
+        "locator": "HP-5143-3E p.67: 1017h producer heartbeat 0 to 65,535 ms (0); p.23: 8130h node guarding or heartbeat error",
+        "contentSha256": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
+      }
+    },
+    "stop": {
+      "quickStop": true,
+      "quickStopOption": {
+        "value": 2,
+        "unit": "1",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "hp5143",
+          "revision": "3E",
+          "locator": "HP-5143-3E p.99: 605Ah default 2 = decelerate with the quick stop ramp 6085h, then switch on disabled",
+          "contentSha256": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
+        }
+      },
+      "faultReactionOption": {
+        "value": 2,
+        "unit": "1",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "hp5143",
+          "revision": "3E",
+          "locator": "HP-5143-3E p.100: 605Eh default 2 = decelerate with the quick stop ramp 6085h",
+          "contentSha256": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
+        }
+      },
+      "torqueOff": {
+        "function": "sto",
+        "claim": "The power removal function is a function that stops supplying the power to the motor by the hardware.",
+        "documentId": "hp5140",
+        "locator": "HP-5140-8E p.3, p.7 (risk assessment and verification testing required), p.38 (safety function STO)",
+        "certificate": null
+      },
+      "torqueOffPointIds": [
+        "HWTO1",
+        "HWTO2"
+      ],
+      "monitorOutputPointId": "EDM",
+      "brakeOutputPointId": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "hp5140",
+        "revision": "8E",
+        "locator": "HP-5140-8E p.7, p.23",
+        "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+      }
+    },
+    "faultMap": [
+      {
+        "vendorCode": "FF10h",
+        "neutral": "FOLLOWING_ERROR",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "hp5143",
+          "revision": "3E",
+          "locator": "HP-5143-3E p.23: position deviation",
+          "contentSha256": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
+        }
+      },
+      {
+        "vendorCode": "FF31h",
+        "neutral": "OVERSPEED",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "hp5143",
+          "revision": "3E",
+          "locator": "HP-5143-3E p.23: overspeed",
+          "contentSha256": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
+        }
+      },
+      {
+        "vendorCode": "FF28h",
+        "neutral": "FEEDBACK_LOSS",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "hp5143",
+          "revision": "3E",
+          "locator": "HP-5143-3E p.23: encoder error",
+          "contentSha256": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
+        }
+      },
+      {
+        "vendorCode": "FF2Ah",
+        "neutral": "FEEDBACK_LOSS",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "hp5143",
+          "revision": "3E",
+          "locator": "HP-5143-3E p.23: encoder communication error",
+          "contentSha256": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
+        }
+      },
+      {
+        "vendorCode": "8130h",
+        "neutral": "COMMAND_TIMEOUT",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "hp5143",
+          "revision": "3E",
+          "locator": "HP-5143-3E p.23: node guarding error or heartbeat error",
+          "contentSha256": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
+        }
+      },
+      {
+        "vendorCode": "FF68h",
+        "neutral": "EXTERNAL_TRIP",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "hp5143",
+          "revision": "3E",
+          "locator": "HP-5143-3E p.23: HWTO input detection",
+          "contentSha256": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
+        }
+      }
+    ]
+  },
+  "digest": "b49efac9ef86935d48e7fa639ce3fb9b962255f0bceffe376f9dd73a3ab8df3c"
+}

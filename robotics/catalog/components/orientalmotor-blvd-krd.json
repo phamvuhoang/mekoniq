@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "orientalmotor-blvd-krd",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "Oriental Motor",
+    "family": "BLV R series driver (CAN / RS-485)",
+    "sku": "BLVD-KRD",
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [],
+  "models": [],
+  "documents": [
+    {
+      "id": "hp5140",
+      "url": "https://www.orientalmotor.com/products/pdfs/opmanuals/HP-5140-8E.pdf",
+      "digest": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd",
+      "license": "unreviewed"
+    },
+    {
+      "id": "hp5143",
+      "url": "https://www.orientalmotor.com/products/pdfs/opmanuals/HP-5143-3E.pdf",
+      "digest": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258",
+      "license": "unreviewed"
+    }
+  ]
+}

@@ -31,8 +31,16 @@
       "digest": "2c79575c38f3694462434e1a784565159090879dec61e231112587a545564fb2"
     },
     {
+      "file": "components/orientalmotor-blv-r-60w.json",
+      "digest": "38e9860cfd6fdaa3cabd3abe6b0d9243f4f5d3511dd19f61ea49c24a899e636d"
+    },
+    {
       "file": "components/orientalmotor-blv-r.json",
       "digest": "e3acd33c2c36cc336a3e739c07bc85c8e3bda5400879265718f8e97ba33ed3c9"
+    },
+    {
+      "file": "components/orientalmotor-blvd-krd.json",
+      "digest": "71a21f08beef8232735f88b40f206aeb1629813a14f65923f248ab72a2e96131"
     },
     {
       "file": "components/phidgets-frc4115.json",
@@ -55,5 +63,15 @@
       "digest": "842508dfd500f578d9c0b88aa881a1c0d80f230bf5b02f09124122e494216345"
     }
   ],
-  "quotes": []
+  "quotes": [],
+  "deviceProfiles": [
+    {
+      "file": "devices/blv-r-60w-v1.json",
+      "digest": "ddfef645872ce5dbc0ee1284518ca5e3a76a4e7f949626d1ae8807385b94c8a2"
+    },
+    {
+      "file": "devices/blvd-krd-v1.json",
+      "digest": "b49efac9ef86935d48e7fa639ce3fb9b962255f0bceffe376f9dd73a3ab8df3c"
+    }
+  ]
 }

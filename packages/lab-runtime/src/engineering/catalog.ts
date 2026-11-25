@@ -2,9 +2,13 @@ import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {isAbsolute,join,relative,resolve} from 'node:path';
 import {hashJson} from '../v2/hash';
+import {validateDeviceProfile,electricalDigest,type DeviceProfileV1} from './electrical/contracts';
+import {crossCheckDescription,profileSources} from './electrical/profiles';
 import {validateActuatorModel,validateComponentRevision,validateProcessModel,validateSensorModel,type Checked,type ComponentRevision,type Problem} from './contracts';
 
 export interface Quote{amount:number;currency:string;quotedOn:string;}
+/** Deterministic summary of a pinned EDS/ESI (scripts/describe-device.py); TS only reads it. */
+export interface DescriptionSummary{kind:'eds'|'esi';fileSha256:string;vendorId:string;productCode:string;revision:string;supportedModes:string[];objects:{index:string;subindex:number;name:string;access:'ro'|'rw'|'wo';pdoMappable:boolean}[]}
 export type CatalogModel=Record<string,unknown>&{kind:'actuator'|'sensor'|'process';id:string};
 export interface CatalogResult{
  /** Keyed by canonical component digest. Components with blocking problems are still listed so the UI can show what is missing. */
@@ -12,6 +16,10 @@ export interface CatalogResult{
  models:Record<string,CatalogModel>;
  /** Price only ever comes from a valid quotation; absence means unknown, never zero. */
  quotes:Record<string,Quote>;
+ /** Keyed by profile digest. Optional catalog key `deviceProfiles`; a catalog without it loads exactly as before. */
+ deviceProfiles:Record<string,DeviceProfileV1>;
+ /** Keyed by the sha256 of the pinned description file. */
+ descriptions:Record<string,DescriptionSummary>;
  /** Problem paths start with /components/<digest> or /catalog so callers can scope them to the components they use. */
  problems:Problem[];
 }
@@ -37,8 +45,8 @@ async function checkBlob(root:string,digest:string,path:string,out:Problem[]){
 const MODEL_CHECK:Record<string,(v:unknown)=>Checked>={actuator:validateActuatorModel,sensor:validateSensorModel,process:validateProcessModel};
 
 export async function loadCatalog(root:string):Promise<CatalogResult>{
- const result:CatalogResult={components:{},models:{},quotes:{},problems:[]};
- const index=parse(await read(join(root,'catalog.json'))) as {schemaVersion?:number;components?:{file?:unknown;digest?:unknown}[];quotes?:unknown[]}|undefined;
+ const result:CatalogResult={components:{},models:{},quotes:{},deviceProfiles:{},descriptions:{},problems:[]};
+ const index=parse(await read(join(root,'catalog.json'))) as {schemaVersion?:number;components?:{file?:unknown;digest?:unknown}[];quotes?:unknown[];deviceProfiles?:{file?:unknown;digest?:unknown}[]}|undefined;
  if(!index||index.schemaVersion!==1||!Array.isArray(index.components)){result.problems.push(problem('CATALOG_UNREADABLE','/catalog','catalog.json missing or not schemaVersion 1'));return result;}
  for(const [n,entry] of index.components.entries()){
   const declared=String(entry.digest);
@@ -76,6 +84,7 @@ export async function loadCatalog(root:string):Promise<CatalogResult>{
   for(const ref of component.models)if(result.models[ref.digest])cited(result.models[ref.digest],`${path}/models/${ref.id}`);
   result.problems.push(...own);
  }
+ await loadDeviceProfiles(root,index.deviceProfiles,result);
  for(const [i,raw] of (index.quotes??[]).entries()){
   const q=raw as {componentDigest?:string;amount?:number;currency?:string;quotedOn?:string;documentId?:string};
   const valid=typeof q.componentDigest==='string'&&q.componentDigest in result.components&&typeof q.amount==='number'&&Number.isFinite(q.amount)&&q.amount>0&&/^[A-Z]{3}$/.test(q.currency??'')&&/^\d{4}-\d{2}-\d{2}$/.test(q.quotedOn??'')&&!!q.documentId&&result.components[q.componentDigest!]!.documents.some(d=>d.id===q.documentId);
@@ -83,4 +92,39 @@ export async function loadCatalog(root:string):Promise<CatalogResult>{
   else result.quotes[q.componentDigest!]={amount:q.amount!,currency:q.currency!,quotedOn:q.quotedOn!};
  }
  return result;
+}
+
+/** Device profiles are siblings of components: a bad one is dropped (shape, digest, component) or listed with its problems (blobs, provenance, claims); it never breaks the catalog. */
+async function loadDeviceProfiles(root:string,entries:{file?:unknown;digest?:unknown}[]|undefined,result:CatalogResult){
+ if(!Array.isArray(entries))return;
+ for(const [n,entry] of entries.entries()){
+  const declared=String(entry.digest),path=`/deviceProfiles/${DIGEST.test(declared)?declared:n}`,file=inside(root,entry.file);
+  if(!file){result.problems.push(problem('CATALOG_PATH_INVALID',path,String(entry.file)));continue;}
+  const doc=parse(await read(file));
+  if(doc===undefined){result.problems.push(problem('CATALOG_UNREADABLE',path,String(entry.file)));continue;}
+  const shape=validateDeviceProfile(doc);
+  if(!shape.ok){result.problems.push(...shape.problems.map(p=>({...p,path:path+p.path})));continue;}
+  const profile=doc as DeviceProfileV1,digest=electricalDigest(profile);
+  if(digest!==declared||digest!==profile.digest){result.problems.push(problem('CATALOG_DIGEST_MISMATCH',path,`declared ${declared}, document ${profile.digest}, content ${digest}`));continue;}
+  if(!(profile.component.digest in result.components)){result.problems.push(problem('DEVICE_PROFILE_COMPONENT_UNAVAILABLE',path+'/component/digest',profile.component.digest));continue;}
+  result.deviceProfiles[digest]=profile;
+  const own:Problem[]=[],docs=new Map(profile.documents.map(d=>[d.id,d]));
+  for(const [i,d] of profile.documents.entries())await checkBlob(root,d.digest,`${path}/documents/${i}`,own);
+  for(const [i,s] of profileSources(profile).entries())if((s.kind==='manufacturer'||s.kind==='measured')&&docs.get(s.documentId)?.digest!==s.contentSha256)own.push(problem('PROVENANCE_UNRESOLVED',`${path}/sources/${i}`,`${s.documentId} is not a declared document with digest ${s.contentSha256}`));
+  const claim=(c:{documentId:string;locator:string;certificate:{documentId:string;models:string[]}|null}|null,at:string)=>{
+   if(!c)return;
+   const d=docs.get(c.documentId),cert=c.certificate&&docs.get(c.certificate.documentId);
+   if(!d||(d.kind!=='safety_manual'&&d.kind!=='manual'))own.push(problem('SAFETY_CLAIM_UNSUPPORTED',at,`${c.documentId} is not a manual or safety manual of this profile`));
+   else if(c.certificate&&(!cert||cert.kind!=='certificate'||!profile.variant.orderCode||!c.certificate.models.includes(profile.variant.orderCode)))own.push(problem('SAFETY_CLAIM_UNSUPPORTED',at+'/certificate',`certificate ${c.certificate.documentId} does not name order code ${String(profile.variant.orderCode)}`));
+  };
+  profile.ioPoints.forEach((pt,i)=>claim(pt.safety,`${path}/ioPoints/${i}/safety`));claim(profile.drive?.stop.torqueOff??null,`${path}/drive/stop/torqueOff`);
+  for(const d of profile.documents.filter(x=>x.kind==='description_file')){
+   const summary=parse(await read(join(root,'descriptions',`${d.digest}.summary.json`))) as DescriptionSummary|undefined;
+   if(!summary)continue;
+   if(summary.fileSha256!==d.digest){own.push(problem('DESCRIPTION_HASH_MISMATCH',`${path}/documents/${d.id}`,summary.fileSha256));continue;}
+   result.descriptions[d.digest]=summary;
+   own.push(...crossCheckDescription(profile,summary).map(p=>({...p,path:path+p.path})));
+  }
+  result.problems.push(...own);
+ }
 }

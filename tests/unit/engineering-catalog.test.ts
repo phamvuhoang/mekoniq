@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from 'vitest';
+import { afterEach, describe, expect, test } from 'vitest';
 import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -8,6 +8,7 @@ import { hashJson } from '../../packages/lab-runtime/src/v2/hash';
 // @ts-expect-error plain ESM script, no types
 import { importVendor } from '../../scripts/import-engineering-vendor.mjs';
 import { assumed, boxLink, scalar } from '../support/engineering';
+import { addProfile, driveProfile, assumedSource, DOC_DIGEST } from '../support/electrical';
 import type { ComponentRevision } from '../../packages/lab-runtime/src/engineering/contracts';
 
 const sha = (b: Uint8Array | string) => createHash('sha256').update(b).digest('hex');
@@ -137,4 +138,65 @@ test('a manufacturer or measured source must point at a document the component d
   const missing = await loadCatalog((await build({ mfr: 'missing' })).root);
   expect(blocking(missing)).toContain('PROVENANCE_UNRESOLVED');
   expect(blocking(await loadCatalog((await build({ mfr: 'wrong-hash' })).root))).toContain('PROVENANCE_UNRESOLVED');
+});
+
+test('a catalog without device profiles loads exactly as before', async () => {
+  const { root, digest } = await build({ mfr: 'ok' });
+  const result = await loadCatalog(root);
+  expect(Object.keys(result.components)).toEqual([digest]);
+  expect(result.deviceProfiles).toEqual({});
+  expect(result.descriptions).toEqual({});
+  expect(result.problems).toEqual([]);
+});
+
+describe('device profiles', () => {
+  const setup = async (o: Parameters<typeof driveProfile>[0] = {}, add: Parameters<typeof addProfile>[2] = {}) => {
+    const { root, digest } = await build();
+    const profile = driveProfile({ componentDigest: digest, ...o });
+    await addProfile(root, profile, add);
+    return { root, profile, result: await loadCatalog(root) };
+  };
+  test('a cited profile loads, keyed by its digest, with no problems', async () => {
+    const { profile, result } = await setup();
+    expect(Object.keys(result.deviceProfiles)).toEqual([profile.digest]);
+    expect(result.problems).toEqual([]);
+  });
+  test('a declared digest that differs from the content is CATALOG_DIGEST_MISMATCH and the profile is dropped', async () => {
+    const { result } = await setup({}, { declared: 'f'.repeat(64) });
+    expect(result.deviceProfiles).toEqual({});
+    expect(result.problems.map((p) => [p.code, p.path.startsWith('/deviceProfiles/')])).toEqual([['CATALOG_DIGEST_MISMATCH', true]]);
+  });
+  test('a component digest that is not in the catalog blocks only that profile', async () => {
+    const { root, result } = await setup({ componentDigest: 'c'.repeat(64) });
+    expect(blocking(result)).toEqual(['DEVICE_PROFILE_COMPONENT_UNAVAILABLE']);
+    expect(Object.keys(result.components)).toHaveLength(1);
+    await addProfile(root, driveProfile({ id: 'other', componentDigest: Object.keys(result.components)[0]! }));
+    expect(Object.keys((await loadCatalog(root)).deviceProfiles)).toHaveLength(1);
+  });
+  test('a manufacturer source that points at an undeclared document is PROVENANCE_UNRESOLVED', async () => {
+    const { result } = await setup({ ioSource: { ...assumedSource, kind: 'manufacturer', documentId: 'no-such-document' } });
+    expect(blocking(result)).toContain('PROVENANCE_UNRESOLVED');
+  });
+  test('a missing document blob is BLOB_UNAVAILABLE', async () => {
+    const { result } = await setup({}, { blobs: false });
+    expect(blocking(result)).toContain('BLOB_UNAVAILABLE');
+  });
+  test('a safety claim that cites a datasheet is SAFETY_CLAIM_UNSUPPORTED', async () => {
+    const { root, digest } = await build(), p = driveProfile({ componentDigest: digest }) as any;
+    p.drive.stop.torqueOff.documentId = 'datasheet';
+    const { digest: _d, ...rest } = p; void _d;
+    const { sealElectrical } = await import('../../packages/lab-runtime/src/engineering/electrical/contracts');
+    await addProfile(root, sealElectrical(rest));
+    expect(blocking(await loadCatalog(root))).toContain('SAFETY_CLAIM_UNSUPPORTED');
+  });
+  test('a certificate that does not name the order code makes the claim unsupported', async () => {
+    const { result } = await setup({ orderCode: 'DRV-200', certificateModels: ['DRV-750'] });
+    expect(blocking(result)).toContain('SAFETY_CLAIM_UNSUPPORTED');
+  });
+  test('a pinned description summary is cross-checked and a contradiction is reported', async () => {
+    const summary = { kind: 'eds', fileSha256: DOC_DIGEST.eds, vendorId: '0x1', productCode: '0x1', revision: '0x1', supportedModes: ['pp'], objects: [{ index: '60FD', subindex: 0, name: 'di', access: 'ro', pdoMappable: false }] };
+    const { result } = await setup({}, { summary });
+    expect(Object.keys(result.descriptions)).toEqual([DOC_DIGEST.eds]);
+    expect(blocking(result)).toEqual(expect.arrayContaining(['BUS_EXPOSURE_CONTRADICTS_DESCRIPTION', 'MODE_CONTRADICTS_DESCRIPTION', 'OBJECT_UNKNOWN']));
+  });
 });

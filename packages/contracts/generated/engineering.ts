@@ -2257,6 +2257,7 @@ export interface IOPointV1 {
       | 'dry_contact_input'
       | 'pnp_source_output'
       | 'npn_sink_output'
+      | 'isolated_transistor_output'
       | 'relay_output'
       | 'analog_voltage'
       | 'analog_current';
