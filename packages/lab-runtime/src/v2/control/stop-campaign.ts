@@ -14,6 +14,7 @@ import {cellArtifacts} from '../simulation3d/cell-campaign';
 import {blockingReadIssues} from '../simulation3d/tray-verdict';
 import {readCampaignJournal,verifyCampaignOutcome} from './campaign-source-evidence';
 import {readJson} from './cil-campaign';
+import {stopStartTick} from './stop-functions';
 import {buildStopReport,validateStopReport,stopReportDigest} from './stop-report';
 import {bodySpeeds} from './stop-metrics';
 import type {FaultScheduleEntry} from '../fault-schedule';
@@ -23,6 +24,8 @@ import type {RunReport} from '../report';
 import type {TrayExperimentId} from '../simulation3d/tray-experiments';
 
 export const STOP_CAMPAIGN='stop-v1';
+/** observeTicks (500) + restTicks (25) + driftTicks (100) of the stop policy, rounded up to whole batches of 250 ticks */
+export const OBSERVE_AFTER_STOP_TICKS=750;
 const SET='engineering-mujoco-3d-v1',json=(v:unknown)=>JSON.stringify(v,null,2)+'\n',sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex'),hostArch=()=>process.arch==='arm64'?'arm64':'x86_64';
 export interface StopCase{id:string;group:'S1'|'S2'|'S3'|'S4'|'S5';experimentId:TrayExperimentId;seed:number;entry:StopScheduleEntryV1;faults?:FaultScheduleEntry[];repeatOf?:string}
 export const STOP_CASES=table.cases as unknown as StopCase[];
@@ -48,7 +51,9 @@ export async function runStopCase(c:TrayContext,dir:string,spec:Pick<StopCase,'e
  let n=0,report:RunReport|undefined;
  try{
   await run.start();let v=await run.snapshot();
-  while(['running','awaiting_confirmation'].includes(v.run.status)&&v.tick<TRAY_MAX_TICKS){c.signal?.throwIfAborted();const before=v.tick;v=await run.action({actionId:`stop-${++n}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:250}});if(v.tick===before&&v.run.status==='running')break;}
+  // after a stop the run needs attention, but the plant is still read: the run goes on until the whole observation window (rest, rest ticks, drift ticks) is on record
+  const observeUntil=spec.entry?stopStartTick(spec.entry)+OBSERVE_AFTER_STOP_TICKS:0;
+  while((['running','awaiting_confirmation'].includes(v.run.status)||(v.run.status==='needs_attention'&&v.tick<observeUntil))&&v.tick<TRAY_MAX_TICKS){c.signal?.throwIfAborted();const before=v.tick;v=await run.action({actionId:`stop-${++n}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:250}});if(v.tick===before)break;}
   report=await run.report();
  }finally{await run.close();if(report)await writeFile(join(dir,'report.json'),json(report));}
  return report;
