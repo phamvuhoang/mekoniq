@@ -5,7 +5,7 @@ import {mkdir,readdir,readFile,writeFile} from 'node:fs/promises';
 import {join,resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {sealElectrical} from '../packages/lab-runtime/src/engineering/electrical/contracts';
-import type {ElectricalDesignV1,SafetyRequirementsV1,SignalV1,WiringPolicyV1,DeviceProfileV1} from '../packages/lab-runtime/src/engineering/electrical/contracts';
+import type {ElectricalDesignV1,SafetyRequirementsV1,SignalV1,TcoAssumptionsV1,WiringPolicyV1,DeviceProfileV1} from '../packages/lab-runtime/src/engineering/electrical/contracts';
 import type {SourceRef} from '../packages/lab-runtime/src/engineering/contracts';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -24,6 +24,8 @@ export async function generateElectricalFixture(outDir:string):Promise<void>{
   signalMinCsaMm2:0.25,maxVoltageDropFraction:sc(0.03,'1','planning limit of 3 % on a 24 V rail'),copperResistivityOhmMm2PerM:0.0175,
   colours:[{role:'power',colour:'red'},{role:'return',colour:'black'},{role:'signal',colour:'white'},{role:'bus_high',colour:'yellow'},{role:'bus_low',colour:'green'},{role:'protective_earth',colour:'green-yellow'}],
   sources:{ampacity:assumed('ampacity table is a planning assumption'),drop:assumed('voltage drop limit is a planning assumption')}}) as WiringPolicyV1;
+ const tco=sealElectrical<Omit<TcoAssumptionsV1,'digest'>>({schemaVersion:1,documentType:'tco-assumptions',id:'tco-assumptions-v1',revision:1,currency:'USD',labourPerHour:10,minutesPerWire:3,minutesPerConnector:2,testMinutesPerUnit:5,driveReplacementsOverLife:1,downtimeHoursPerRepair:4,downtimeCostPerHour:20,wirePricePerM:null,connectorPrice:null,
+  sources:{labour:assumed('labour and downtime rates are planning assumptions'),service:assumed('one drive replacement over the life is a planning assumption')}}) as TcoAssumptionsV1;
  const pol={id:policy.id,revision:policy.revision,digest:policy.digest};
 
  const manual=(await import('node:fs')).readFileSync(join(devDir,'blvd-krd-v1.json'),'utf8');
@@ -72,7 +74,7 @@ export async function generateElectricalFixture(outDir:string):Promise<void>{
   rail([feed('f-drive','drive','PWR-L/1','PWR-L/2','fuse-drive',0.6),feed('f-contactor','contactor','C/A1','C/A2','fuse-logic',0.4),...logicFeeds(true)]),
   commonSignals({dev:'drive',pin:'J3/3',ret:'J3/1'},{left:['contactor','A1','A2'],right:['contactor','1L1','2T1']}),stops(bothAxes,'req-estop-contactor'));
 
- const files:Record<string,unknown>={'serve-hw-a-v1.json':optionA,'serve-hw-b-v1.json':optionB,'serve-hw-c-v1.json':optionC,'wiring-policy-v1.json':policy,'serve-safety-requirements-v1.json':safety};
+ const files:Record<string,unknown>={'serve-hw-a-v1.json':optionA,'serve-hw-b-v1.json':optionB,'serve-hw-c-v1.json':optionC,'wiring-policy-v1.json':policy,'tco-assumptions-v1.json':tco,'serve-safety-requirements-v1.json':safety};
  await mkdir(outDir,{recursive:true});
  const out:Record<string,string>={};
  for(const [name,doc] of Object.entries(files))out[name]=JSON.stringify(doc,null,2)+'\n';
@@ -90,6 +92,7 @@ Three hardware options for the Serve project, one wiring policy and one safety r
 | serve-hw-a-v1.json | BLV-R 60 W drives; all controller signals expected on the drive I/O |
 | serve-hw-b-v1.json | ZLAC8015D with hub wheels, a CANopen I/O module, a contactor and a safety relay |
 | serve-hw-c-v1.json | Same drives as A with one CANopen I/O module |
+| tco-assumptions-v1.json | Labour, service and downtime assumptions of the cost comparison; every value is assumed; wire and connector prices are unknown |
 | wiring-policy-v1.json | Cross-section and voltage-drop policy; every value is \`assumed\` |
 | serve-safety-requirements-v1.json | Register of safety requirements, to be completed by a person responsible for safety |
 

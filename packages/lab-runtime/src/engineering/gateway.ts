@@ -13,6 +13,7 @@ import {compileElectrical} from './electrical/compile';
 import {ELECTRICAL_SCHEMA_HASH,validateElectricalDesign,type ElectricalDesignV1} from './electrical/contracts';
 import {loadElectricalDocuments} from './electrical/documents-store';
 import {createElectricalStore} from './electrical/store';
+import {compareOptions} from './electrical/tco';
 import type {BundleReceipt,EngineeringCompileInput,EngineeringProject,EngineeringRef,Problem,ResolvedAssembly} from './contracts';
 import {incompleteReport,validationCacheKey,type RobotModelValidator} from './linkforge';
 import {projectPhysicalModel} from './physical-model';
@@ -261,9 +262,21 @@ export function createEngineeringService(options:EngineeringServiceOptions){
    return {state:result.bundle.state,digest:result.bundle.digest,problems:result.bundle.checks.filter(c=>c.level==='blocking').map(c=>({code:c.ruleId,path:c.path,blocking:true,detail:c.detail}))};
   },
   async readElectrical(sessionId:string,digest:string){
+   if(!electricalStore.authorized(sessionId,digest))throw new EngineeringError('ELECTRICAL_BUNDLE_FORBIDDEN',403);
    const bundle=await electricalStore.read(sessionId,digest);
    if(!bundle)throw new EngineeringError('NOT_FOUND',404);
    return bundle;
+  },
+  /** 2 to 4 bundles of this session and one project; the assumptions come from the catalog's electrical documents, never from the caller. */
+  async compareElectrical(sessionId:string,digests:unknown){
+   if(!options.electrical)throw new EngineeringError('ELECTRICAL_UNAVAILABLE',400);
+   if(!Array.isArray(digests)||digests.length<2||digests.length>4||digests.some(d=>typeof d!=='string'||!/^[0-9a-f]{64}$/.test(d))||new Set(digests).size!==digests.length)throw new EngineeringError('INVALID_ELECTRICAL_REQUEST',400);
+   const bundles=[];
+   for(const d of digests as string[]){bundles.push(await this.readElectrical(sessionId,d));}
+   if(new Set(bundles.map(b=>b.inputs.project.digest)).size>1)throw new EngineeringError('ELECTRICAL_PROJECT_MISMATCH',409);
+   const docs=await loadElectricalDocuments(options.catalogRoot),assumptions=[...docs.tco].sort((a,b)=>b.revision-a.revision)[0];
+   if(!assumptions)throw new EngineeringError('TCO_ASSUMPTIONS_UNAVAILABLE',409);
+   return compareOptions(bundles,assumptions);
   },
   verifyClosure:store.verifyClosure,
   /** After a verified reclaim proof: read access to this run's bundle for the new session, nothing else. */

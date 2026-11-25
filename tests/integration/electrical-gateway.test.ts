@@ -57,7 +57,7 @@ test('another session cannot compile against the bundle nor read the result',asy
  const t=await boot(),owner=await t.pair(),other=await t.pair(),ref=await compiled(t,owner),body={ref:{bundleDigest:ref.bundleDigest,projectDigest:ref.projectDigest},design:t.design};
  expect((await t.post(other,'electrical',body)).status).toBe(403);
  const receipt=await (await t.post(owner,'electrical',body)).json();
- expect((await fetch(t.g.url+`/lab/v2/engineering/electrical/${receipt.digest}`,{headers:{cookie:other.cookie}})).status).toBe(404);
+ expect((await fetch(t.g.url+`/lab/v2/engineering/electrical/${receipt.digest}`,{headers:{cookie:other.cookie}})).status).toBe(403);
 });
 test('refusals: a design that fails its schema is 400, a design for another project is 409, unknown fields are 422, CSRF is enforced',async()=>{
  const t=await boot(),h=await t.pair(),ref=await compiled(t,h),r={bundleDigest:ref.bundleDigest,projectDigest:ref.projectDigest};
@@ -73,4 +73,16 @@ test('health advertises electrical_bundle_v1 only when the service offers it',as
   expect(health.capabilities.includes('electrical_bundle_v1')).toBe(on);
   if(!on){const h=await t.pair();expect((await t.post(h,'electrical',{ref:{},design:{}})).status).toBe(400);}
  }
+});
+
+test('compare: two bundles of one session are compared, another session is refused, one bundle or a stray key is a bad request',async()=>{
+ const t=await boot(),h=await t.pair(),other=await t.pair(),ref=await compiled(t,h),r={bundleDigest:ref.bundleDigest,projectDigest:ref.projectDigest};
+ const digest=async(file:string)=>(await (await t.post(h,'electrical',{ref:r,design:JSON.parse(await readFile(`robotics/catalog/electrical/${file}.json`,'utf8'))})).json()).digest as string;
+ const b=await digest('serve-hw-b-v1'),c=await digest('serve-hw-c-v1');
+ const ok=await t.post(h,'electrical/compare',{digests:[b,c]});expect(ok.status).toBe(200);
+ const cmp=await ok.json();expect(cmp.options).toHaveLength(2);expect(cmp.notComparableReason).toBe('PRICE_MISSING_FOR_DECIDING_PARTS');
+ expect((await t.post(other,'electrical/compare',{digests:[b,c]})).status).toBe(403);
+ expect((await t.post(h,'electrical/compare',{digests:[b]})).status).toBe(400);
+ expect((await t.post(h,'electrical/compare',{digests:[b,b]})).status).toBe(400);
+ expect((await t.post(h,'electrical/compare',{digests:[b,c],endpoint:'x'})).status).toBe(422);
 });

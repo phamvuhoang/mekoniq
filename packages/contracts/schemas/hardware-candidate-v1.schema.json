@@ -1,0 +1,490 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.hardware-candidate.v1",
+  "title": "HardwareCandidateV1",
+  "description": "Manifest of a hardware candidate package: a draft for exchanging one configuration before purchase. The three constants say what it is not; readers hash every listed file and never trust the status written here.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "hardware-candidate"
+    },
+    "status": {
+      "const": "draft"
+    },
+    "hardwareValidated": {
+      "const": false
+    },
+    "controlAuthority": {
+      "const": false
+    },
+    "bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "designId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "designRevision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "projectDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "assemblyDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "digest",
+        "designId",
+        "designRevision",
+        "projectDigest",
+        "assemblyDigest"
+      ]
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "sha256": {
+            "$ref": "engineering-component.schema.json#/definitions/Digest"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "path",
+          "sha256",
+          "bytes"
+        ]
+      }
+    },
+    "readiness": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "status": {
+            "enum": [
+              "ready",
+              "pending",
+              "blocked_external"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "reason"
+        ]
+      }
+    },
+    "evidenceRefs": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "stop-report",
+              "io-fault-report"
+            ]
+          },
+          "runId": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          },
+          "reportDigest": {
+            "$ref": "engineering-component.schema.json#/definitions/Digest"
+          }
+        },
+        "required": [
+          "kind",
+          "runId",
+          "reportDigest"
+        ]
+      }
+    },
+    "documents": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "deviceProfile": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          },
+          "id": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "digest": {
+            "$ref": "engineering-component.schema.json#/definitions/Digest"
+          }
+        },
+        "required": [
+          "deviceProfile",
+          "id",
+          "revision",
+          "url",
+          "digest"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "status",
+    "hardwareValidated",
+    "controlAuthority",
+    "bundle",
+    "files",
+    "readiness",
+    "evidenceRefs",
+    "documents"
+  ],
+  "definitions": {
+    "TcoAssumptionsV1": {
+      "title": "TcoAssumptionsV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "documentType": {
+          "const": "tco-assumptions"
+        },
+        "id": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "digest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "labourPerHour": {
+          "type": "number",
+          "minimum": 0
+        },
+        "minutesPerWire": {
+          "type": "number",
+          "minimum": 0
+        },
+        "minutesPerConnector": {
+          "type": "number",
+          "minimum": 0
+        },
+        "testMinutesPerUnit": {
+          "type": "number",
+          "minimum": 0
+        },
+        "driveReplacementsOverLife": {
+          "type": "number",
+          "minimum": 0
+        },
+        "downtimeHoursPerRepair": {
+          "type": "number",
+          "minimum": 0
+        },
+        "downtimeCostPerHour": {
+          "type": "number",
+          "minimum": 0
+        },
+        "wirePricePerM": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "connectorPrice": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sources": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "labour": {
+              "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+            },
+            "service": {
+              "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+            }
+          },
+          "required": [
+            "labour",
+            "service"
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "documentType",
+        "id",
+        "revision",
+        "digest",
+        "currency",
+        "labourPerHour",
+        "minutesPerWire",
+        "minutesPerConnector",
+        "testMinutesPerUnit",
+        "driveReplacementsOverLife",
+        "downtimeHoursPerRepair",
+        "downtimeCostPerHour",
+        "wirePricePerM",
+        "connectorPrice",
+        "sources"
+      ]
+    },
+    "TcoComparisonV1": {
+      "title": "TcoComparisonV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "assumptionsDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "options": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "designId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "bundleDigest": {
+                "$ref": "engineering-component.schema.json#/definitions/Digest"
+              },
+              "comparable": {
+                "type": "boolean"
+              },
+              "missingPriceLineIds": {
+                "type": "array",
+                "maxItems": 1000,
+                "items": {
+                  "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                }
+              },
+              "parts": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "hardware": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "wiring": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "assembly": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "testing": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "service": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "downtime": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "hardware",
+                  "wiring",
+                  "assembly",
+                  "testing",
+                  "service",
+                  "downtime"
+                ]
+              },
+              "total": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "designId",
+              "bundleDigest",
+              "comparable",
+              "missingPriceLineIds",
+              "parts",
+              "total"
+            ]
+          }
+        },
+        "dominant": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "factor": {
+                  "enum": [
+                    "hardware",
+                    "wiring",
+                    "assembly",
+                    "testing",
+                    "service",
+                    "downtime"
+                  ]
+                },
+                "spread": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "factor",
+                "spread"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notComparableReason": {
+          "anyOf": [
+            {
+              "enum": [
+                "PRICE_MISSING_FOR_DECIDING_PARTS",
+                "CURRENCY_MISMATCH",
+                "BUNDLE_BLOCKED"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "assumptionsDigest",
+        "options",
+        "dominant",
+        "notComparableReason"
+      ]
+    }
+  }
+}

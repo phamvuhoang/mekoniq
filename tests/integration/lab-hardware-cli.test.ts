@@ -44,3 +44,9 @@ test('docs on a blocked option refuses; --draw without wireviz still writes harn
 test('bad usage exits 2',()=>{
  expect(cli(['check']).status).toBe(2);expect(cli(['nope','--design','x']).status).toBe(2);expect(cli(['docs','--design',design('serve-hw-c-v1')]).status).toBe(2);
 });
+
+test('compare prints the comparison and exits 1 while prices are missing', () => {
+  const r = cli(['compare', '--design', design('serve-hw-b-v1'), '--design', design('serve-hw-c-v1')]);
+  expect(r.status).toBe(1);
+  expect(JSON.parse(r.stdout).notComparableReason).toBe('PRICE_MISSING_FOR_DECIDING_PARTS');
+});

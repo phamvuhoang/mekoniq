@@ -4,6 +4,7 @@ import componentSchema from '../../../../contracts/schemas/engineering-component
 import deviceProfileSchema from '../../../../contracts/schemas/device-profile-v1.schema.json';
 import designSchema from '../../../../contracts/schemas/electrical-design-v1.schema.json';
 import safetySchema from '../../../../contracts/schemas/safety-requirements-v1.schema.json';
+import candidateSchema from '../../../../contracts/schemas/hardware-candidate-v1.schema.json';
 import bundleSchema from '../../../../contracts/schemas/electrical-bundle-v1.schema.json';
 import engineeringBundleSchema from '../../../../contracts/schemas/engineering-bundle.schema.json';
 import driveModelSchema from '../../../../contracts/schemas/drive-model-v1.schema.json';
@@ -12,14 +13,14 @@ import {documentDigest,sealDocument} from '../../v2/navigation2d/contracts';
 import {hashJson} from '../../v2/hash';
 import {classifyField} from '../../v2/contracts';
 import {ALLOWED_UNITS,type Checked,type Problem,type Scalar} from '../contracts';
-import type {DeviceProfileV1,ElectricalBundleV1,ElectricalDesignV1,SafetyRequirementsV1,WiringPolicyV1} from '../../../../contracts/generated/engineering';
+import type {DeviceProfileV1,ElectricalBundleV1,HardwareCandidateV1,TcoAssumptionsV1,TcoComparisonV1,ElectricalDesignV1,SafetyRequirementsV1,WiringPolicyV1} from '../../../../contracts/generated/engineering';
 export type {DeviceProfileV1,IOPointV1,DriveCapabilityV1,SafetyClaim,DeviceDocument} from '../../../../contracts/generated/engineering';
 export type {ElectricalDesignV1,SignalV1,StopFunctionV1,WiringPolicyV1,SafetyRequirementsV1,DocumentRef} from '../../../../contracts/generated/engineering';
-export type {CheckResult,IoAllocationV1,NetlistV1,ElectricalBundleV1} from '../../../../contracts/generated/engineering';
+export type {CheckResult,IoAllocationV1,NetlistV1,ElectricalBundleV1,HardwareCandidateV1,TcoAssumptionsV1,TcoComparisonV1} from '../../../../contracts/generated/engineering';
 export type {Checked,Problem};
 
 const ajv=new Ajv({allErrors:true,strict:true,discriminator:true});addFormats(ajv);
-for(const [key,schema] of Object.entries({'engineering-component.schema.json':componentSchema,'device-profile-v1.schema.json':deviceProfileSchema,'electrical-design-v1.schema.json':designSchema,'safety-requirements-v1.schema.json':safetySchema,'electrical-bundle-v1.schema.json':bundleSchema,'engineering-bundle.schema.json':engineeringBundleSchema,'drive-model-v1.schema.json':driveModelSchema,'drive-io-v1.schema.json':driveIoSchema}))ajv.addSchema(schema,key);
+for(const [key,schema] of Object.entries({'engineering-component.schema.json':componentSchema,'device-profile-v1.schema.json':deviceProfileSchema,'electrical-design-v1.schema.json':designSchema,'safety-requirements-v1.schema.json':safetySchema,'electrical-bundle-v1.schema.json':bundleSchema,'hardware-candidate-v1.schema.json':candidateSchema,'engineering-bundle.schema.json':engineeringBundleSchema,'drive-model-v1.schema.json':driveModelSchema,'drive-io-v1.schema.json':driveIoSchema}))ajv.addSchema(schema,key);
 
 export const problem=(code:string,path:string,detail:string):Problem=>({code,path,blocking:true,detail});
 function schemaProblems(errors:ErrorObject[]|null|undefined):Problem[]{
@@ -125,4 +126,7 @@ export const validateSafetyRequirements=check<SafetyRequirementsV1>('safety-requ
 export const validateElectricalBundle=check<ElectricalBundleV1>('electrical-bundle-v1.schema.json');
 
 /** Content hash of the electrical schemas; recorded in every bundle so a bundle says which contracts produced it. */
-export const ELECTRICAL_SCHEMA_HASH=hashJson([deviceProfileSchema,designSchema,safetySchema,bundleSchema]);
+export const ELECTRICAL_SCHEMA_HASH=hashJson([deviceProfileSchema,designSchema,safetySchema,bundleSchema,candidateSchema]);
+export const validateTcoAssumptions=check<TcoAssumptionsV1>('hardware-candidate-v1.schema.json#/definitions/TcoAssumptionsV1');
+export const validateTcoComparison=check<TcoComparisonV1>('hardware-candidate-v1.schema.json#/definitions/TcoComparisonV1');
+export const validateHardwareCandidate=check<HardwareCandidateV1>('hardware-candidate-v1.schema.json');

@@ -1689,6 +1689,120 @@ export interface ElectricalBundleV1 {
   controlAuthority: false;
 }
 /**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "TcoAssumptionsV1".
+ */
+export interface TcoAssumptionsV1 {
+  schemaVersion: 1;
+  documentType: 'tco-assumptions';
+  id: EngineeringId;
+  revision: number;
+  digest: Digest;
+  currency: string;
+  labourPerHour: number;
+  minutesPerWire: number;
+  minutesPerConnector: number;
+  testMinutesPerUnit: number;
+  driveReplacementsOverLife: number;
+  downtimeHoursPerRepair: number;
+  downtimeCostPerHour: number;
+  wirePricePerM: number | null;
+  connectorPrice: number | null;
+  sources: {
+    labour: SourceRef;
+    service: SourceRef;
+  };
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "TcoComparisonV1".
+ */
+export interface TcoComparisonV1 {
+  assumptionsDigest: Digest;
+  /**
+   * @minItems 2
+   * @maxItems 4
+   */
+  options: {
+    designId: EngineeringId;
+    bundleDigest: Digest;
+    comparable: boolean;
+    /**
+     * @maxItems 1000
+     */
+    missingPriceLineIds: EngineeringId[];
+    parts: {
+      hardware: number | null;
+      wiring: number | null;
+      assembly: number | null;
+      testing: number | null;
+      service: number | null;
+      downtime: number | null;
+    };
+    total: number | null;
+  }[];
+  dominant: {
+    factor: 'hardware' | 'wiring' | 'assembly' | 'testing' | 'service' | 'downtime';
+    spread: number;
+  } | null;
+  notComparableReason: ('PRICE_MISSING_FOR_DECIDING_PARTS' | 'CURRENCY_MISMATCH' | 'BUNDLE_BLOCKED') | null;
+}
+/**
+ * Manifest of a hardware candidate package: a draft for exchanging one configuration before purchase. The three constants say what it is not; readers hash every listed file and never trust the status written here.
+ *
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "HardwareCandidateV1".
+ */
+export interface HardwareCandidateV1 {
+  schemaVersion: 1;
+  documentType: 'hardware-candidate';
+  status: 'draft';
+  hardwareValidated: false;
+  controlAuthority: false;
+  bundle: {
+    digest: Digest;
+    designId: EngineeringId;
+    designRevision: number;
+    projectDigest: Digest;
+    assemblyDigest: Digest;
+  };
+  /**
+   * @minItems 1
+   * @maxItems 64
+   */
+  files: {
+    path: string;
+    sha256: Digest;
+    bytes: number;
+  }[];
+  /**
+   * @maxItems 64
+   */
+  readiness: {
+    id: string;
+    status: 'ready' | 'pending' | 'blocked_external';
+    reason: string;
+  }[];
+  /**
+   * @maxItems 64
+   */
+  evidenceRefs: {
+    kind: 'stop-report' | 'io-fault-report';
+    runId: EngineeringId;
+    reportDigest: Digest;
+  }[];
+  /**
+   * @maxItems 64
+   */
+  documents: {
+    deviceProfile: EngineeringId;
+    id: EngineeringId;
+    revision: string;
+    url: string;
+    digest: Digest;
+  }[];
+}
+/**
  * A register written by the person responsible for safety. It is not executable logic and the Lab never judges it. There is no status field: the evidence state is computed from the documents.
  *
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema

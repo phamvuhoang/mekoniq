@@ -3,6 +3,7 @@ import type {Problem,ResolvedAssembly} from '../contracts';
 import {admitElectricalDesign} from './design';
 import {allocateIo} from './allocate';
 import {deriveNetlist} from './netlist';
+import {extendBom} from './bom';
 import {checkElectrical,sortChecks} from './rules';
 import {deviceEvidenceLevel} from './profiles';
 import {problem,sealElectrical,validateElectricalBundle,validateElectricalDesign,validateSafetyRequirements,validateWiringPolicy,type ElectricalBundleV1,type ElectricalDesignV1,type SafetyRequirementsV1,type WiringPolicyV1} from './contracts';
@@ -32,16 +33,16 @@ export function compileElectrical(input:{design:ElectricalDesignV1;resolved:Reso
  const alloc=allocateIo(context),net=deriveNetlist(context,alloc.allocation,policy,safety);
  if(net.netlist.wires.length>ELECTRICAL_LIMITS.wires)return {problems:[problem('ELECTRICAL_TOO_LARGE','/netlist','more than 512 wires')],bundle:null};
  const rules=checkElectrical(context,alloc.allocation,net.netlist,policy,safety,input.catalog.descriptions);
- const checks=sortChecks([...alloc.checks,...net.checks,...rules,...priceChecks(input.resolved)]);
+ const bom=extendBom(input.resolved.bom,context,net.netlist,input.catalog),checks=sortChecks([...alloc.checks,...net.checks,...rules,...priceChecks(bom)]);
  const profiles=[...new Map([...context.profiles.values()].map(p=>[p.digest,p])).values()].sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:a.revision-b.revision).map(p=>({id:p.id,revision:p.revision,digest:p.digest,evidenceLevel:deviceEvidenceLevel(p).level}));
  // 7. BOM (E10 extends it) and the draft drive model (E11)
  const bundle=sealElectrical({schemaVersion:1,documentType:'electrical-bundle',state:checks.some(c=>c.level==='blocking')?'blocked' as const:'compiled' as const,
   inputs:{project:input.project,assemblyDigest:input.resolved.assemblyDigest,design:{id:design.id,revision:design.revision,digest:design.digest},profiles,safetyRequirementsDigest:safety?.digest??null,wiringPolicyDigest:policy.digest,compilerVersion:ELECTRICAL_COMPILER_VERSION,schemaHash:input.schemaHash},
-  allocation:alloc.allocation,netlist:net.netlist,checks,bom:input.resolved.bom,driveModelDraft:null,hardwareValidated:false as const,controlAuthority:false as const}) as ElectricalBundleV1;
+  allocation:alloc.allocation,netlist:net.netlist,checks,bom,driveModelDraft:null,hardwareValidated:false as const,controlAuthority:false as const}) as ElectricalBundleV1;
  if(Buffer.byteLength(JSON.stringify(bundle))>ELECTRICAL_LIMITS.jsonBytes)return {problems:[problem('ELECTRICAL_TOO_LARGE','/bundle','bundle over 2 MiB')],bundle:null};
  const valid=validateElectricalBundle(bundle);
  if(!valid.ok)throw new Error(`ELECTRICAL_BUNDLE_INVALID ${valid.problems.map(p=>`${p.code}@${p.path}`).slice(0,5).join(',')}`);
  return {problems:[],bundle};
 }
 /** A price is only ever a quotation; every line without one is listed so the total is never mistaken for complete. */
-const priceChecks=(resolved:ResolvedAssembly)=>resolved.bom.lines.filter(l=>l.price===null).map(l=>({ruleId:'UNVERIFIED_PRICE',level:'unverified' as const,path:`/bom/${l.lineId}`,detail:`${l.componentId} has no quotation`,sources:[]}));
+const priceChecks=(bom:ResolvedAssembly['bom'])=>bom.lines.filter(l=>l.price===null).map(l=>({ruleId:'UNVERIFIED_PRICE',level:'unverified' as const,path:`/bom/${l.lineId}`,detail:`${l.componentId} has no quotation`,sources:[]}));

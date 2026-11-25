@@ -52,4 +52,10 @@ if(command==='docs'){
  }
  process.exit(0);
 }
-if(command==='compare'){console.error('COMPARE_NOT_AVAILABLE');process.exit(2);}
+if(command==='compare'){
+ const {loadElectricalDocuments}=await lib('documents-store.ts'),{compareOptions}=await lib('tco.ts'),docs=await loadElectricalDocuments(catalogRoot),tco=[...docs.tco].sort((x,y)=>y.revision-x.revision)[0];
+ if(!tco){console.error('REFUSED TCO_ASSUMPTIONS_UNAVAILABLE');process.exit(2);}
+ const cmp=compareOptions(results.map(x=>x.bundle),tco);
+ console.log(JSON.stringify(cmp,null,2));
+ process.exit(cmp.notComparableReason===null?0:1);
+}

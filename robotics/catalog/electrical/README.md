@@ -7,6 +7,7 @@ Three hardware options for the Serve project, one wiring policy and one safety r
 | serve-hw-a-v1.json | BLV-R 60 W drives; all controller signals expected on the drive I/O |
 | serve-hw-b-v1.json | ZLAC8015D with hub wheels, a CANopen I/O module, a contactor and a safety relay |
 | serve-hw-c-v1.json | Same drives as A with one CANopen I/O module |
+| tco-assumptions-v1.json | Labour, service and downtime assumptions of the cost comparison; every value is assumed; wire and connector prices are unknown |
 | wiring-policy-v1.json | Cross-section and voltage-drop policy; every value is `assumed` |
 | serve-safety-requirements-v1.json | Register of safety requirements, to be completed by a person responsible for safety |
 
