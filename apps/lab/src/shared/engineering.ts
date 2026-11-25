@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/engineering.ts @ 9dfd52ed0f8b6fd8ec1ccbe7cfd30bba0aa1aafd (sha256 3ec48e77f406282370b9ef999ea2350422ac93fead45baa40a02dbb047420b19). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/engineering.ts @ 4b8a18e26a06b535e39dc0ae1c0675b0b991eeea (sha256 e6b2fb2f52676119fceba98609ac2306b6367ca07d793302be1bb1b83e6a1342). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
 import type {LabProjectV2,AssetRevision} from './types';
 export type CoffeeRecipe=Record<string,unknown>;
@@ -479,12 +479,24 @@ export interface EngineeringProject {
     | 'tray-low-friction-v1'
     | 'tray-accel-high-v1'
     | 'tray-torque-limited-v1'
-    | 'tray-person-crossing-v1';
+    | 'tray-person-crossing-v1'
+    | 'tray-stop-brake-v1'
+    | 'tray-stop-coast-v1'
+    | 'tray-stop-slow-brake-v1'
+    | 'tray-stop-slow-coast-v1'
+    | 'tray-stop-low-brake-v1'
+    | 'tray-stop-low-coast-v1';
   /**
    * Registered server-owned virtual-drive experiment (R4); only engineering-mujoco-3d-v1. Absent: the R2b control path, byte for byte.
    */
   driveExperimentId?:
-    'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
+    | 'drive-ideal-v1'
+    | 'drive-nominal-v1'
+    | 'drive-torque-limited-v1'
+    | 'drive-latency-v1'
+    | 'drive-coarse-encoder-v1'
+    | 'drive-hw-c-brake-v1'
+    | 'drive-hw-c-coast-v1';
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema

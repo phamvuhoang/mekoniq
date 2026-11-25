@@ -577,6 +577,168 @@
         "durationMs"
       ],
       "description": "A fault-schedule entry of the R4 drive catalog (V08): the shape of FaultScheduleEntry plus catalog parameters, and targets named like axes (robot/axis). It is a separate document so the frozen FaultScheduleEntry schema keeps its bytes."
+    },
+    "StopScheduleEntryV1": {
+      "title": "StopScheduleEntryV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "function": {
+          "enum": [
+            "normal",
+            "protective",
+            "emergency"
+          ]
+        },
+        "trigger": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "elapsed_sim_ms"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 3600000
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "function",
+        "trigger"
+      ]
+    },
+    "StopInjectionV1": {
+      "title": "StopInjectionV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entryId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "function": {
+          "const": "emergency"
+        },
+        "axes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/definitions/DriveAxisId"
+          }
+        }
+      },
+      "required": [
+        "entryId",
+        "function",
+        "axes"
+      ]
+    },
+    "StopIntentV1": {
+      "title": "StopIntentV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entryId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "function": {
+          "enum": [
+            "normal",
+            "protective",
+            "emergency"
+          ]
+        },
+        "appliedBy": {
+          "enum": [
+            "controller",
+            "worker"
+          ]
+        },
+        "targetTick": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "entryId",
+        "function",
+        "appliedBy",
+        "targetTick"
+      ]
+    },
+    "StopReceiptV1": {
+      "title": "StopReceiptV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entryId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "function": {
+          "enum": [
+            "normal",
+            "protective",
+            "emergency"
+          ]
+        },
+        "appliedBy": {
+          "enum": [
+            "controller",
+            "worker"
+          ]
+        },
+        "appliedTick": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "bootId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sceneDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "requestDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "entryId",
+        "function",
+        "appliedBy",
+        "appliedTick",
+        "runId",
+        "bootId",
+        "sceneDigest",
+        "requestDigest"
+      ]
     }
   }
 }
