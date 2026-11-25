@@ -1,0 +1,280 @@
+{
+ "schemaVersion": 1,
+ "id": "control-profile-admission-v1",
+ "note": "One axis per case. validateControlProfile (TS) and actuator_spec (Python) must reach the same verdict on every case; the TS test uses an envelope that accepts every field, so only the mode rules decide.",
+ "cases": [
+  {
+   "id": "csp-plain",
+   "mode": "csp",
+   "loop": {
+    "kp": 100,
+    "ki": 0.0,
+    "kd": 10,
+    "integralLimit": null,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": true
+  },
+  {
+   "id": "csp-kd-zero",
+   "mode": "csp",
+   "loop": {
+    "kp": 100,
+    "ki": 0.0,
+    "kd": 0.0,
+    "integralLimit": null,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": true
+  },
+  {
+   "id": "csp-slew",
+   "mode": "csp",
+   "loop": {
+    "kp": 100,
+    "ki": 0.0,
+    "kd": 10,
+    "integralLimit": null,
+    "slewLimit": 1.5
+   },
+   "accelerationLimit": null,
+   "admitted": true
+  },
+  {
+   "id": "csp-slew-zero",
+   "mode": "csp",
+   "loop": {
+    "kp": 100,
+    "ki": 0.0,
+    "kd": 10,
+    "integralLimit": null,
+    "slewLimit": 0.0
+   },
+   "accelerationLimit": null,
+   "admitted": false,
+   "reason": "INVALID_FIELD"
+  },
+  {
+   "id": "csp-acceleration-limit",
+   "mode": "csp",
+   "loop": {
+    "kp": 100,
+    "ki": 0.0,
+    "kd": 10,
+    "integralLimit": null,
+    "slewLimit": null
+   },
+   "accelerationLimit": 5.0,
+   "admitted": false,
+   "reason": "CSP_ACCELERATION_LIMIT"
+  },
+  {
+   "id": "csp-integral",
+   "mode": "csp",
+   "loop": {
+    "kp": 100,
+    "ki": 5,
+    "kd": 10,
+    "integralLimit": 2.0,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": true
+  },
+  {
+   "id": "csp-integral-missing-limit",
+   "mode": "csp",
+   "loop": {
+    "kp": 100,
+    "ki": 5,
+    "kd": 10,
+    "integralLimit": null,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": false,
+   "reason": "INTEGRAL_LIMIT_REQUIRED"
+  },
+  {
+   "id": "csp-integral-zero-limit",
+   "mode": "csp",
+   "loop": {
+    "kp": 100,
+    "ki": 5,
+    "kd": 10,
+    "integralLimit": 0.0,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": false,
+   "reason": "INVALID_FIELD"
+  },
+  {
+   "id": "csp-limit-without-ki",
+   "mode": "csp",
+   "loop": {
+    "kp": 100,
+    "ki": 0.0,
+    "kd": 10,
+    "integralLimit": 2.0,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": false,
+   "reason": "INTEGRAL_LIMIT_WITHOUT_KI"
+  },
+  {
+   "id": "csp-negative-kp",
+   "mode": "csp",
+   "loop": {
+    "kp": -1,
+    "ki": 0.0,
+    "kd": 10,
+    "integralLimit": null,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": false,
+   "reason": "INVALID_FIELD"
+  },
+  {
+   "id": "csv-plain",
+   "mode": "csv",
+   "loop": {
+    "kp": 2,
+    "ki": 0.0,
+    "kd": 0.0,
+    "integralLimit": null,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": true
+  },
+  {
+   "id": "csv-acceleration-limit",
+   "mode": "csv",
+   "loop": {
+    "kp": 2,
+    "ki": 0.0,
+    "kd": 0.0,
+    "integralLimit": null,
+    "slewLimit": null
+   },
+   "accelerationLimit": 10.0,
+   "admitted": true
+  },
+  {
+   "id": "csv-acceleration-limit-zero",
+   "mode": "csv",
+   "loop": {
+    "kp": 2,
+    "ki": 0.0,
+    "kd": 0.0,
+    "integralLimit": null,
+    "slewLimit": null
+   },
+   "accelerationLimit": 0.0,
+   "admitted": false,
+   "reason": "INVALID_FIELD"
+  },
+  {
+   "id": "csv-kd",
+   "mode": "csv",
+   "loop": {
+    "kp": 2,
+    "ki": 0.0,
+    "kd": 0.5,
+    "integralLimit": null,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": false,
+   "reason": "CSV_KD_NONZERO"
+  },
+  {
+   "id": "csv-slew",
+   "mode": "csv",
+   "loop": {
+    "kp": 2,
+    "ki": 0.0,
+    "kd": 0.0,
+    "integralLimit": null,
+    "slewLimit": 1.0
+   },
+   "accelerationLimit": null,
+   "admitted": false,
+   "reason": "CSV_SLEW_LIMIT"
+  },
+  {
+   "id": "csv-slew-zero",
+   "mode": "csv",
+   "loop": {
+    "kp": 2,
+    "ki": 0.0,
+    "kd": 0.0,
+    "integralLimit": null,
+    "slewLimit": 0.0
+   },
+   "accelerationLimit": null,
+   "admitted": false,
+   "reason": "INVALID_FIELD"
+  },
+  {
+   "id": "csv-integral",
+   "mode": "csv",
+   "loop": {
+    "kp": 2,
+    "ki": 3,
+    "kd": 0.0,
+    "integralLimit": 1.0,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": true
+  },
+  {
+   "id": "csv-integral-missing-limit",
+   "mode": "csv",
+   "loop": {
+    "kp": 2,
+    "ki": 3,
+    "kd": 0.0,
+    "integralLimit": null,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": false,
+   "reason": "INTEGRAL_LIMIT_REQUIRED"
+  },
+  {
+   "id": "csv-integral-zero-limit",
+   "mode": "csv",
+   "loop": {
+    "kp": 2,
+    "ki": 3,
+    "kd": 0.0,
+    "integralLimit": 0.0,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": false,
+   "reason": "INVALID_FIELD"
+  },
+  {
+   "id": "csv-limit-without-ki",
+   "mode": "csv",
+   "loop": {
+    "kp": 2,
+    "ki": 0.0,
+    "kd": 0.0,
+    "integralLimit": 1.0,
+    "slewLimit": null
+   },
+   "accelerationLimit": null,
+   "admitted": false,
+   "reason": "INTEGRAL_LIMIT_WITHOUT_KI"
+  }
+ ]
+}

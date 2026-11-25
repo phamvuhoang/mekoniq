@@ -221,6 +221,17 @@ test('IR08 digests: normalized identity ignores run id, boot id, chunking and ch
  expect(seeded.trajectoryDigest).not.toBe(a.d.trajectoryDigest); // the seed is part of the identity: two runs never match by dropping it
 });
 
+test('hostArch: a run without a drive keeps the R2b digest formula whatever the identity says; a run with a drive hashes the architecture (contracts §1)',async()=>{
+ const d=await temp(),r=await read(d,await record(d,30,aisle)),m=navigationMetrics(serve,r),assertions=evidenceAssertions(r,m,29,null);
+ const digest=(scene:NavigationSceneV1,arch?:'arm64'|'x86_64')=>evidenceDigests(scene,{...id,engine:{version:'1',pythonVersion:'3.11',...arch?{hostArch:arch}:{}}} as never,r,m,assertions);
+ // no drive ref in the scene: with or without hostArch, either architecture, the same digests
+ expect(digest(serve,'arm64')).toEqual(digest(serve));expect(digest(serve,'x86_64')).toEqual(digest(serve));
+ // a drive ref in the scene: the architecture is part of the identity
+ const driven={...serve,engine:{...serve.engine,driveModelRef:{id:'x',revision:1,path:'x.json',sha256:'a'.repeat(64)}}} as NavigationSceneV1;
+ expect(digest(driven,'arm64').trajectoryDigest).not.toBe(digest(driven,'x86_64').trajectoryDigest);
+ expect(digest(driven,'arm64')).toEqual(digest(driven,'arm64'));
+});
+
 test('EVI03 replay cursor: pose, scans, contacts and controls only from samples at or before the cursor; a cursor in a gap has no pose',async()=>{
  const dir=await temp(),rec=await openNavigationRecorder({directory:dir,scene:serve,runId:'run-a'});
  for(let t=0;t<30;t++)await rec.append(snap(serve,t,aisle(t),{range:3+t/100}),t?step(t):null);

@@ -1,0 +1,246 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.drive-trace-manifest.v1",
+  "title": "BenchTraceManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "drive-trace"
+    },
+    "identity": {
+      "$ref": "#/definitions/BenchTraceIdentity"
+    },
+    "dtS": {
+      "const": 0.002
+    },
+    "substeps": {
+      "const": 10
+    },
+    "chunks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^drive-trace-[0-9]{6}-[a-f0-9]{8}\\.ndjson\\.gz$"
+          },
+          "sha256": {
+            "$ref": "engineering-component.schema.json#/definitions/Digest"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16777216
+          },
+          "firstTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500
+          },
+          "lastTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500
+          }
+        },
+        "required": [
+          "path",
+          "sha256",
+          "bytes",
+          "firstTick",
+          "lastTick"
+        ]
+      },
+      "maxItems": 501
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "firstTick": {
+          "const": 0
+        },
+        "lastTick": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 500
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "firstTick",
+        "lastTick",
+        "complete"
+      ]
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "firstTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 501
+          },
+          "lastTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 501
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "firstTick",
+          "lastTick",
+          "reason"
+        ]
+      },
+      "maxItems": 502
+    },
+    "terminalReason": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "identity",
+    "dtS",
+    "substeps",
+    "chunks",
+    "coverage",
+    "gaps",
+    "terminalReason"
+  ],
+  "definitions": {
+    "BenchTraceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "axisIds": {
+          "type": "array",
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisId"
+          },
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "plantModelDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "driveModelDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "controlProfileDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "runId",
+        "axisIds",
+        "plantModelDigest",
+        "driveModelDigest",
+        "controlProfileDigest"
+      ]
+    },
+    "BenchTraceTick": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One hashed NDJSON record. Optional bodyForwardMps is the chassis forward speed observed at the end of this same wheel tick. Older wheel traces omit it.",
+      "properties": {
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 500
+        },
+        "axes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "axisId": {
+                "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisId"
+              },
+              "samples": {
+                "type": "array",
+                "minItems": 10,
+                "maxItems": 10,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "target": {
+                      "$ref": "drive-io-v1.schema.json#/definitions/DriveTrace/properties/samples/items/anyOf/0/properties/target"
+                    },
+                    "actual": {
+                      "$ref": "drive-io-v1.schema.json#/definitions/DriveTrace/properties/samples/items/anyOf/0/properties/actual"
+                    },
+                    "feedback": {
+                      "$ref": "drive-io-v1.schema.json#/definitions/DriveTrace/properties/samples/items/anyOf/0/properties/feedback"
+                    },
+                    "torqueNm": {
+                      "$ref": "drive-io-v1.schema.json#/definitions/DriveTrace/properties/samples/items/anyOf/0/properties/torqueNm"
+                    },
+                    "saturated": {
+                      "$ref": "drive-io-v1.schema.json#/definitions/DriveTrace/properties/samples/items/anyOf/0/properties/saturated"
+                    }
+                  },
+                  "required": [
+                    "target",
+                    "actual",
+                    "feedback",
+                    "torqueNm",
+                    "saturated"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "axisId",
+              "samples"
+            ]
+          }
+        },
+        "bodyForwardMps": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "tick",
+        "axes"
+      ]
+    }
+  }
+}

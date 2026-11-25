@@ -1,0 +1,6 @@
+- **Optimized Python bypass — ADDRESSED.** Missing and skipped comparisons exit explicitly, and the guest refuses optimization before capturing worker evidence (scripts/check-r4-cld02.py:13,33,36). The committed tests cover both invalid receipts under PYTHONOPTIMIZE=1 and the optimized guest refusal (tests/unit/r4-cld02-guards.test.ts:26,30,35).
+- **Conflicting Docker selectors — ADDRESSED.** The resolver rejects simultaneous selectors and requires an absolute Unix endpoint. The wrapper clears the context and exports the verified endpoint before running any daemon or build command (scripts/r4-cld02-docker-host.sh:4,9, scripts/r4-cld02.sh:51–55). Regression cases cover the conflicting pair and the individual selection paths (tests/unit/r4-cld02-guards.test.ts:48).
+- **New breakage in the fix diff:** None found.
+- **Out-of-scope observations:** None.
+- **Evidence checked:** The appended report records 5 failures before the fix, then 11 passing CLD02 guard tests, 10 passing CLD01 identity tests and successful optimized receipt validation on 266 recorded cases (task-5a-report.md:77,93). No suites rerun.
+- **Fix round:** All findings addressed at 94729d61. Approved for hosted execution. The native CLD02 run and final CLD01 remain pending.

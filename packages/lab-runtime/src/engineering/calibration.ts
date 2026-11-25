@@ -6,6 +6,8 @@ export type {CalibrationDataset,CalibrationResult,PredictionSeries};
 const ajv=new Ajv({allErrors:true,strict:true});
 ajv.addSchema(schema);
 const validateDataset=ajv.getSchema(schema.$id)!,validatePrediction=ajv.getSchema(`${schema.$id}#/definitions/PredictionSeries`)!;
+/** The dataset schema's own verdict, for importers that must refuse what the assessor would refuse. */
+export const isCalibrationDataset=(x:unknown):x is CalibrationDataset=>validateDataset(x) as boolean;
 const empty=(status:CalibrationResult['status'],reasons:string[],invalidatedBy:string|null=null):CalibrationResult=>({status,reasons:[...new Set(reasons)],residuals:{},domain:{},calibratedCapabilities:[],invalidatedBy});
 
 /**
@@ -74,7 +76,7 @@ export function assessCalibration(dataset:CalibrationDataset|null,prediction:Pre
   return {status:unique.length?'fail':'pass',reasons:unique,residuals,domain,calibratedCapabilities:capabilities,invalidatedBy:null};
 }
 /** Linear interpolation inside one predicted interval; refuses when the bracketing samples are further apart than the policy or the instant is outside the series. */
-function sampleAt(times:readonly number[],values:readonly number[],at:number,maxGapNs:number):number|'gap' {
+export function sampleAt(times:readonly number[],values:readonly number[],at:number,maxGapNs:number):number|'gap' {
   for (let i=0;i<times.length;i++) {
     if (times[i]===at) return values[i]!;
     if (times[i]!>at) {

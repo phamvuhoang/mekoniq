@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "documentType": "fault-catalog",
+  "id": "fault-catalog-v1",
+  "faults": {
+    "encoder-dropout": {
+      "layer": "feedback",
+      "target": "axis",
+      "appliedBy": "worker",
+      "params": {
+        "durationMs": {
+          "min": 20,
+          "max": 5000,
+          "required": true,
+          "multipleOf": 20
+        }
+      }
+    },
+    "motor-weak": {
+      "layer": "drive",
+      "target": "axis",
+      "appliedBy": "worker",
+      "params": {
+        "durationMs": {
+          "min": 20,
+          "max": 60000,
+          "required": true,
+          "multipleOf": 20
+        },
+        "torqueScale": {
+          "min": 0.2,
+          "max": 0.95,
+          "required": true
+        }
+      }
+    },
+    "drive-trip": {
+      "layer": "drive",
+      "target": "axis",
+      "appliedBy": "worker",
+      "params": {
+        "durationMs": {
+          "min": 20,
+          "max": 20,
+          "required": true,
+          "multipleOf": 20
+        }
+      }
+    },
+    "command-delay": {
+      "layer": "command",
+      "target": "axis",
+      "appliedBy": "worker",
+      "params": {
+        "durationMs": {
+          "min": 20,
+          "max": 60000,
+          "required": true,
+          "multipleOf": 20
+        },
+        "delayMs": {
+          "min": 20,
+          "max": 200,
+          "multipleOf": 2,
+          "required": true
+        }
+      }
+    },
+    "command-loss": {
+      "layer": "command",
+      "target": "axis",
+      "appliedBy": "runtime",
+      "params": {
+        "durationMs": {
+          "min": 20,
+          "max": 2000,
+          "required": true,
+          "multipleOf": 20
+        }
+      }
+    },
+    "grip-weak": {
+      "layer": "drive",
+      "target": "gripper",
+      "appliedBy": "worker",
+      "params": {
+        "durationMs": {
+          "min": 20,
+          "max": 60000,
+          "required": true,
+          "multipleOf": 20
+        },
+        "torqueScale": {
+          "min": 0.1,
+          "max": 0.9,
+          "required": true
+        }
+      }
+    },
+    "lidar-noise": {
+      "layer": "sensor",
+      "target": "lidar",
+      "appliedBy": "runtime",
+      "params": {
+        "durationMs": {
+          "min": 20,
+          "max": 60000,
+          "required": true,
+          "multipleOf": 20
+        },
+        "sigmaM": {
+          "min": 0.005,
+          "max": 0.1,
+          "required": true
+        },
+        "dropoutFraction": {
+          "min": 0,
+          "max": 0.5,
+          "required": true
+        }
+      }
+    },
+    "drive-reset": {
+      "layer": "drive",
+      "target": "axis",
+      "appliedBy": "worker",
+      "campaignOnly": true,
+      "params": {
+        "durationMs": {
+          "min": 20,
+          "max": 20,
+          "required": true,
+          "multipleOf": 20
+        }
+      }
+    }
+  }
+}

@@ -6,8 +6,9 @@ import postgres from 'postgres';
 import {closeCloudDatabase} from '../../apps/cloud-web/src/server/modules/identity/tenant-context';
 export async function setupWave02() {
  const serviceFile=process.env.MEKONIQ_TEST_SERVICE_RECEIPT;if(!serviceFile)throw Error('OWNED_TEST_SERVICE_REQUIRED: run through scripts/owned-source-ci.mjs; a scratch DB alone is insufficient');
- const receipt=JSON.parse(readFileSync(serviceFile,'utf8'));if(ownedCiReceiptIssues(receipt).length||ownedCiTargetIssues(process.env).length)throw Error('OWNED_TEST_SERVICE_REQUIRED');
- const container=JSON.parse(execFileSync('docker',['inspect','supabase_db_'+receipt.projectId],{encoding:'utf8',timeout:10000}))[0];if(container.Id!==receipt.containerId||!container.NetworkSettings?.Ports?.['5432/tcp']?.some((p:{HostIp:string;HostPort:string})=>p.HostPort==='57422'&&['127.0.0.1','0.0.0.0'].includes(p.HostIp))||container.NetworkSettings.Ports['5432/tcp'].some((p:{HostIp:string;HostPort:string})=>p.HostPort!=='57422'||!['127.0.0.1','0.0.0.0','::','::1'].includes(p.HostIp)))throw Error('OWNED_TEST_SERVICE_CHANGED');
+ const receipt=JSON.parse(readFileSync(serviceFile,'utf8')),projectId:unknown=receipt?.projectId;
+ if(typeof projectId!=='string'||ownedCiReceiptIssues(receipt).length||ownedCiTargetIssues(process.env).length)throw Error('OWNED_TEST_SERVICE_REQUIRED');
+ const container=JSON.parse(execFileSync('docker',['inspect','supabase_db_'+projectId],{encoding:'utf8',timeout:10000}))[0];if(container.Id!==receipt.containerId||!container.NetworkSettings?.Ports?.['5432/tcp']?.some((p:{HostIp:string;HostPort:string})=>p.HostPort==='57422'&&['127.0.0.1','0.0.0.0'].includes(p.HostIp))||container.NetworkSettings.Ports['5432/tcp'].some((p:{HostIp:string;HostPort:string})=>p.HostPort!=='57422'||!['127.0.0.1','0.0.0.0','::','::1'].includes(p.HostIp)))throw Error('OWNED_TEST_SERVICE_CHANGED');
  // MEKONIQ_TEST_DB lets the restore rehearsals point the whole cloud stack at a scratch database on the same local server; it defaults to the normal one.
  const database=process.env.MEKONIQ_TEST_DB??'postgres';
  const url=process.env.DATABASE_ADMIN_URL??`postgresql://postgres:postgres@127.0.0.1:57422/${database}`;
@@ -34,6 +35,6 @@ export async function setupWave02() {
   if(!exists.length)await admin.begin(sql=>sql.unsafe(readFileSync(`supabase/migrations/${filename}`,'utf8')));
  }
  process.env.DATABASE_URL=`postgresql://mekoniq_app:local_test_only@127.0.0.1:57422/${database}`;
- return {admin,async close(){await closeCloudDatabase();await admin.end({timeout:1});}};
+ return {admin,projectId,async close(){await closeCloudDatabase();await admin.end({timeout:1});}};
  }catch(error){await admin.end({timeout:1});throw error;}
 }

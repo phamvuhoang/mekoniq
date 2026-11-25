@@ -1,6 +1,9 @@
 """Portable compilation and protocol checks only; these never qualify ROS/Gazebo."""
+import hashlib
 import copy
 import json
+import os
+import stat
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import pytest
@@ -145,11 +148,90 @@ def test_recovered_bag_is_a_verified_copy_and_original_is_unchanged(tmp_path):
     assert json.loads((tmp_path/'copy/retention.json').read_text())[0]['method']=='sqlite-readonly-backup-after-owned-worker-loss'
 
 
-def test_frozen_native_manifest_matches_current_compiler(tmp_path):
+# Measured full-file SHA-256 pairs for historical v1 exports (manifest, URDF).
+NATIVE_V1_PROFILES = (
+    ('03e5eb26079b0b849b148293364dd35eb73d96265364edc569161a892605277b',
+     '48049a8170dc1f516a201fa515d1cbe5f71943527afcfedb4519d53bd6dc36b8'),
+    ('2b02615ff42a8a6bf433158ada1a374d43e4a89d88f49f268fcf71b4aee2fd34',
+     '69a350c3f5d9b1ab23ea8613294cc1d550f9fd3e073375c5b3e98d7f0de01400'),
+)
+
+
+def check_native_v1_profile(directory):
+    frozen = ROOT/'robotics/simulation/fixtures/engineering-navigation-v1'
+    manifest = 'compiler-manifest.json'
+    urdf = 'robots/amr-1.urdf'
+    def digest(path):
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    assert digest(frozen/manifest) == NATIVE_V1_PROFILES[0][0]
+    expected = {row['path']: row['sha256'] for row in json.loads((frozen/manifest).read_text())['outputs']}
+    expected_dirs = {p.as_posix()+'/' for name in expected for p in Path(name).parents if p != Path('.')}
+    assert stat.S_ISDIR(directory.lstat().st_mode)
+    actual = set()
+    for path in directory.rglob('*'):
+        mode = path.lstat().st_mode
+        name = path.relative_to(directory).as_posix()
+        assert stat.S_ISREG(mode) or stat.S_ISDIR(mode), name
+        actual.add(name + ('/' if stat.S_ISDIR(mode) else ''))
+    assert actual == set(expected) | expected_dirs | {manifest}
+    assert (digest(directory/manifest), digest(directory/urdf)) in NATIVE_V1_PROFILES
+    assert (directory/'native-mapping.json').read_bytes() == (frozen/'native-mapping.json').read_bytes()
+    for row in json.loads((directory/manifest).read_text())['outputs']:
+        name = row['path']
+        assert digest(directory/name) == row['sha256']
+        if name != urdf:
+            assert row['sha256'] == expected[name]
+
+
+def test_native_v1_reference_profile(tmp_path):
     from compiler.engineering_native import compile_native
-    compile_native(*inputs(),tmp_path)
-    for name in ('compiler-manifest.json','native-mapping.json'):
-        assert (tmp_path/name).read_bytes()==(ROOT/'robotics/simulation/fixtures/engineering-navigation-v1'/name).read_bytes()
+    compile_native(*inputs(), tmp_path)
+    check_native_v1_profile(tmp_path)
+
+
+@pytest.mark.parametrize('mutation', ['mixed pair', 'third URDF', 'third manifest', 'changed model', 'changed mapping', 'extra file'])
+def test_native_v1_profile_rejects_modified_outputs(tmp_path, mutation):
+    from compiler.engineering_native import compile_native
+    compile_native(*inputs(), tmp_path)
+    urdf = tmp_path/'robots/amr-1.urdf'
+    if mutation == 'mixed pair':
+        # Only these five joint-origin pitches differ in the two retained v1 URDF files.
+        xml = urdf.read_bytes()
+        old, new = b'0.12000000000000001 0"', b'0.12 0"'
+        if old not in xml:
+            old, new = new, old
+        changed = xml.replace(old, new)
+        assert hashlib.sha256(changed).hexdigest() in {pair[1] for pair in NATIVE_V1_PROFILES}
+        assert changed != xml
+        urdf.write_bytes(changed)
+    elif mutation == 'extra file':
+        (tmp_path/'extra').touch()
+    else:
+        target = tmp_path/{'third URDF': 'robots/amr-1.urdf', 'third manifest': 'compiler-manifest.json',
+                           'changed model': 'physical-model.json', 'changed mapping': 'native-mapping.json'}[mutation]
+        target.write_bytes(target.read_bytes() + b'\n')
+    with pytest.raises(AssertionError):
+        check_native_v1_profile(tmp_path)
+
+
+@pytest.mark.parametrize('mutation', ['linked manifest', 'dangling link', 'FIFO', 'extra directory'])
+def test_native_v1_rejects_changed_member_types(tmp_path, mutation):
+    from compiler.engineering_native import compile_native
+    directory = tmp_path/'output'
+    compile_native(*inputs(), directory)
+    if mutation == 'linked manifest':
+        manifest = directory/'compiler-manifest.json'
+        original = tmp_path/'original-manifest.json'
+        manifest.rename(original)
+        manifest.symlink_to(original)
+    elif mutation == 'dangling link':
+        (directory/'extra').symlink_to('absent')
+    elif mutation == 'FIFO':
+        os.mkfifo(directory/'extra')
+    else:
+        (directory/'extra').mkdir()
+    with pytest.raises(AssertionError):
+        check_native_v1_profile(directory)
 
 
 @pytest.fixture

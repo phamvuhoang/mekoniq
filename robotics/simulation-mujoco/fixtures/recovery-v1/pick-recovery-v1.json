@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "documentType": "recovery-policy",
+  "id": "pick-recovery-v1",
+  "revision": 1,
+  "digest": "512b5ef52f44dba52b1c80d8bf32a5d82a65c295354cbf792b9649f7f7999e6e",
+  "calibration": "not_calibrated",
+  "parameterSource": "assumed",
+  "beliefWaitTicks": 250,
+  "rules": [
+    {
+      "id": "grip-not-established",
+      "on": [
+        "GRIP_NOT_ESTABLISHED"
+      ],
+      "requires": [
+        "arm_state_fresh",
+        "no_unknown_command",
+        "cup_on_declared_support",
+        "cup_not_between_pads"
+      ],
+      "steps": [
+        "open_gripper",
+        "retreat_pick_approach",
+        "await_fresh_belief",
+        "retry_pick"
+      ],
+      "maxAttempts": 2
+    },
+    {
+      "id": "belief-not-usable",
+      "on": [
+        "BELIEF_UNAVAILABLE",
+        "BELIEF_STALE"
+      ],
+      "requires": [
+        "arm_state_fresh",
+        "no_unknown_command"
+      ],
+      "steps": [
+        "await_fresh_belief",
+        "retry_pick"
+      ],
+      "maxAttempts": 2
+    }
+  ]
+}

@@ -28,3 +28,12 @@ test('a rehashed report cannot invent measured metrics or omit the raw physics s
  const copy=structuredClone(slow),r=JSON.parse(copy.report.content);r.physicsEvidence.metrics.maxTiltRad.value=123;copy.report=artifact('report.json',r);expect(comparePhysicsRuns(base,copy).comparable).toBe(false);
  const missing=structuredClone(slow);missing.artifacts=missing.artifacts.filter(a=>!a.ref.path.startsWith('physics/'));expect(comparePhysicsRuns(base,missing).comparable).toBe(false);
 });
+
+// ---- review fix: a drive fault schedule is an input too ----
+import {sameFaultSchedule} from '../../packages/lab-runtime/src/v2/simulation3d/physics-comparison';
+test('two runs compare only when they carry the same drive fault schedule (both none, or the same hash)',()=>{
+ expect(sameFaultSchedule({},{})).toBe(true);
+ expect(sameFaultSchedule({driveFaultSchedule:{hash:'a'}},{driveFaultSchedule:{hash:'a'}})).toBe(true);
+ expect(sameFaultSchedule({driveFaultSchedule:{hash:'a'}},{})).toBe(false);
+ expect(sameFaultSchedule({driveFaultSchedule:{hash:'a'}},{driveFaultSchedule:{hash:'b'}})).toBe(false);
+});

@@ -938,7 +938,62 @@ export interface CreateRunRequest {
     bundleDigest: string;
     projectDigest: string;
   };
-  worldExperimentId?: 'world-nominal-v1' | 'world-dock-drift-v1' | 'world-cup-fall-v1';
+  worldExperimentId?:
+    'world-nominal-v1' | 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+  /**
+   * Registered server-owned virtual-drive experiment (R4) of the shared-world cell. Absent: the R2b control path, byte for byte.
+   */
+  driveExperimentId?:
+    'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
+  /**
+   * R4.4: how the arm of the shared-world cell chooses its grasp point. Absent or fixed_program: the R2b program, byte for byte.
+   */
+  graspMode?: 'fixed_program' | 'belief_ground_truth' | 'belief_estimated';
+  /**
+   * Registered server-owned perception error model (R4.4); only with belief_estimated. The server resolves and digests the document.
+   */
+  perceptionProfileId?: string;
+  /**
+   * Registered server-owned bounded recovery policy (R4.4); only with a belief grasp mode.
+   */
+  recoveryPolicyId?: string;
+  /**
+   * Registered server-owned grasp program; belief modes of the shared-world cell only. Absent preserves the original program.
+   */
+  graspProgramId?: string;
+  /**
+   * Single-axis bench request (R4, BenchRequestV1); only the bench scenarios accept it. The server validates its shape and cross-field rules itself.
+   */
+  bench?: {
+    [k: string]: any;
+  };
+  /**
+   * Drive, feedback, command-channel and sensor faults of this run (R4, V08). Admitted against the server's fault catalog; run-scoped, never part of the project. Absent: no injection, byte for byte.
+   *
+   * @maxItems 16
+   */
+  driveFaultSchedule?: DriveFaultEntryV1[];
+}
+/**
+ * A fault-schedule entry of the R4 drive catalog (V08): the shape of FaultScheduleEntry plus catalog parameters, and targets named like axes (robot/axis). It is a separate document so the frozen FaultScheduleEntry schema keeps its bytes.
+ */
+export interface DriveFaultEntryV1 {
+  id: string;
+  faultId: string;
+  targetId: string;
+  trigger:
+    | {
+        kind: 'elapsed_sim_ms';
+        value: number;
+      }
+    | {
+        kind: 'phase';
+        value: 'brew' | 'grasp' | 'handoff' | 'delivery';
+      };
+  durationMs: number;
+  params?: {
+    [k: string]: number;
+  };
 }
 
 export interface RunVerification {

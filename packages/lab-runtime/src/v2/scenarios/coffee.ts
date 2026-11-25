@@ -301,11 +301,15 @@ export class CoffeeDriver {
   return async(replay?:import('../beverage/coffee-ports').WorldReplaySink)=>{const materialized=captured?await captured.materialize(replay):null,legacy=structuredClone(collision);if(materialized&&!materialized.worldTrace.prefixCovered&&legacy.result==='pass'){legacy.result='not_run';legacy.reasonCodes=[...materialized.worldTrace.reasonCodes];}
    const arm=await buildArmReport(materialized?.state??critical,r.armPlant!,directory,world,assetRef,r.armCell,{collision:legacy,...materialized?{worldTrace:materialized.worldTrace,contentAddressed:true}:{}});return {arm,...materialized?{worldSweep:materialized.worldSweep}:{}};};
  }
+ /** V08: the fault report of a drive world, built by its ports from the recorded stream; the caller supplies what only the Source can say (the journal's serves, attention, whether custody became unknown). */
+ faultReport(facts:Parameters<NonNullable<CoffeePlantPorts['faultReport']>>[0]){return this.ports.faultReport?.(facts);}
+ perceptionReport(){return this.ports.perceptionReport?.();}
  async close(){try{await this.ports.close();}finally{this.ledger?.close();this.ledger=undefined;}}
  async report():Promise<CoffeeReport>{
   const jobs:JsonObject[]=[],cups:CoffeeReport['cups']=[];
   for(const w of this.st.workload){const j=await this.ctx.source.read('coffee-job',w.jobId).catch(()=>null),cup=await this.ctx.source.read('cup',w.cupId);if(!j?.version||!cup.version)continue;jobs.push(j.state);cups.push(cup.state as unknown as CoffeeReport['cups'][number]);}
-  return {jobs,cups,...this.ports.custodyEvidence==='correlated'?{physicalCustody:this.ports.report().cupLedger}:{},cellEffects:(await this.ctx.source.effects()).filter(e=>e.type==='cell.execute').map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject})),
+  const drive=await this.ports.driveReport?.();
+  return {jobs,cups,...this.ports.custodyEvidence==='correlated'?{physicalCustody:this.ports.report().cupLedger}:{},...drive?{driveEvidence:drive}:{},cellEffects:(await this.ctx.source.effects()).filter(e=>e.type==='cell.execute').map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject})),
    armTrace:{...this.st.arm.plantId==='mujoco_arm'?{tag:'mujoco_position_actuator_tracked',interpolation:'quintic-sync-v1',modelRevision:XARM6_SI.revision}:{tag:MOCK_KINEMATIC,interpolation:'linear_joint_illustrative',modelRevision:PUMA560_SI.revision},limitsOk:this.arm?this.st.arm.limitsOk:false,samples:this.arm?structuredClone(this.st.arm.trace):[],collision:this.arm?structuredClone(this.st.arm.collision??null):null,stop:this.arm?structuredClone(this.st.arm.stop??null):null},plantLog:structuredClone(this.st.plant.log) as unknown as JsonObject[]};
  }
 }

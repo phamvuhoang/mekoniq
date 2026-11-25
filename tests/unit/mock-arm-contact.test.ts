@@ -2,6 +2,7 @@
 // hold it, and it is put only once the plant says it rests on the tray. The plant here is a scripted pure function (actual = commanded, a simple gripper and one cup).
 import { expect, test } from 'vitest';
 import { readFileSync } from 'node:fs';
+import {createHash} from 'node:crypto';
 import { MockArmPlant, MOCK_ARM_PARAMS, PUMA_PROGRAMS, type ArmProgramSet, type ArmTracking, type PlantExtras } from '../../packages/cell-adapters/src/mock-arm';
 import { quinticSegment } from '../../packages/cell-adapters/src/arm-motion';
 import type { CellCommand, CellReport } from '../../packages/cell-adapters/src/contract';
@@ -99,6 +100,55 @@ test('success: cup-pick then cup-place complete; the cup is taken only once the 
   expect(typeof place.evidence.maxSlipM).toBe('number'); expect(place.evidence.maxSlipM as number).toBeLessThan(P.slipTolM!);
   expect(h.state.stop).toBeUndefined();
   expect(JSON.parse(JSON.stringify(h.state))).toEqual(h.state);
+});
+
+test('the complete legacy pick/place trace matches a pre-two-stage v1 reference profile', () => {
+  const h = make(); h.drive('p1', 'cup-pick'); h.drive('p2', 'cup-place');
+  const reference = [
+    'e46f830d6ee9136954199fa087514657977fe6a5df8b1317ae9420068b946b04',
+    'de8dbb169535faafb4d4f8b8a86e78e6834b50fc21138aae9214d5d0b290659d',
+  ];
+  const output = { trace: h.trace, state: h.state, reports: h.reports };
+  const digest = (value: typeof output) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+  expect(reference).toContain(digest(output));
+  for (const field of ['command', 'grip', 'report', 'TCP']) {
+    const changed = structuredClone(output);
+    if (field === 'report') changed.reports.pop();
+    else if (field === 'TCP') changed.state.trace[0]!.tcp[0] += 1e-12;
+    else {
+      const index = field === 'command' ? 0 : changed.trace.findIndex(row => JSON.parse(row)[3]?.phase === 'closing');
+      expect(index).toBeGreaterThanOrEqual(0);
+      const tick = JSON.parse(changed.trace[index]!);
+      if (field === 'command') tick[1][0] += 1e-12;
+      else tick[3].phase = 'opening';
+      changed.trace[index] = JSON.stringify(tick);
+    }
+    expect(reference, field).not.toContain(digest(changed));
+  }
+});
+test('a capture target holds until stable measured contact and custody, then secures before lift and opens fully at release',()=>{
+ const h=make({}, {...PROGRAMS,contact:{...CONTACT,captureM:0.07}});
+ expect(h.plant.execute(command('p1','cup-pick')).accepted).toBe(true);
+ let captureTicks=0,secureAt=-1;
+ for(let i=0;i<4000&&h.state.programs[0]!.state==='running';i++){
+  const hadCustody=h.state.holding!==null;h.tick();
+  if(h.state.gripper==='closed'&&h.state.holding===null){expect(h.state.gripperCommandM).toBe(0.07);captureTicks++;}
+  if(!hadCustody&&h.state.holding!==null){secureAt=h.state.tick;expect(h.state.gripperCommandM).toBe(0);expect(h.state.programs[0]!.index).toBe(2);}
+ }
+ expect(captureTicks).toBeGreaterThanOrEqual(CONTACT.gripSettleTicks);expect(secureAt).toBeGreaterThan(0);
+ expect(h.state.programs[0]!.evidence.liftPoseReached).toBe(true);expect(h.takes).toEqual([{id:'cup-1',heldNow:true}]);
+ expect(h.drive('p2','cup-place').state).toBe('completed');expect(h.state.gripperCommandM).toBe(OPEN);
+});
+test('capture never secures when no cup is held or the cup world refuses custody',()=>{
+ for(const script of [{noCup:true},{takeRefuses:true}]){
+  const h=make(script,{...PROGRAMS,contact:{...CONTACT,captureM:0.07}});h.drive('p1','cup-pick');
+  expect(h.state.holding).toBeNull();expect(h.state.gripperCommandM).toBe(0.07);
+  if(script.takeRefuses)expect(h.state.stop?.reason).toBe('CUP_CUSTODY_MISMATCH');
+ }
+});
+test.each([-0.001,0.0889,0.1,NaN,Infinity])('capture target %s is refused before controller state changes',captureM=>{
+ const set={...PROGRAMS,contact:{...CONTACT,captureM}};
+ expect(()=>make({},set)).toThrow('ARM_PROGRAM_INVALID');
 });
 
 test.each([

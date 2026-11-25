@@ -31,9 +31,18 @@ def build_mobile(*, run_id, boot_id, seq, tick, scene, reading):
     time = str(tick * TICK_NS)
     physics = {"schemaVersion": 1, "tick": tick, "simTimeNs": time, "contacts": reading["contacts"], "loads": reading["loads"],
                "wheels": [reading["wheel"]], "odometry": [{"robotId": reading["robot"]["robotId"], "poseDriveMap": reading["odometry"]}], "base": [reading["base"]]}
-    return {"schemaVersion": 1, "runId": run_id, "bootId": boot_id, "seq": str(seq), "tick": tick, "simTimeNs": time, "sceneDigest": scene["sceneDigest"],
+    snap = {"schemaVersion": 1, "runId": run_id, "bootId": boot_id, "seq": str(seq), "tick": tick, "simTimeNs": time, "sceneDigest": scene["sceneDigest"],
             "robots": [reading["robot"]], "arms": [], "props": [{"propId": p["propId"], "position": p["poseMap"]["positionM"], "quaternionXyzw": p["poseMap"]["quaternionXyzw"],
               "restingOn": reading.get("resting", {}).get(p["propId"])} for p in reading["loads"]], "physics": physics}
+    return _with_drives(snap, reading)
+
+
+def _with_drives(snap, reading):
+    """A drive run's telemetry (and, in a bench, the trace) as the engine read it; a run without them keeps its bytes."""
+    for key in ("drives", "driveTrace"):
+        if key in reading:
+            snap[key] = reading[key]
+    return snap
 
 
 def _finite(values):
@@ -121,5 +130,5 @@ def build(*, run_id, boot_id, seq, tick, scene, reading, limits):
            "collisionIds": collision_ids([tuple(map(tuple, c)) for c in reading["tickContacts"]], set(held), allowed), "gripper": {"openingM": max(0.0, float(grip["openingM"])), "heldPropIds": held}}
     props = [{"propId": pid, "position": [float(v) for v in p["position"]], "quaternionXyzw": [float(v) for v in p["quaternionXyzw"]], "restingOn": resting[pid]}
              for pid, p in sorted(reading["props"].items())]
-    return {"schemaVersion": 1, "runId": run_id, "bootId": boot_id, "tick": tick, "simTimeNs": str(tick * TICK_NS), "seq": str(seq), "sceneDigest": scene["sceneDigest"],
-            "robots": [], "arms": [arm], "props": props}
+    return _with_drives({"schemaVersion": 1, "runId": run_id, "bootId": boot_id, "tick": tick, "simTimeNs": str(tick * TICK_NS), "seq": str(seq), "sceneDigest": scene["sceneDigest"],
+                         "robots": [], "arms": [arm], "props": props}, reading)

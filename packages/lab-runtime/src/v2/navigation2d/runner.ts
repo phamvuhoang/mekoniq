@@ -1,3 +1,10 @@
+import {buildDriveEvidence} from '../control/drive-report';
+import {experimentOfMobileModel} from '../control/drive-experiments';
+import {DRIVE_FAULTS,applyCommandLoss,faultEventsAt,receiptsMatch,runtimeFaultsAt,validateDriveFaultSchedule,type FaultInjection,type FaultReceipt} from '../control/drive-faults';
+import {lidarNoise} from '../control/sensor-transforms';
+import {buildFaultReport,serveTicksOf,servedFacts,type FaultReportInput} from '../fault-report';
+import {driveDocumentDigest,type FaultOracleV1} from '../control/drive-io';
+import {admitDriveDocuments,mobileDrive,driveManifest,replayMobileCommands,type MobileDrive} from '../control/drive-run';
 import {openPhysicsRecorder,readPhysicsEvidence,readPhysicsManifest,preparePhysicsAdmission,validatePhysicsRecord,type PhysicsRecorder} from '../simulation3d/physics-evidence';
 import {physicsMetrics} from '../simulation3d/physics-metrics';
 // Fixed-step scenario runner for a plant port (IR-SIM today). The source runner is the only scheduler; per fixed 20 ms tick:
@@ -33,7 +40,9 @@ import {baseInMap,yawOf} from '../../engineering/navigation-model';
 import {framePose} from '../../engineering/inertia';
 import {quaternionFromYaw} from '../frames';
 import {createIRSimNavigationAdapter,initialAdapterState,type IRSimAdapterState,type IRSimNavigationAdapter} from './adapter';
-import {actorUpdatesAt,fixtureFile,resolveScenarioFixture,type ResolvedFixture} from './scenario-fixtures';
+import {SCENARIO_FIXTURES,TRAY_PERSON_FIXTURE,actorUpdatesAt,fixtureFile,resolveScenarioFixture,type ResolvedFixture} from './scenario-fixtures';
+import {TRAY_EXPERIMENTS,isTrayExperiment} from '../simulation3d/tray-experiments';
+import {blockingReadIssues,buildTrayEvidence,type TrayPolicy} from '../simulation3d/tray-verdict';
 import {createZoneBridge,createZoneTraffic} from '../backends/zone-bridge';
 import type {P,Pose2} from './geometry';
 import {awaitTick,realWall,type PaceAnchor,type WallClock} from '../pace';
@@ -57,8 +66,11 @@ export interface IRSimRunProviders extends RunProviders {irsim:IRSimRuntimeOptio
 const TILT_LIMIT_RAD=0.35,EVIDENCE_FLUSH_TICKS=100,EPOCH=Date.parse('2026-11-01T00:00:00Z'),ROBOT_TYPES=['robot.execute','robot.cancel','robot.requestStop'],FINAL=['completed','cancelled','failed'],SCENE='navigation-scene.json',FIXTURE='scenario-fixture.json';
 const sha256=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 interface Confirmation {due:number|null;type:string;robotId:string}
+type SensorTransforms=NonNullable<import('./contracts').PhysicsTickRecord['sensorTransforms']>;
 interface PlantCheckpoint {status:'none'|'live'|'lost'|'stopped';reason:string|null;bootId:string|null;requests:number;snapshot:IRSimSnapshotV1|null;/** Mobile-only durable latch: create may have mutated the world, including tick-0 priming. */startupAttempt?:true}
 interface Checkpoint {
+ /** V08: the fault injections persisted before they were sent, tick by tick (the report reconciles them with the receipts). */
+ driveFaultIntents?:{tick:number;injections:FaultInjection[]}[];
  schemaVersion:1;provider:string;runId:string;manifestHash:string;manifest:RunReport['manifest'];roles:Roles;trays:Record<string,number>;
  tick:number;started:boolean;paused:boolean;cancelled:boolean;suspended:boolean;revision:number;ordinal:number;dispatchDue:boolean;telemetrySeq?:number;reclaimed?:boolean;
  workload:WorkloadItem[];confirmations:Record<string,Confirmation>;parking:Record<string,string>;attention:Attention[];
@@ -67,7 +79,7 @@ interface Checkpoint {
  pendingOps:{ordinal:number;operationId:string;type:string;payloadHash:string}[];inFlight:boolean;
  plant:PlantCheckpoint;adapters:Record<string,IRSimAdapterState>;distanceM:Record<string,number>;maxConcurrentMovers:number;
  /** what the worker's describe reported when the plant started */
- engine?:{packageVersion:string;pythonVersion:string};
+ engine?:{packageVersion:string;pythonVersion:string;hostArch?:'arm64'|'x86_64'};
  /** gaps the run asked the recorder for (a lost step ACK, a refused append): re-recorded on reopen when the manifest never got them */
  evidenceGaps?:Gap[];
  /** the recording's terminal reason once it ended: re-recorded on reopen when the manifest never got it (its write failed), so the evidence never turns complete */
@@ -134,15 +146,27 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  const read=fresh?(path:string)=>{if(!providers.bundleFile)throw new Error('ENGINEERING_CLOSURE_MISSING');return providers.bundleFile(input.engineering!.ref.bundleDigest,path);}:(path:string)=>readFile(join(bundleDir,path));
  const {scene,files}=await lockScene(input,project,roles,read,amr.id);
  const stopMonitor=await plant.prepareStopMonitor?.(scene,read);
- const physics=plant.identity.amr.id==='mujoco_3d'?await preparePhysicsAdmission(scene,read):undefined;
- if(physics&&(providers.runtime.evidence?.maxBytes??EVIDENCE_LIMITS.maxBytes)>EVIDENCE_LIMITS.maxBytes)throw new Error('PHYSICS_COMBINED_QUOTA_INVALID');
+ // a scene that names a drive model and a control profile runs its AMR through the diff-drive controller and the virtual drive; one that names neither is the R2b path, untouched
+ const driveDocs=amr.id==='mujoco_3d'?await admitDriveDocuments(scene,read,providers.runtime.workerRoot,scene.robots[0]!.model.physicalModelDigest):undefined;
+ const drive=driveDocs?mobileDrive(driveDocs,{robotId:scene.robots[0]!.robotId,...scene.robots[0]!.model.kinematics}):undefined;
+ // R4 drive faults (V08): run-scoped, never in the project; admitted against the server's catalog with this scene's axes and sensors, or the run is refused before it exists
+ const driveFaults=structuredClone(input.driveFaultSchedule??[]);
+ if(driveFaults.length){
+  const robot=scene.robots[0]!,checked=validateDriveFaultSchedule(driveFaults,{axes:driveDocs?.model.axes.map(a=>a.axisId)??[],lidars:robot.model.sensors.map(x=>`${robot.robotId}/${x.id}`),campaign:providers.faultCampaign===true});
+  if(!checked.ok)throw new Error(checked.reasonCodes[0]!);
+ }
+ // a tray variant is named by a document in its bundle: MJ-TRAY01 runs only with one, nothing else may carry one, and the variant says whether a person crosses the route
+ const tray=await trayExperimentOf(scene,read);
+ if((scenario.id==='MJ-TRAY01')!==!!tray)throw new Error(tray?'TRAY_EXPERIMENT_SCENARIO_MISMATCH':'TRAY_EXPERIMENT_REQUIRED');
  // the scenario's server-owned actors (immutable seeded schedules) and reservation zones on this scene; refused whole, never partly applied
- const fixture=resolveScenarioFixture(scenario.id,scene,input.seed),fixtureBytes=fixture.actors.length?Buffer.from(JSON.stringify(fixtureFile(fixture))):null;
+ const fixture=resolveScenarioFixture(scenario.id,scene,input.seed,tray?.experiment.actor?SCENARIO_FIXTURES.get(TRAY_PERSON_FIXTURE):undefined),fixtureBytes=fixture.actors.length?Buffer.from(JSON.stringify(fixtureFile(fixture))):null;
+ const physics=plant.identity.amr.id==='mujoco_3d'?await preparePhysicsAdmission(scene,read,fixture.actors.map(a=>a.id)):undefined;
+ if(physics&&(providers.runtime.evidence?.maxBytes??EVIDENCE_LIMITS.maxBytes)>EVIDENCE_LIMITS.maxBytes)throw new Error('PHYSICS_COMBINED_QUOTA_INVALID');
  const mapId=scene.world.id,mapRevision=scene.sceneDigest,lock=providers.runtime.lockDigest;
  // an IR-FD01 run without actors or zones keeps its configuration identity exactly as before (no fixture key)
  const configuration={revision:1,hash:hashJson({...plant.identity.completionObservation?{completionObservation:plant.identity.completionObservation}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:plant.identity.simulationPerturbation}:{},roles,trays,sceneDigest:scene.sceneDigest,policy:scene.policy.hash,controller:scene.policy.parameters.controller,...plant.identity.controller?{controllerImplementation:plant.identity.controller.identity}:{},entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??null})),fleet:scenario.fleet??{},...fixture.actors.length||fixture.zones.length?{scenarioFixture:fixture.hash}:{}})};
  const backends=[{...amr}];
- const manifest:Omit<RunReport['manifest'],'runId'>={...plant.identity.completionObservation?{completionObservation:structuredClone(plant.identity.completionObservation)}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:structuredClone(plant.identity.simulationPerturbation)}:{},engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
+ const manifest:Omit<RunReport['manifest'],'runId'>={...driveFaults.length?{driveFaultSchedule:{entries:driveFaults,hash:hashJson(driveFaults)}}:{},...driveDocs?{drive:driveManifest(driveDocs,experimentOfMobileModel((scene.engine as {driveModelRef:{path:string}}).driveModelRef.path))}:{},...plant.identity.completionObservation?{completionObservation:structuredClone(plant.identity.completionObservation)}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:structuredClone(plant.identity.simulationPerturbation)}:{},engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario),...scenario.basedOn?{basedOn:{...scenario.basedOn}}:{}},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends,workerLockDigest:lock,files:files.map(([p,b])=>[p,sha256(b)])}),configuration,recipes:[],
   models:[{id:amr.id,revision:amr.version,hash:scene.sceneDigest,provenance:'simulated_plant'},...scene.robots.map(r=>({id:`navigation-model:${r.robotId}`,revision:String(r.model.schemaVersion),hash:r.model.modelDigest,provenance:'projected'}))],
@@ -171,7 +195,7 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  // every terminal the recorder produces (any flush, the tick limit, close) goes into the checkpoint before its manifest write is attempted
  const owner:{run?:FixedStepRun}={},opened=cp;
  const recorder=await openNavigationRecorder({knownTerminal:cp.evidenceTerminal??null,onTerminal:async reason=>{const c=owner.run?.checkpoint??opened;c.evidenceTerminal=reason.slice(0,500);await writeCheckpoint(dir,c);},directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.runtime.evidence,maxTicks:Math.min(providers.runtime.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
- const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall,stopMonitor,physics);owner.run=run;
+ const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall,stopMonitor,physics,drive,tray&&{id:tray.id,policy:tray.policy,policyDigest:tray.policyDigest});owner.run=run;
  run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{epochMs:EPOCH,navigation:{mapId,mapRevision,bindings},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},fresh).catch(async(e:unknown)=>{await recorder.close();throw e;});
  run.traffic=fixture.zones.length?createZoneTraffic(createZoneBridge(run.source,{async enter(){}},()=>`op-${++run.checkpoint.ordinal}`),fixture.zones,{clearanceM:scene.policy.parameters.safetyMarginM+2*scene.policy.parameters.gridResolutionM}):undefined;
  try{
@@ -217,11 +241,11 @@ class FixedStepRun implements ScenarioRun {
  private physicsRec?:PhysicsRecorder;
  /** Paced-step anchor (D57): memory only, never checkpointed nor in evidence; cleared by pause, resume, cancel, an unpaced step and a reopen. */
  private anchor:PaceAnchor|null=null;
- constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock,private stopMonitor?:import('./plant').PlantStopMonitor,private physics?:Awaited<ReturnType<typeof preparePhysicsAdmission>>){
+ constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock,private stopMonitor?:import('./plant').PlantStopMonitor,private physics?:Awaited<ReturnType<typeof preparePhysicsAdmission>>,private drive?:MobileDrive,private tray?:{id:import('../simulation3d/tray-experiments').TrayExperimentId;policy:import('../simulation3d/tray-verdict').TrayPolicy;policyDigest:string}){
   this.clock=createClock(EPOCH,cp.tick,cp.paused);
   this.telemetry=new TelemetryRecorder(20000,plant.identity.telemetryLabel);
   // the controller sees the fixture's zones (the scene stays the bundle's: its digest is the run's identity); a zone it does not hold is an obstacle
-  this.controller=createNavigationController(fixture.zones.length?{...scene,zones:structuredClone(fixture.zones) as NavigationSceneV1['zones']}:scene,plant.identity.controller?.options);
+  this.controller=createNavigationController(fixture.zones.length?{...scene,zones:structuredClone(fixture.zones) as NavigationSceneV1['zones']}:scene,{...plant.identity.controller?.options,...drive?.navigation});
   const derived=engineSeedOf(cp.manifest.seed,scene).engineSeed;this.engineSeed=plant.identity.evidence?.engineSeed?plant.identity.evidence.engineSeed(derived):derived;
   for(const r of cp.roles.robots){
    const a=createIRSimNavigationAdapter({robotId:r.id,scene,controller:this.controller,now:()=>this.clock.nowMs(),state:cp.adapters[r.id]!,...map,trays:cp.trays[r.id]!,...plant.identity.adapterIdentity?{identity:plant.identity.adapterIdentity}:{}});
@@ -275,16 +299,16 @@ class FixedStepRun implements ScenarioRun {
   const c=this.cp,o=this.irsim;let created=false;
   this.worker=await this.plant.spawn({python:o.python,workerRoot:o.workerRoot,runId:c.runId,bundleRoot:join(this.dir,'bundle'),runDirectory:join(this.dir,'worker'),lockDigest:o.lockDigest,schemaDir:o.schemaDir,sceneDigest:this.scene.sceneDigest,...this.fixture.actors.length?{fixtureSha256:sha256(Buffer.from(JSON.stringify(fixtureFile(this.fixture))))}:{},...o.entry?{entry:o.entry}:{},...o.deadlinesMs?{deadlinesMs:o.deadlinesMs}:{}});
   try{
-   const d=(await this.ask('describe',{})).result as {lockDigest:string;packageVersion:string;pythonVersion:string};
+   const d=(await this.ask('describe',{})).result as {lockDigest:string;packageVersion:string;pythonVersion:string;hostArch?:'arm64'|'x86_64'};
    if(d.lockDigest!==o.lockDigest||d.packageVersion!==this.plant.identity.amr.version)throw new Error('IRSIM_PROVIDER_MISMATCH');
-   c.engine={packageVersion:d.packageVersion,pythonVersion:d.pythonVersion};
+   c.engine={packageVersion:d.packageVersion,pythonVersion:d.pythonVersion,...d.hostArch?{hostArch:d.hostArch}:{}};
    // The plant's explicit seed profile determines engine identity; IR-SIM keeps its legacy NumPy derivation.
    if(this.plant.startupPolicy){c.plant.startupAttempt=true;await this.persist();}
    const snap=(await this.ask('create',{sceneRef:SCENE,seed:this.engineSeed})).result as IRSimSnapshotV1;
    created=true;
    if(this.physics){
     this.physicsRec=await openPhysicsRecorder({directory:join(this.dir,'physics'),identity:{runId:c.runId,bootId:snap.bootId,sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics.loadProfileDigest,physicsProfileDigest:this.physics.physicsProfileDigest},admission:this.physics.admission,assumptions:this.physics.assumptions,metricsPolicyDigest:this.physics.metricsPolicyDigest,...o.evidence,maxTicks:Math.min(o.evidence?.maxTicks??EVIDENCE_LIMITS.maxTicks,this.scenario.maxTicks)});
-    try{this.validatePhysics(snap,0);await this.physicsRec.append((snap as import('./contracts').Sim3DSnapshotV1).physics!);}catch(e){await this.recordGap({fromTick:0,toTick:0,reason:'PHYSICS_OBSERVATION_INVALID'});throw e;}
+    try{this.validatePhysics(snap,0);await this.physicsRec.append(this.physicsRecord(snap));}catch(e){await this.recordGap({fromTick:0,toTick:0,reason:'PHYSICS_OBSERVATION_INVALID'});throw e;}
    }
    const fault=this.stopMonitor?.(snap);if(fault)throw new Error(fault.code);
    await this.ask('start',{});
@@ -303,7 +327,7 @@ class FixedStepRun implements ScenarioRun {
  private validatePhysics(snap:IRSimSnapshotV1,tick:number){
   if(!this.physics)return;const s=snap as import('./contracts').Sim3DSnapshotV1;
   if(s.tick!==tick||s.runId!==this.cp.runId||s.sceneDigest!==this.scene.sceneDigest||s.simTimeNs!==String(tick*20_000_000)||(tick>0&&s.bootId!==this.cp.plant.snapshot?.bootId))throw new Error('PHYSICS_OBSERVATION_INVALID');
-  validatePhysicsRecord(s.physics,this.physics.admission,tick);
+  validatePhysicsRecord(this.physicsRecord(snap),this.physics.admission,tick);
   const base=s.physics!.base[0]!,pose=s.robots[0]?.pose3d;
   if(!pose||Math.abs(pose.z-base.poseMap.positionM[2]!)>1e-6||Math.abs(pose.roll-base.rollRad)>1e-6||Math.abs(pose.pitch-base.pitchRad)>1e-6)throw new Error('PHYSICS_OBSERVATION_INVALID');
  }
@@ -443,25 +467,49 @@ class FixedStepRun implements ScenarioRun {
    return {robotId:r.robotId,footprint:r.model.footprint.verticesM as P[],pose,live:!!g&&g.state==='executing'||c.rig?.[r.robotId]?.state==='executing',route:this.controller.route(r.robotId,pose)};})):{};
   // traffic does not decide what it cannot: a grant contradicting the owner it holds, or an owner stopped inside its zone, is attention (the run needs a person)
   for(const n of this.traffic?.notices()??[]){c.attention.push({reason:n.kind==='conflict'?'ZONE_OWNERSHIP_CONFLICT':'ZONE_HELD_BY_STOPPED_ROBOT',robotId:n.robotId,subjectId:n.zoneId,tick:c.tick});this.suspend();}
-  const out=this.controller.advance(snapT,reservations);
+  const canCorrect=!c.cancelled&&!c.suspended&&!(snapT as import('./contracts').Sim3DSnapshotV1).drives?.some(d=>d.state!=='enabled');
+  const target=c.tick+1,rt=this.faults.length?runtimeFaultsAt(this.faults,target):undefined,transforms:SensorTransforms=[];
+  const out=this.controller.advance(rt?this.observe(snapT,rt.active,transforms):snapT,reservations,canCorrect);
   for(const d of out.decisions){
    this.adapters.get(d.robotId)?.sink.decide(d);this.holds[d.robotId]=d.status==='executing'?d.reason:null;
    const rg=c.rig?.[d.robotId];
    if(rg&&rg.commandId===d.commandId&&rg.state==='executing'&&d.status!=='executing'){rg.state=d.status;rg.tick=c.tick;if(d.status!=='arrived'){c.attention.push({reason:d.reason??d.status.toUpperCase(),robotId:d.robotId,subjectId:d.commandId,tick:c.tick});this.suspend();}}
   }
-  let next:IRSimSnapshotV1,payload:{targetTick:number;velocities:typeof out.velocities;actorUpdates:ReturnType<typeof actorUpdatesAt>};
+  let next:IRSimSnapshotV1,faultRec:{intents:FaultInjection[];receipts:FaultReceipt[];transforms:typeof transforms}|undefined,payload:{targetTick:number;velocities:typeof out.velocities;actorUpdates:ReturnType<typeof actorUpdatesAt>;driveCommands?:import('../control/drive-io').DriveCommandV1[]};
   try{
    // every actor at its scheduled pose for tick t+1 (the schedule is a pure function of the tick: nothing a batch or a pause did changes it)
    payload={targetTick:c.tick+1,velocities:out.velocities,actorUpdates:actorUpdatesAt(this.fixture,c.tick+1)};
-   const r=await this.worker.request({protocol:this.plant.protocol,requestId:`step-${c.tick+1}`,runId:c.runId,expectedTick:c.tick,op:'step',payload});
+   // with a drive the navigation controller's velocities are its setpoint: they go through the diff-drive controller and the drive, and the wire carries driveCommands only (the evidence keeps the setpoint)
+   let wire:typeof payload=payload;
+   if(this.drive){
+    const rid=this.scene.robots[0]!.robotId,sp=out.velocities.find(v=>v.robotId===rid)??{vMps:0,omegaRadps:0},d=this.drive.step(c.tick,{vMps:sp.vMps,omegaRadps:sp.omegaRadps},snapT as {drives?:never});
+    const lost=new Set((rt?.active??[]).filter(e=>e.faultId==='command-loss').map(e=>e.targetId));
+    payload.driveCommands=lost.size?applyCommandLoss(d.commands,this.lastWire,lost):d.commands;this.lastWire=payload.driveCommands;   // command-loss repeats the last command sent, seq included
+    wire={...payload,velocities:[]};
+    // a drive that is not ready or has faulted is a finding that needs a person: the run is not reset or retried, and the controller holds
+    for(const ev of d.events)if(ev.code==='DRIVE_FAULT'||ev.code==='DRIVE_NOT_READY'){c.attention.push({reason:ev.code,robotId:rid,tick:c.tick});this.suspend();}
+   }
+   // the intent is durable before the command leaves; the receipts are checked against it after the ACK
+   const events=this.faults.length?faultEventsAt(this.faults,target):[],worker=events.filter(e=>DRIVE_FAULTS[e.faultId as keyof typeof DRIVE_FAULTS].appliedBy==='worker');
+   if(worker.length)(wire as {faultInjections?:FaultInjection[]}).faultInjections=worker;
+   if(events.length){(c.driveFaultIntents??=[]).push({tick:target,injections:events});await this.persist();}
+   const r=await this.worker.request({protocol:this.plant.protocol,requestId:`step-${c.tick+1}`,runId:c.runId,expectedTick:c.tick,op:'step',payload:wire});
    // a refused step is as unverifiable as a lost one: the legs become unknown, the step is not retried
    if(!r.ok){await this.stepLost(`STEP_REFUSED:${(r as {error:{code:string}}).error.code}`);return false;}
    next=r.result as IRSimSnapshotV1;
+   // a receipt that is not the intent (entry, phase, tick, run, boot, scene, request) is as unverifiable as a lost step, on a tick that owes none too: nothing is resent
+   {const got=(next as {faultReceipts?:FaultReceipt[]}).faultReceipts;
+    if(!receiptsMatch(got,worker,{runId:c.runId,bootId:next.bootId,sceneDigest:this.scene.sceneDigest,requestDigest:hashJson(wire),targetTick:target})){await this.stepLost('FAULT_RECEIPT_MISMATCH');return false;}}
+   if(events.length){
+    const got=((next as {faultReceipts?:FaultReceipt[]}).faultReceipts??[]),digest=hashJson(wire);
+    const own=events.filter(e=>!worker.includes(e)).map((e):FaultReceipt=>({...e,appliedTick:target,runId:c.runId,bootId:next.bootId,sceneDigest:this.scene.sceneDigest,requestDigest:digest}));
+    faultRec={intents:events,receipts:[...got,...own],transforms};
+   }else if(transforms.length)faultRec={intents:[],receipts:[],transforms};
    if(hashJson(next.robots.map(x=>x.robotId).sort())!==hashJson(this.scene.robots.map(x=>x.robotId).sort())||next.robots.some(x=>![...x.poseDriveMap,...x.bodyVelocity].every(Number.isFinite))){await this.stepLost('SNAPSHOT_INVALID');return false;}
   }catch(e){await this.stepLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED');return false;}
   const prev=c.plant.snapshot!;
   if(this.physics){
-   try{this.validatePhysics(next,c.tick+1);await this.physicsRec!.append((next as import('./contracts').Sim3DSnapshotV1).physics!);await this.rec.append(next,payload);if(this.rec.terminal)throw new Error('EVIDENCE_INCOMPLETE');}
+   try{this.validatePhysics(next,c.tick+1);await this.physicsRec!.append(this.physicsRecord(next,faultRec));await this.rec.append(next,payload);if(this.rec.terminal)throw new Error('EVIDENCE_INCOMPLETE');}
    catch(e){const why=(e as Error).message==='PHYSICS_OBSERVATION_INVALID'?'PHYSICS_OBSERVATION_INVALID':'PHYSICS_EVIDENCE_FAILED';await this.recordGap({fromTick:c.tick+1,toTick:c.tick+1,reason:why});await this.plantLost(why,why);return false;}
   }
   this.clock.advance(1);c.tick=this.clock.tick;c.plant.snapshot=next;
@@ -671,11 +719,14 @@ class FixedStepRun implements ScenarioRun {
   const c=this.cp,v=await this.view();
   // every plant metric comes from the evidence as read back from disk now: what is not durable yet is not measured
   const listed=this.rec.committed(),read=await readNavigationEvidence(this.rec.directory,listed,{scene:this.scene,runTick:c.started?c.tick:null}),m=navigationMetrics(this.scene,read,this.fixture.actors);
-  const physicsEvidence=await this.physicsReport(read);
-  const navigation2d=buildNavigationEvidence(this.scene,{...this.identity,engine:{version:c.engine?.packageVersion??this.plant.identity.amr.version,pythonVersion:c.engine?.pythonVersion??'not_started'}},listed,read,m,c.started?c.tick:null,undefined,this.plant.identity.evidence);
+  const navigation2d=buildNavigationEvidence(this.scene,{...this.identity,engine:{version:c.engine?.packageVersion??this.plant.identity.amr.version,pythonVersion:c.engine?.pythonVersion??'not_started',...c.engine?.hostArch?{hostArch:c.engine.hostArch}:{}}},listed,read,m,c.started?c.tick:null,undefined,this.plant.identity.evidence);
   const available=m.coverage==='complete',why=m.coverageReasons.join(', ').slice(0,500)||'EVIDENCE_INCOMPLETE';
   const businessEvents:BusinessEvent[]=(await this.source.journal()).flatMap(entry=>(entry.payload.events as unknown as DomainEvent[]).map(e=>({sequence:entry.sequence,at:entry.recordedAt,type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject})));
-  return {schemaVersion:2,manifest:structuredClone(c.manifest),outcome:{status:v.run.status,served:v.served,tick:c.tick,simTimeNs:v.simTimeNs},attention:v.attention,workload:v.workload,entities:v.entities,businessEvents,
+  const physicsEvidence=await this.physicsReport(read,serveTicksOf(businessEvents,EPOCH));
+  // a tray run: the durable records, read back, become the report's tray evidence (slip over a window, drift, acceleration limit, service time); only records without a gap say anything
+  const trayEvidence=this.tray&&this.trayRecords?buildTrayEvidence({experimentId:this.tray.id,records:this.trayRecords,businessEvents,status:v.run.status,accelerationLimitMps2:this.scene.policy.parameters.maxAccelerationMps2,policy:this.tray.policy,policyDigest:this.tray.policyDigest}):undefined;
+  const manifestOut=structuredClone(c.manifest);if(manifestOut.drive&&c.engine?.hostArch)manifestOut.drive.hostArch=c.engine.hostArch;   // known once the worker has described itself
+  return {schemaVersion:2,manifest:manifestOut,outcome:{status:v.run.status,served:v.served,tick:c.tick,simTimeNs:v.simTimeNs},attention:v.attention,workload:v.workload,entities:v.entities,businessEvents,
    effects:(await this.source.effects()).filter(e=>ROBOT_TYPES.includes(String(e.type))).map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject})),
    metrics:{maxConcurrentMovers:c.maxConcurrentMovers,distanceM:m.distanceM??{},collision:available?{available:true,contacts:m.collisionEpisodes,minSeparationM:m.minSeparationM}:{available:false,reason:why,contacts:null,minSeparationM:null},
     navigation:{horizon:m.horizon,coverage:m.coverage,reasons:m.coverageReasons,distanceM:m.distanceM,driveDistanceM:m.driveDistanceM,collisionEpisodes:m.collisionEpisodes,safetyEnvelopeEpisodes:m.safetyEnvelopeEpisodes,episodes:m.episodes,minClearanceM:m.minClearanceM,minSeparationM:m.minSeparationM,sensorPublications:m.sensorPublications}},
@@ -686,13 +737,45 @@ class FixedStepRun implements ScenarioRun {
     'Distance, collision and clearance metrics are computed from the durable per-tick evidence (navigation2d) by the independent oracle; they are unavailable whenever that evidence is incomplete.',
     'A lost or refused worker step leaves its legs unknown; it is never resent and the run is never continued by a new worker process.',
     'Stop requests are model stops only (physicalStopConfirmed false).',...this.scene.limitations],
-   telemetry:this.telemetry.report(),navigation2d,...physicsEvidence?{physicsEvidence}:{}};
+   telemetry:this.telemetry.report(),navigation2d,...physicsEvidence?{physicsEvidence}:{},...this.driveEvidence?{driveEvidence:this.driveEvidence}:{},...this.faultReport?{faultReport:this.faultReport}:{},...trayEvidence?{trayEvidence}:{}};
  }
  private async flushPhysics(){
   if(!this.physicsRec)return;
   try{await this.physicsRec.flush();}catch{const first=this.physicsRec.manifest().coverage.lastTick+1;await this.recordGap({fromTick:Math.min(first,this.cp.tick),toTick:this.cp.tick,reason:'PHYSICS_EVIDENCE_FAILED'});await this.plantLost('PHYSICS_EVIDENCE_FAILED','PHYSICS_EVIDENCE_FAILED');await this.persist();}
  }
- private async physicsReport(navigation:import('./evidence').EvidenceRead):Promise<RunReport['physicsEvidence']>{
+ /** The physics tick as recorded: the worker's PhysicsTickRecord, with the axis snapshots of the same tick when the run has a drive. */
+ private physicsRecord(snap:IRSimSnapshotV1,f?:{intents:FaultInjection[];receipts:FaultReceipt[];transforms:SensorTransforms}){
+  const s=snap as import('./contracts').Sim3DSnapshotV1;
+  // a tick without a fault keeps its bytes: the fault fields exist only when something was injected
+  return {...s.physics!,...s.drives?{drives:s.drives}:{},...f?.intents.length?{faultIntents:f.intents,faultReceipts:f.receipts}:{},...f?.transforms.length?{sensorTransforms:f.transforms}:{}};
+ }
+ private driveEvidence?:import('../control/drive-report').DriveEvidenceReport;
+ private faultReport?:import('../control/drive-io').FaultReportV1;
+ private trayRecords?:import('./contracts').PhysicsTickRecord[];
+ /** The schedule is read from the checkpoint's manifest: the injections of a tick are a pure function of it and the tick. */
+ private get faults(){return this.cp.manifest.driveFaultSchedule?.entries??[];}
+ private lastWire?:import('../control/drive-io').DriveCommandV1[];
+ private lidarStreams=new Map<string,ReturnType<typeof actorStream>>();
+ private noised=new Map<string,{scanTick:number;scan:{rangesM:(number|null)[];states:string[]}}>();
+ /** What the controller sees of the LiDAR while lidar-noise holds: each fresh publication is perturbed once (three uniforms per beam) and kept until the next one; the evidence keeps the true scan. */
+ private observe(snap:IRSimSnapshotV1,active:readonly import('../fault-schedule').FaultScheduleEntry[],out:SensorTransforms):IRSimSnapshotV1{
+  const noise=active.filter(e=>e.faultId==='lidar-noise');
+  if(!noise.length){this.noised.clear();return snap;}
+  for(const k of this.noised.keys())if(!noise.some(e=>e.targetId===k))this.noised.delete(k);
+  const rid=this.scene.robots[0]!.robotId;
+  return {...snap,robots:snap.robots.map(r=>{
+   if(r.robotId!==rid||!r.scans)return r;
+   return {...r,scans:r.scans.map(sc=>{
+    const e=noise.find(x=>x.targetId===`${rid}/${sc.sensorId}`);if(!e)return sc;
+    const held=this.noised.get(e.targetId);if(held?.scanTick===sc.tick)return {...sc,...held.scan};
+    const stream=this.lidarStreams.get(e.targetId)??actorStream(this.cp.manifest.seed,`lidar-noise:${e.targetId}`);this.lidarStreams.set(e.targetId,stream);
+    const noisy=lidarNoise(sc,{sigmaM:e.params!.sigmaM!,dropoutFraction:e.params!.dropoutFraction!},stream);
+    this.noised.set(e.targetId,{scanTick:sc.tick,scan:{rangesM:noisy.rangesM,states:noisy.states}});
+    out.push({entryId:e.id,sensorId:sc.sensorId,scanTick:sc.tick,rangesM:noisy.rangesM,states:noisy.states});return noisy;
+   })};
+  })} as IRSimSnapshotV1;
+ }
+ private async physicsReport(navigation:import('./evidence').EvidenceRead,serveTicks:readonly number[]):Promise<RunReport['physicsEvidence']>{
   if(!this.physics)return undefined;
   const manifest=this.physicsRec?.manifest()??await readPhysicsManifest(join(this.dir,'physics')).catch(()=>this.cp.started||this.cp.plant.startupAttempt?{schemaVersion:1 as const,documentType:'physics-evidence' as const,identity:{runId:this.cp.runId,bootId:this.cp.plant.snapshot?.bootId??'unobserved',sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics!.loadProfileDigest,physicsProfileDigest:this.physics!.physicsProfileDigest},streams:[],coverage:{firstTick:0,lastTick:this.cp.tick,complete:false},gaps:[{firstTick:0,lastTick:this.cp.tick,reason:'PHYSICS_MANIFEST_INVALID'}],terminalReason:'PHYSICS_MANIFEST_INVALID',metricsPolicyDigest:this.physics!.metricsPolicyDigest,assumptions:this.physics!.assumptions}:null);
   if(!manifest)return undefined;
@@ -701,7 +784,35 @@ class FixedStepRun implements ScenarioRun {
   if(this.cp.plant.status==='lost')manifest.terminalReason??=this.cp.plant.reason??'PLANT_LOST';
   if(manifest.gaps.length||manifest.terminalReason)manifest.coverage.complete=false;
   const read=await readPhysicsEvidence(join(this.dir,'physics'),manifest,{admission:this.physics.admission,metricsPolicyDigest:this.physics.metricsPolicyDigest,identity:{...manifest.identity,runId:this.cp.runId,sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics.loadProfileDigest,physicsProfileDigest:this.physics.physicsProfileDigest,...this.cp.plant.snapshot?{bootId:this.cp.plant.snapshot.bootId}:{}},runTick:this.cp.tick});
+  // the records are the durable truth up to wherever the run ended; a stop by the plant's own monitor (a cup that fell, a tilt) marks coverage incomplete but loses nothing, a gap does lose something
+  this.trayRecords=this.tray&&read.records.length>0&&!blockingReadIssues(read,manifest,read.records.length,this.cp.tick).length?read.records:undefined;
+  if(this.drive){
+   const rows=read.records.map(r=>({tick:r.tick,drives:(r as {drives?:import('../control/drive-io').DriveAxisSnapshot[]}).drives??[]}));
+   const issues=[...read.issues];let events:import('../control/controller').ControllerEvent[]=[];
+   if(!navigation.complete)issues.push('CIL_CONTROL_EVIDENCE');
+   else try{events=replayMobileCommands(this.drive.fresh(),this.scene.robots[0]!.robotId,rows,navigation.control,undefined,this.faults);}catch(e){issues.push((e as Error).message);}
+   this.faultReport=undefined;
+   if(this.faults.length&&read.complete&&!issues.length){
+    try{
+     const oracle=JSON.parse(await readFile(join(this.irsim.workerRoot,'fixtures/fault-v1/fault-oracle-v1.json'),'utf8')) as FaultOracleV1;if(driveDocumentDigest(oracle)!==oracle.digest)throw new Error('FAULT_ORACLE_DIGEST');
+     const recs=read.records as unknown as {tick:number;faultIntents?:FaultInjection[];faultReceipts?:FaultReceipt[];base?:FaultReportInput['physics'][number]['base']}[];
+     const serves=servedFacts(rows,serveTicks),gaps=[...this.cp.evidenceGaps??[]].filter(g=>g.reason==='STEP_ACK_LOST');
+     this.faultReport=buildFaultReport({runId:this.cp.runId,schedule:this.faults,receipts:recs.flatMap(r=>r.faultReceipts??[]),intents:recs.map(r=>({tick:r.tick,injections:r.faultIntents??[]})),drives:rows,controllerEvents:events,
+      attention:this.cp.attention.map(a=>({tick:a.tick,reason:a.reason})),physics:recs,oracle,axisModes:Object.fromEntries(this.drive.model.axes.map(a=>[a.axisId,a.mode as 'csp'|'csv'])),facts:{...serves,resendsAfterUnknown:gaps.reduce((n,g)=>n+recs.filter(r=>r.tick>g.fromTick).length,0),custodyChanged:null}});
+    }catch(e){issues.push((e as Error).message);}
+   }
+   this.driveEvidence=buildDriveEvidence(this.drive.model,rows,{complete:read.complete&&!issues.length,issues,events});
+  }
   return {manifest,manifestSha256:sha256(Buffer.from(JSON.stringify(manifest))),complete:read.complete,issues:read.issues,metrics:physicsMetrics(read,this.physics.admission,{...navigation,policy:this.scene.policy.parameters})};
  }
  async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;try{await this.physicsRec?.flush().catch(()=>{});await this.rec.flush().catch(()=>{});await w?.close('RUN_CLOSED');}finally{this.releaseSlot();await this.rec.close().catch(()=>{});await this.source.close();}}}
+}
+
+/** The registered tray variant a bundle names (its tray-experiment.json) and the thresholds it is judged by (tray-policy-v1.json), both byte-verified against the scene's file list; undefined when the bundle carries none. */
+async function trayExperimentOf(scene:{files:readonly {path:string;sha256:string;bytes:number}[]},read:(path:string)=>Promise<Uint8Array>){
+ const f=scene.files.find(f=>f.path==='tray-experiment.json');if(!f)return undefined;
+ const doc=async(file:{path:string;sha256:string;bytes:number})=>{const b=await read(file.path);if(b.length!==file.bytes||sha256(b)!==file.sha256)throw new Error('TRAY_EXPERIMENT_HASH_MISMATCH');return JSON.parse(Buffer.from(b).toString()) as Record<string,unknown>;};
+ const id=(await doc(f)).id;if(!isTrayExperiment(id))throw new Error('MUJOCO_EXPERIMENT_UNREGISTERED');
+ const pf=scene.files.find(f=>f.path==='tray-policy-v1.json');if(!pf)throw new Error('TRAY_POLICY_MISSING');
+ return {id,experiment:TRAY_EXPERIMENTS[id],policy:await doc(pf) as unknown as TrayPolicy,policyDigest:pf.sha256};
 }

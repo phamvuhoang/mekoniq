@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.identification-plan.v1",
+  "title": "IdentificationPlanV1",
+  "description": "What an identification run may change and by how much, declared and hashed BEFORE the fit (R4-C \u00a74, contracts \u00a78): the registered parameters with their start and bounds, the channels and weights of the objective, and the optimizer settings that make the run deterministic. At most 12 parameters (the validator names the limit).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "id",
+    "revision",
+    "digest",
+    "datasetDigest",
+    "baseDriveModelDigest",
+    "plantModelDigest",
+    "parameters",
+    "objective",
+    "optimizer",
+    "controlProfileDigest",
+    "benchBinding"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "identification-plan"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:/-]+$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "digest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "datasetDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "baseDriveModelDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "plantModelDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "controlProfileDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest",
+      "description": "The control profile the bench ran under, on the device and in every predicted trial."
+    },
+    "benchBinding": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest",
+      "description": "benchBindingDigest of the sidecar: which trial ran which signal on which axis, in which split and condition. The dataset's own digest does not carry it."
+    },
+    "parameters": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "initial",
+          "lower",
+          "upper",
+          "unit"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.\\[\\]-]{1,120}$"
+          },
+          "initial": {
+            "type": "number"
+          },
+          "lower": {
+            "type": "number"
+          },
+          "upper": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          }
+        }
+      }
+    },
+    "objective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channels",
+        "weights"
+      ],
+      "properties": {
+        "channels": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.:/-]{1,100}$"
+          }
+        },
+        "weights": {
+          "type": "object",
+          "maxProperties": 8,
+          "additionalProperties": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        }
+      }
+    },
+    "optimizer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "maxIterations",
+        "tolerance",
+        "relativeStep",
+        "maxJacobianCondition"
+      ],
+      "properties": {
+        "method": {
+          "const": "bounded_least_squares"
+        },
+        "maxIterations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200
+        },
+        "tolerance": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 0.1
+        },
+        "relativeStep": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 0.1
+        },
+        "maxJacobianCondition": {
+          "type": "number",
+          "exclusiveMinimum": 1
+        }
+      }
+    }
+  }
+}

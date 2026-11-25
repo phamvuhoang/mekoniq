@@ -1,0 +1,3 @@
+# Retained historical probes
+
+The original workspace probe `review-v05/view-cost.mjs` is stored here as [view-cost.mjs.txt](review-v05/view-cost.mjs.txt), with byte-identical content (SHA-256 `9a2de19113a321470a95484d1bf2543827d0762ddd1d36b03a26dcf09ca11503`). This is archived source for reviewing the old observation, not an active script in the production checkout. Its original `.mjs` name caused the repository-wide ESLint invocation to treat the old probe as new executable code; the two historical unused constants are preserved in this textual copy. The workspace original and the final-record archive's `final-design/probes/review-v05/view-cost.mjs` remain unchanged. Other historical path references assume that original name.

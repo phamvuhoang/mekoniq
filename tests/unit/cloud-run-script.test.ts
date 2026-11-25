@@ -1,7 +1,7 @@
 // N05: deploy/lab-runtime/cloud-run.sh prints the Cloud Run commands by default and runs them only with --execute. A fake gcloud first on PATH records its arguments; nothing here
 // needs a network or the real gcloud, and the script never receives, prints or passes the access key (it names a Secret Manager secret).
 import {spawnSync} from 'node:child_process';
-import {chmodSync,existsSync,mkdtempSync,readFileSync,rmSync,writeFileSync} from 'node:fs';
+import {chmodSync,existsSync,mkdirSync,mkdtempSync,readFileSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {afterAll,beforeAll,expect,test} from 'vitest';
@@ -9,10 +9,10 @@ import {afterAll,beforeAll,expect,test} from 'vitest';
 const SCRIPT=resolve('deploy/lab-runtime/cloud-run.sh'),KEY='k3y-'.repeat(12),URL_='https://lab-runtime-abc123-as.a.run.app';
 const FLAGS=['--execution-environment=gen2','--max-instances=1','--min-instances=0','--concurrency=20','--timeout=3600','--cpu=1','--memory=2Gi','--allow-unauthenticated'];
 const BASE={GCP_PROJECT:'my-project',LAB_ORIGIN:'https://lab.example.com',ACCESS_KEY_SECRET:'lab-access-key',IMAGE:'asia-southeast1-docker.pkg.dev/my-project/lab/runtime:abc1234'};
-let dir='',fake='';
+let dir='',fake='',emptyPath='';
 beforeAll(()=>{
  dir=mkdtempSync(join(tmpdir(),'cloud-run-'));fake=join(dir,'bin');
- spawnSync('mkdir',[fake]);
+ mkdirSync(fake);emptyPath=join(dir,'empty-bin');mkdirSync(emptyPath);
  // records one line per call (arguments joined by a tab), and whether the key reached its environment; answers the URL query
  writeFileSync(join(fake,'gcloud'),`#!/bin/sh
 printf '%s\\n' "$(IFS='	'; echo "$*")" >> "$FAKE_LOG"
@@ -55,12 +55,12 @@ test('without --execute it prints every deploy flag and never calls gcloud, even
 });
 
 test('a dry run works where gcloud is not installed; --dry-run is the same as no flag',()=>{
- const r=run(['--dry-run'],{},'/usr/bin:/bin');expect(r.status).toBe(0);expect(r.out).toContain('gcloud run deploy');
+ const r=run(['--dry-run'],{},emptyPath);expect(r.calls).toEqual([]);expect(r.status).toBe(0);expect(r.out).toContain('gcloud run deploy');
  expect(run(['--dry-run','--execute']).status).toBe(2);
 });
 
 test('--execute without gcloud on PATH stops with GCLOUD_NOT_FOUND',()=>{
- const r=run(['--execute'],{},'/usr/bin:/bin');expect(r.status).toBe(3);expect(r.err).toContain('GCLOUD_NOT_FOUND');
+ const r=run(['--execute'],{},emptyPath);expect(r.calls).toEqual([]);expect(r.status).toBe(3);expect(r.err).toContain('GCLOUD_NOT_FOUND');
 });
 
 test('--execute on a new service: one read that finds nothing, deploy once with the placeholder, read the URL, set LAB_PUBLIC_HOST to that host',()=>{

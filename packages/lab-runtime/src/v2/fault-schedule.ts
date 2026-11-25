@@ -1,9 +1,10 @@
 import Ajv from 'ajv';
 import schema from '../../../contracts/schemas/lab-fault-schedule.schema.json';
-import type {FaultScheduleEntry} from '../../../contracts/generated/lab-v2';
-export type {FaultScheduleEntry};
+import type {FaultScheduleEntry as LegacyFaultScheduleEntry} from '../../../contracts/generated/lab-v2';
+/** The project's entry (frozen schema, no parameters) widened by the optional catalog parameters of a run-scoped drive fault (DriveFaultEntryV1). */
+export type FaultScheduleEntry=LegacyFaultScheduleEntry&{params?:Record<string,number>};
 export type FaultPhase='brew'|'grasp'|'handoff'|'delivery';
-const shape=new Ajv({strict:true}).compile<FaultScheduleEntry>(schema);
+const shape=new Ajv({strict:true}).compile<LegacyFaultScheduleEntry>(schema);
 export const COFFEE_FAULT_IDS=['ice-jam','milk-empty','dose-low','measure-unknown','measure-missing','measure-outlier','milk-expired','milk-warm','milk-unknown','cup-removed','coffee-reboot','drop-ack','duplicate-completion','machine-not-ready'];
 export const ARM_FAULT_IDS=['arm-reboot','arm-drop','arm-following-error','arm-stop','arm-estop','arm-reset','arm-collision'];
 export const AMR_FAULT_IDS=['collide','reboot','duplicate-arrival','localization-lost','map-changed','dock-offset','reorder-observations','delay-observation','crash-after-commit'];

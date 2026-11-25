@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "documentType": "tray-fixture-manifest",
+  "id": "serve-tray-v1",
+  "generator": "scripts/generate-tray-fixture.mjs",
+  "calibration": "not_calibrated",
+  "files": [
+    {
+      "path": "actor-proxy-v1.json",
+      "sha256": "cedb92639fd43501508c51478570d3d18d280d5b064c4c51677265679124537b",
+      "bytes": 660
+    },
+    {
+      "path": "assumptions.json",
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "bytes": 869
+    },
+    {
+      "path": "cup-triple-low-friction.json",
+      "sha256": "08bbf8b4d4d4f5b5b7b6a4cd3dab652a024f396c202e1bce101b253a21d989ef",
+      "bytes": 9698
+    },
+    {
+      "path": "cup-triple.json",
+      "sha256": "dcb62763bb7723aa586dc8cad308b059bd88d602c2b2c4d871cb8f57395b2279",
+      "bytes": 9682
+    },
+    {
+      "path": "drive-contact-profile.json",
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "bytes": 3092
+    },
+    {
+      "path": "drive-contact-tray-low-v1.json",
+      "sha256": "fb6ab8e616f580c90211587f0cb2889ce1ff8dc93f637f3a8109e92ba1dd1597",
+      "bytes": 3106
+    },
+    {
+      "path": "feasibility.json",
+      "sha256": "2ea3e2447212d7776aecfa367f2fa9b0658dd6913c3c20c8b49810e9878b5d11",
+      "bytes": 1299
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "d09ea092ffb553cc7df1473aa1c20e9de335bdd5e00f4a7072cedf6f0e56ed54",
+      "bytes": 276
+    },
+    {
+      "path": "physical-model-amr-1.json",
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "bytes": 47385
+    },
+    {
+      "path": "README.md",
+      "sha256": "78c6a0c37cd37f63e754eaeafc8072c045d42a7358fb473be8390d44a2a15b82",
+      "bytes": 893
+    },
+    {
+      "path": "registered-physics.json",
+      "sha256": "b0137285fd8fe6534e4926a46fb88b23baca33b5ddf662036010375d2531b285",
+      "bytes": 244
+    },
+    {
+      "path": "serve-3d-components.json",
+      "sha256": "475a785832cb1a54d588781075c86bfda7a5e9d965365469f7e48fac47f53f2b",
+      "bytes": 61944
+    },
+    {
+      "path": "serve-3d-project.json",
+      "sha256": "f1c97e1bd6b6bd1258b08e82a9da3c565e398cfd7572d837d89c67d3a1340147",
+      "bytes": 12009
+    },
+    {
+      "path": "tray-policy-v1.json",
+      "sha256": "3131303dd7230d3287a0f7d035dd657323c5f5e2d55fce1a223f4c4527a0a383",
+      "bytes": 1794
+    },
+    {
+      "path": "world3d.json",
+      "sha256": "68a6c28f4faf93da908c3c7f862e5d554fe605ddf91a84b96bdf6d34c0ec7808",
+      "bytes": 129
+    }
+  ]
+}

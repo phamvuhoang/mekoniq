@@ -1,0 +1,1525 @@
+{
+ "schema": "lab-v2-regression/1",
+ "recorder": "lab/scripts/record-regression.mjs --suite physical-robot-lab",
+ "suite": "physical-robot-lab",
+ "note": "Synthetic test data only; absolute paths scrubbed to <workspace>/<home>/<tmp>, key/token shapes to <jwt>/<supabase-key>. sha256 is of the stored (scrubbed) file.",
+ "host": {
+  "platform": "darwin",
+  "release": "25.5.0",
+  "arch": "arm64",
+  "cpu": "Apple M2 Pro",
+  "cpus": 10,
+  "memGiB": 16,
+  "node": "v24.22.2",
+  "pnpm": "10.32.1",
+  "python": {
+   "executable": "<workspace>/source/.venv/bin/python",
+   "version": "Python 3.13.3"
+  }
+ },
+ "revisions": {
+  "source": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+  "sourceDirty": false,
+  "lab": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+  "labDirty": false
+ },
+ "identity": {
+  "schema": "regression-identity/1",
+  "mutableLabPaths": [
+   "docs/",
+   "README.md",
+   "config/simulation-compatibility.json"
+  ],
+  "start": {
+   "source": {
+    "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+    "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+    "dirtyCodePaths": []
+   },
+   "lab": {
+    "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+    "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+    "dirtyCodePaths": []
+   }
+  },
+  "end": {
+   "source": {
+    "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+    "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+    "dirtyCodePaths": []
+   },
+   "lab": {
+    "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+    "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+    "dirtyCodePaths": []
+   }
+  },
+  "checkpoints": [
+   {
+    "id": "source-typecheck:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-typecheck:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-lint:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-lint:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-contracts-check:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-contracts-check:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-referenced:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-referenced:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-unit:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-unit:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-contracts:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-contracts:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-engineering:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-engineering:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-pytest-simulation:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "source-pytest-simulation:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-check-source:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-check-source:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-typecheck:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-typecheck:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-vitest:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-vitest:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-build:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-build:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-e2e-browser:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-e2e-browser:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-mock-e2e:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-mock-e2e:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-runtime-e2e:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-runtime-e2e:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-ui-performance:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-ui-performance:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-offline-build:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-offline-build:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-offline-e2e:before",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   },
+   {
+    "id": "lab-offline-e2e:after",
+    "identity": {
+     "source": {
+      "commit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+      "codeHash": "0b111f0dc80176c265908e7fa138b40e0469b39b10d87505d1a5dd219132e342",
+      "dirtyCodePaths": []
+     },
+     "lab": {
+      "commit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+      "codeHash": "a6558b88b8b5451ae39637e4375f768c644e07ba4a6fe6756199033140d8d462",
+      "dirtyCodePaths": []
+     }
+    }
+   }
+  ],
+  "observation": "Identity is sampled at start, before and after every command, and at end; this is not continuous filesystem monitoring."
+ },
+ "runs": [
+  {
+   "id": "source-referenced:source-referenced.json",
+   "repo": "source",
+   "kind": "vitest",
+   "command": "LAB_V2_CLEAN_EXPORT=1 node node_modules/vitest/vitest.mjs run tests/integration/lab-v2-mock.test.ts tests/integration/lab-v2-recovery.test.ts tests/integration/lab-v2-contracts.test.ts tests/integration/lab-v2-model.test.ts tests/integration/lab-v2-arm-model.test.ts tests/integration/lab-v2-stream.test.ts tests/integration/lab-v2-report.test.ts tests/integration/lab-v2-residuals.test.ts tests/integration/lab-runtime.test.ts tests/integration/lab-runtime-gateway.test.ts tests/integration/lab-runtime-contracts.test.ts tests/integration/lab-runtime-artifact.test.ts tests/integration/coffee-job.test.ts tests/integration/coffee-transfer.test.ts tests/integration/coffee-recovery.test.ts tests/integration/coffee-review.test.ts tests/integration/coffee-policy.test.ts tests/integration/coffee-conservation.test.ts tests/integration/lab-v2-runtime-review.test.ts tests/integration/lab-v2-software-gaps.test.ts tests/integration/lab-v2-mixed.test.ts tests/integration/lab-v2-arm-safety-model.test.ts tests/integration/lab-v2-arm-faults.test.ts tests/integration/lab-v2-arm-scene.test.ts tests/integration/lab-v2-arm-inactive-scene.test.ts tests/integration/lab-v2-checkpoint-compat.test.ts tests/integration/lab-v2-reclaim-targets.test.ts tests/integration/robot-admission.test.ts tests/integration/table-order-amendments.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/source-referenced.json",
+   "startedAt": "2026-11-24T20:31:33.234Z",
+   "finishedAt": "2026-11-24T20:34:40.056Z",
+   "exitCode": 0,
+   "file": "source-referenced.json",
+   "sha256": "2383e3a20c892231f3087913a93f8d82df1db7d5f057079901e6c890924f566c",
+   "summary": {
+    "passed": 286,
+    "failed": 0,
+    "skipped": 1,
+    "total": 287
+   }
+  },
+  {
+   "id": "source-unit:source-unit.json",
+   "repo": "source",
+   "kind": "vitest",
+   "command": "node node_modules/vitest/vitest.mjs run tests/unit --reporter=json --outputFile=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/source-unit.json",
+   "startedAt": "2026-11-24T20:34:40.453Z",
+   "finishedAt": "2026-11-24T20:40:27.923Z",
+   "exitCode": 0,
+   "file": "source-unit.json",
+   "sha256": "f42d6ce9872ede006f344771280f2750679805d2f2ed4d2006274d215ed68072",
+   "summary": {
+    "passed": 2000,
+    "failed": 0,
+    "skipped": 0,
+    "total": 2000
+   }
+  },
+  {
+   "id": "source-contracts:source-contracts.json",
+   "repo": "source",
+   "kind": "vitest",
+   "command": "node node_modules/vitest/vitest.mjs run tests/contracts --reporter=json --outputFile=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/source-contracts.json",
+   "startedAt": "2026-11-24T20:40:28.375Z",
+   "finishedAt": "2026-11-24T20:40:34.455Z",
+   "exitCode": 0,
+   "file": "source-contracts.json",
+   "sha256": "fe568343ee7eb1c1fe13996aafe2355cfc2761855fd485c8d307e0ce0f88cad4",
+   "summary": {
+    "passed": 140,
+    "failed": 0,
+    "skipped": 0,
+    "total": 140
+   }
+  },
+  {
+   "id": "source-engineering:source-engineering.json",
+   "repo": "source",
+   "kind": "vitest",
+   "command": "node node_modules/vitest/vitest.mjs run tests/integration/engineering tests/integration/lab- tests/security/engineering tests/unit/engineering tests/contracts --reporter=json --outputFile=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/source-engineering.json",
+   "startedAt": "2026-11-24T20:40:34.807Z",
+   "finishedAt": "2026-11-24T20:47:14.594Z",
+   "exitCode": 0,
+   "file": "source-engineering.json",
+   "sha256": "87da8666817abf9f16bd333cb718404e600a2ac52c3560dbeb144b803c6ae8f4",
+   "summary": {
+    "passed": 755,
+    "failed": 0,
+    "skipped": 7,
+    "total": 762
+   }
+  },
+  {
+   "id": "source-pytest-simulation:source-pytest-simulation.xml",
+   "repo": "source",
+   "kind": "junit",
+   "command": "PYTHONDONTWRITEBYTECODE=1 <workspace>/source/.venv/bin/python -m pytest robotics/simulation/tests -q --junitxml=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/source-pytest-simulation.xml",
+   "startedAt": "2026-11-24T20:47:14.993Z",
+   "finishedAt": "2026-11-24T20:47:18.244Z",
+   "exitCode": 0,
+   "file": "source-pytest-simulation.xml",
+   "sha256": "89d8225b91464917eaaec11472341dbc413cdc06c2d5de4443c3ff7676f24d22",
+   "summary": {
+    "tests": 227,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+   }
+  },
+  {
+   "id": "lab-vitest:lab-vitest.json",
+   "repo": "lab",
+   "kind": "vitest",
+   "command": "<workspace>/lab/node_modules/.bin/vitest run tests/unit tests/integration --reporter=json --outputFile=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-vitest.json",
+   "startedAt": "2026-11-24T20:47:24.295Z",
+   "finishedAt": "2026-11-24T20:47:42.135Z",
+   "exitCode": 0,
+   "file": "lab-vitest.json",
+   "sha256": "bb794d0838f3c058884b99b1511e362e1ad450e26f5f35a1ec378b43903d76b2",
+   "summary": {
+    "passed": 870,
+    "failed": 0,
+    "skipped": 1,
+    "total": 871
+   }
+  },
+  {
+   "id": "lab-e2e-browser:lab-pw-browser.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-browser.json LAB_BRAND_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/brand-ui LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-e2e-browser LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-e2e-browser pnpm exec playwright test",
+   "startedAt": "2026-11-24T20:47:49.502Z",
+   "finishedAt": "2026-11-24T20:48:32.360Z",
+   "exitCode": 0,
+   "file": "lab-pw-browser.json",
+   "sha256": "81b5f05499206753c83b4b7f184baed3173609a23a819e63caa7267214375336",
+   "summary": {
+    "expected": 72,
+    "unexpected": 0,
+    "skipped": 42,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-mock-e2e:lab-pw-mock-twin-workspace.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-24T20:48:32.762Z",
+   "finishedAt": "2026-11-24T20:50:35.303Z",
+   "exitCode": 0,
+   "file": "lab-pw-mock-twin-workspace.json",
+   "sha256": "05eb93b1bfb90d49832b8670cd1dda31f6712d409a4ef5dfb5d2d8324ade8a70",
+   "summary": {
+    "expected": 5,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-mock-e2e:lab-pw-mock-coffee-journey.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-24T20:48:32.762Z",
+   "finishedAt": "2026-11-24T20:50:35.303Z",
+   "exitCode": 0,
+   "file": "lab-pw-mock-coffee-journey.json",
+   "sha256": "2f1b3fe1e457a017155f8ce7db125861991d63cc7a974adc697946d5b85240ed",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-mock-e2e:lab-pw-mock-twin-recovery.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-24T20:48:32.762Z",
+   "finishedAt": "2026-11-24T20:50:35.303Z",
+   "exitCode": 0,
+   "file": "lab-pw-mock-twin-recovery.json",
+   "sha256": "67b5615845c5d867a07cf5a7b2722f053e2f37f0660c45f0356deee61db2a827",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-mock-e2e:lab-pw-mock-twin-inputs.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-24T20:48:32.762Z",
+   "finishedAt": "2026-11-24T20:50:35.303Z",
+   "exitCode": 0,
+   "file": "lab-pw-mock-twin-inputs.json",
+   "sha256": "c444ba9be7c5663c62cd8f884ba907b6ab2822ab819bf7db61511e20b08a0647",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-mock-e2e:lab-pw-mock-fault-schedule.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-24T20:48:32.762Z",
+   "finishedAt": "2026-11-24T20:50:35.303Z",
+   "exitCode": 0,
+   "file": "lab-pw-mock-fault-schedule.json",
+   "sha256": "e322dc47eddef241c1e040c54b353f2b5f9b1f3a04d7516b66178046fc85cfca",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-mock-e2e:lab-pw-mock-arm-simulation.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-24T20:48:32.762Z",
+   "finishedAt": "2026-11-24T20:50:35.303Z",
+   "exitCode": 0,
+   "file": "lab-pw-mock-arm-simulation.json",
+   "sha256": "925a75ca5a5cb31ab9283e1215f12e96148241273c3deb8e60b5feec9e7e649c",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-mock-e2e:lab-pw-mock-twin-plan01.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-24T20:48:32.762Z",
+   "finishedAt": "2026-11-24T20:50:35.303Z",
+   "exitCode": 0,
+   "file": "lab-pw-mock-twin-plan01.json",
+   "sha256": "105d85a89bec3f680161f64c6a348e0ed1fa6f4b9ca747a9038bc9cc5a8acf62",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-mock-e2e:lab-pw-mock-legacy-campaign.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-24T20:48:32.762Z",
+   "finishedAt": "2026-11-24T20:50:35.303Z",
+   "exitCode": 0,
+   "file": "lab-pw-mock-legacy-campaign.json",
+   "sha256": "f2a811db7d036cbaf167c597ee123e724eaf94fab25ffaa52d5d2473105d0b97",
+   "summary": {
+    "expected": 3,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-runtime-e2e:lab-pw-runtime.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-runtime.json LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-runtime-e2e pnpm -s test:runtime-e2e",
+   "startedAt": "2026-11-24T20:50:35.763Z",
+   "finishedAt": "2026-11-24T20:50:40.872Z",
+   "exitCode": 0,
+   "file": "lab-pw-runtime.json",
+   "sha256": "f262f12327e69e380eeb3f20911588eae2f1a3ac9a94082b91a8c412b1f409ea",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-ui-performance:lab-ui-performance.json",
+   "repo": "lab",
+   "kind": "measurement",
+   "command": "node scripts/measure-twin-ui.mjs --duration-ms 60000 --output <workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-ui-performance.json",
+   "startedAt": "2026-11-24T20:50:41.225Z",
+   "finishedAt": "2026-11-24T20:52:47.089Z",
+   "exitCode": 0,
+   "file": "lab-ui-performance.json",
+   "sha256": "21f2c81646076ece345d12632a79c5b65313504367e9e9ced27e386d0610e9a6",
+   "summary": {
+    "durationMs": 60000,
+    "minimumDurationMet": true,
+    "profiles": [
+     {
+      "id": "desktop-3d",
+      "p95Ms": 16.799999999995634,
+      "paintP95Ms": 3,
+      "meetsTarget": true
+     },
+     {
+      "id": "tablet-2d-emulated",
+      "p95Ms": 16.700000000004366,
+      "paintP95Ms": 3.9000000059604645,
+      "meetsTarget": true
+     }
+    ]
+   }
+  },
+  {
+   "id": "lab-offline-e2e:lab-pw-offline-twin-recovery.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-offline.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-offline-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-offline-e2e node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts offline-bv01.spec.ts",
+   "startedAt": "2026-11-24T20:52:48.455Z",
+   "finishedAt": "2026-11-24T20:53:27.053Z",
+   "exitCode": 0,
+   "file": "lab-pw-offline-twin-recovery.json",
+   "sha256": "0300ef5928d44238372a04f1da89911943711e33245100c8a4a1ea996e5dd484",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-offline-e2e:lab-pw-offline-coffee-journey.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-offline.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-offline-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-offline-e2e node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts offline-bv01.spec.ts",
+   "startedAt": "2026-11-24T20:52:48.455Z",
+   "finishedAt": "2026-11-24T20:53:27.053Z",
+   "exitCode": 0,
+   "file": "lab-pw-offline-coffee-journey.json",
+   "sha256": "afd85cd8399edb7b70379fbe42eefe5fea26b967074290f2247229465e5b1060",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  },
+  {
+   "id": "lab-offline-e2e:lab-pw-offline-offline-bv01.json",
+   "repo": "lab",
+   "kind": "playwright",
+   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-offline.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-offline-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-offline-e2e node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts offline-bv01.spec.ts",
+   "startedAt": "2026-11-24T20:52:48.455Z",
+   "finishedAt": "2026-11-24T20:53:27.053Z",
+   "exitCode": 0,
+   "file": "lab-pw-offline-offline-bv01.json",
+   "sha256": "d5b84855ef7ed9a44cd863dea24e745b36b64baf0c78c84143ef749c1c740057",
+   "summary": {
+    "expected": 1,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+   }
+  }
+ ],
+ "commands": [
+  {
+   "id": "source-typecheck",
+   "repo": "source",
+   "command": "pnpm -s typecheck",
+   "startedAt": "2026-11-24T20:31:13.823Z",
+   "finishedAt": "2026-11-24T20:31:23.332Z",
+   "exitCode": 0,
+   "log": "source-typecheck.log",
+   "logSha256": "adba4af9194e10e47dda75ff0fd0f8c2b756474896d0eba5612799c527ff372a"
+  },
+  {
+   "id": "source-lint",
+   "repo": "source",
+   "command": "pnpm -s exec eslint . --ignore-pattern .superpowers/**",
+   "startedAt": "2026-11-24T20:31:23.705Z",
+   "finishedAt": "2026-11-24T20:31:31.947Z",
+   "exitCode": 0,
+   "log": "source-lint.log",
+   "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "id": "source-contracts-check",
+   "repo": "source",
+   "command": "pnpm -s contracts:check",
+   "startedAt": "2026-11-24T20:31:32.304Z",
+   "finishedAt": "2026-11-24T20:31:32.888Z",
+   "exitCode": 0,
+   "log": "source-contracts-check.log",
+   "logSha256": "3e8bf9225a03bd72709aba63c895580240a4737d43068ce350b8c0ed5e6b18cd"
+  },
+  {
+   "id": "source-referenced",
+   "repo": "source",
+   "command": "LAB_V2_CLEAN_EXPORT=1 node node_modules/vitest/vitest.mjs run tests/integration/lab-v2-mock.test.ts tests/integration/lab-v2-recovery.test.ts tests/integration/lab-v2-contracts.test.ts tests/integration/lab-v2-model.test.ts tests/integration/lab-v2-arm-model.test.ts tests/integration/lab-v2-stream.test.ts tests/integration/lab-v2-report.test.ts tests/integration/lab-v2-residuals.test.ts tests/integration/lab-runtime.test.ts tests/integration/lab-runtime-gateway.test.ts tests/integration/lab-runtime-contracts.test.ts tests/integration/lab-runtime-artifact.test.ts tests/integration/coffee-job.test.ts tests/integration/coffee-transfer.test.ts tests/integration/coffee-recovery.test.ts tests/integration/coffee-review.test.ts tests/integration/coffee-policy.test.ts tests/integration/coffee-conservation.test.ts tests/integration/lab-v2-runtime-review.test.ts tests/integration/lab-v2-software-gaps.test.ts tests/integration/lab-v2-mixed.test.ts tests/integration/lab-v2-arm-safety-model.test.ts tests/integration/lab-v2-arm-faults.test.ts tests/integration/lab-v2-arm-scene.test.ts tests/integration/lab-v2-arm-inactive-scene.test.ts tests/integration/lab-v2-checkpoint-compat.test.ts tests/integration/lab-v2-reclaim-targets.test.ts tests/integration/robot-admission.test.ts tests/integration/table-order-amendments.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/source-referenced.json",
+   "startedAt": "2026-11-24T20:31:33.234Z",
+   "finishedAt": "2026-11-24T20:34:40.056Z",
+   "exitCode": 0,
+   "log": "source-referenced.log",
+   "logSha256": "448af5d7b0050be9363e2254e972f6fd8ef719c9c8baef271879a1924f6178bc"
+  },
+  {
+   "id": "source-unit",
+   "repo": "source",
+   "command": "node node_modules/vitest/vitest.mjs run tests/unit --reporter=json --outputFile=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/source-unit.json",
+   "startedAt": "2026-11-24T20:34:40.453Z",
+   "finishedAt": "2026-11-24T20:40:27.923Z",
+   "exitCode": 0,
+   "log": "source-unit.log",
+   "logSha256": "a87905b97f6678814d3b84d175ca4089c9aa5bc829554c734d2553a3803a253c"
+  },
+  {
+   "id": "source-contracts",
+   "repo": "source",
+   "command": "node node_modules/vitest/vitest.mjs run tests/contracts --reporter=json --outputFile=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/source-contracts.json",
+   "startedAt": "2026-11-24T20:40:28.375Z",
+   "finishedAt": "2026-11-24T20:40:34.455Z",
+   "exitCode": 0,
+   "log": "source-contracts.log",
+   "logSha256": "22b543b75bc36758a00daaa4790a1aca02db452faf0e4bbae97a27f4bc3cb08f"
+  },
+  {
+   "id": "source-engineering",
+   "repo": "source",
+   "command": "node node_modules/vitest/vitest.mjs run tests/integration/engineering tests/integration/lab- tests/security/engineering tests/unit/engineering tests/contracts --reporter=json --outputFile=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/source-engineering.json",
+   "startedAt": "2026-11-24T20:40:34.807Z",
+   "finishedAt": "2026-11-24T20:47:14.594Z",
+   "exitCode": 0,
+   "log": "source-engineering.log",
+   "logSha256": "c5c75576ac9c10dec0796a7298ef448c5a6c97c0f90630a2fb15598999815e5d"
+  },
+  {
+   "id": "source-pytest-simulation",
+   "repo": "source",
+   "command": "PYTHONDONTWRITEBYTECODE=1 <workspace>/source/.venv/bin/python -m pytest robotics/simulation/tests -q --junitxml=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/source-pytest-simulation.xml",
+   "startedAt": "2026-11-24T20:47:14.993Z",
+   "finishedAt": "2026-11-24T20:47:18.244Z",
+   "exitCode": 0,
+   "log": "source-pytest-simulation.log",
+   "logSha256": "2ceed35223573bb14825f60cd6150309a2beb1e2314b83a49de0e58d31083621"
+  },
+  {
+   "id": "lab-check-source",
+   "repo": "lab",
+   "command": "pnpm -s check:source",
+   "startedAt": "2026-11-24T20:47:18.596Z",
+   "finishedAt": "2026-11-24T20:47:18.824Z",
+   "exitCode": 0,
+   "log": "lab-check-source.log",
+   "logSha256": "41b78653d3e8befc6c915e69a7d30fe36bf4bce9ae7839d9ec2be267d740badb"
+  },
+  {
+   "id": "lab-typecheck",
+   "repo": "lab",
+   "command": "pnpm -s typecheck",
+   "startedAt": "2026-11-24T20:47:19.171Z",
+   "finishedAt": "2026-11-24T20:47:23.953Z",
+   "exitCode": 0,
+   "log": "lab-typecheck.log",
+   "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "id": "lab-vitest",
+   "repo": "lab",
+   "command": "<workspace>/lab/node_modules/.bin/vitest run tests/unit tests/integration --reporter=json --outputFile=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-vitest.json",
+   "startedAt": "2026-11-24T20:47:24.295Z",
+   "finishedAt": "2026-11-24T20:47:42.135Z",
+   "exitCode": 0,
+   "log": "lab-vitest.log",
+   "logSha256": "c8904441ea5671f5c54a86f8428425676b5f218cbb81705b240588f8ef048daf"
+  },
+  {
+   "id": "lab-build",
+   "repo": "lab",
+   "command": "pnpm -s build",
+   "startedAt": "2026-11-24T20:47:42.497Z",
+   "finishedAt": "2026-11-24T20:47:49.148Z",
+   "exitCode": 0,
+   "log": "lab-build.log",
+   "logSha256": "6dbfa79a9f46b0fcb2d626fda807001062cb590221b4f5c4507b5aff0eac742a"
+  },
+  {
+   "id": "lab-e2e-browser",
+   "repo": "lab",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-browser.json LAB_BRAND_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/brand-ui LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-e2e-browser LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-e2e-browser pnpm exec playwright test",
+   "startedAt": "2026-11-24T20:47:49.502Z",
+   "finishedAt": "2026-11-24T20:48:32.360Z",
+   "exitCode": 0,
+   "log": "lab-e2e-browser.log",
+   "logSha256": "0b99e27e567f5d15fe6cc7793d0ea4c885a504cac2f3ee98c0627d5d60214e87"
+  },
+  {
+   "id": "lab-mock-e2e",
+   "repo": "lab",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-24T20:48:32.762Z",
+   "finishedAt": "2026-11-24T20:50:35.303Z",
+   "exitCode": 0,
+   "log": "lab-mock-e2e.log",
+   "logSha256": "1296d8a59aed1f42051b455634ab06bba8b8a6051e6ecbeca0fdecc9fb02dc0b"
+  },
+  {
+   "id": "lab-runtime-e2e",
+   "repo": "lab",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-runtime.json LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-runtime-e2e pnpm -s test:runtime-e2e",
+   "startedAt": "2026-11-24T20:50:35.763Z",
+   "finishedAt": "2026-11-24T20:50:40.872Z",
+   "exitCode": 0,
+   "log": "lab-runtime-e2e.log",
+   "logSha256": "1b162b7c80916e49c82fdece7078fb66676b4975afd37a466120764ab1ec53a5"
+  },
+  {
+   "id": "lab-ui-performance",
+   "repo": "lab",
+   "command": "node scripts/measure-twin-ui.mjs --duration-ms 60000 --output <workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-ui-performance.json",
+   "startedAt": "2026-11-24T20:50:41.225Z",
+   "finishedAt": "2026-11-24T20:52:47.089Z",
+   "exitCode": 0,
+   "log": "lab-ui-performance.log",
+   "logSha256": "bd7ef14f4d905ac250e71513e8cd10b84ece32eebd94fe08cd4be83f48b99353"
+  },
+  {
+   "id": "lab-offline-build",
+   "repo": "lab",
+   "command": "node scripts/build-offline.mjs --out <tmp>",
+   "startedAt": "2026-11-24T20:52:47.440Z",
+   "finishedAt": "2026-11-24T20:52:48.109Z",
+   "exitCode": 0,
+   "log": "lab-offline-build.log",
+   "logSha256": "cf5f1daa2007210394557993e248f6516a26b032853e17437ae94a26293c4608"
+  },
+  {
+   "id": "lab-offline-e2e",
+   "repo": "lab",
+   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/lab-pw-offline.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/screens/lab-offline-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/r4-chain-0650ecbd/regression/playwright/lab-offline-e2e node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts offline-bv01.spec.ts",
+   "startedAt": "2026-11-24T20:52:48.455Z",
+   "finishedAt": "2026-11-24T20:53:27.053Z",
+   "exitCode": 0,
+   "log": "lab-offline-e2e.log",
+   "logSha256": "9e6ddd62cf8db51ab31ba96e7e0cacc8eacd19e147443c5a7fe76d83f246900a"
+  }
+ ],
+ "notRun": [],
+ "artifacts": [
+  {
+   "file": "brand-ui/lab-deployment-1024.png",
+   "sha256": "364559326c47835ebd46086aaaa4d2794f68b4edb71fb15cc7eb0d46bc7f8f2e",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-deployment-1512.png",
+   "sha256": "5560165863bbcd1b9a619f5ffc264be0efac3dcd1c482335d2404fcd053b7d22",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-deployment-390.png",
+   "sha256": "ea17eb63fdca3cc3394944b7a0317f75c4348e1474059d9b4391bca37bc10d4b",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-design-1024.png",
+   "sha256": "3c20615d008581b767d6b464124d5d566dc87af7fcdc56907c48bf84ac510470",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-design-1512.png",
+   "sha256": "0e16bfaf21c3633d5ce4436c30093c612fac59e271a5aa18670c463671eecdd5",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-design-390.png",
+   "sha256": "2701885656b34b619f3b5c92bbe6ac8e86d178174a4b1f63d8c56c172d22e46c",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-restaurant-1024.png",
+   "sha256": "500dab1c1117212a68641218aaf9dcc13c807b9b26bb35eb3bf5be1145c0e427",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-restaurant-1512.png",
+   "sha256": "ed13eb54870a6193b4f3344a4a379c9dc13dbe6b10f59d62a4efc41340da17fd",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-restaurant-390.png",
+   "sha256": "b25832e7431e064769d0137e067ec4d2389b27e1a554218401e7a0447ec2962a",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-results-1024.png",
+   "sha256": "51ce6d3e7adf5e414fba1848ce0f3ba82593f01932a569d96a5b80d680048271",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-results-1512.png",
+   "sha256": "ba53c33e369b45ca44a6b6d2f9f4df122fa6d6df1e378a50aee408a71a3c25dc",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-results-390.png",
+   "sha256": "96d0779281d0e4fa5f4e768add033b97f9fde5e999d54da17411ce6f780d9daa",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-scenarios-1024.png",
+   "sha256": "a1811e2239670787f7b7d54435d7c2bd0c80b35969a0feaa4c64e53bde257f60",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-scenarios-1512.png",
+   "sha256": "85f4022fce9ddba94514c7467dc1e65b5e56356bf3a771ab1e45aacf3dd0888b",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-scenarios-390.png",
+   "sha256": "563646172ed6a70fd9d6f9501f8b0211344925a73901cbeb2bddd621a44b62a1",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-twin-1024.png",
+   "sha256": "2f13a7cfa21241c8dcd454fb6dc318586869428046a81e9e7dcddc68a9d20040",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-twin-1512.png",
+   "sha256": "feac28b04fc5a6d8c49669acc60668cbd233c5dfcf2f265248c7f13d387adb7a",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "brand-ui/lab-twin-390.png",
+   "sha256": "b43920397347bbce85efff2baf41aaf21f4ac610944e45c85f259490f3fee27c",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "screens/lab-e2e-browser/F05-webgl-disabled-reduced-motion-desktop-vi.png",
+   "sha256": "471a9809d8010a1d5c2530a06e29b5caf91ce5a7d19c87222da5074269e539e8",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "screens/lab-e2e-browser/U05-fallback-problems.png",
+   "sha256": "0ba725c114ab1622eb2e732f27ad133ef54d1445335862fc6fb63115fc4d9bde",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "screens/lab-e2e-browser/U05-mesh-home.png",
+   "sha256": "074999068ac3df3cc6b79c7eb8183586ce3d500b60960dcde44cbb64eed92fd8",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "screens/lab-e2e-browser/U05-mesh-pick-closed.png",
+   "sha256": "b18bd4919a028b9233cb0f5328fb322edf787b6a96fbc1f071e87a97f35f40dc",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "screens/lab-e2e-browser/U05-runbar-notes-only.png",
+   "sha256": "242b33105842a0cbb44f62cca70ba1956f008eab7d25d26ad729d8e1da79723a",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "screens/lab-e2e-browser/U05-runbar-notes-panel.png",
+   "sha256": "d573323b975d88d891835c73806027e8837c0d68f82a3daa751f2c1dc12654ff",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "screens/lab-e2e-browser/U05-runbar-problem-and-note-panel.png",
+   "sha256": "3b5f9c4ffc2fb0c369d82f8be9971135df6689549df318205598f001fdb81b9c",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "screens/lab-e2e-browser/U05-runbar-problem-and-note.png",
+   "sha256": "ccc6f4fdc52096d9aaba0c2f95b1d5ce332ad9d95fbd605ffeafb19bfefa792d",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "screens/lab-e2e-browser/study-final-1440.png",
+   "sha256": "6b6b4f8e974c80a85d2ec9f1138294b3ffa9f2cd108993fd1e697fc668f6e5cf",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "screens/lab-e2e-browser/study-final-390-table-rows.png",
+   "sha256": "0b7b3a3bb713d5aa710994851b76594241e23cfee999593340d06740f7ce094a",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "screens/lab-e2e-browser/study-final-390.png",
+   "sha256": "54b97ce811841f259380efa9f87b2f15dbd62ab58167ac9d9b6855dfe6b8e61f",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F05-coffee-completed-desktop-vi.png",
+   "sha256": "d6d0f5269c1cc3db32eed7f51a88049195b454a660b2b9efbf5c8f85499c9e41",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F05-coffee-run-desktop-vi.png",
+   "sha256": "50ba3078bf0553f3539ffc1c951c4101eadd99478b5908f446e663d9a3e5f759",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F05-coffee-run-mobile-en.png",
+   "sha256": "526cd95b6cab7af665358f8da68b5811cbd4a049aaaacd8834581f14233de285",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F05-coffee-run-mobile-ja.png",
+   "sha256": "4e0ecb740c1d94e7142f12b2128c7e3421d3adaa0353ecd098aaa3dfd5e31a5c",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F05-coffee-run-mobile-vi.png",
+   "sha256": "992e26e74c6ce344b8efa296de61200245ede2b58393882ed5aab6914de910ef",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F05-engineering-desktop-en.png",
+   "sha256": "e0252ef94e9a6063c6d49c0851fa1eaa95f02926a20e88af9205fc3c6f592b06",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F05-engineering-desktop-ja.png",
+   "sha256": "e768d69876769cbdb93435a0d5218456e35e8d111a6d63e4e5da142b94765415",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F05-engineering-desktop-vi.png",
+   "sha256": "55da25ebfb3ed2e721f9c11a56d892ce27c2fc760810756b5c8af9d0b8f1c2d1",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F05-missing-cup-desktop-vi.png",
+   "sha256": "8c58efb0ca9caa2fba53528c7104a1bac7d2d63cea65e5b0007e663e62460c29",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F05-webgl-disabled-reduced-motion-desktop-vi.png",
+   "sha256": "da30e225f0eed99cf935358f16fec38145576d858237cb00d1345ed76bc185bd",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F06-browser-memory.json",
+   "sha256": "7c79c7e82eb1364b393b69704120d784712ed7a02ab1eb5b3c0d5ce6f70d93cf",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F06-compare-desktop-vi.png",
+   "sha256": "5f66a3649999190b6e16dbdf9d86a3a11248163c11051988a79c02b9f04e40ab",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F06-replay-trace-desktop-vi.png",
+   "sha256": "a1ccd2c2f9abfd8df887527fbb2a49b723aa36025914f7538beafb71a91831ab",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F06-session-lost-desktop-vi.png",
+   "sha256": "5c9cf6df9275b75dee10e5b18a0bd00e995753ef71c6c85617374699a8b63c87",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F06-telemetry-disconnected-desktop-vi.png",
+   "sha256": "7612abc82e8e521809f88cbb623b8f531e190d81067fc94703b7447f798ee02f",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F06-telemetry-frozen-sim-desktop-vi.png",
+   "sha256": "21f0a228d9e8eafa996575bdeb312ba80a8f8e03206fc556200f4efbbd118e67",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/F06-telemetry-stale-heartbeat-desktop-vi.png",
+   "sha256": "71d686fa8e221ed89c315d3f21075641a217ec70a9aca1e44da43adaf5ffd1f6",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/V06-scheduled-cup-mock.png",
+   "sha256": "9b9341326bad81cbcacd425d656d5d3b6772abac40f7327ba71f4c48ace30ca2",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-mock-e2e/plan01-render-independence.json",
+   "sha256": "2fc8399ae3009de42f17a9d40b342bd64b0cb61c020c5abb2b7742dc7f7bfe8f",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "screens/lab-offline-e2e/F05-coffee-completed-desktop-vi.png",
+   "sha256": "c19395fe2ff4f0e2574abb8b5de08e30f8d08b5810ca711e7fb0bbe79d59f348",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "screens/lab-offline-e2e/F05-missing-cup-desktop-vi.png",
+   "sha256": "0a3cdf82889f73066d196edb78912dac5ebce65e6240519ac500e472ceaa67ef",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "screens/lab-offline-e2e/F06-browser-memory.json",
+   "sha256": "96ebea717816bab4ef5d4c1e7754c178f9c991131e481e3fe0911ad743c4a6e1",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "screens/lab-offline-e2e/F06-compare-desktop-vi.png",
+   "sha256": "b4022a6b2a2fafcfc8dde05e73202d8e65e63458ae85190a45986c401b444803",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "screens/lab-offline-e2e/F06-replay-trace-desktop-vi.png",
+   "sha256": "a1ccd2c2f9abfd8df887527fbb2a49b723aa36025914f7538beafb71a91831ab",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "screens/lab-offline-e2e/F06-session-lost-desktop-vi.png",
+   "sha256": "5c9cf6df9275b75dee10e5b18a0bd00e995753ef71c6c85617374699a8b63c87",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "screens/lab-offline-e2e/F06-telemetry-disconnected-desktop-vi.png",
+   "sha256": "c9599ba4d689ad075d4d5d6c772e04288d99b97e99edc831e5ab87e1202de059",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "screens/lab-offline-e2e/F06-telemetry-frozen-sim-desktop-vi.png",
+   "sha256": "d5fff210dcb252dbd254b0053a8b9b85a6266b746a1d1019420611b3d1f02058",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "screens/lab-offline-e2e/F06-telemetry-stale-heartbeat-desktop-vi.png",
+   "sha256": "7a06c0ef40f7f6578c2b5d3a4d75265ff58d529696b0b1971a2d3d64ed6de54f",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "screens/lab-offline-e2e/R02-offline-bv01.png",
+   "sha256": "1de66df3ffa66d130cc80adeeea60d7c969f35773bef9893d731992b04b07236",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "playwright/lab-e2e-browser/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "playwright/lab-e2e-browser/captures/mekoniq-lab-desktop.png",
+   "sha256": "7064bd2889de61b403b3313b1e50ea6f63397f927a2c7ec9686fa467b8197dfc",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "playwright/lab-e2e-browser/captures/mekoniq-lab-en.png",
+   "sha256": "6e3a49a39f92877a0ce2b2b849e1090d62600ae49c73c3b69edb453c88b994f3",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "playwright/lab-e2e-browser/captures/mekoniq-lab-ja.png",
+   "sha256": "513535820c1561fe103114cd7beeed64d59a7f7c8419102426a81a9abdb20965",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "playwright/lab-e2e-browser/captures/mekoniq-lab-mobile.png",
+   "sha256": "d3c0fb21940e93c916e45d19d4494d915bc49e28e770e72f6c9b22598d367eed",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "playwright/lab-e2e-browser/captures/mekoniq-lab-vi.png",
+   "sha256": "e4022a79039f0849626fa22d9f93833aa768491f13954379664396619e0d48bd",
+   "commandId": "lab-e2e-browser"
+  },
+  {
+   "file": "playwright/lab-mock-e2e/arm-simulation/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "playwright/lab-mock-e2e/coffee-journey/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "playwright/lab-mock-e2e/fault-schedule/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "playwright/lab-mock-e2e/legacy-campaign/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "playwright/lab-mock-e2e/twin-inputs/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "playwright/lab-mock-e2e/twin-plan01/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "playwright/lab-mock-e2e/twin-recovery/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "playwright/lab-mock-e2e/twin-workspace/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-mock-e2e"
+  },
+  {
+   "file": "playwright/lab-offline-e2e/coffee-journey/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "playwright/lab-offline-e2e/offline-bv01/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "playwright/lab-offline-e2e/twin-recovery/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-offline-e2e"
+  },
+  {
+   "file": "playwright/lab-runtime-e2e/.last-run.json",
+   "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+   "commandId": "lab-runtime-e2e"
+  },
+  {
+   "file": "playwright/lab-runtime-e2e/captures/mekoniq-lab-source-run.png",
+   "sha256": "d749940eaf1d8549b6e9b353f30682f11ea4b8e4914df7c2213c89e05b4d802e",
+   "commandId": "lab-runtime-e2e"
+  }
+ ]
+}

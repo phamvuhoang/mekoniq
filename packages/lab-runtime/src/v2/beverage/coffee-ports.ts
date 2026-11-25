@@ -35,6 +35,13 @@ export interface CoffeePlantPorts {
  snapshot():{coffee:CoffeePlantState;arm:ArmPlantState|null};
  drain():readonly CellReport[];
  transferEvidence(transferId:string):CorrelatedTransferEvidence|null;
+ /** Set by a drive world (R4): the report section, built from the recorded drive rows ON DEMAND. It is deliberately not part of report(): the run view calls report() every poll and a rebuild over
+  * the whole run made a view cost grow with the tick count (review of V05). */
+ driveReport?():Promise<import('../control/drive-report').DriveEvidenceReport>;
+ /** Set by a drive world with a fault schedule (V08): the fault report, built on demand from the recorded intents, receipts and drive rows plus what the Source journal says about the run. */
+ faultReport?(facts:{serveTicks:number[];custodyChanged:boolean|'unknown';attention:{tick:number;reason:string}[]}):Promise<{report?:import('../control/drive-io').FaultReportV1;issues:string[]}>;
+ /** Set by a belief world (R4.4): the perception section, rebuilt on demand from the durable belief stream (hot while recording, cold afterwards). */
+ perceptionReport?():Promise<import('../perception/perception-report').PerceptionReportV1>;
  report():{cupLedger:readonly CupPhysicalState[];arm:ArmCollisionEvidenceRecord|null;/** Set by a plant-backed arm (R1.1): what plant it is and how closely it followed the commands. */armPlant?:ArmPlantReport;/** Set by a contact arm plant (R2a). */armCell?:ArmCellEvidence};
  close():Promise<void>;
  /** Scripted cup input and fault controls. These never assert domain custody. */

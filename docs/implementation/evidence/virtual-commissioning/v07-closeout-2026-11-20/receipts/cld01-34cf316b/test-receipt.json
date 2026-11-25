@@ -1,0 +1,18 @@
+{
+  "sourceCommit": "34cf316b822da231b869ff052527630d8450c3c2",
+  "sourceCommitAfter": "34cf316b822da231b869ff052527630d8450c3c2",
+  "cleanBefore": true,
+  "cleanAfter": true,
+  "command": [
+    "perl",
+    "-e",
+    "alarm 2400; exec @ARGV",
+    "pnpm",
+    "test:integration",
+    "--",
+    "tests/integration/lab-runtime-container-r4.test.ts"
+  ],
+  "exitCode": 0,
+  "durationSeconds": 233.525,
+  "accepted": false
+}

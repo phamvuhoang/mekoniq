@@ -9,7 +9,8 @@ import xml.etree.ElementTree as ET
 
 import numpy as np
 
-from .compile import CompileError, _el, _vec, _wxyz, _rot
+from .actors import ACTOR_PROXY_V1
+from .compile import CompileError, _el, _vec, _wxyz, _rot, apply_drive_actuators
 
 NUMERICS = {"gravityMps2": [0, 0, -9.81], "solver": "Newton", "condim": 6, "solref": [.02, 1], "solimp": [.9, .95, .001],
             "robotSelfContact": "masked-canonical-fixed-overlaps", "casterContactRule": "explicit-floor-pair",
@@ -118,7 +119,7 @@ def resolve_lidar(navigation_model, physical_model):
     return sensor, matches[0]
 
 
-def compile_mobile(scene, physical_models, load_profile, physics):
+def compile_mobile(scene, physical_models, load_profile, physics, drive_plan=None, actors=None):
     if len(scene["robots"]) != 1 or len(load_profile["props"]) > 8:
         raise CompileError("WORLD_CAPACITY_EXCEEDED")
     _check_load(load_profile)
@@ -287,4 +288,17 @@ def compile_mobile(scene, physical_models, load_profile, physics):
         names["tags"][name] = f"static/{obs['id']}"
     if scene["actors"]:
         raise CompileError("MODEL_UNSUPPORTED", "mobile actors require an explicit physical proxy")
+    # scripted persons (V10): a kinematic box of the actor's radius, solid like a static (seen by the LiDAR, an unexpected contact); placed every tick by actorUpdates
+    names["actors"] = {}
+    for i, a in enumerate(actors or []):
+        bname, gname = f"ACTOR_{i}", f"ACTOR_{i}_GEOM"
+        x, y, yaw = a["initialPoseMap"]
+        half = ACTOR_PROXY_V1["heightM"] / 2
+        body = _el(world, "body", name=bname, mocap="true", pos=_vec([x, y, half]), quat=_wxyz([0, 0, math.sin(yaw/2), math.cos(yaw/2)]))
+        _el(body, "geom", name=gname, type="box", size=_vec([a["radiusM"], a["radiusM"], half]), contype="2", conaffinity="5")
+        names["actors"][a["id"]] = bname
+        names["tags"][gname] = f"actor/{a['id']}"
+    if drive_plan:
+        rid = scene["robots"][0]["robotId"]
+        apply_drive_actuators(doc, {f"{rid}/wheel-left": "DRIVE_0", f"{rid}/wheel-right": "DRIVE_1"}, drive_plan)
     return ET.tostring(doc, encoding="unicode") + "\n", names

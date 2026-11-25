@@ -1,0 +1,437 @@
+{
+  "manifest": {
+    "runId": "e476814a-53ba-4bf0-a0a5-d704b2a20a8e",
+    "sourceCommit": "3ce65d145be10d2e7b5a9b69a47e6fa1c2a98564",
+    "scenario": {
+      "id": "MJ-CELL-BV01",
+      "revision": 1,
+      "hash": "d3042f3dac91964e803acb91cbda2ab50620231ffc146dfaac0aab99c02b1b02"
+    },
+    "backendSetId": "engineering-mujoco-cell-v1",
+    "drive": {
+      "driveModelDigest": "ea2c80f32f4adf2d1536a5244e09d31f893e54a663b71bdb44983b4998448e69",
+      "controlProfileDigest": "ab147ea004cbdea8bd29b0bb0c674c03199e2b5fc4db32e91021779f576981b7",
+      "controllers": [
+        {
+          "id": "joint-trajectory-follower-v1",
+          "revision": 1
+        },
+        {
+          "id": "diff-drive-base-v1",
+          "revision": 2
+        },
+        {
+          "id": "exhausted-route-correction",
+          "revision": 1
+        }
+      ],
+      "testLevel": "controller_in_the_loop",
+      "experimentId": "drive-nominal-v1",
+      "hostArch": "arm64"
+    },
+    "mode": "simulation",
+    "access": "simulated",
+    "clock": {
+      "tickMs": 20,
+      "businessEpochMs": 1793491200000
+    },
+    "seed": 7,
+    "backends": [
+      {
+        "id": "mujoco_3d",
+        "version": "3.17.0",
+        "model": "mujoco_shared_world",
+        "dynamics": true
+      },
+      {
+        "id": "mujoco_arm",
+        "version": "3.17.0",
+        "model": "mujoco_position_actuator_arm",
+        "dynamics": true
+      },
+      {
+        "id": "mock_coffee",
+        "version": "1",
+        "model": "mock_process",
+        "dynamics": false
+      }
+    ],
+    "project": {
+      "id": "coffee-delivery-world-v1",
+      "revision": 1,
+      "hash": "deb302974a81e13488995b94b9b136b1b4e02a30ccb23a6670f13b3f97f2837a"
+    },
+    "world": {
+      "id": "coffee-delivery-world",
+      "revision": 1,
+      "hash": "ab24df472a336a41238499df2f577bfa1569e5697fdf5e8c70bfa1dc057c9df5"
+    },
+    "models": [
+      {
+        "id": "mujoco_shared_world",
+        "revision": "1",
+        "hash": "b4eb642ac3b6dc0c0c2306cea5ec7bce886083d6722165c391910b7f0585e634",
+        "provenance": "manufacturer_nominal+assumed"
+      },
+      {
+        "id": "mock_coffee",
+        "revision": "1",
+        "hash": "286626faf31e41f69c911891286b21efb59d8a28929aa799adc6beb8ab970a78",
+        "provenance": "illustrative"
+      }
+    ],
+    "profiles": [
+      {
+        "id": "world_durable_v1",
+        "revision": 1,
+        "hash": "f3aab6d1516cbb8fcb0733c7b2d46eeb09ea81c1b04d0b3311a0314a38fcf6a7",
+        "provenance": "source_derived_cache"
+      },
+      {
+        "id": "grid-diff-world-v4",
+        "revision": 4,
+        "hash": "02a23c9f74f6d8ab79a1521adeae45f9a406d0716886b2336a2f6a776b3cc787",
+        "provenance": "assumed"
+      },
+      {
+        "id": "coffee-delivery-world-numerics-v1",
+        "revision": 1,
+        "hash": "fbedbd5c9b7054aab34236fbe933e1664c6a97ec0f090d9a6055631d523839f4",
+        "provenance": "assumed"
+      }
+    ],
+    "calibration": {
+      "status": "not_calibrated",
+      "revision": null,
+      "hash": null,
+      "reason": "WORLD_NOMINAL_ASSUMED"
+    },
+    "armProgram": {
+      "fixture": {
+        "id": "coffee-delivery-cell-v1",
+        "revision": "1"
+      },
+      "physicsDigest": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+      "programsDigest": "434e73c3845d13064793fcbad7866820b70a7d3bdf0adee161da1e2caaf1b247",
+      "waypointsDigest": "52fb5668e7472480b04e7a0ecd2eee32d9a8a56a4c8b876a057b62c263a25623"
+    }
+  },
+  "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 10825,
+    "simTimeNs": "216500000000"
+  },
+  "driveEvidence": {
+    "testLevel": "controller_in_the_loop",
+    "complete": true,
+    "issues": [],
+    "ticks": 10826,
+    "events": [],
+    "axes": [
+      {
+        "axisId": "arm-1/J1",
+        "mode": "csp",
+        "states": [
+          {
+            "state": "disabled",
+            "fromTick": 0
+          },
+          {
+            "state": "ready",
+            "fromTick": 1
+          },
+          {
+            "state": "enabled",
+            "fromTick": 3
+          }
+        ],
+        "faults": [],
+        "enabledAtTick": 3,
+        "saturatedSubsteps": 0,
+        "trackingRms": {
+          "available": true,
+          "value": 0.0018956535504094736,
+          "unit": "rad",
+          "samples": 10823,
+          "basis": "actual"
+        }
+      },
+      {
+        "axisId": "arm-1/J2",
+        "mode": "csp",
+        "states": [
+          {
+            "state": "disabled",
+            "fromTick": 0
+          },
+          {
+            "state": "ready",
+            "fromTick": 1
+          },
+          {
+            "state": "enabled",
+            "fromTick": 3
+          }
+        ],
+        "faults": [],
+        "enabledAtTick": 3,
+        "saturatedSubsteps": 0,
+        "trackingRms": {
+          "available": true,
+          "value": 0.00248372886202791,
+          "unit": "rad",
+          "samples": 10823,
+          "basis": "actual"
+        }
+      },
+      {
+        "axisId": "arm-1/J3",
+        "mode": "csp",
+        "states": [
+          {
+            "state": "disabled",
+            "fromTick": 0
+          },
+          {
+            "state": "ready",
+            "fromTick": 1
+          },
+          {
+            "state": "enabled",
+            "fromTick": 3
+          }
+        ],
+        "faults": [],
+        "enabledAtTick": 3,
+        "saturatedSubsteps": 0,
+        "trackingRms": {
+          "available": true,
+          "value": 0.0033905711554302258,
+          "unit": "rad",
+          "samples": 10823,
+          "basis": "actual"
+        }
+      },
+      {
+        "axisId": "arm-1/J4",
+        "mode": "csp",
+        "states": [
+          {
+            "state": "disabled",
+            "fromTick": 0
+          },
+          {
+            "state": "ready",
+            "fromTick": 1
+          },
+          {
+            "state": "enabled",
+            "fromTick": 3
+          }
+        ],
+        "faults": [],
+        "enabledAtTick": 3,
+        "saturatedSubsteps": 0,
+        "trackingRms": {
+          "available": true,
+          "value": 8.853087539050511e-05,
+          "unit": "rad",
+          "samples": 10823,
+          "basis": "actual"
+        }
+      },
+      {
+        "axisId": "arm-1/J5",
+        "mode": "csp",
+        "states": [
+          {
+            "state": "disabled",
+            "fromTick": 0
+          },
+          {
+            "state": "ready",
+            "fromTick": 1
+          },
+          {
+            "state": "enabled",
+            "fromTick": 3
+          }
+        ],
+        "faults": [],
+        "enabledAtTick": 3,
+        "saturatedSubsteps": 174,
+        "trackingRms": {
+          "available": true,
+          "value": 0.0015374207864364458,
+          "unit": "rad",
+          "samples": 10823,
+          "basis": "actual"
+        }
+      },
+      {
+        "axisId": "arm-1/J6",
+        "mode": "csp",
+        "states": [
+          {
+            "state": "disabled",
+            "fromTick": 0
+          },
+          {
+            "state": "ready",
+            "fromTick": 1
+          },
+          {
+            "state": "enabled",
+            "fromTick": 3
+          }
+        ],
+        "faults": [],
+        "enabledAtTick": 3,
+        "saturatedSubsteps": 0,
+        "trackingRms": {
+          "available": true,
+          "value": 4.239832245822104e-05,
+          "unit": "rad",
+          "samples": 10823,
+          "basis": "actual"
+        }
+      },
+      {
+        "axisId": "arm-1/gripper",
+        "mode": "csp",
+        "states": [
+          {
+            "state": "disabled",
+            "fromTick": 0
+          },
+          {
+            "state": "ready",
+            "fromTick": 1
+          },
+          {
+            "state": "enabled",
+            "fromTick": 3
+          }
+        ],
+        "faults": [],
+        "enabledAtTick": 3,
+        "saturatedSubsteps": 5716,
+        "trackingRms": {
+          "available": true,
+          "value": 0.17002104412005054,
+          "unit": "rad",
+          "samples": 10823,
+          "basis": "actual"
+        }
+      },
+      {
+        "axisId": "amr-1/wheel-left",
+        "mode": "csv",
+        "states": [
+          {
+            "state": "disabled",
+            "fromTick": 0
+          },
+          {
+            "state": "ready",
+            "fromTick": 1
+          },
+          {
+            "state": "enabled",
+            "fromTick": 3
+          }
+        ],
+        "faults": [],
+        "enabledAtTick": 3,
+        "saturatedSubsteps": 0,
+        "trackingRms": {
+          "available": true,
+          "value": 0.3167435570722076,
+          "unit": "rad/s",
+          "samples": 10823,
+          "basis": "actual"
+        },
+        "speedDeficit": {
+          "available": true,
+          "value": 0.45792594801821157,
+          "unit": "rad/s",
+          "samples": 843,
+          "basis": "actual"
+        }
+      },
+      {
+        "axisId": "amr-1/wheel-right",
+        "mode": "csv",
+        "states": [
+          {
+            "state": "disabled",
+            "fromTick": 0
+          },
+          {
+            "state": "ready",
+            "fromTick": 1
+          },
+          {
+            "state": "enabled",
+            "fromTick": 3
+          }
+        ],
+        "faults": [],
+        "enabledAtTick": 3,
+        "saturatedSubsteps": 0,
+        "trackingRms": {
+          "available": true,
+          "value": 0.3109747260430132,
+          "unit": "rad/s",
+          "samples": 10823,
+          "basis": "actual"
+        },
+        "speedDeficit": {
+          "available": true,
+          "value": 0.4491479891116401,
+          "unit": "rad/s",
+          "samples": 844,
+          "basis": "actual"
+        }
+      }
+    ]
+  },
+  "metrics": {
+    "maxConcurrentMovers": 1,
+    "holds": [],
+    "distanceM": {
+      "amr-1": 24.054742795825376
+    },
+    "collision": {
+      "available": true,
+      "contacts": 0,
+      "minSeparationM": null
+    }
+  },
+  "attention": [],
+  "arm": {
+    "armPlant": {
+      "engine": "mujoco_3d",
+      "calibration": "not_calibrated"
+    }
+  },
+  "coffee": {
+    "jobs": [
+      {
+        "jobId": "coffee-job-1",
+        "status": "delivered",
+        "attentionReason": null
+      },
+      {
+        "jobId": "coffee-job-2",
+        "status": "delivered",
+        "attentionReason": null
+      }
+    ]
+  },
+  "worldSweep": {
+    "accepted": false,
+    "calibration": "not_calibrated"
+  }
+}

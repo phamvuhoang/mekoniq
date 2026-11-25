@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "pick-rig-v1",
+  "accepted": false,
+  "files": [
+    {
+      "path": "NOTICE",
+      "sha256": "7b06a81d2e13936d721ea6ab2d0e3fc00901600a4f4c2cd6aa2829698518303c",
+      "bytes": 1840
+    },
+    {
+      "path": "README.md",
+      "sha256": "0b338d54adff25fe8acae67b52d15d887349bd3c495ba804de949a8888599973",
+      "bytes": 498
+    },
+    {
+      "path": "arm-component.json",
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+      "bytes": 69507
+    },
+    {
+      "path": "arm-physics.json",
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+      "bytes": 3930
+    },
+    {
+      "path": "empty-load.json",
+      "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+      "bytes": 1474
+    },
+    {
+      "path": "handoff-policy.json",
+      "sha256": "7e8a620a8d7ad9649b443e150dfafedbc8a55677735a21c87818dff81dacab80",
+      "bytes": 829
+    },
+    {
+      "path": "lab-world-scene.json",
+      "sha256": "cfd0e19b866e18c978b46806d023912b0fe250d02b33a78b03526849d7460e0e",
+      "bytes": 20931
+    },
+    {
+      "path": "mobile-drive.json",
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "bytes": 3092
+    },
+    {
+      "path": "mobile-physical.json",
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "bytes": 47385
+    },
+    {
+      "path": "programs.json",
+      "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+      "bytes": 7591
+    },
+    {
+      "path": "project.json",
+      "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+      "bytes": 2676
+    },
+    {
+      "path": "rig-policy.json",
+      "sha256": "c03728fec82be575f1a5c2750bad59bf8f4d129b3caec7c617984c92bdaa631a",
+      "bytes": 256
+    }
+  ]
+}

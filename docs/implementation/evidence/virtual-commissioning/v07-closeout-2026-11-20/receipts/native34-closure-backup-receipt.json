@@ -1,0 +1,39 @@
+{
+  "accepted": false,
+  "releaseId": 452762939,
+  "draft": true,
+  "authenticatedReadback": true,
+  "completedAt": "2026-11-20T16:40:45.333442+00:00",
+  "files": [
+    {
+      "name": "r4-cld02-34cf316b.zip",
+      "bytes": 468789,
+      "sha256": "063a3b4df7ab9ea3822505280b24f946a8b606bc0b5a9e687601e7a04ec798c9"
+    },
+    {
+      "name": "r4-cld02-34cf316b-readback-receipt.json",
+      "bytes": 2048,
+      "sha256": "20e513a4dcb79318f89d0b7a8afd5a13454dc8e92ac2db7086a72735767531f3"
+    },
+    {
+      "name": "safe-campaigns-backup-receipt.json",
+      "bytes": 7739,
+      "sha256": "a102d68b41331ae740608ad4608b69518b65796f53627ca26d7d68fcab79870a"
+    },
+    {
+      "name": "SUPERSEDED-RAW-ASSETS.json",
+      "bytes": 923,
+      "sha256": "6326ddb35f20f761682f1687dbcfda7897d171b4765ce89efab393161d3132a7"
+    },
+    {
+      "name": "native34-and-backup-closure-transfer-scan.json",
+      "bytes": 8752,
+      "sha256": "7734e2b2acf4ed3210f15f5f730e2d68d4b6001a9d170dd2a8d1f1c42e57281b"
+    },
+    {
+      "name": "NATIVE34-CLOSURE-SHA256SUMS",
+      "bytes": 501,
+      "sha256": "8d75701ce3eb81ae0edd958fb227d61c95ab00582cc4dd53d66621498eacc975"
+    }
+  ]
+}

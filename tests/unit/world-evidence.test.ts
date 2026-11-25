@@ -7,13 +7,17 @@ import {join,resolve} from 'node:path';
 import {openWorldRecorder,readWorldEvidence,prepareWorldAdmission} from '../../packages/lab-runtime/src/v2/simulation3d/world-evidence';
 import {readWorldFixture} from '../../packages/lab-runtime/src/v2/simulation3d/world-scene';
 import * as durable from '../../packages/lab-runtime/src/v2/navigation2d/evidence';
+import {documentDigest} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
+import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
 import {tick} from '../support/physics';
 import type {Sim3DSnapshotV1} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 vi.mock('node:fs/promises',async importOriginal=>{const actual=await importOriginal<typeof import('node:fs/promises')>();return {...actual,unlink:vi.fn(actual.unlink)};});
 vi.mock('node:zlib',async importOriginal=>{const actual=await importOriginal<typeof import('node:zlib')>();return {...actual,gzip:vi.fn(actual.gzip),gzipSync:vi.fn(actual.gzipSync)};});
 const dirs:string[]=[],recs:{finish():Promise<void>}[]=[];afterEach(async()=>{vi.restoreAllMocks();await Promise.all(recs.splice(0).map(r=>r.finish().catch(()=>{}))); // the WAL FileHandle outlives a test that never finish()es
  vi.mocked(fs.unlink).mockImplementation((await vi.importActual<typeof fs>('node:fs/promises')).unlink);for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
-async function setup(extra:{maxBytes?:number;chunkTicks?:number}={}){const f=await readWorldFixture(resolve('robotics/simulation-mujoco')),admission=prepareWorldAdmission(f.scene,f.files),directory=await mkdtemp(join(tmpdir(),'world-evidence-'));dirs.push(directory);
+async function setup(extra:{maxBytes?:number;chunkTicks?:number}={},pulse=false){const f=await readWorldFixture(resolve('robotics/simulation-mujoco'));
+ if(pulse){f.scene.disturbance={presetId:'world-cup-nudge-v2',revision:2,cupId:'cup-1',targetId:'cup-1',trigger:'after_belief_commit'};f.scene.sceneDigest=documentDigest(f.scene,'sceneDigest');}
+ const admission=prepareWorldAdmission(f.scene,f.files),directory=await mkdtemp(join(tmpdir(),'world-evidence-'));dirs.push(directory);
  const snapshot=(n:number,active=false):Sim3DSnapshotV1=>{const p=tick(n);p.loads=active?[{...p.loads[0]!,propId:'cup-1',supportId:f.scene.supportMap.mobileSupportId}]:[];p.contacts=[];for(const b of p.base)b.robotId='amr-1';for(const w of p.wheels)w.robotId='amr-1';for(const o of p.odometry)o.robotId='amr-1';return {schemaVersion:1,worldStep:{workerPid:1,modelCount:1,physicsSubsteps:(n+1)*10,primingSubsteps:10,nq:35,nv:32,nbody:30,ngeom:27},runId:'rig',bootId:'boot',seq:String(n+1),tick:n,simTimeNs:String(n*20_000_000),sceneDigest:f.scene.sceneDigest,robots:[{robotId:'amr-1',poseDriveMap:[0,0,0],bodyVelocity:[0,0],collisionIds:[],scans:[],pose3d:{z:0,roll:0,pitch:0},wheels:{leftRadS:0,rightRadS:0}}],arms:[{armId:'arm-1',positionsRad:f.scene.armCell.arm.homeRad,velocitiesRadS:Array(6).fill(0),collisionIds:[],gripper:{openingM:.0889,heldPropIds:[]}}],props:active?[{propId:'cup-1',position:p.loads[0]!.poseMap.positionM,quaternionXyzw:p.loads[0]!.poseMap.quaternionXyzw,restingOn:null}]:[],physics:p};};
  const rec=await openWorldRecorder({directory,admission,runId:'rig',bootId:'boot',...extra});recs.push(rec);return {admission,directory,snapshot,rec};}
 const command={targetTick:1,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[{propId:'cup-1',pose:{position:[.49,0,.151] as [number,number,number],quaternionXyzw:[0,0,0,1] as [number,number,number,number]}}],worldInteractions:[{eventId:'rig:birth:1',cupId:'cup-1',propId:'cup-1',kind:'birth' as const,targetTick:1}]};
@@ -106,3 +110,66 @@ test('chunks compress on the zlib threadpool, never gzipSync on the tick path, a
  for(const c of m.chunks){const b=await readFile(join(h.directory,c.path));expect(b.equals(zlib.gzipSync(zlib.gunzipSync(b)))).toBe(true);}
  expect(vi.mocked(zlib.gzip).mock.calls.length).toBe(2);expect(vi.mocked(zlib.gzipSync).mock.calls.length).toBe(2); // only the two verification calls above
  expect((await readWorldEvidence(h.directory,h.admission)).complete).toBe(true);});
+
+async function openPulse(){
+ const h=await setup({chunkTicks:1},true),before=h.snapshot(1,true);before.props![0]!.restingOn='nozzle-stand';
+ await h.rec.append(h.snapshot(0),null);await h.rec.append(before,command);
+ const segment=(index:number,tick:number)=>{
+  const s=h.snapshot(tick,true),intent={eventId:'disturbance:rig:world-cup-nudge-v2',targetId:'cup-1',targetTick:tick,presetId:'world-cup-nudge-v2' as const,revision:2 as const,segmentIndex:index};
+  const c={...idleCommand(tick),worldPerturbations:[intent]},r={...intent,runId:s.runId,bootId:s.bootId,sceneDigest:s.sceneDigest,requestId:'world-'+(tick+2),requestDigest:hashJson(c),frame:'map' as const,forceMapN:[4.025,0,0],torqueMapNm:[0,-.05*4.025,0],durationSubsteps:10 as const,beforePositionM:before.props![0]!.position,afterPositionM:s.props![0]!.position};
+  s.worldStep!.disturbances=[r];return {c,s,r,intent};
+ };
+ return {...h,segment};
+}
+test('covered live pulse prefix can end between segments, finalized evidence requires the complete pulse',async()=>{
+ const h=await openPulse(),{materializeWorldPrefix}=await import('../../packages/lab-runtime/src/v2/simulation3d/world-evidence');
+ const row=h.segment(0,2);await h.rec.append(row.s,row.c);
+ const a=prefixAuthority(h,2),p=await materializeWorldPrefix(await h.rec.capture(a),h.admission);
+ expect(p).toMatchObject({covered:true,publication:{streamFinalized:false}});
+ await expect(h.rec.finish()).rejects.toThrow('WORLD_PERTURBATION_INCOMPLETE');
+ const manifest={...h.rec.manifest(),terminal:null,gaps:[],complete:true};
+ await writeFile(join(h.directory,'manifest.json'),JSON.stringify(manifest));
+ expect(await readWorldEvidence(h.directory,h.admission)).toMatchObject({complete:false,issues:expect.arrayContaining(['WORLD_PERTURBATION_INCOMPLETE'])});
+ const {captureWorldPrefixDisk}=await import('../../packages/lab-runtime/src/v2/simulation3d/world-evidence');
+ expect(await materializeWorldPrefix(await captureWorldPrefixDisk(h.directory,h.admission,a),h.admission)).toMatchObject({covered:false,publication:{streamFinalized:false}});
+});
+test.each(['missing','skip','repeat','event','force','torque','before','after','request','run','boot','scene','tick'])('pulse readback refuses %s on the next physical interval',async defect=>{
+ const h=await openPulse(),first=h.segment(0,2);await h.rec.append(first.s,first.c);const {s,c,r,intent}=h.segment(1,3);
+ if(defect==='missing'){delete s.worldStep!.disturbances;await expect(h.rec.append(s,idleCommand(3))).rejects.toThrow();return;}
+ if(defect==='skip'||defect==='repeat'){r.segmentIndex=intent.segmentIndex=defect==='skip'?2:0;r.requestDigest=hashJson(c);}
+ if(defect==='event'){r.eventId=intent.eventId='different';r.requestDigest=hashJson(c);}
+ if(defect==='force')r.forceMapN[0]=7;if(defect==='torque')r.torqueMapNm[1]=0;
+ if(defect==='before')r.beforePositionM=[1,2,3];if(defect==='after')r.afterPositionM=[1,2,3];
+ if(defect==='request')r.requestDigest='0'.repeat(64);if(defect==='run')r.runId='other';if(defect==='boot')r.bootId='other';if(defect==='scene')r.sceneDigest='f'.repeat(64);if(defect==='tick')r.targetTick++;
+ // Replace the receipt object after any whole-vector reassignment.
+ s.worldStep!.disturbances=[r];await expect(h.rec.append(s,c)).rejects.toThrow();
+});
+test('one complete pulse has five receipts even when the moving cup loses contact with the stand',async()=>{
+ const h=await openPulse();
+ for(let i=0;i<5;i++){const {s,c}=h.segment(i,i+2);await h.rec.append(s,c);}
+ await h.rec.finish();const verified=await readWorldEvidence(h.directory,h.admission);expect(verified.issues).toEqual([]);
+ expect(verified.records.flatMap(r=>r.snapshot.worldStep?.disturbances??[]).map(r=>r.segmentIndex)).toEqual([0,1,2,3,4]);
+ const duplicate=await openPulse();for(let i=0;i<5;i++){const {s,c}=duplicate.segment(i,i+2);await duplicate.rec.append(s,c);}
+ const {s,c}=duplicate.segment(0,7);await expect(duplicate.rec.append(s,c)).rejects.toThrow();
+});
+
+test('a pulse receipt hashes the native request when a runtime-owned drive fault coincides',async()=>{
+ const {validateWorldDisturbance}=await import('../../packages/lab-runtime/src/v2/simulation3d/world-disturbance');
+ const h=await openPulse(),previous=h.snapshot(1,true);previous.props![0]!.restingOn='nozzle-stand';
+ const {s,c}=h.segment(0,2),loss={entryId:'loss',faultId:'command-loss',targetId:'amr-1/wheel-left',phase:'start' as const,params:{}};
+ const command={...c,faultInjections:[loss],faultReceipts:[{...loss,appliedTick:2,runId:s.runId,bootId:s.bootId,sceneDigest:s.sceneDigest,requestDigest:hashJson(c)}]};
+ const scene={...h.admission.scene,engine:{driveModelRef:{}}} as typeof h.admission.scene;
+ expect(validateWorldDisturbance(s,command,scene,previous,new Set())).toBe('world-cup-nudge-v2');
+ s.worldStep!.disturbances![0]!.requestDigest=hashJson(command);
+ expect(()=>validateWorldDisturbance(s,command,scene,previous,new Set())).toThrow();
+});
+
+test('a finalized manifest ending mid-pulse cannot use later unpublished WAL rows to claim completion',async()=>{
+ const {captureWorldPrefixDisk,materializeWorldPrefix}=await import('../../packages/lab-runtime/src/v2/simulation3d/world-evidence');
+ const h=await openPulse();for(let i=0;i<5;i++){const {s,c}=h.segment(i,i+2);await h.rec.append(s,c);}await h.rec.finish();
+ const m=h.rec.manifest(),unpublished=await Promise.all(m.chunks.filter(c=>c.firstTick>2).map(async c=>zlib.gunzipSync(await readFile(join(h.directory,c.path)))));
+ await writeFile(join(h.directory,'manifest.json'),JSON.stringify({...m,lastTick:2,chunks:m.chunks.filter(c=>c.lastTick<=2)}));
+ await writeFile(join(h.directory,'pending.ndjson'),Buffer.concat(unpublished));
+ const prefix=await materializeWorldPrefix(await captureWorldPrefixDisk(h.directory,h.admission,prefixAuthority(h,6)),h.admission);
+ expect(prefix.publication.streamFinalized).toBe(false);expect(prefix.covered).toBe(false);expect(prefix.issues).toContain('WORLD_PERTURBATION_INCOMPLETE');
+});

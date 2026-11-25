@@ -11,6 +11,12 @@ from referencing.jsonschema import DRAFT7
 PROTOCOL = "mekoniq-sim3d/1"
 MAX_LINE_BYTES = 2 * 1024 * 1024
 RECEIPT_LIMIT = 256
+# the refusals of a step that carries drive commands (contracts §3); each one leaves the tick and the engine unchanged
+DRIVE_REFUSALS = ("DRIVE_COMMAND_REQUIRED", "DRIVE_AXIS_UNKNOWN", "DRIVE_MODE_MISMATCH", "DRIVE_TARGET_OUT_OF_RANGE", "DRIVE_COMMAND_SEQ_INVALID")
+# the refusals of a bench (V06, R4-A §6.1): at create before any engine is built (1-2 distinct axes of the drive model, drive documents from payload.bench only, an arm or a mobile
+# scene) and of a step past the bench's last tick; none of them changes the run
+BENCH_REFUSALS = ("BENCH_AXIS_COUNT", "BENCH_AXIS_UNKNOWN", "BENCH_DRIVE_CONFLICT", "BENCH_SCENE_UNSUPPORTED", "BENCH_TICK_LIMIT")
+BENCH_MAX_AXES, BENCH_MAX_TICKS = 2, 500
 OPS = ("describe", "create", "start", "step", "pause", "resume", "getState", "stop")
 
 

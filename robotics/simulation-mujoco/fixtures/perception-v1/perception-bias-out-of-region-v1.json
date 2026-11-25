@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "documentType": "perception-profile",
+  "id": "perception-bias-out-of-region-v1",
+  "revision": 1,
+  "digest": "4176c2eb8bb9e6d027d3a5701458e05354bfb405a446ef00edc34995a891cb10",
+  "calibration": "not_calibrated",
+  "parameterSource": "assumed",
+  "updateEveryTicks": 10,
+  "latencyTicks": 5,
+  "biasM": [
+    0.03,
+    0
+  ],
+  "sigmaM": [
+    0,
+    0
+  ],
+  "dropoutProbability": 0,
+  "visibleRegionId": "nozzle-stand",
+  "maxAgeTicks": 50
+}

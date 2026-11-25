@@ -1,16 +1,24 @@
-import {worldExperiment,type WorldExperimentId} from './simulation3d/world-disturbance';
+import {MEASURED_CUP_NUDGE,worldExperiment,type WorldExperimentId} from './simulation3d/world-disturbance';
 import type {RobotAdapter} from '../../../robot-adapters/src/contract';
 import {validateSim3DSnapshot,type Sim3DSnapshotV1} from './navigation2d/contracts';
 import type {WorldPlantBindings,WorldPortsFactory} from './simulation3d/world-ports';
 import type {WorldTickCommand} from './simulation3d/world-ports';
+import {FAULT_ORACLE_FILE,custodyFacts,readRetainedWorldDriveReport,readRetainedWorldFaultReport} from './simulation3d/world-drive-report';
 import {retainedWorldArmReports} from './simulation3d/world-arm-report';
 import {unavailableWorldSweep,type WorldSweepResult} from './simulation3d/world-sweep';
 import type {ArmReportBlock} from './beverage/arm-plant-report';
 import {stepWorldOnce} from './simulation3d/world-step';
-import {dueFaults,validateFaultSchedule,validateFaultTarget,type FaultFireRecord,type FaultPhase} from './fault-schedule';
+import {serveTicksOf} from './fault-report';
+import {dueFaults,validateFaultSchedule,validateFaultTarget,type FaultFireRecord,type FaultPhase,type FaultScheduleEntry} from './fault-schedule';
 // Mock scenario runner. Per tick: scripted inputs -> source decisions/outbox dispatch -> model advance -> observations -> journal.
 // Business truth lives only in the run's source journal; the plant owns pose/path; the report reads events back from the journal.
-import {mkdir,chmod,readdir} from 'node:fs/promises';
+import {mkdir,chmod,readdir,readFile} from 'node:fs/promises';
+import {join} from 'node:path';
+import {validateGraspRequest} from './perception/perception-contracts';
+import {bindPerceptionWorld,invalidatePerceptionWorld} from './perception/belief-world-proof';
+import {buildRetainedPerceptionReport} from './perception/perception-report';
+import {registeredGraspProgram} from './perception/grasp-programs';
+import {driveDocumentDigest} from './control/drive-io';
 import {randomUUID} from 'node:crypto';
 import {hashPayload,type CommandResult,type DomainEvent,type JsonObject,type RobotCommand} from '../../../contracts/src/index';
 import {dispatchRobotEffects,robotEventCommand} from '../../../robot-adapters/src/dispatch';
@@ -43,12 +51,12 @@ import type {JournalEvents} from './event-stream';
 import {awaitTick,realWall,type PaceAnchor,type WallClock} from './pace';
 /** Locked engineering extension: the bundle ref plus the exact project and projection it was compiled from (absent for every legacy run). */
 export interface EngineeringInputLock {ref:{bundleDigest:string;projectDigest:string};project:unknown;runtimeProjection:{project:unknown;assets:unknown[]};navigation?:{path:'navigation-scene.json';sha256:string;sceneDigest:string}}
-export interface RunManifestInput {worldExperimentId?:WorldExperimentId;project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
-export interface RunProviders {directory:string;/** Gateway-only recovery: existing checkpoint, no new plant or physical observations. */reclaimOnly?:boolean;worldPorts?:import('./simulation3d/world-ports').WorldPortsFactory;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>;
+export interface RunManifestInput {/** R4 drive faults (V08): run-scoped schedule, admitted against the server's catalog; absent: no injection, byte for byte. */driveFaultSchedule?:FaultScheduleEntry[];/** R4.2 bench runs only (control/bench-runner.ts): the request, admitted by the gateway's shape check and again by the runner against its plant. */bench?:import('./control/drive-io').BenchRequestV1;driveExperimentId?:import('./control/drive-experiments').DriveExperimentId;worldExperimentId?:WorldExperimentId;/** R4.4 (shared-world cell only): how the arm chooses its grasp point, and the registered perception profile and recovery policy of the belief modes. Absent: the R2b program. */graspMode?:'fixed_program'|'belief_ground_truth'|'belief_estimated';perceptionProfileId?:string;recoveryPolicyId?:string;graspProgramId?:string;project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
+export interface RunProviders {directory:string;/** Campaign harness only (never from a request): lets campaign-only faults (drive-reset) through admission. */faultCampaign?:true;/** Gateway-only recovery: existing checkpoint, no new plant or physical observations. */reclaimOnly?:boolean;worldPorts?:import('./simulation3d/world-ports').WorldPortsFactory;/** Trusted launcher configuration for cold reads without starting a worker. */worldWorkerRoot?:string;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>;
  /** A plant arm whose program comes from its fixture (MuJoCo): what its ports run, for the manifest. Ignored unless the set's arm is a plant. */armProgram?:ArmProgramRecord;
  /** Wall clock of paced steps (tests inject a fake); consulted only by a step that carries `pace`. */wall?:WallClock}
 export interface RunView {run:LabRunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:EntityView[];workload:WorkloadItem[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];attention:Attention[];served:string;coffee:CoffeeView|null;controlAccess?:'view_reconcile'|'view'}
-export interface ScenarioRun {worldDisplay?():Promise<import('./simulation3d/world-display').WorldDisplay>;worldDisplayScene?():Promise<import('./simulation3d/world-display').WorldDisplayScene>;captureReplay?(options?:{signal?:AbortSignal}):Promise<import('./replay/export').CapturedReplay>;readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
+export interface ScenarioRun {/** A bench run's drive trace as read back from its chunks (GET /lab/v2/runs/:id/trace); other runs omit it. */trace?():Promise<{runId:string;manifestSha256:string|null;traces:import('./control/drive-io').DriveTrace[];issues:string[]}>;worldDisplay?():Promise<import('./simulation3d/world-display').WorldDisplay>;worldDisplayScene?():Promise<import('./simulation3d/world-display').WorldDisplayScene>;captureReplay?(options?:{signal?:AbortSignal}):Promise<import('./replay/export').CapturedReplay>;readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
  /** Atomically attach pause/cancel to a pending step, or return undefined without enqueueing.
   * The step owns completion of attached controls; callers must retain its lifecycle reservation.
   * Runners without tick-boundary controls omit this method and keep ordinary action ordering. */
@@ -109,6 +117,11 @@ export function checkWorld(p:LabProjectV2,armModel:ArmModelSI=PUMA560_SI){
 }
 export async function createScenarioRun(input:RunManifestInput,providers:RunProviders):Promise<ScenarioRun>{
  worldExperiment(input);
+ if(input.graspProgramId!==undefined){
+  if(input.mode!=='simulation'||input.backendSetId!=='engineering-mujoco-cell-v1'||input.scenarioId!=='MJ-CELL-BV01')throw Error('GRASP_MODE_SCOPE_INVALID');
+  const checked=validateGraspRequest(input);if(!checked.ok)throw Error(checked.reasonCodes[0]!);
+ }
+ const graspProgram=input.graspProgramId===undefined?undefined:registeredGraspProgram(input.graspProgramId);
  const registered=(providers.scenarios??scenarioRegistry).get(input.scenarioId);if(!registered)throw new Error('SCENARIO_UNSUPPORTED');
  const capabilities=providers.catalog??defaultCatalog,runSet=Object.hasOwn(capabilities.sets,input.backendSetId)?capabilities.sets[input.backendSetId]:undefined,plantSet=isArmPlantSet(runSet);
  // the arm model is the run's arm provider's: the MuJoCo arm is the xArm 6, every other arm the PUMA 560 reference. Chosen by the set, so a project for the other model is refused.
@@ -127,6 +140,8 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
  if(!Number.isSafeInteger(input.seed)||input.seed<0||input.seed>0xffffffff)throw new Error('INVALID_SEED');
  const roles=resolveRoles(scenario,project),catalog=[...(providers.assets??[]),...serverAssets],radius:Record<string,number|null>={},trays:Record<string,number>={};
  const faultSchedule=validateFaultSchedule(project.faultSchedule??[],activeFaultEntities(project,roles),'mock',runSet?.providers?.arm);
+ // drive faults need a drive model: only the shared-world cell run with a drive experiment has one here (its ports check the schedule against the nine axes)
+ if(input.driveFaultSchedule?.length&&!(singleWorld&&input.driveExperimentId))throw new Error('FAULT_BACKEND_UNSUPPORTED');
  const assets=project.entities.map(e=>{
   const supplied=catalog.find(a=>a.contentHash===e.assetRef.contentHash);
   if(supplied&&(!verifyAssetHash(supplied)||supplied.id!==e.assetRef.id||supplied.revision!==e.assetRef.revision))throw new Error('ASSET_HASH_MISMATCH');
@@ -139,8 +154,8 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
  // a plant arm that runs its fixture's program (MuJoCo) records that program, its motion and its geometry; every other run keeps the mock arm's parameters
  const program=plantSet?providers.armProgram:undefined;
  const armProfile=program?{kinematics:armModel,program:{fixture:program.fixture,physicsDigest:program.physicsDigest,programsDigest:program.programsDigest,waypointsDigest:program.waypointsDigest,programs:program.programs},collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}}
-  :{kinematics:armModel,motion:MOCK_ARM_PARAMS,choreography:ARM_CHOREOGRAPHY,geometry:DEFAULT_ARM_GEOMETRY,collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}},modelParameters={amr:singleWorld?{composition:'single_world',admission:'source_factory'}:MOCK_AMR_PARAMS,...scenario.coffee?{coffee:MOCK_COFFEE_PARAMS,arm:armProfile,coffeePolicy:COFFEE_POLICY}:{}},configuration={revision:1,hash:hashJson({roles,trays,modelParameters,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??MOCK_AMR_PARAMS.speedMps})),fleet:scenario.fleet??{}})};
- const manifest:Omit<RunReport['manifest'],'runId'>={...input.worldExperimentId?{worldExperimentId:input.worldExperimentId}:{},...input.engineering?{engineering:input.engineering.ref}:{},...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:backends.mode,access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
+  :{kinematics:armModel,motion:MOCK_ARM_PARAMS,choreography:ARM_CHOREOGRAPHY,geometry:DEFAULT_ARM_GEOMETRY,collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}},modelParameters={...graspProgram?{graspProgram}:{},amr:singleWorld?{composition:'single_world',admission:'source_factory'}:MOCK_AMR_PARAMS,...scenario.coffee?{coffee:MOCK_COFFEE_PARAMS,arm:armProfile,coffeePolicy:COFFEE_POLICY}:{}},configuration={revision:1,hash:hashJson({roles,trays,modelParameters,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??MOCK_AMR_PARAMS.speedMps})),fleet:scenario.fleet??{}})};
+ const manifest:Omit<RunReport['manifest'],'runId'>={...input.graspProgramId?{graspProgramId:input.graspProgramId}:{},...input.driveFaultSchedule?.length?{driveFaultSchedule:{entries:structuredClone(input.driveFaultSchedule),hash:hashJson(input.driveFaultSchedule)}}:{},...input.worldExperimentId?{worldExperimentId:input.worldExperimentId}:{},...input.engineering?{engineering:input.engineering.ref}:{},...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:backends.mode,access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario)},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends:backends.descriptors}),configuration,
   recipes:COFFEE_RECIPES.filter(r=>scenario.coffee?.orders.some(o=>o.recipe===r.id)).map(r=>({id:r.id,revision:r.revision,hash:r.hash})),
@@ -164,7 +179,7 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
    plant:{width:project.world.width,height:project.world.height,obstacles:structuredClone(project.world.obstacles),injected:[],contacts:0,minSeparationM:null,maxConcurrentMovers:0,
     robots:roles.robots.map(r=>({id:r.id,radiusM:radius[r.id]!,speedLimitMps:project.entities.find(e=>e.id===r.id)?.speedLimitMps??MOCK_AMR_PARAMS.speedMps,pose:{x:point(r.parkingId).x,y:point(r.parkingId).y,yawRad:0},bootId:randomUUID(),seq:0,goals:[],lastCompleted:null,moving:false,hold:null,stale:false,distanceM:0}))}};
  }
- const run=new Run(dir,cp,scenario,project,providers.wall??realWall,singleWorld?{manifest:input,factory:providers.worldPorts!}:undefined,providers.reclaimOnly===true);
+ const run=new Run(dir,cp,scenario,project,providers.wall??realWall,singleWorld?{manifest:input,factory:providers.worldPorts!,workerRoot:providers.worldWorkerRoot}:undefined,providers.reclaimOnly===true);
  const coffee=roles.coffee&&scenario.coffee?{...roles.coffee,recipes:CoffeeDriver.recipes(scenario.coffee.orders)}:undefined;
  const openSource=()=>SourceSession.open(dir,cp.runId,()=>run.nowMs(),{...run.worldNavigation?{navigation:run.worldNavigation}:{},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[...new Set([roles.stationId,...coffee?[coffee.stationId]:[]])],...coffee?{coffee}:{},...scenario.fleet?{fleet:scenario.fleet}:{}},fresh);
  if(!singleWorld)run.source=await openSource();
@@ -197,7 +212,7 @@ class Run implements ScenarioRun {
  /** Paced-step anchor (D57): memory only, never checkpointed or digested; cleared by pause, resume, cancel, an unpaced step and a reopen. */
  private anchor:PaceAnchor|null=null;
  readonly telemetry=new TelemetryRecorder();
- constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private wall:WallClock,private worldConfig?:{manifest:RunManifestInput;factory:WorldPortsFactory},private readonly recoveryOnly=false){this.clock=createClock(EPOCH,cp.tick,cp.paused);}
+ constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private wall:WallClock,private worldConfig?:{manifest:RunManifestInput;factory:WorldPortsFactory;workerRoot?:string},private readonly recoveryOnly=false){this.clock=createClock(EPOCH,cp.tick,cp.paused);}
  get id(){return this.cp.runId;}
  get worldNavigation(){return this.cp.world?.navigation;}
  async attach(coffeePorts?:RunProviders['coffeePorts']){
@@ -232,7 +247,19 @@ class Run implements ScenarioRun {
      for(const r of c.plant.robots){r.stale=true;r.moving=false;r.hold='WORLD_UNKNOWN';}
      if(!c.attention.some(a=>a.reason==='WORLD_RESTART_UNKNOWN'))c.attention.push({reason:'WORLD_RESTART_UNKNOWN',tick:c.tick});
      ports={adapters:[],async advance(){throw new Error('WORLD_TERMINAL');},async recover(){},snapshot:()=>({coffee:c.coffee!.plant,arm:c.coffee!.arm}),drain:()=>[],transferEvidence:()=>null,report:()=>({cupLedger:[],arm:null}),async close(){}};
-     if(c.coffee.arm.historyRetention?.mode==='world_durable_v1'&&c.world.snapshot&&c.manifest.armProgram){const retained=await retainedWorldArmReports({directory:this.dir,runId:c.runId,bootId:c.world.snapshot.bootId,sceneDigest:c.world.snapshot.sceneDigest!,engineVersion:c.manifest.backends.find(b=>b.id==='mujoco_arm')?.version??'unavailable',program:c.manifest.armProgram,state:()=>c.coffee!.arm,publicTick:()=>c.tick});ports.armReportState=retained.armReportState;ports.report=()=>({cupLedger:[],arm:null,...retained.report()});}
+     if(c.coffee.arm.historyRetention?.mode==='world_durable_v1'&&c.world.snapshot&&c.manifest.armProgram){
+      const identity={runId:c.runId,bootId:c.world.snapshot.bootId,sceneDigest:c.world.snapshot.sceneDigest!};
+      const retained=await retainedWorldArmReports({directory:this.dir,...identity,engineVersion:c.manifest.backends.find(b=>b.id==='mujoco_arm')?.version??'unavailable',program:c.manifest.armProgram,state:()=>c.coffee!.arm,publicTick:()=>c.tick});
+      if(c.manifest.drive)ports.driveReport=()=>readRetainedWorldDriveReport(this.dir,{...identity,publicCommittedTick:c.tick},c.manifest.driveFaultSchedule?.entries??[]);
+      // the fault report is rebuilt from the retained stream, the schedule and the oracle kept with the run; what cannot be rebuilt says why, it never disappears
+      if(c.manifest.driveFaultSchedule)ports.faultReport=async facts=>{
+       let oracle:import('./control/drive-io').FaultOracleV1;
+       try{oracle=JSON.parse(await readFile(join(this.dir,FAULT_ORACLE_FILE),'utf8'));if(driveDocumentDigest(oracle)!==oracle.digest)throw new Error('FAULT_ORACLE_DIGEST');}catch(e){return {issues:[(e as Error).message==='FAULT_ORACLE_DIGEST'?'FAULT_ORACLE_DIGEST':'FAULT_ORACLE_MISSING']};}
+       return readRetainedWorldFaultReport(this.dir,{...identity,publicCommittedTick:c.tick},{faults:c.manifest.driveFaultSchedule!.entries,oracle,facts});
+      };
+      if(c.manifest.perception)ports.perceptionReport=()=>buildRetainedPerceptionReport(join(this.dir,'belief-evidence'),c.manifest,identity,this.worldConfig!.workerRoot);
+      ports.armReportState=retained.armReportState;ports.report=()=>({cupLedger:[],arm:null,...retained.report()});
+     }
     }else{
      this.world=await this.worldConfig.factory({manifest:this.worldConfig.manifest,runId:c.runId,directory:this.dir,state:c.coffee,context,newBootId:randomUUID});
      if(!this.world.evidence)throw new Error('WORLD_RECORDER_REQUIRED');if(this.world.metadata){Object.assign(c.manifest,structuredClone(this.world.metadata));c.manifest.calibration.reason='WORLD_NOMINAL_ASSUMED';}
@@ -392,7 +419,11 @@ class Run implements ScenarioRun {
    c.world!.pending={targetTick,stage:'prepared',ackTick:null};await writeCheckpoint(this.dir,c);
    try{
     const snapshot=await stepWorldOnce({...w.world,
-     step:async command=>{c.world!.pending!.command=structuredClone(command);c.world!.pending!.stage='sent';await writeCheckpoint(this.dir,c);const s=await w.world.step(command);c.world!.pending!.ackTick=s.tick;c.world!.pending!.stage='acked';return s;},
+     step:async command=>{
+      const sent=structuredClone(command),measured=sent.worldPerturbations?.[0]?.presetId===MEASURED_CUP_NUDGE;
+      c.world!.pending!.command=sent;c.world!.pending!.stage='sent';await writeCheckpoint(this.dir,c,{sync:measured});
+      const s=await w.world.step(measured?sent:command);c.world!.pending!.ackTick=s.tick;c.world!.pending!.stage='acked';return s;
+     },
      commit:async s=>{this.observationTick=s.tick;try{await w.world.commit(s);await this.coffee?.advance();}finally{this.observationTick=undefined;}}
     },c.tick,async s=>{await w.evidence.append(s);c.world!.pending!.stage='durable';await writeCheckpoint(this.dir,c);});
     this.clock.advance(1);c.tick=this.clock.tick;const committedCommand=c.world!.pending!.command!;c.world!.committedDisplay={command:structuredClone({targetTick:committedCommand.targetTick,worldControl:committedCommand.worldControl,velocities:committedCommand.velocities})};c.world!.snapshot=structuredClone(snapshot);this.applyWorldView(snapshot);delete c.world!.pending;
@@ -592,12 +623,18 @@ class Run implements ScenarioRun {
    return {id:r.id,kind:'amr',pose:{...r.pose},quality:this.recoveryOnly||r.stale?'stale':'valid',moving:r.moving,hold:r.hold,goal:g?{commandId:g.commandId,state:g.state}:null,path:g?.state==='executing'?g.path.map(p=>[p[0],p[1]] as [number,number]):[],distanceM:r.distanceM};});
  }
  async captureReplay(options:{signal?:AbortSignal}={}):Promise<import('./replay/export').CapturedReplay>{
-  if(!this.worldConfig)throw Error('REPLAY_PROVIDER_UNSUPPORTED');const check=()=>{if(options.signal?.aborted)throw Error('REPLAY_ABORTED');};check();const capture=this.queue.then(()=>{check();return this.captureReport(true);});this.queue=capture.then(()=>undefined,()=>undefined);const {report,materializeArm}=await capture;let world:import('./replay/export').CapturedReplay['world'];if(materializeArm){const evidence=await materializeArm(async owned=>{check();world=owned;});check();report.arm=evidence.arm;if(evidence.worldSweep)report.worldSweep=evidence.worldSweep;}return {directory:this.dir,report,...world?{world}:{}};
+  if(!this.worldConfig)throw Error('REPLAY_PROVIDER_UNSUPPORTED');const check=()=>{if(options.signal?.aborted)throw Error('REPLAY_ABORTED');};check();const capture=this.queue.then(()=>{check();return this.captureReport(true);});this.queue=capture.then(()=>undefined,()=>undefined);const {report,materializeArm}=await capture;let world:import('./replay/export').CapturedReplay['world'];if(materializeArm){const evidence=await materializeArm(async owned=>{check();bindPerceptionWorld(report,owned);world=owned;});check();report.arm=evidence.arm;if(evidence.worldSweep)report.worldSweep=evidence.worldSweep;}if(!world||!report.arm?.worldTrace?.prefixCovered)invalidatePerceptionWorld(report);return {directory:this.dir,report,...world?{world}:{}};
  }
  async report():Promise<RunReport>{
   if(!this.worldConfig){await this.queue;return (await this.captureReport()).report;}
   const capture=this.queue.then(()=>this.captureReport(true));this.queue=capture.then(()=>undefined,()=>undefined);const {report,materializeArm}=await capture;
-  if(materializeArm){const evidence=await materializeArm();report.arm=evidence.arm;if(evidence.worldSweep)report.worldSweep=evidence.worldSweep;}return report;
+  let bound=false;
+  if(materializeArm){
+   let evidence;
+   try{evidence=await materializeArm(report.perceptionEvidence?async owned=>{bindPerceptionWorld(report,owned);bound=true;}:undefined);}
+   catch(error){if(!report.perceptionEvidence||(error as Error).message!=='REPLAY_WORLD_PREFIX_UNAVAILABLE')throw error;evidence=await materializeArm();}
+   report.arm=evidence.arm;if(evidence.worldSweep)report.worldSweep=evidence.worldSweep;
+  }if(!bound||!report.arm?.worldTrace?.prefixCovered)invalidatePerceptionWorld(report);return report;
  }
  private async captureReport(deferred=false):Promise<{report:RunReport;materializeArm:((replay?:import('./beverage/coffee-ports').WorldReplaySink)=>Promise<{arm:ArmReportBlock;worldSweep?:WorldSweepResult}>)|null}>{
   if(this.closed)throw new Error('RUN_CLOSED');
@@ -621,6 +658,14 @@ class Run implements ScenarioRun {
     ...this.worldConfig?[]:arm?.armPlant.engine==='mujoco_3d'?[`mujoco_arm: the arm is a MuJoCo ${arm.armPlant.engineVersion} xArm 6 under position actuators with the fixture's Gripper G2. not_calibrated: masses, inertia, joint limits and forces are the manufacturer's nominal values; gains, friction, contact, pads and the cell layout are assumed. The cup is gripped, lifted and released by contact (the plant reports what the pads hold and where the cup rests); the AMR and the coffee machine are mocks. ARM03 is the swept capsule check on the actual joints every tick, not a physical safety proof.`]
      :arm?['webots_arm: the arm is a Webots R2025a rigid-body plant under position servo. not_calibrated: link masses, inertia, joint torque limits and floor friction are assumed fixture values. Gripping is an event of the program state machine, never physics; the AMR and the coffee machine are mocks. ARM03 is the swept capsule check on the actual joints every tick, not a physical safety proof.']:[]],
    ...this.coffee?{coffee:await this.coffee.report()}:{},...arm?{arm}:{},telemetry};
+  const hoisted=(report.coffee as {driveEvidence?:import('./control/drive-report').DriveEvidenceReport}|undefined)?.driveEvidence;if(hoisted){report.driveEvidence=hoisted;delete (report.coffee as {driveEvidence?:unknown}).driveEvidence;}
+  if(this.coffee&&c.manifest.driveFaultSchedule){
+   const fr=await this.coffee.faultReport({serveTicks:serveTicksOf(businessEvents,EPOCH),attention:v.attention.map(a=>({tick:a.tick,reason:a.reason})),custodyChanged:custodyFacts((report.coffee as {physicalCustody?:{status:string}[]}|undefined)?.physicalCustody??[],v.attention)});
+   // a fault report that could not be made says why in the drive section; it never goes missing quietly
+   if(fr?.report)report.faultReport=fr.report;
+   else if(fr&&report.driveEvidence)report.driveEvidence={...report.driveEvidence,complete:false,issues:[...report.driveEvidence.issues,...fr.issues]};
+  }
+  if(this.coffee&&c.manifest.perception){const pr=await this.coffee.perceptionReport();if(pr)report.perceptionEvidence=pr;}
   if(this.worldConfig){report.worldSweep=unavailableWorldSweep(c.tick,['WORLD_HISTORY_UNAVAILABLE']);report.worldSweep.scope={kind:'source_committed_prefix',publicCommittedTick:c.tick,prefixCovered:false,streamFinalized:false,identity:{runId:c.runId,bootId:c.world?.snapshot?.bootId??'unavailable',sceneDigest:c.world?.snapshot?.sceneDigest??'unavailable',admissionDigest:null}};}
   return {report,materializeArm};
  }

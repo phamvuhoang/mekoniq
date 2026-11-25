@@ -1,0 +1,106 @@
+{
+  "accepted": false,
+  "releaseId": 452762939,
+  "draft": true,
+  "authenticatedReadback": true,
+  "completedAt": "2026-11-20T16:49:54.008651+00:00",
+  "files": [
+    {
+      "name": "r4-v07-closeout-final-record.tar.gz",
+      "bytes": 23978764,
+      "sha256": "b49b332d141a132d301e6dd9682f3d92ecc33a522b6bd4779b6439e82876497f"
+    },
+    {
+      "name": "r4-v07-closeout-final-record.members.json",
+      "bytes": 180601,
+      "sha256": "066f268deaa01e95e5416af13a2f219501184991fef905c96c8196e51d78b858"
+    },
+    {
+      "name": "final-record-exact-transfer-scan.json",
+      "bytes": 151303,
+      "sha256": "9cecd79792e060d7ceef1a9c87c3063240b6f569ecab7dbc6ba61df7278a8a50"
+    },
+    {
+      "name": "reviewed-record-scan.py",
+      "bytes": 2830,
+      "sha256": "ba0f0cbc7b5c73040e9c0a5d5a7ebe8ad200d15abaa67723c2d67896496d4410"
+    },
+    {
+      "name": "final-record-reviewed-source-matches.json",
+      "bytes": 4454,
+      "sha256": "0342739604b167cd2103520de868a550eb65f76864a3f9474f1b0beb0ec69e53"
+    },
+    {
+      "name": "reviewed-record-scan-negative-checks.json",
+      "bytes": 3001,
+      "sha256": "0a0d49244daeeb6b194218eda885feb4673eb3a0b6afaceaf6f131499edcba7b"
+    },
+    {
+      "name": "final-record-sidecar-scan.json",
+      "bytes": 1505,
+      "sha256": "e8fb5c47675b3c9e423ba6e3aa1a981d1df568184ba4f36f7b18feb08f49831d"
+    },
+    {
+      "name": "FINAL-RECORD-SHA256SUMS",
+      "bytes": 717,
+      "sha256": "ea9805be272ccb8e2264f11c28fd670f8ba9bb4cbf0a4ff4929240fe935c9cf3"
+    }
+  ],
+  "restore": {
+    "version": 1,
+    "extractedAt": "2026-11-20T16:49:53.514674+00:00",
+    "source": "/private/tmp/r4-v07-closeout-record",
+    "archive": "/private/tmp/r4-v07-offmachine-20261120/final-record-readback/r4-v07-closeout-final-record.tar.gz",
+    "archiveSha256": "b49b332d141a132d301e6dd9682f3d92ecc33a522b6bd4779b6439e82876497f",
+    "memberIndex": "/private/tmp/r4-v07-offmachine-20261120/final-record-readback/r4-v07-closeout-final-record.members.json",
+    "memberIndexSha256": "066f268deaa01e95e5416af13a2f219501184991fef905c96c8196e51d78b858",
+    "destination": "/private/tmp/r4-v07-offmachine-20261120/restored-final-record",
+    "verifiedFiles": 694,
+    "verifiedBytes": 43435920,
+    "declaredSymlinksNotMaterialized": [],
+    "status": "byte_verified_only; public readback receipt is separate"
+  },
+  "rawCilAssetsStillAbsent": true,
+  "remoteAssets": [
+    {
+      "id": 772584744,
+      "name": "final-record-exact-transfer-scan.json",
+      "size": 151303
+    },
+    {
+      "id": 772584719,
+      "name": "final-record-reviewed-source-matches.json",
+      "size": 4454
+    },
+    {
+      "id": 772584778,
+      "name": "FINAL-RECORD-SHA256SUMS",
+      "size": 717
+    },
+    {
+      "id": 772584773,
+      "name": "final-record-sidecar-scan.json",
+      "size": 1505
+    },
+    {
+      "id": 772584715,
+      "name": "r4-v07-closeout-final-record.members.json",
+      "size": 180601
+    },
+    {
+      "id": 772584718,
+      "name": "r4-v07-closeout-final-record.tar.gz",
+      "size": 23978764
+    },
+    {
+      "id": 772584764,
+      "name": "reviewed-record-scan-negative-checks.json",
+      "size": 3001
+    },
+    {
+      "id": 772584742,
+      "name": "reviewed-record-scan.py",
+      "size": 2830
+    }
+  ]
+}

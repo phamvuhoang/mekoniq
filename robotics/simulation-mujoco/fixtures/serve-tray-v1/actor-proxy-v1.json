@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "actor-proxy-v1",
+  "revision": 1,
+  "calibration": "not_calibrated",
+  "shape": "box",
+  "footprint": "square of side 2*radiusM, kinematic (mocap)",
+  "heightM": 1.7,
+  "collision": "as a static solid: the LiDAR sees it and a robot contact is reported as an unexpected collision",
+  "sources": {
+    "shape": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/assumptions.json",
+      "revision": "1",
+      "locator": "scripted person proxy: a standing person as a box of the scenario actor radius and 1.7 m",
+      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+    }
+  }
+}

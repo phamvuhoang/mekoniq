@@ -10,20 +10,22 @@ import {validatePhysicsTickShape,validatePhysicsEvidenceShape,type PhysicsEviden
 import {validateLoadProfile} from './load-profile';
 import {rollPitch} from './physics-metrics';
 import {hashJson} from '../hash';
+import {driveRecordProblem} from '../control/drive-evidence';
 const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 const MANIFEST='manifest.json',WAL='pending.ndjson',INTENT='write.intent',NAME=/^physics-\d{6}-[a-f0-9]{8}\.ndjson\.gz$/;
-export interface PhysicsAdmission {maxAbsRollPitchRad?:number;robotId:string;props:{propId:string;supportId:string|null}[];contactIds:string[];tickMs:number;substeps:number;driveFrameInBase:{xyzM:number[];quaternionXyzw:number[]}}
+export interface PhysicsAdmission {/** the drive model's axis ids in order; absent: the run has no drive and its records carry none */driveAxes?:string[];maxAbsRollPitchRad?:number;robotId:string;props:{propId:string;supportId:string|null}[];contactIds:string[];tickMs:number;substeps:number;driveFrameInBase:{xyzM:number[];quaternionXyzw:number[]}}
 export interface PhysicsRead {complete:boolean;records:PhysicsTickRecord[];gaps:PhysicsEvidenceV1['gaps'];issues:string[]}
 export interface PhysicsRecorderOptions {directory:string;identity:PhysicsEvidenceV1['identity'];admission:PhysicsAdmission;metricsPolicyDigest:string;assumptions:PhysicsEvidenceV1['assumptions'];maxBytes?:number;maxTicks?:number;chunkTicks?:number}
 export interface PhysicsRecorder {directory:string;append(record:PhysicsTickRecord):Promise<void>;flush():Promise<void>;finish(reason:string|null):Promise<void>;gap(firstTick:number,lastTick:number,reason:string):Promise<void>;manifest():PhysicsEvidenceV1}
 /** Byte verified closure already admitted by lockScene; verify again here rather than trusting observation IDs. */
-export async function preparePhysicsAdmission(scene:NavigationSceneV1,read:(path:string)=>Promise<Uint8Array>){
+/** `actorIds`: the scripted persons of the run's scenario fixture; their solid proxies may appear in a contact as `actor/<id>`. */
+export async function preparePhysicsAdmission(scene:NavigationSceneV1,read:(path:string)=>Promise<Uint8Array>,actorIds:readonly string[]=[]){
  if(scene.engine.id!=='mujoco_3d'||scene.robots.length!==1||scene.clock.tickMs!==20||scene.engine.substeps!==10||scene.engine.timestepMs!==2||!scene.engine.stopPolicyRef)throw new Error('PHYSICS_PROFILE_UNSUPPORTED');
  const doc=async(ref:{path:string;sha256:string})=>{const f=scene.files.find(f=>f.path===ref.path),b=await read(ref.path);if(!f||f.sha256!==ref.sha256||f.bytes!==b.length||sha(b)!==ref.sha256)throw new Error('PHYSICS_PROFILE_HASH_MISMATCH');return JSON.parse(Buffer.from(b).toString());};
  const load=await doc(scene.engine.loadProfileRef) as LoadProfileV1;if(!validateLoadProfile(load).ok)throw new Error('PHYSICS_LOAD_INVALID');
  const physical=await doc(load.modelRef) as RobotPhysicalModelV1,robot=scene.robots[0]!;
- const policy=await doc(scene.engine.stopPolicyRef);
- const admission:PhysicsAdmission={maxAbsRollPitchRad:policy.maxAbsRollPitchRad,robotId:robot.robotId,props:load.props.map(p=>({propId:p.propId,supportId:p.attachment.kind==='free'?p.attachment.supportId:null})),contactIds:['floor',...physical.links.flatMap(l=>l.collision.map((_,i)=>`${robot.robotId}/${l.id}/c${i}`)),...load.props.map(p=>`prop/${p.propId}`),...[...scene.world.obstacles,...scene.world.boundaries].map(o=>`static/${o.id}`)],tickMs:20,substeps:10,driveFrameInBase:robot.model.driveFrameInBase};
+ const policy=await doc(scene.engine.stopPolicyRef),driveRef=(scene.engine as {driveModelRef?:{path:string;sha256:string}}).driveModelRef,driveAxes=driveRef?((await doc(driveRef)) as {axes:{axisId:string}[]}).axes.map(a=>a.axisId):undefined;
+ const admission:PhysicsAdmission={...driveAxes?{driveAxes}:{},maxAbsRollPitchRad:policy.maxAbsRollPitchRad,robotId:robot.robotId,props:load.props.map(p=>({propId:p.propId,supportId:p.attachment.kind==='free'?p.attachment.supportId:null})),contactIds:['floor',...physical.links.flatMap(l=>l.collision.map((_,i)=>`${robot.robotId}/${l.id}/c${i}`)),...load.props.map(p=>`prop/${p.propId}`),...[...scene.world.obstacles,...scene.world.boundaries].map(o=>`static/${o.id}`),...actorIds.map(id=>`actor/${id}`)],tickMs:20,substeps:10,driveFrameInBase:robot.model.driveFrameInBase};
  return {load,admission,assumptions:load.assumptions,metricsPolicyDigest:scene.engine.stopPolicyRef.sha256,loadProfileDigest:scene.engine.loadProfileRef.sha256,physicsProfileDigest:scene.engine.physicsProfileRef.sha256};
 }
 export function validatePhysicsRecord(input:unknown,a:PhysicsAdmission,expectedTick?:number):asserts input is PhysicsTickRecord{
@@ -34,6 +36,7 @@ export function validatePhysicsRecord(input:unknown,a:PhysicsAdmission,expectedT
  const pose=(p:{positionM:number[];quaternionXyzw:number[]})=>Number.isFinite(Math.hypot(...p.quaternionXyzw))&&Math.abs(Math.hypot(...p.quaternionXyzw)-1)<1e-6;
  if(!finite(r)||[r.base,r.wheels,r.odometry].some(xs=>xs.length!==1||xs[0]!.robotId!==a.robotId)||r.loads.length!==a.props.length||new Set(r.loads.map(p=>p.propId)).size!==a.props.length)fail();
  if(r.wheels[0]!.saturatedSubsteps>a.substeps)fail();
+ if(driveRecordProblem((r as {drives?:never}).drives,a.driveAxes,r.tick,a.substeps))fail();
  for(const b of r.base){if(!pose(b.poseMap))fail();const [roll,pitch]=rollPitch(b.poseMap.quaternionXyzw);if(Math.abs(Math.atan2(Math.sin(roll-b.rollRad),Math.cos(roll-b.rollRad)))>1e-6||Math.abs(pitch-b.pitchRad)>1e-6)fail();}
  for(const l of r.loads){const p=a.props.find(p=>p.propId===l.propId);if(!p||p.supportId!==l.supportId||!pose(l.poseMap)||(p.supportId!==null&&!l.poseInSupport)||(l.poseInSupport&&!pose(l.poseInSupport)))fail();}
  const pairs=new Set<string>();for(const c of r.contacts){const key=JSON.stringify([c.a,c.b]);if(c.a>=c.b||!a.contactIds.includes(c.a)||!a.contactIds.includes(c.b)||pairs.has(key)||c.samples>a.substeps||c.normalImpulseNs>c.peakNormalN*c.samples*.002+1e-9)fail();pairs.add(key);}

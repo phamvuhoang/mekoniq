@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "documentType": "fault-oracle",
+  "id": "fault-oracle-v1",
+  "revision": 1,
+  "digest": "f7a79e163d2c20a998d4c2e9d46792c2f67fdd551f7f109fb366b91ab099018f",
+  "calibration": "not_calibrated",
+  "faults": [
+    {
+      "faultId": "encoder-dropout",
+      "required": true,
+      "detector": "drive",
+      "codes": [
+        "FEEDBACK_LOSS"
+      ],
+      "deadlineTicks": 3
+    },
+    {
+      "faultId": "motor-weak",
+      "required": false,
+      "detector": "controller",
+      "codes": [
+        "TRACKING_DEGRADED"
+      ],
+      "deadlineTicks": null
+    },
+    {
+      "faultId": "drive-trip",
+      "required": true,
+      "detector": "controller",
+      "codes": [
+        "DRIVE_FAULT"
+      ],
+      "deadlineTicks": 2
+    },
+    {
+      "faultId": "command-delay",
+      "required": false,
+      "detector": null,
+      "codes": [],
+      "deadlineTicks": null
+    },
+    {
+      "faultId": "command-loss",
+      "required": true,
+      "detector": "drive",
+      "codes": [
+        "COMMAND_TIMEOUT"
+      ],
+      "deadlineTicks": 5
+    },
+    {
+      "faultId": "grip-weak",
+      "required": false,
+      "detector": "arm_program",
+      "codes": [
+        "CUP_DROPPED",
+        "CUP_CUSTODY_MISMATCH"
+      ],
+      "deadlineTicks": null
+    },
+    {
+      "faultId": "lidar-noise",
+      "required": false,
+      "detector": null,
+      "codes": [],
+      "deadlineTicks": null
+    },
+    {
+      "faultId": "drive-reset",
+      "required": false,
+      "detector": null,
+      "codes": [],
+      "deadlineTicks": null
+    }
+  ],
+  "invariantPolicy": {
+    "holdToleranceRad": 0.02,
+    "torqueEpsNm": 1e-9,
+    "timeoutSettleTicks": 2
+  },
+  "source": {
+    "kind": "assumed",
+    "documentId": "robotics/simulation-mujoco/fixtures/drive-v1/serve-drive-nominal-v1.json",
+    "revision": "1",
+    "locator": "feedbackLossSubsteps and watchdogTicks of the nominal drive: oracle deadlines are test policy, not safety parameters",
+    "contentSha256": "4ce6154593ec018d8c186abe40ee5eb2f4a3b1c861dcc81cf3f4667239ad314b"
+  }
+}

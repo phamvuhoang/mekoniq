@@ -32,6 +32,9 @@ export interface ScenarioDefinition {
  /** Contention rig (campaign-only, never in this registry): goals given to the IR-SIM controller directly at `atTick`, no orders or missions, so the
   * venue-movement serialization does not apply; `note` says so in every report. */
  rig?:{goals:readonly {robot:number;pointId:string;atTick:number}[];note:string};
+ /** A single-axis bench (R4-A §6, `bench:true` of plan V06): no orders, no missions, no custody; the plant is built by the server from its fixture. The value names the provider role
+  * (catalog `providers`) whose plant the bench drives, so a set needs only that backend. The request's BenchRequestV1 says which axis and which signal. */
+ bench?:'amr'|'arm';
 }
 // FD03/FD04 obstacles are world coordinates of the fixture layouts (restaurant-v2: kitchen lane x~1, table T01 at 3,1.1; corridor: gap at x 4.5-5.5,
 // y 2.5-3.5). On another layout they land elsewhere; the run still reports what the model did, but the scenario intent then does not hold.
@@ -77,12 +80,18 @@ export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<str
  // and only a runtime given MEKONIQ_LAB_MUJOCO=1 offers it (scenario-matrix.ts scenarioOffered).
  ['MJ-CELL-BV01',{id:'MJ-CELL-BV01',revision:1,title:'Two coffees through one continuous MuJoCo world with Source custody',...bv01,basedOn:{id:'BV01',revision:1}}],
  ['MJ-BV01',{id:'MJ-BV01',revision:1,title:'Espresso and iced milk coffee on the MuJoCo arm: recipe -> verify -> arm (contact grip) -> robot -> table',...bv01,basedOn:{id:'BV01',revision:1}}],
+ // R4.3 (V10): one AMR carries a tray of three cups from the kitchen to the eighth table (table points in id order), stops, waits for the confirmation and parks. The five registered tray experiments run on it;
+ // only engineering-mujoco-3d-v1 offers it, and only with a tray experiment compiled into the project.
+ ['MJ-TRAY01',{id:'MJ-TRAY01',revision:1,title:'Three cups on one tray: kitchen -> eighth table -> parking',robots:1,orders:[{actor:'guest-1',table:7,quantity:3,atTick:[25,25]}],confirm:{mode:'scripted',delayTicks:50},park:true,maxTicks:30000}],
+ // R4.2 bench runs (V06): the AMR's two wheels on the serve-payload-v1 plant (load empty, empty floor) and one axis of the xArm 6 at home with no cup in play; at most 500 ticks. Only engineering-mujoco-bench-v1 runs them.
+ ['MJ-BENCH-WHEEL',{id:'MJ-BENCH-WHEEL',revision:1,title:'Bench: both wheels of the payload AMR on one test signal (straight line)',robots:1,orders:[],confirm:{mode:'scripted',delayTicks:0},park:false,maxTicks:500,bench:'amr'}],
+ ['MJ-BENCH-ARM',{id:'MJ-BENCH-ARM',revision:1,title:'Bench: one xArm 6 axis (J1-J6 or the gripper) on one test signal, the others holding',robots:1,orders:[],confirm:{mode:'scripted',delayTicks:0},park:false,maxTicks:500,bench:'arm'}],
 ]);
 export const scenarioHash=(d:ScenarioDefinition)=>hashJson(d);
 const ID=/^[A-Za-z0-9_.:-]{1,200}$/,int=(n:unknown,min:number,max:number)=>Number.isSafeInteger(n)&&(n as number)>=min&&(n as number)<=max;
 /** Shape check for definitions handed in by in-process providers (tests); the built-in ones pass it too. Mock duration is capped at 8 h sim. */
 export function checkScenario(d:ScenarioDefinition):void {
- const ok=ID.test(d.id)&&int(d.revision,1,2**31)&&int(d.robots,1,8)&&int(d.maxTicks,1,1440000)&&['scripted','human'].includes(d.confirm.mode)&&int(d.confirm.delayTicks,0,1440000)&&typeof d.park==='boolean'&&(d.orders.length+(d.coffee?.orders.length??0)>=1||!!d.rig&&!d.orders.length&&!d.coffee&&d.rig.goals.length>=1&&d.rig.goals.length<=8&&d.rig.goals.every(g=>int(g.robot,0,d.robots-1)&&ID.test(g.pointId)&&int(g.atTick,0,d.maxTicks))&&typeof d.rig.note==='string')&&d.orders.length<=50&&(d.coffee?.orders.length??0)<=20
+ const ok=ID.test(d.id)&&int(d.revision,1,2**31)&&int(d.robots,1,8)&&int(d.maxTicks,1,1440000)&&['scripted','human'].includes(d.confirm.mode)&&int(d.confirm.delayTicks,0,1440000)&&typeof d.park==='boolean'&&(d.orders.length+(d.coffee?.orders.length??0)>=1||(d.bench==='amr'||d.bench==='arm')&&!d.orders.length&&!d.coffee&&!d.rig&&d.maxTicks<=500||!!d.rig&&!d.orders.length&&!d.coffee&&d.rig.goals.length>=1&&d.rig.goals.length<=8&&d.rig.goals.every(g=>int(g.robot,0,d.robots-1)&&ID.test(g.pointId)&&int(g.atTick,0,d.maxTicks))&&typeof d.rig.note==='string')&&d.orders.length<=50&&(d.coffee?.orders.length??0)<=20
   &&d.orders.every(o=>ID.test(o.actor)&&int(o.table,0,199)&&int(o.quantity,1,10)&&int(o.atTick[0],0,d.maxTicks)&&int(o.atTick[1],o.atTick[0],d.maxTicks))
   &&(d.coffee?.orders??[]).every(o=>ID.test(o.actor)&&ID.test(o.recipe)&&int(o.table,0,199)&&int(o.atTick[0],0,d.maxTicks)&&int(o.atTick[1],o.atTick[0],d.maxTicks))
   &&(d.batch===undefined||typeof d.batch==='boolean')&&(d.mixFoodCoffee===undefined||typeof d.mixFoodCoffee==='boolean'&&(!d.mixFoodCoffee||!!d.batch&&!!d.coffee&&d.orders.length>0))&&(d.requestRobot===undefined||typeof d.requestRobot==='boolean')&&(d.loadMinor===undefined||/^[0-9]{1,12}$/.test(d.loadMinor))

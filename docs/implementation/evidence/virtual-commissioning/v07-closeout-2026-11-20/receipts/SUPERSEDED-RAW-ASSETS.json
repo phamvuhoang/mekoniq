@@ -1,0 +1,24 @@
+{
+  "releaseId": 452762939,
+  "removed": [
+    {
+      "id": 772044993,
+      "name": "r4-cil-v1-4b36956.tar.gz",
+      "originalSha256": "aeca4a63f04e91163d32c1c8e8249e90dc415811e23da6df7a740258b4e98a39"
+    },
+    {
+      "id": 772044994,
+      "name": "r4-cil-v1-5e93570.tar.gz",
+      "originalSha256": "6f62f4c2a2e9931c9de55cb6c943f4e57b419069963f49cc9c916433b96a9d9f"
+    },
+    {
+      "id": 772412822,
+      "name": "r4-cil-v2-b74755e9.tar.gz",
+      "originalSha256": "f6c41fa3f73a2250e65c8d52e70b38c9128e771f2e3fc2bc5dc1e221643192f9"
+    }
+  ],
+  "absenceVerified": true,
+  "priorAccess": "Original simulation signing keys were available to authorized draft readers. Removing the assets cannot revoke any copies previously downloaded. No unauthorized access or production credential disclosure was established.",
+  "replacementReceipt": "safe-campaigns-backup-receipt.json",
+  "originalsPreservedLocally": true
+}

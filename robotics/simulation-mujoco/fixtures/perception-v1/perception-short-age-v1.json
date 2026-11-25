@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "documentType": "perception-profile",
+  "id": "perception-short-age-v1",
+  "revision": 1,
+  "digest": "961783f00293ed7d7307f5cb8c6dac8980eab25587c56cd0ea64e17824bb3a55",
+  "calibration": "not_calibrated",
+  "parameterSource": "assumed",
+  "updateEveryTicks": 10,
+  "latencyTicks": 5,
+  "biasM": [
+    0,
+    0
+  ],
+  "sigmaM": [
+    0.002,
+    0.002
+  ],
+  "dropoutProbability": 0,
+  "visibleRegionId": "nozzle-stand",
+  "maxAgeTicks": 12
+}

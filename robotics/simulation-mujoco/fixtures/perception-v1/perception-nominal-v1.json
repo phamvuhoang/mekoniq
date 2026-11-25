@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "documentType": "perception-profile",
+  "id": "perception-nominal-v1",
+  "revision": 1,
+  "digest": "0450ee298dc8db3d72de98f3ab0e0a984a71f8ce8d36119a8babece8b41b36f9",
+  "calibration": "not_calibrated",
+  "parameterSource": "assumed",
+  "updateEveryTicks": 10,
+  "latencyTicks": 5,
+  "biasM": [
+    0,
+    0
+  ],
+  "sigmaM": [
+    0.002,
+    0.002
+  ],
+  "dropoutProbability": 0.05,
+  "visibleRegionId": "nozzle-stand",
+  "maxAgeTicks": 50
+}

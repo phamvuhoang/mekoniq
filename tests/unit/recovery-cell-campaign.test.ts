@@ -1,0 +1,79 @@
+import {expect,test} from 'vitest';
+// @ts-expect-error plain ESM script without types
+import {artifactDispositionsFromGroups,CAMPAIGNS} from '../../scripts/r4-readback.mjs';
+// @ts-expect-error plain ESM script without types
+import {CASES_R4} from '../../scripts/sim-extension-r4.mjs';
+test('REC06 requires the verified campaign, unit, native and browser request suites',()=>{
+ expect(CASES_R4.REC06).toMatchObject({input:'recoveryCampaign',suites:['rec-unit','rec-campaign-engine','e2e-recovery-request']});
+ expect(CAMPAIGNS.recoveryCampaign.ids).toEqual(['mj-cell-recovery-v2']);
+ for(const [issues,status] of [[['RECOVERY_CAMPAIGN_MISSING'],'not_run'],[['RECOVERY_CAMPAIGN_CORRUPT'],'failed'],[[],'tested']] as const)
+  expect(artifactDispositionsFromGroups({recoveryCampaign:issues}).REC06.status).toBe(status);
+});
+import * as proof from '../../packages/lab-runtime/src/v2/perception/recovery-cell-evidence';
+import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
+test('private pre-send intent binds the complete command, request and executed grasp',()=>{
+ const command={targetTick:91,worldPerturbations:[{segmentIndex:2}]},snapshot={runId:'x',bootId:'b',sceneDigest:'s',parse:1};
+ const receipt={requestId:'world-93',requestDigest:hashJson(command),segmentIndex:2},execution='a'.repeat(64);
+ const intent={schemaVersion:1,runId:'x',bootId:'b',sceneDigest:'s',requestId:'world-93',requestDigest:receipt.requestDigest,graspProgramExecutionDigest:execution,command};
+ const validate=(stored:unknown)=>proof.verifyRecoveryIntent(stored,{command,snapshot} as never,receipt as never,execution);
+ expect(()=>validate(intent)).not.toThrow();
+ for(const change of [{command:{...command,targetTick:92}},{requestId:'different'},{requestDigest:'b'.repeat(64)},{graspProgramExecutionDigest:'c'.repeat(64)},{runId:'other'}])expect(()=>validate({...intent,...change})).toThrow(/INTENT/);
+});
+test('a held-open trace cannot stand in for the registered capture at a known miss',()=>{
+ const rows=(targets:number[])=>targets.map((openingM,tick)=>({snapshot:{tick,arms:[{gripper:{heldPropIds:[]}}]},command:{worldControl:{program:{waypoint:'pick',commandId:'pick-1',cupId:'cup-1',programId:'cup-pick'}},gripperTargets:[{armId:'arm-1',openingM}]}}));
+ const check=(targets:number[])=>proof.verifyCaptureTargets(rows(targets) as never,'arm-1','cup-1','pick-1',{openM:.0889,captureM:.07,closedM:0,gripSettleTicks:2} as never,false);
+ expect(()=>check([.0889,.07,.07])).not.toThrow();
+ for(const targets of [[.0889,.0889,.0889],[.07,.0889,.0889],[.07,.07,0]])expect(()=>check(targets)).toThrow(/CAPTURE/);
+});
+import {mkdir,mkdtemp,rm,symlink,writeFile} from 'node:fs/promises';
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {createHash} from 'node:crypto';
+import {RECOVERY_CAMPAIGN,verifyRecoveryCampaign} from '../../packages/lab-runtime/src/v2/simulation3d/cell-campaign';
+// @ts-expect-error plain ESM script without types
+import {verifyOneCampaign} from '../../scripts/r4-readback.mjs';
+test('an absent input, incomplete population, and malformed or wrong producer tuple have distinct dispositions',async()=>{
+ const root=await mkdtemp(join(tmpdir(),'rec06-registry-')),dir=join(root,'inputs/recovery'),source='a'.repeat(40),key='recoveryCampaign',spec=CAMPAIGNS[key];
+ const verify=(inputs:unknown)=>verifyOneCampaign(root,{inputs},key,spec,source);
+ try{
+  expect(await verify({})).toEqual(['RECOVERY_CAMPAIGN_MISSING']);
+  await mkdir(dir,{recursive:true});expect(await verify({})).toEqual(['RECOVERY_CAMPAIGN_CORRUPT']);
+  const bytes=JSON.stringify({campaign:RECOVERY_CAMPAIGN,sourceCommit:'b'.repeat(40),accepted:false,execution:'actual_mujoco',calibration:'not_calibrated'});
+  await writeFile(join(dir,'campaign.json'),bytes);
+  const issues=await verify({[key]:{file:'inputs/recovery/campaign.json',sha256:createHash('sha256').update(bytes).digest('hex')}});
+  expect(issues).toContain('RECOVERY_CAMPAIGN_TUPLE_MISMATCH');
+  const v=await verifyRecoveryCampaign(dir);expect(v.expectedRuns).toBe(11);expect(v.completedCases).toBe(0);expect(v.missingArtifacts).toHaveLength(11);
+  expect(artifactDispositionsFromGroups({recoveryCampaign:issues}).REC06.status).toBe('failed');
+ }finally{await rm(root,{recursive:true,force:true});}
+});
+test('native create supplies tick zero and start acknowledges the running state',()=>{
+ const snapshot={tick:0,runId:'rec06'},seed=42;
+ const requests=[{op:'create',requestId:'world-1',targetTick:1,delivered:true,requestDigest:hashJson({sceneRef:'lab-world-scene.json',seed}),responseDigest:hashJson(snapshot)},
+  {op:'start',requestId:'world-2',targetTick:1,delivered:true,requestDigest:hashJson({}),responseDigest:hashJson({state:'running'})}];
+ const verify=(r:typeof requests)=>proof.verifyRecoverySession(r,snapshot as never,seed,0);
+ expect(()=>verify(requests)).not.toThrow();
+ expect(()=>verify([{...requests[0]!,responseDigest:requests[1]!.responseDigest},requests[1]!])).toThrow(/WORKER_SESSION/);
+ expect(()=>verify([requests[0]!,{...requests[1]!,responseDigest:hashJson(snapshot)}])).toThrow(/WORKER_SESSION/);
+});
+test('full cell births command the original upright fixture pose',()=>{
+ const centre:[number,number,number]=[.49,0,.151],pose={position:centre,quaternionXyzw:[0,0,0,1]};
+ const check=(position:number[],rotation:number[])=>proof.verifyRecoveryBirths([{command:{propPlacements:[{propId:'cup-1',pose:{position,quaternionXyzw:rotation}}]}}] as never,centre);
+ expect(()=>check(centre,pose.quaternionXyzw)).not.toThrow();
+ expect(()=>check([.50,0,.151],pose.quaternionXyzw)).toThrow(/BIRTH/);
+ expect(()=>check(centre,[1,0,0,0])).toThrow(/BIRTH/);
+});
+
+test('present malformed recovery input returns failed even for null JSON, a null reference, or a broken directory link',async()=>{
+ const root=await mkdtemp(join(tmpdir(),'rec06-malformed-')),dir=join(root,'inputs/recovery'),key='recoveryCampaign',spec=CAMPAIGNS[key];
+ const verify=(inputs:unknown)=>verifyOneCampaign(root,{inputs},key,spec,'a'.repeat(40));
+ try{
+  expect(await verify({[key]:null})).toEqual(['RECOVERY_CAMPAIGN_CORRUPT']);
+  await mkdir(join(root,'inputs'));await symlink('absent-target',dir);expect(await verify({})).toEqual(['RECOVERY_CAMPAIGN_CORRUPT']);
+  await rm(dir);await mkdir(dir);
+  for(const bytes of ['null','[]','3']){
+   await writeFile(join(dir,'campaign.json'),bytes);
+   const ref={file:'inputs/recovery/campaign.json',sha256:createHash('sha256').update(bytes).digest('hex')},issues=await verify({[key]:ref});
+   expect(issues).toEqual(['RECOVERY_CAMPAIGN_CORRUPT']);expect(artifactDispositionsFromGroups({[key]:issues}).REC06.status).toBe('failed');
+  }
+ }finally{await rm(root,{recursive:true,force:true});}
+});

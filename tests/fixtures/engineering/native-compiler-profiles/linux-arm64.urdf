@@ -1,0 +1,129 @@
+<robot name="amr-1">
+  <link name="caster-front/ball">
+    <inertial><origin xyz="0 0 0" rpy="0 0 0" /><mass value="0.15" /><inertia ixx="7.350000000000001e-05" ixy="0" ixz="0" iyy="7.350000000000001e-05" iyz="0" izz="7.350000000000001e-05" /></inertial>
+    <visual><origin xyz="0 0 0" rpy="0 0 0" /><geometry><sphere radius="0.035" /></geometry></visual>
+    <collision name="caster-front_ball_collision_0"><origin xyz="0 0 0" rpy="0 0 0" /><geometry><sphere radius="0.035" /></geometry></collision>
+  </link>
+  <link name="caster-rear/ball">
+    <inertial><origin xyz="0 0 0" rpy="0 0 0" /><mass value="0.15" /><inertia ixx="7.350000000000001e-05" ixy="0" ixz="0" iyy="7.350000000000001e-05" iyz="0" izz="7.350000000000001e-05" /></inertial>
+    <visual><origin xyz="0 0 0" rpy="0 0 0" /><geometry><sphere radius="0.035" /></geometry></visual>
+    <collision name="caster-rear_ball_collision_0"><origin xyz="0 0 0" rpy="0 0 0" /><geometry><sphere radius="0.035" /></geometry></collision>
+  </link>
+  <link name="chassis/base">
+    <inertial><origin xyz="0 0 0.05" rpy="0 0 0" /><mass value="14" /><inertia ixx="0.3630666666666667" ixy="0" ixz="0" iyy="0.4428666666666667" iyz="0" izz="0.7601999999999999" /></inertial>
+    <visual><origin xyz="0 0 0.05" rpy="0 0 0" /><geometry><box size="0.6 0.54 0.14" /></geometry></visual>
+    <collision name="chassis_base_collision_0"><origin xyz="0 0 0.05" rpy="0 0 0" /><geometry><box size="0.6 0.54 0.14" /></geometry></collision>
+  </link>
+  <link name="lidar/head">
+    <inertial><origin xyz="0 0 0.02" rpy="0 0 0" /><mass value="0.19" /><inertia ixx="0.00010133333333333332" ixy="0" ixz="0" iyy="0.00010133333333333332" iyz="0" izz="0.000152" /></inertial>
+    <visual><origin xyz="0 0 0.02" rpy="0 0 0" /><geometry><cylinder radius="0.04" length="0.04" /></geometry></visual>
+    <collision name="lidar_head_collision_0"><origin xyz="0 0 0.02" rpy="0 0 0" /><geometry><cylinder radius="0.04" length="0.04" /></geometry></collision>
+  </link>
+  <link name="support-left/rod">
+    <inertial><origin xyz="0 0 0.45" rpy="0 0 0" /><mass value="0.35" /><inertia ixx="0.02365125" ixy="0" ixz="0" iyy="0.02365125" iyz="0" izz="5.2499999999999995e-05" /></inertial>
+    <visual><origin xyz="0 0 0.45" rpy="0 0 0" /><geometry><box size="0.03 0.03 0.9" /></geometry></visual>
+    <collision name="support-left_rod_collision_0"><origin xyz="0 0 0.45" rpy="0 0 0" /><geometry><box size="0.03 0.03 0.9" /></geometry></collision>
+  </link>
+  <link name="support-right/rod">
+    <inertial><origin xyz="0 0 0.45" rpy="0 0 0" /><mass value="0.35" /><inertia ixx="0.02365125" ixy="0" ixz="0" iyy="0.02365125" iyz="0" izz="5.2499999999999995e-05" /></inertial>
+    <visual><origin xyz="0 0 0.45" rpy="0 0 0" /><geometry><box size="0.03 0.03 0.9" /></geometry></visual>
+    <collision name="support-right_rod_collision_0"><origin xyz="0 0 0.45" rpy="0 0 0" /><geometry><box size="0.03 0.03 0.9" /></geometry></collision>
+  </link>
+  <link name="tray-1/plate">
+    <inertial><origin xyz="0 0 0" rpy="0 0 0" /><mass value="0.8" /><inertia ixx="0.014133333333333336" ixy="0" ixz="0" iyy="0.010693333333333338" iyz="0" izz="0.024773333333333338" /></inertial>
+    <visual><origin xyz="0 0 0" rpy="0 0 0" /><geometry><box size="0.4 0.46 0.02" /></geometry></visual>
+    <collision name="tray-1_plate_collision_0"><origin xyz="0 0 0" rpy="0 0 0" /><geometry><box size="0.4 0.46 0.02" /></geometry></collision>
+  </link>
+  <link name="tray-2/plate">
+    <inertial><origin xyz="0 0 0" rpy="0 0 0" /><mass value="0.8" /><inertia ixx="0.014133333333333336" ixy="0" ixz="0" iyy="0.010693333333333338" iyz="0" izz="0.024773333333333338" /></inertial>
+    <visual><origin xyz="0 0 0" rpy="0 0 0" /><geometry><box size="0.4 0.46 0.02" /></geometry></visual>
+    <collision name="tray-2_plate_collision_0"><origin xyz="0 0 0" rpy="0 0 0" /><geometry><box size="0.4 0.46 0.02" /></geometry></collision>
+  </link>
+  <link name="tray-3/plate">
+    <inertial><origin xyz="0 0 0" rpy="0 0 0" /><mass value="0.8" /><inertia ixx="0.014133333333333336" ixy="0" ixz="0" iyy="0.010693333333333338" iyz="0" izz="0.024773333333333338" /></inertial>
+    <visual><origin xyz="0 0 0" rpy="0 0 0" /><geometry><box size="0.4 0.46 0.02" /></geometry></visual>
+    <collision name="tray-3_plate_collision_0"><origin xyz="0 0 0" rpy="0 0 0" /><geometry><box size="0.4 0.46 0.02" /></geometry></collision>
+  </link>
+  <link name="wheel-left/hub">
+    <inertial><origin xyz="0 0 0" rpy="0 0 0" /><mass value="0.2" /><inertia ixx="5.333333333333334e-05" ixy="0" ixz="0" iyy="5.333333333333334e-05" iyz="0" izz="5.333333333333334e-05" /></inertial>
+    <visual><origin xyz="0 0 0" rpy="0 0 0" /><geometry><box size="0.04 0.04 0.04" /></geometry></visual>
+    <collision name="wheel-left_hub_collision_0"><origin xyz="0 0 0" rpy="0 0 0" /><geometry><box size="0.04 0.04 0.04" /></geometry></collision>
+  </link>
+  <link name="wheel-left/rim">
+    <inertial><origin xyz="0 0 0" rpy="0 0 0" /><mass value="1.2" /><inertia ixx="0.0025900000000000003" ixy="0" ixz="0" iyy="0.0048600000000000015" iyz="0" izz="0.002590000000000001" /></inertial>
+    <visual><origin xyz="0 0 0" rpy="1.5707963267948968 0 0" /><geometry><cylinder radius="0.09" length="0.04" /></geometry></visual>
+    <collision name="wheel-left_rim_collision_0"><origin xyz="0 0 0" rpy="1.5707963267948968 0 0" /><geometry><cylinder radius="0.09" length="0.04" /></geometry></collision>
+  </link>
+  <link name="wheel-right/hub">
+    <inertial><origin xyz="0 0 0" rpy="0 0 0" /><mass value="0.2" /><inertia ixx="5.333333333333334e-05" ixy="0" ixz="0" iyy="5.333333333333334e-05" iyz="0" izz="5.333333333333334e-05" /></inertial>
+    <visual><origin xyz="0 0 0" rpy="0 0 0" /><geometry><box size="0.04 0.04 0.04" /></geometry></visual>
+    <collision name="wheel-right_hub_collision_0"><origin xyz="0 0 0" rpy="0 0 0" /><geometry><box size="0.04 0.04 0.04" /></geometry></collision>
+  </link>
+  <link name="wheel-right/rim">
+    <inertial><origin xyz="0 0 0" rpy="0 0 0" /><mass value="1.2" /><inertia ixx="0.0025900000000000003" ixy="0" ixz="0" iyy="0.0048600000000000015" iyz="0" izz="0.002590000000000001" /></inertial>
+    <visual><origin xyz="0 0 0" rpy="1.5707963267948968 0 0" /><geometry><cylinder radius="0.09" length="0.04" /></geometry></visual>
+    <collision name="wheel-right_rim_collision_0"><origin xyz="0 0 0" rpy="1.5707963267948968 0 0" /><geometry><cylinder radius="0.09" length="0.04" /></geometry></collision>
+  </link>
+  <joint name="mount:chassis/caster-front:caster-front/mount" type="fixed">
+    <parent link="chassis/base" /><child link="caster-front/ball" />
+    <origin xyz="0.25 0 -0.05499999999999999" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+  <joint name="mount:chassis/caster-rear:caster-rear/mount" type="fixed">
+    <parent link="chassis/base" /><child link="caster-rear/ball" />
+    <origin xyz="-0.25 0 -0.05499999999999999" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+  <joint name="mount:chassis/left-axle:wheel-left/mount" type="fixed">
+    <parent link="chassis/base" /><child link="wheel-left/hub" />
+    <origin xyz="0 0.18 0" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+  <joint name="mount:chassis/lidar-mount:lidar/foot" type="fixed">
+    <parent link="chassis/base" /><child link="lidar/head" />
+    <origin xyz="0.22 0 0.12" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+  <joint name="mount:chassis/right-axle:wheel-right/mount" type="fixed">
+    <parent link="chassis/base" /><child link="wheel-right/hub" />
+    <origin xyz="0 -0.18 0" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+  <joint name="mount:chassis/support-left:support-left/foot" type="fixed">
+    <parent link="chassis/base" /><child link="support-left/rod" />
+    <origin xyz="-0.1 0.25 0.12" rpy="0 -0.12 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+  <joint name="mount:chassis/support-right:support-right/foot" type="fixed">
+    <parent link="chassis/base" /><child link="support-right/rod" />
+    <origin xyz="-0.1 -0.25 0.12" rpy="0 -0.12 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+  <joint name="mount:support-left/slot-1:tray-1/edge" type="fixed">
+    <parent link="support-left/rod" /><child link="tray-1/plate" />
+    <origin xyz="0 -0.25 0.3" rpy="0 0.12 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+  <joint name="mount:support-left/slot-2:tray-2/edge" type="fixed">
+    <parent link="support-left/rod" /><child link="tray-2/plate" />
+    <origin xyz="0 -0.25 0.6" rpy="0 0.12 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+  <joint name="mount:support-left/slot-3:tray-3/edge" type="fixed">
+    <parent link="support-left/rod" /><child link="tray-3/plate" />
+    <origin xyz="0 -0.25 0.88" rpy="0 0.12 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+  <joint name="wheel-left/axle" type="continuous">
+    <parent link="wheel-left/hub" /><child link="wheel-left/rim" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <axis xyz="0 1 0" />
+    <limit effort="6" velocity="20" />
+  </joint>
+  <joint name="wheel-right/axle" type="continuous">
+    <parent link="wheel-right/hub" /><child link="wheel-right/rim" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <axis xyz="0 1 0" />
+    <limit effort="6" velocity="20" />
+  </joint>
+<gazebo reference="caster-front/ball"><mu1>0.02</mu1><mu2>0.02</mu2></gazebo><gazebo reference="caster-rear/ball"><mu1>0.02</mu1><mu2>0.02</mu2></gazebo><gazebo reference="chassis/base"><mu1>0.8</mu1><mu2>0.8</mu2></gazebo><gazebo reference="lidar/head"><mu1>0.8</mu1><mu2>0.8</mu2></gazebo><gazebo reference="support-left/rod"><mu1>0.8</mu1><mu2>0.8</mu2></gazebo><gazebo reference="support-right/rod"><mu1>0.8</mu1><mu2>0.8</mu2></gazebo><gazebo reference="tray-1/plate"><mu1>0.8</mu1><mu2>0.8</mu2></gazebo><gazebo reference="tray-2/plate"><mu1>0.8</mu1><mu2>0.8</mu2></gazebo><gazebo reference="tray-3/plate"><mu1>0.8</mu1><mu2>0.8</mu2></gazebo><gazebo reference="wheel-left/hub"><mu1>0.8</mu1><mu2>0.8</mu2></gazebo><gazebo reference="wheel-left/rim"><mu1>0.8</mu1><mu2>0.8</mu2></gazebo><gazebo reference="wheel-right/hub"><mu1>0.8</mu1><mu2>0.8</mu2></gazebo><gazebo reference="wheel-right/rim"><mu1>0.8</mu1><mu2>0.8</mu2></gazebo><gazebo reference="mount:chassis/caster-front:caster-front/mount"><preserveFixedJoint>true</preserveFixedJoint></gazebo><gazebo reference="mount:chassis/caster-rear:caster-rear/mount"><preserveFixedJoint>true</preserveFixedJoint></gazebo><gazebo reference="mount:chassis/left-axle:wheel-left/mount"><preserveFixedJoint>true</preserveFixedJoint></gazebo><gazebo reference="mount:chassis/lidar-mount:lidar/foot"><preserveFixedJoint>true</preserveFixedJoint></gazebo><gazebo reference="mount:chassis/right-axle:wheel-right/mount"><preserveFixedJoint>true</preserveFixedJoint></gazebo><gazebo reference="mount:chassis/support-left:support-left/foot"><preserveFixedJoint>true</preserveFixedJoint></gazebo><gazebo reference="mount:chassis/support-right:support-right/foot"><preserveFixedJoint>true</preserveFixedJoint></gazebo><gazebo reference="mount:support-left/slot-1:tray-1/edge"><preserveFixedJoint>true</preserveFixedJoint></gazebo><gazebo reference="mount:support-left/slot-2:tray-2/edge"><preserveFixedJoint>true</preserveFixedJoint></gazebo><gazebo reference="mount:support-left/slot-3:tray-3/edge"><preserveFixedJoint>true</preserveFixedJoint></gazebo><ros2_control name="GazeboSimSystem" type="system"><hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware><joint name="wheel-left/axle"><command_interface name="velocity"><param name="min">-20</param><param name="max">20</param></command_interface><state_interface name="position" /><state_interface name="velocity" /></joint><joint name="wheel-right/axle"><command_interface name="velocity"><param name="min">-20</param><param name="max">20</param></command_interface><state_interface name="position" /><state_interface name="velocity" /></joint></ros2_control><gazebo><plugin filename="libgz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin"><parameters>__ENGINEERING_CONTROLLER_FILE__</parameters><ros><namespace>amr_1</namespace><remapping>/tf:=tf</remapping><remapping>/tf_static:=tf_static</remapping><remapping>diff_drive_controller/odom:=odom</remapping></ros></plugin></gazebo><gazebo><plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher"><publish_model_pose>true</publish_model_pose><publish_link_pose>false</publish_link_pose><use_pose_vector_msg>true</use_pose_vector_msg><update_frequency>50</update_frequency></plugin></gazebo><gazebo reference="lidar/head"><sensor name="engineering_lidar" type="gpu_lidar"><topic>/amr_1/scan</topic><update_rate>10</update_rate><always_on>true</always_on><gz_frame_id>lidar/head</gz_frame_id><lidar><scan><horizontal><samples>360</samples><resolution>1</resolution><min_angle>-3.141592653589793</min_angle><max_angle>3.141592653589793</max_angle></horizontal></scan><range><min>0.05</min><max>10</max><resolution>0.01</resolution></range></lidar></sensor></gazebo><gazebo reference="chassis/base"><sensor name="engineering_contact" type="contact"><always_on>true</always_on><update_rate>50</update_rate><topic>/model/amr_1/contacts</topic><contact><collision>chassis_base_collision_0</collision></contact></sensor></gazebo></robot>

@@ -1,0 +1,134 @@
+{
+  "campaign": {
+    "schemaVersion": 1,
+    "id": "cil-v2",
+    "accepted": false,
+    "calibration": "not_calibrated",
+    "scenarioId": "MJ-FD01",
+    "backendSetId": "engineering-mujoco-3d-v1",
+    "cell": {
+      "scenarioId": "MJ-CELL-BV01",
+      "backendSetId": "engineering-mujoco-cell-v1",
+      "driveExperimentId": "drive-nominal-v1",
+      "seeds": [
+        7,
+        42,
+        99
+      ],
+      "faults": [
+        "dock-drift",
+        "cup-fall",
+        "cancel-held",
+        "worker-loss",
+        "lost-ack"
+      ]
+    },
+    "seeds": [
+      7,
+      19,
+      41
+    ],
+    "experiments": [
+      "drive-ideal-v1",
+      "drive-nominal-v1",
+      "drive-torque-limited-v1",
+      "drive-latency-v1",
+      "drive-coarse-encoder-v1"
+    ],
+    "repeats": {
+      "experimentIds": [
+        "drive-ideal-v1",
+        "drive-nominal-v1",
+        "drive-torque-limited-v1",
+        "drive-latency-v1",
+        "drive-coarse-encoder-v1"
+      ],
+      "seed": 7,
+      "count": 3
+    },
+    "maxTicks": 12000,
+    "coverage": [
+      "DRV02",
+      "DRV06",
+      "CIL01",
+      "CIL02",
+      "CIL03",
+      "CIL04",
+      "CIL05",
+      "CIL06"
+    ],
+    "oracles": {
+      "note": "All five original mobile outcome and metric requirements and all eight cell outcomes are retained. Each experiment repeats three times against a verified baseline of its own profile at seed 7.",
+      "mobile": {
+        "drive-ideal-v1": {
+          "status": [
+            "completed"
+          ],
+          "served": "1",
+          "faults": [],
+          "events": [],
+          "enabledAtTick": 0,
+          "equivalentToLegacy": true
+        },
+        "drive-nominal-v1": {
+          "status": [
+            "completed"
+          ],
+          "served": "1",
+          "faults": [],
+          "events": [],
+          "enableSequence": true
+        },
+        "drive-torque-limited-v1": {
+          "status": [
+            "completed",
+            "needs_attention"
+          ],
+          "falseServed": false,
+          "enableSequence": true,
+          "speedDeficitRecorded": true,
+          "speedDeficitAtLeastTimesNominal": 1.25
+        },
+        "drive-latency-v1": {
+          "status": [
+            "completed",
+            "needs_attention"
+          ],
+          "falseServed": false,
+          "enableSequence": true,
+          "trackingRmsRecorded": true
+        },
+        "drive-coarse-encoder-v1": {
+          "status": [
+            "completed"
+          ],
+          "served": "1",
+          "faults": [],
+          "events": [],
+          "enableSequence": true
+        }
+      },
+      "repeat": {
+        "bitIdenticalTo": "same experiment and seed baseline"
+      },
+      "cell": {
+        "nominal": {
+          "served": "2",
+          "faults": []
+        },
+        "faults": "the five R2b fault cases keep their expected code, serve 0 and keep the last Source custody"
+      }
+    },
+    "limitations": [
+      "software simulation only; every drive parameter is assumed and every model not_calibrated",
+      "bit identity is meaningful on one architecture and one build",
+      "the drive-latency and drive-torque-limited outcomes are findings, not requirements: only a false serve fails them",
+      "Ideal uses the legacy-compatible acceleration-only controller. Nominal, torque, latency and coarse use the same revision-two jerk-limited controller and exhausted-route correction. Comparisons against ideal cross controller revisions."
+    ]
+  },
+  "sourceCommit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+  "hostArch": "arm64",
+  "accepted": false,
+  "execution": "actual_mujoco",
+  "calibration": "not_calibrated"
+}

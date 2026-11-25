@@ -1,0 +1,16 @@
+[
+  {
+    "campaign": "cil-v2",
+    "sourceCommit": "b74755e96e9a364ead530f66f755d3798f35bd2a",
+    "checksummedFiles": 3596,
+    "sha256sumsSha256": "db939c3e16a7159cd7db097dceef09c2fcc39da63545bfe3062f830f12802622",
+    "accepted": false
+  },
+  {
+    "campaign": "bench-v2",
+    "sourceCommit": "b74755e96e9a364ead530f66f755d3798f35bd2a",
+    "checksummedFiles": 516,
+    "sha256sumsSha256": "de72d0e0353cacce2b2b8bd8bae6a66eae630f45f7532e597ac4dc6dd0fc9fb5",
+    "accepted": false
+  }
+]

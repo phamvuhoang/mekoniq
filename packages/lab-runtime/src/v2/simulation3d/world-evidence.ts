@@ -13,20 +13,23 @@ import {physicsDirectoryBytes,readBoundedPhysicsFile,validatePhysicsRecord,type 
 import {activeWorldProps,validateWorldScene,validateWorldObservation,type WorldInteractionIntent} from './world-scene';
 import type {WorldFailure,WorldTickCommand} from './world-ports';
 import {validateWorldControl} from './world-control';
-import {validateWorldDisturbance} from './world-disturbance';
+import {assertPulseFinished,validateWorldDisturbance} from './world-disturbance';
+import {validateWorldBirth} from './world-birth';
 import {hashJson} from '../hash';
+import {driveCommandProblem,driveRecordProblem} from '../control/drive-evidence';
 /** The same free-joint pose and matrix pose differ at floating-point roundoff; q and -q are equivalent. No raw values are changed. */
 export const WORLD_POSE_CONSISTENCY_TOLERANCE=1e-10;
 const gzipAsync=promisify(gzip);
 const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
-export interface WorldAdmission {files:ReadonlyMap<string,Uint8Array>;scene:LabWorldSceneV1;physics:PhysicsAdmission;modelCounts:{nbody:number;ngeom:number};digest:string}
+export interface WorldAdmission {/** the drive model's axis ids in order; absent: the world has no drive */driveAxes?:string[];files:ReadonlyMap<string,Uint8Array>;scene:LabWorldSceneV1;physics:PhysicsAdmission;modelCounts:{nbody:number;ngeom:number};digest:string}
 export function prepareWorldAdmission(scene:LabWorldSceneV1,files:ReadonlyMap<string,Uint8Array>):WorldAdmission {
  validateWorldScene(scene);for(const f of scene.files){const b=files.get(f.path);if(!b||b.length!==f.bytes||sha(b)!==f.sha256)throw Error('WORLD_CLOSURE_INVALID');}
+ const driveRef=scene.engine?.driveModelRef,driveAxes=driveRef?(JSON.parse(Buffer.from(files.get(driveRef.path)!).toString()) as {axes:{axisId:string}[]}).axes.map(a=>a.axisId):undefined;
  const doc=(path:string)=>JSON.parse(Buffer.from(files.get(path)!).toString()) as {links:{id:string;collision:unknown[]}[]};
  const mobile=doc(scene.models.mobilePhysical.path),arm=doc(scene.models.armComponent.path),rid=scene.navigation.robots[0]!.robotId,aid=scene.armCell.arm.armId;
  const physics:PhysicsAdmission={robotId:rid,props:[],contactIds:['floor',...mobile.links.flatMap(l=>l.collision.map((_,i)=>`${rid}/${l.id}/c${i}`)),...arm.links.flatMap(l=>l.collision.map((_,i)=>`${aid}/${l.id}/c${i}`)),`${aid}/palm`,`${aid}/pad/0`,`${aid}/pad/1`,...scene.armCell.supports.filter(s=>s.id!==scene.supportMap.replacedStaticSupportId).map(s=>`support/${s.id}`),...scene.armCell.statics.map(s=>`static/${s.id}`),...[...scene.navigation.world.boundaries,...scene.navigation.world.obstacles].map(s=>`static/${s.id}`),...scene.propBindings.map(p=>`prop/${p.propId}`)],tickMs:20,substeps:10,driveFrameInBase:scene.navigation.robots[0]!.model.driveFrameInBase};
  const modelCounts={nbody:1+arm.links.length+mobile.links.length+scene.propBindings.length,ngeom:1+arm.links.reduce((n,l)=>n+l.collision.length,0)+3+mobile.links.reduce((n,l)=>n+l.collision.length,0)+scene.armCell.supports.length-1+scene.armCell.statics.length+scene.navigation.world.boundaries.length+scene.navigation.world.obstacles.length+scene.propBindings.length};
- return {files:new Map(files),scene:structuredClone(scene),physics,modelCounts,digest:hashJson({scene,physics,modelCounts} as never)};
+ return {...driveAxes?{driveAxes}:{},files:new Map(files),scene:structuredClone(scene),physics,modelCounts,digest:hashJson({scene,physics,modelCounts} as never)};
 }
 const pose=(s:Sim3DSnapshotV1|undefined,id:string)=>{const p=s?.props?.find(p=>p.propId===id);return p?{position:p.position,quaternionXyzw:p.quaternionXyzw}:null;};
 export function validateWorldRecord(r:WorldEvidenceRecord,a:WorldAdmission,history:WorldInteractionIntent[],previous:Sim3DSnapshotV1|undefined,identity:{runId:string;bootId:string},disturbances:Set<string>){
@@ -43,6 +46,9 @@ export function validateWorldRecord(r:WorldEvidenceRecord,a:WorldAdmission,histo
   if(intent.targetTick!==tick||p.propId!==intent.propId||(intent.kind==='birth')!==(p.pose!==null)||record.eventId!==intent.eventId||record.cupId!==intent.cupId||record.propId!==intent.propId||record.kind!==intent.kind||record.tick!==tick||record.commandDigest!==hashJson(c as never)||hashJson(record.before as never)!==hashJson(pose(previous,intent.propId) as never)||hashJson(record.after as never)!==hashJson(pose(s,intent.propId) as never)||(intent.kind==='birth'?(record.before!==null||record.after===null):(record.before===null||record.after!==null)))throw Error('WORLD_INTERACTION_INVALID');
   next.push({eventId:intent.eventId,cupId:intent.cupId,propId:intent.propId,kind:intent.kind,tick});
  }
+ validateWorldBirth(s,c,a.scene,previous);
+ // with a drive every tick carries its nine axis snapshots and (after tick 0) its nine commands; without one, neither
+ if(driveRecordProblem(s.drives,a.driveAxes,tick,a.physics.substeps)||driveCommandProblem(c?.driveCommands,a.driveAxes,tick>0))throw Error(driveRecordProblem(s.drives,a.driveAxes,tick,a.physics.substeps)??driveCommandProblem(c?.driveCommands,a.driveAxes,tick>0)!);
  validateWorldObservation(s,a.scene,next);if(s.worldStep!.nbody!==a.modelCounts.nbody||s.worldStep!.ngeom!==a.modelCounts.ngeom)throw Error('WORLD_MODEL_COUNTS_INVALID');if(!s.physics)throw Error('WORLD_PHYSICS_REQUIRED');
  const ids=activeWorldProps(a.scene,next,tick);validatePhysicsRecord(s.physics,{...a.physics,props:ids.map(propId=>({propId,supportId:a.scene.supportMap.mobileSupportId}))},tick);
  for(const p of s.props??[]){const l=s.physics.loads.find(l=>l.propId===p.propId)!;if(Math.hypot(...l.poseMap.positionM.map((v,i)=>v-p.position[i]!))>WORLD_POSE_CONSISTENCY_TOLERANCE||Math.min(Math.hypot(...l.poseMap.quaternionXyzw.map((v,i)=>v-p.quaternionXyzw[i]!)),Math.hypot(...l.poseMap.quaternionXyzw.map((v,i)=>v+p.quaternionXyzw[i]!)))>WORLD_POSE_CONSISTENCY_TOLERANCE)throw Error('WORLD_PROP_OBSERVATION_MISMATCH');}
@@ -88,13 +94,14 @@ export async function openWorldRecorder(o:{directory:string;admission:WorldAdmis
   // One durable write per tick: the WAL fd stays open for the chunk and only the file is synced; the directory only when this creates it.
   await tracked('pending.ndjson',()=>(sizes?.get('pending.ndjson')??0)+n,async()=>{try{if(!wal){wal=await open(join(o.directory,'pending.ndjson'),'a',0o600);if(!walCreated){const dir=await open(o.directory,'r');try{await dir.sync();}finally{await dir.close();}walCreated=true;}}await wal.writeFile(line);await wal.sync();}catch(e){await closeWal().catch(()=>{});throw e;}});
   lines.push(line);bytes+=n;previous=structuredClone(snapshot);history=next;if(lines.length>=chunkTicks)await flush();
- }catch(e){await fail({targetTick,lastCommittedTick,ackTick:snapshot.tick,reason:(e as Error).message}).catch(()=>{});throw e;}});},fail(f:WorldFailure){return serial(()=>fail(f,true));},finish(){return serial(async()=>{try{await flush();await closeWal();closed=true;m.complete=!!previous&&!m.terminal&&!m.gaps.length;await save();}catch(e){await fail({targetTick:previous?.tick??0,lastCommittedTick:previous?.tick??0,ackTick:previous?.tick??null,reason:(e as Error).message}).catch(()=>{});throw e;}});}};
+ }catch(e){await fail({targetTick,lastCommittedTick,ackTick:snapshot.tick,reason:(e as Error).message}).catch(()=>{});throw e;}});},fail(f:WorldFailure){return serial(()=>fail(f,true));},finish(){return serial(async()=>{try{await flush();await closeWal();if(!m.terminal)assertPulseFinished(previous);closed=true;m.complete=!!previous&&!m.terminal&&!m.gaps.length;await save();}catch(e){await fail({targetTick:previous?.tick??0,lastCommittedTick:previous?.tick??0,ackTick:previous?.tick??null,reason:(e as Error).message}).catch(()=>{});throw e;}});}};
 }
 export async function readWorldEvidence(directory:string,admission:WorldAdmission){
  const records:WorldEvidenceRecord[]=[],issues:string[]=[];let history:WorldInteractionIntent[]=[];const disturbances=new Set<string>();
  try{const m:WorldEvidenceV1=JSON.parse((await readBoundedPhysicsFile(directory,'manifest.json',READ_LIMITS.manifestBytes)).toString());if(!validateWorldEvidenceShape(m)||m.sceneDigest!==admission.scene.sceneDigest||m.admissionDigest!==admission.digest)throw Error('WORLD_EVIDENCE_MANIFEST_INVALID');if(!m.complete||m.terminal||m.gaps.length)issues.push('WORLD_EVIDENCE_INCOMPLETE');
   if(await physicsDirectoryBytes(directory)>EVIDENCE_LIMITS.maxBytes)throw Error('WORLD_EVIDENCE_QUOTA_EXCEEDED');const names=await readdir(directory);if(names.includes('write.intent')||(names.includes('pending.ndjson')&&(await readBoundedPhysicsFile(directory,'pending.ndjson',12*1024*1024)).length))issues.push('WORLD_EVIDENCE_UNPUBLISHED');let inflated=0;const seen=new Set<string>();
   for(const ref of m.chunks){if(seen.has(ref.path)||ref.firstTick!==records.length)throw Error('WORLD_EVIDENCE_ORDER');seen.add(ref.path);const b=await readBoundedPhysicsFile(directory,ref.path,READ_LIMITS.chunkBytes);if(b.length!==ref.bytes||sha(b)!==ref.sha256)throw Error('WORLD_EVIDENCE_HASH_MISMATCH');const raw=gunzipSync(b,{maxOutputLength:Math.min(READ_LIMITS.chunkInflated,READ_LIMITS.totalInflated-inflated)});inflated+=raw.length;const text=raw.toString();if(!text.endsWith('\n'))throw Error('WORLD_EVIDENCE_TRUNCATED');const lines=text.slice(0,-1).split('\n');if(lines.length>READ_LIMITS.linesPerChunk)throw Error('WORLD_EVIDENCE_READ_LIMIT');for(const line of lines){if(Buffer.byteLength(line)>READ_LIMITS.lineBytes||records.length>EVIDENCE_LIMITS.maxTicks)throw Error('WORLD_EVIDENCE_READ_LIMIT');const r:WorldEvidenceRecord=JSON.parse(line);history=validateWorldRecord(r,admission,history,records.at(-1)?.snapshot,m,disturbances);records.push(r);}if(records.at(-1)?.snapshot.tick!==ref.lastTick)throw Error('WORLD_EVIDENCE_ORDER');}
+  if(m.complete)assertPulseFinished(records.at(-1)?.snapshot);
   if(!records.length||records.at(-1)!.snapshot.tick!==m.lastTick)issues.push('WORLD_EVIDENCE_COVERAGE');
  }catch(e){issues.push((e as Error).message);}return {complete:!issues.length,records,issues};
 }
@@ -127,7 +134,10 @@ export async function materializeWorldPrefix(capture:WorldPrefixCapture,admissio
   checkPrefixHorizon(a,h);if(!m||issues.length||a.sceneDigest!==admission.scene.sceneDigest||a.admissionDigest!==admission.digest||m.runId!==a.runId||m.bootId!==a.bootId||m.sceneDigest!==a.sceneDigest||m.admissionDigest!==a.admissionDigest||m.chunks.length>READ_LIMITS.chunksPerStream)throw Error('WORLD_PREFIX_CAPTURE_INVALID');
   const ingest=(bytes:Buffer)=>{inflated+=bytes.length;if(inflated>READ_LIMITS.totalInflated)throw Error('WORLD_EVIDENCE_READ_LIMIT');if(!bytes.length)return;const text=bytes.toString();if(!text.endsWith('\n'))throw Error('WORLD_EVIDENCE_TRUNCATED');const lines=text.slice(0,-1).split('\n');if(lines.length>READ_LIMITS.linesPerChunk)throw Error('WORLD_EVIDENCE_READ_LIMIT');for(const line of lines){if(Buffer.byteLength(line)>READ_LIMITS.lineBytes||records.length>EVIDENCE_LIMITS.maxTicks)throw Error('WORLD_EVIDENCE_READ_LIMIT');const row:WorldEvidenceRecord=JSON.parse(line);history=validateWorldRecord(row,admission,history,records.at(-1)?.snapshot,a,disturbances);records.push(row);}};
   const seen=new Set<string>();let stored=capture.tail.length;for(const ref of m.chunks){if(seen.has(ref.path)||ref.firstTick!==records.length||ref.bytes>READ_LIMITS.chunkBytes)throw Error('WORLD_EVIDENCE_ORDER');seen.add(ref.path);stored+=ref.bytes;if(stored>EVIDENCE_LIMITS.maxBytes)throw Error('WORLD_EVIDENCE_QUOTA_EXCEEDED');const b=await readBoundedPhysicsFile(capture.directory,ref.path,READ_LIMITS.chunkBytes);if(b.length!==ref.bytes||sha(b)!==ref.sha256)throw Error('WORLD_EVIDENCE_HASH_MISMATCH');ingest(gunzipSync(b,{maxOutputLength:Math.min(READ_LIMITS.chunkInflated,READ_LIMITS.totalInflated-inflated)}));if(records.at(-1)?.snapshot.tick!==ref.lastTick)throw Error('WORLD_EVIDENCE_ORDER');}
-  if((records.at(-1)?.snapshot.tick??-1)!==m.lastTick)throw Error('WORLD_EVIDENCE_COVERAGE');ingest(capture.tail);
+  if((records.at(-1)?.snapshot.tick??-1)!==m.lastTick)throw Error('WORLD_EVIDENCE_COVERAGE');
+  // A finalized manifest owns only its immutable chunks. A WAL can extend a live stream.
+  if(m.complete){assertPulseFinished(records.at(-1)?.snapshot);if(capture.tail.length)throw Error('WORLD_EVIDENCE_UNPUBLISHED');}
+  ingest(capture.tail);
   const last=records.at(-1)?.snapshot.tick??-1;if(last<h||last>a.publicCommittedTick+1)throw Error('WORLD_PREFIX_HORIZON_MISMATCH');publication.uncommittedTicks=Math.max(0,last-a.publicCommittedTick);publication.streamFinalized=m.complete&&!m.terminal&&!m.gaps.length&&!capture.writeIntent&&last===h;
  }catch(e){issues.push((e as Error).message);}
  const clipped=records.filter(r=>r.snapshot.tick<=h),covered=!issues.length&&clipped.length===h+1;if(!covered)publication.streamFinalized=false;

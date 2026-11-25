@@ -21,13 +21,20 @@ export const ARM_CHOREOGRAPHY:Record<string,{waypoint:string;action?:'grip'|'rel
 export interface ArmProgramSet {modelId:string;waypoints:Record<string,number[]>;choreography:Record<string,{waypoint:string;action?:'grip'|'release'}[]>;
  motion:{profile:'linear-clamp'}|{profile:'quintic-sync-v1';maxAccelerationRadS2:number[];speedFraction:number};
  /** Present = grip by contact (tracking only): the plant's pads say what is held, the plant's supports say where a cup rests. Absent = grip is an event (mock, webots_arm). */
- contact?:{openM:number;closedM:number;gripSettleTicks:number;dropTicks:number;liftMinM:number;releaseTimeoutTicks:number;releaseObservationRequired?:boolean;releaseSettleTicks?:number};
+ contact?:{openM:number;closedM:number;/** Optional first close: secure closedM is commanded only after stable measured contact and custody. */captureM?:number;gripSettleTicks:number;dropTicks:number;liftMinM:number;releaseTimeoutTicks:number;releaseObservationRequired?:boolean;releaseSettleTicks?:number};
  /** Present = checkArmSweep gets this geometry and these allowed pairs; absent = DEFAULT_ARM_GEOMETRY and no pair (as before). */
- collision?:{geometry:ArmGeometry;allowedPairs:readonly (readonly [string,string])[]}}
+ collision?:{geometry:ArmGeometry;allowedPairs:readonly (readonly [string,string])[]};
+ /** R4.4: a cup-pick waits for a grasp plan (setGraspPlan) before its first motion, and then goes to the planned pickApproach/pick/lift instead of the fixture's. Needs the tracking mode. */
+ beliefGrasp?:true;
+ /** R4.4 V13 (needs beliefGrasp): a grip that did not form waits for the ports' decision (gripFailedPending) instead of continuing with objectPresent:false; the ports recover (recoverStep) or give up (failGrip). Absent = the R2b behaviour. */
+ recovery?:true}
 export const PUMA_PROGRAMS:ArmProgramSet={modelId:PUMA560_SI.id,waypoints:W,choreography:ARM_CHOREOGRAPHY,motion:{profile:'linear-clamp'}};
 /** What a contact plant reports each tick beside the joints: the measured gripper opening (m, between the pads), the cups both pads touch, and each cup's position (m, arm base frame) and support. */
 /** `inMap` (optional) is the same cup's pose in the map frame, kept untouched with the entry for the telemetry projection; the machine reads only `position`. */
 export interface PlantExtras {releaseObservation?:{propId:string;valid:boolean};gripper?:{openingM:number;heldPropIds:readonly string[]};props?:readonly {propId:string;position:readonly number[];restingOn:string|null;inMap?:{positionM:[number,number,number];quaternionXyzw:[number,number,number,number]}}[]}
+/** The ports' admitted cup/support binding. This is context, not proof: failGrip
+ * independently checks the plant's current validated observation and grip state. */
+export interface FailedGripContext {tick:number;propId:string;declaredSupportId:string}
 /** Contact grip counters (JSON). `ticks`: closing = ticks the opening changed < 1e-4 m, opening = ticks the cup rested on the tray; `lost`: ticks the held cup was not between the pads.
  * `maxSlipM` (the largest norm of the change of the cup's position in the TCP frame since the baseline) is null until a baseline was measured. `openingM` the last measured opening,
  * `slipFromM` the cup's position in the TCP frame (m) on the first tick, at or after the take, the held cup's position was seen, `elapsed` ticks since the release command, `receiver` the receiver the release started for. */
@@ -53,6 +60,7 @@ function validatePrograms(set:ArmProgramSet,model:ArmModelSI){
  if(c){
   if(!tick(c.gripSettleTicks)||!tick(c.dropTicks)||!tick(c.releaseTimeoutTicks)||(c.releaseSettleTicks!==undefined&&!tick(c.releaseSettleTicks)))bad('contact tick counts must be integers >= 1');
   if(![c.openM,c.closedM,c.liftMinM].every(Number.isFinite)||!(c.openM>c.closedM)||!(c.closedM>=0))bad('contact needs finite openM > closedM >= 0 and liftMinM');
+  if(c.captureM!==undefined&&(!Number.isFinite(c.captureM)||c.captureM<c.closedM||c.captureM>=c.openM))bad('captureM needs finite closedM <= captureM < openM');
  }
 }
 const dist=(a:readonly number[],b:readonly number[])=>Math.hypot(a[0]!-b[0]!,a[1]!-b[1]!,a[2]!-b[2]!);
@@ -78,13 +86,16 @@ export interface ArmPlantState {
  deviceId:string;q:number[];gripper:'open'|'closed';holding:string|null;bootId:string;seq:number;tick:number;programs:Program[];modifiers:ArmFault[];
  trace:{tick:number;q:number[];tcp:[number,number,number]}[];limitsOk:boolean;commandedQ?:number[];stop?:ArmStopState;tracking?:ArmTrackingState;
  collision?:{/** Manually injected obstacles in arm-base coordinates; scene refresh does not replace these. */world:ArmObstacle[];checks:number;last:SweepResult|null;scene?:ArmSceneSnapshot;evidence?:ArmCollisionEvidence};
+ /** R4.4: the grasp plan of the running cup-pick (belief grasp): pending until the plant's ports decide, then ready with the waypoints or refused with the code. *//** R4.4 V13: the running recovery step of the plant (absent otherwise, so legacy states keep their bytes). */recoverTicks?:number;grasp?:{commandId:string;status:'pending'|'ready'|'refused'|'grip_failed'|'retreating'|'commit_pending';code?:string;/** the commit plan was set: the arm may go down from the approach */committed?:true;waypoints?:Record<'pickApproach'|'pick'|'lift',number[]>};
  plantId?:'webots_arm'|'mujoco_arm';/** Contact mode: the gripper opening commanded to the plant (m). Only a grip or a release step writes it; stop() and halt() never do. */gripperCommandM?:number;
  props?:PlantExtras['props'];/** The gripper opening the plant measured on the last observed tick (m), whatever the grip phase. */gripperOpeningM?:number;grip?:ArmGripState;/** quintic-sync-v1: the segment being commanded (k ticks done of from -> to). */segment?:{from:number[];to:number[];k:number}}
 export class MockArmPlant {
  private listeners=new Set<(r:CellReport)=>void>();
+ private recoveryObservation:{tick:number;extras:PlantExtras}|undefined;
  constructor(readonly state:ArmPlantState,private nowMs:()=>number,private newBootId:()=>string,private cups:ArmCupWorld,private receiver:()=>{robotId:string;slot:number}|null,private model:ArmModelSI=PUMA560_SI,private tracking?:ArmTracking,private programs:ArmProgramSet=PUMA_PROGRAMS){
   if(programs.modelId!==model.id)throw new Error(`ARM_PROGRAM_MODEL_MISMATCH: ${programs.modelId} on ${model.id}`);
   if(programs.contact&&!tracking)throw new Error('ARM_CONTACT_NEEDS_TRACKING');
+  if(programs.beliefGrasp&&!tracking)throw new Error('ARM_BELIEF_NEEDS_TRACKING');
   validatePrograms(programs,model);
   state.collision??={world:[],checks:0,last:null};state.collision.evidence??={intervals:[],worlds:{},droppedIntervals:state.collision.checks};
   if(tracking)state.tracking??={gen:[...state.q],settled:0,followCount:0,samples:0,peakRad:state.q.map(()=>0),sumSq:state.q.map(()=>0),trace:[]};}
@@ -106,9 +117,62 @@ export class MockArmPlant {
   if(command.capability!=='start_job'||!program||!this.programs.choreography[program])return {accepted:false,unknown:false,reason:'PROGRAM_NOT_APPROVED'};
   if(this.state.programs.some(p=>p.state==='running'))return {accepted:false,unknown:false,reason:'ARM_BUSY'};
   const p:Program={commandId:command.commandId,payloadHash:command.payloadHash,controlEpoch:command.controlEpoch,program,index:0,state:'running',waiting:0,evidence:{source:this.programs.contact&&this.state.plantId?this.state.plantId:MOCK_ARM.id,grip:this.programs.contact?'contact':'commanded_mock',forceModel:'none'},accepted:{accepted:true,unknown:false}};
-  this.state.programs.push(p);this.emit(p,'accepted');return p.accepted;
+  this.state.programs.push(p);if(this.programs.beliefGrasp&&program==='cup-pick')this.state.grasp={commandId:p.commandId,status:'pending'};this.emit(p,'accepted');return p.accepted;
  }
  reconcile(commandId:string):CellExecutionState {const p=this.state.programs.find(x=>x.commandId===commandId);return p?{status:p.state,evidence:{...p.evidence} as JsonObject}:{status:'not_found',evidence:{}};}
+ /** The belief grasp waiting for its plan (the running cup-pick before its first motion), or null. */
+ graspPending(){const g=this.state.grasp;if(g?.status!=='pending')return null;const p=this.state.programs.find(x=>x.commandId===g.commandId&&x.state==='running');return p?{commandId:p.commandId,program:p.program}:null;}
+ /** The cup-pick that reached its approach and waits for the commit plan (belief grasp), or null. */
+ commitPending(){const g=this.state.grasp;if(g?.status!=='commit_pending')return null;const p=this.state.programs.find(x=>x.commandId===g.commandId&&x.state==='running');return p?{commandId:p.commandId}:null;}
+ /** The ports' commit decision: the pick and lift to go down to (the approach already reached is kept), or the refusal code that fails the program where the arm stands. */
+ setCommitPlan(commandId:string,plan:{ok:true;waypoints:Record<'pick'|'lift',number[]>}|{ok:false;code:string}){
+  const g=this.state.grasp;if(g?.commandId!==commandId||g.status!=='commit_pending'||!this.commitPending())throw new Error('GRASP_PLAN_NOT_PENDING');
+  if(!plan.ok){this.state.grasp={commandId,status:'refused',code:plan.code};return;}
+  for(const name of ['pick','lift'] as const){const q=plan.waypoints?.[name];if(!Array.isArray(q)||q.length!==this.model.links.length||!q.every(Number.isFinite)||q.some((v,i)=>v<this.model.limits[i]!.min||v>this.model.limits[i]!.max))throw new Error(`ARM_PROGRAM_INVALID: committed waypoint ${name}`);}
+  this.state.grasp={commandId,status:'ready',committed:true,waypoints:{pickApproach:g.waypoints!.pickApproach,pick:structuredClone(plan.waypoints.pick),lift:structuredClone(plan.waypoints.lift)}};
+ }
+ /** The cup-pick whose grip is known not to have formed and that waits for the ports' decision (recovery policy only), or null. */
+ gripFailedPending(){const g=this.state.grasp;if(g?.status!=='grip_failed')return null;const p=this.state.programs.find(x=>x.commandId===g.commandId&&x.state==='running');return p?{commandId:p.commandId}:null;}
+ /** The ports gave up on the failed grip: latch, retain custody, never open. Only
+  * an exhausted grip proven empty by current plant facts has a known failed outcome. */
+ failGrip(commandId:string,reason:string,context?:FailedGripContext){
+  const s=this.state,g=s.grasp;if(g?.commandId!==commandId||!['grip_failed','retreating','commit_pending'].includes(g.status))throw new Error('GRASP_NOT_FAILED');
+  const p=s.programs.find(p=>p.commandId===commandId&&p.state==='running'),o=this.recoveryObservation,gripper=o?.extras.gripper,cup=context&&o?.extras.props?.find(p=>p.propId===context.propId);
+  const known=reason==='RECOVERY_EXHAUSTED'&&this.programs.recovery&&g.status==='grip_failed'&&g.committed===true&&p?.program==='cup-pick'&&p.evidence.objectPresent===false&&p.evidence.cupId===null&&s.holding===null&&
+   context?.tick===s.tick&&o?.tick===s.tick&&this.recoveryFacts().armFresh&&this.recoveryFacts().noUnknown&&gripper&&Number.isFinite(gripper.openingM)&&gripper.openingM>=0&&Array.isArray(gripper.heldPropIds)&&gripper.heldPropIds.length===0&&
+   typeof context.propId==='string'&&context.propId.length>0&&typeof context.declaredSupportId==='string'&&context.declaredSupportId.length>0&&cup?.restingOn===context.declaredSupportId&&cup.position.length===3&&cup.position.every(Number.isFinite);
+  s.grasp={...g,status:'refused',code:reason};
+  if(known){
+   p!.state='failed';Object.assign(p!.evidence,{stopReason:reason,stopProvenance:'modelled',actualJointsRad:[...s.q],commandedJointsRad:s.commandedQ??[...s.q],failedGripObservation:{tick:o!.tick,propId:cup!.propId,restingOn:cup!.restingOn,positionM:[...cup!.position],openingM:gripper!.openingM,heldPropIds:[]}});
+   this.stop(reason);this.emit(p!,'failed',[reason],{...p!.evidence});
+  }else this.stop(reason);
+ }
+ /** Only a validated observation at this tick can support recovery. It is kept
+  * outside persisted state; a reconstructed plant must observe again. */
+ recoveryFacts(){const s=this.state;return {armFresh:this.recoveryObservation?.tick===s.tick&&s.limitsOk&&!s.stop,noUnknown:!s.programs.some(p=>p.state==='unknown')&&!s.stop?.latched&&!s.stop?.reconcileRequired};}
+ /** One tick of a recovery step of the plant; the ports call it until it says done. open_gripper: command open and wait the grip settle time. retreat_pick_approach: back to the planned approach, then a new plan is awaited. */
+ recoverStep(commandId:string,action:'open_gripper'|'retreat_pick_approach'):'running'|'done'{
+  const s=this.state,g=s.grasp,p=s.programs.find(x=>x.commandId===commandId&&x.state==='running');if(!p||!g||g.commandId!==commandId)throw new Error('GRASP_NOT_RECOVERING');
+  const c=this.programs.contact!;
+  if(action==='open_gripper'){
+   if(s.recoverTicks===undefined){s.gripper='open';s.gripperCommandM=c.openM;delete s.grip;s.recoverTicks=0;return 'running';}
+   if(++s.recoverTicks<c.gripSettleTicks)return 'running';
+   delete s.recoverTicks;return 'done';
+  }
+  if(g.status==='grip_failed'){s.grasp={commandId:g.commandId,status:'retreating',waypoints:g.waypoints};p.index=0;return 'running';}
+  return g.status==='commit_pending'?'done':'running';
+ }
+ /** The ports' decision for the waiting cup-pick: the planned waypoints (joints, in limits) or the refusal code that fails the program before any motion. */
+ setGraspPlan(commandId:string,plan:{ok:true;waypoints:Record<'pickApproach'|'pick'|'lift',number[]>}|{ok:false;code:string}){
+  const g=this.state.grasp;if(g?.commandId!==commandId||g.status!=='pending'||!this.graspPending())throw new Error('GRASP_PLAN_NOT_PENDING');
+  if(!plan.ok){this.state.grasp={commandId,status:'refused',code:plan.code};return;}
+  for(const name of ['pickApproach','pick','lift'] as const){
+   const q=plan.waypoints?.[name];if(!Array.isArray(q)||q.length!==this.model.links.length||!q.every(Number.isFinite)||q.some((v,i)=>v<this.model.limits[i]!.min||v>this.model.limits[i]!.max))throw new Error(`ARM_PROGRAM_INVALID: planned waypoint ${name}`);
+  }
+  this.state.grasp={commandId,status:'ready',waypoints:structuredClone(plan.waypoints)};
+ }
+ /** The joints a stage goes to: the planned waypoint of a belief grasp that is ready, the fixture's otherwise. */
+ private goalOf(p:Program|undefined,name:string){const g=this.state.grasp;return (p&&g?.commandId===p.commandId&&(g.status==='ready'||g.status==='retreating')?g.waypoints?.[name as 'pick']:undefined)??this.programs.waypoints[name]!;}
  setCollisionWorld(world:ArmObstacle[]){checkArmSweep(this.model,this.state.q,this.state.q,{world,...this.programs.collision});this.state.collision!.world=structuredClone(world);}
  setCollisionScene(scene:ArmSceneSnapshot){this.state.collision!.scene=scene;}
  private recordCollision(toQ:number[],world:ArmObstacle[],result:SweepResult){
@@ -157,10 +221,14 @@ export class MockArmPlant {
   }
   if(this.tracking)s.commandedQ??=[...s.tracking!.gen]; // an idle tracked arm is still told where to stay
   const p=s.programs.find(x=>x.state==='running');if(s.stop?.latched||s.stop?.reconcileRequired)return;
+  // belief grasp: no motion before the plan; a refused plan fails the program here, before any command to the plant
+  const g=p&&s.grasp?.commandId===p.commandId?s.grasp:undefined;
+  if(p&&g?.status==='refused'){p.state='failed';this.emit(p,'failed',[g.code!],{...p.evidence});return;}
+  if(g?.status==='pending'||g?.status==='grip_failed'||g?.status==='commit_pending')return;
   const scene=s.collision!.scene;
   if(scene?.scope==='self_scene_robot'&&!scene.available){if(p)this.stop('ARM_SCENE_GEOMETRY_UNAVAILABLE');return;}
   if(!p&&!scene?.available)return;
-  const t=this.tracking?s.tracking!:undefined,steps=p?this.programs.choreography[p.program]!:[],stage=p?steps[p.index]!:undefined,goal=stage?this.programs.waypoints[stage.waypoint]!:t?t.gen:s.q;
+  const t=this.tracking?s.tracking!:undefined,steps=p?this.programs.choreography[p.program]!:[],stage=p?steps[p.index]!:undefined,goal=stage?this.goalOf(p,stage.waypoint):t?t.gen:s.q;
   const maxStep=this.model.limits.map(l=>l.maxVelocity*MOCK_ARM_PARAMS.speedFraction*MOCK_ARM_PARAMS.dtS);
   const from=t?t.gen:s.q,next=this.programs.motion.profile==='quintic-sync-v1'?this.quintic(from,goal):from.map((q,i)=>{const d=goal[i]!-q;return Math.abs(d)<=maxStep[i]!?goal[i]!:q+Math.sign(d)*maxStep[i]!;});
   s.commandedQ=next;
@@ -207,14 +275,16 @@ export class MockArmPlant {
   * release: command open, wait until the cup rests on the tray, then put it. The cup is taken and put only on the plant's word. */
  private completeContact(p:Program,stage:{waypoint:string;action?:'grip'|'release'},steps:{waypoint:string;action?:'grip'|'release'}[],extras?:PlantExtras){
   const s=this.state,c=this.programs.contact!,g=s.grip;
-  if(stage.action==='grip'&&s.gripper==='open'){s.gripper='closed';s.gripperCommandM=c.closedM;s.holding=null;s.grip={phase:'closing',ticks:0,lost:0,liftFromM:null,maxSlipM:null,openingM:extras?.gripper?.openingM??null,slipFromM:null,elapsed:0};return;}
+  if(stage.action==='grip'&&s.gripper==='open'){s.gripper='closed';s.gripperCommandM=c.captureM??c.closedM;s.holding=null;s.grip={phase:'closing',ticks:0,lost:0,liftFromM:null,maxSlipM:null,openingM:extras?.gripper?.openingM??null,slipFromM:null,elapsed:0};return;}
   if(stage.action==='grip'&&g?.phase==='closing'&&s.holding===null){
    if(g.ticks<c.gripSettleTicks)return;
    const held=extras?.gripper?.heldPropIds[0]??null,cup=held===null?null:this.cups.take(held);
    Object.assign(p.evidence,{gripperClosed:true,objectPresent:held!==null,cupId:cup,grip:'contact'});
+   // the grip is known not to have formed: with a recovery policy the ports decide (recover or give up) before the program goes on
+   if(held===null&&this.programs.recovery&&s.grasp?.commandId===p.commandId&&s.grasp.status==='ready'){s.grasp={...s.grasp,status:'grip_failed'};return;}
    // the pads hold a cup the cup world did not hand over: custody is unknown, never a completed pick
    if(held!==null&&cup===null){Object.assign(p.evidence,{heldPropId:held});this.stop('CUP_CUSTODY_MISMATCH');return;}
-   s.holding=cup;if(!cup)delete s.grip;else{this.baseline(g,extras);p.evidence.maxSlipM=g.maxSlipM;}
+   s.holding=cup;if(!cup)delete s.grip;else{if(c.captureM!==undefined)s.gripperCommandM=c.closedM;this.baseline(g,extras);p.evidence.maxSlipM=g.maxSlipM;}
   }
   if(stage.action==='release'&&s.gripper==='closed'){
    if(g?.phase!=='opening'){
@@ -229,6 +299,8 @@ export class MockArmPlant {
     return;
    }else{const rx=g.receiver!;s.gripper='open';this.cups.put(s.holding!,rx);Object.assign(p.evidence,{released:true,receiverId:rx.robotId,slot:rx.slot,cupId:s.holding});s.holding=null;delete s.grip;}
   }
+  // the approach is reached (first try or retreat): the arm holds here until the ports commit to the descent with the belief of THAT moment (spec §5.3)
+  if(s.grasp?.commandId===p.commandId&&stage.waypoint==='pickApproach'&&(s.grasp.status==='retreating'||s.grasp.status==='ready'&&!s.grasp.committed)){s.grasp={commandId:p.commandId,status:'commit_pending',waypoints:s.grasp.waypoints};return;}
   if(stage.waypoint==='lift'){const z=extras?.props?.find(x=>x.propId===s.holding)?.position[2],from=s.grip?.liftFromM??null;p.evidence.liftPoseReached=s.holding!==null&&z!==undefined&&from!==null&&z-from>=c.liftMinM;}
   if(++p.index>=steps.length){p.state='completed';this.emit(p,'completed',[],{...p.evidence});}
  }
@@ -256,6 +328,7 @@ export class MockArmPlant {
  observe(actualQ:readonly number[],collisionIds:readonly string[],extras?:PlantExtras){
   const s=this.state,t=s.tracking;
   if(!this.tracking||!t)throw new Error('ARM_TRACKING_DISABLED: observe needs the tracking mode');
+  if(this.programs.recovery)this.recoveryObservation=undefined;
   if(this.programs.contact)s.props=structuredClone(extras?.props??[]);
   if(extras?.gripper)s.gripperOpeningM=extras.gripper.openingM;
   const finite=actualQ.length===s.q.length&&actualQ.every(Number.isFinite);
@@ -280,9 +353,12 @@ export class MockArmPlant {
    if(s.tick%MOCK_ARM_PARAMS.traceEvery===0&&s.trace.length<MOCK_ARM_PARAMS.traceCap)s.trace.push({tick:s.tick,q:[...s.q],tcp:this.tcp(s.q)});
   }
   if(Math.max(...error)>this.tracking.followTolRad){if(++t.followCount>=this.tracking.followTicks){this.stop('ARM_FOLLOWING_ERROR');return;}}else t.followCount=0;
+  if(this.programs.recovery&&extras?.gripper&&Number.isFinite(extras.gripper.openingM)&&extras.gripper.openingM>=0&&Array.isArray(extras.gripper.heldPropIds))this.recoveryObservation={tick:s.tick,extras:structuredClone(extras)};
   if(this.programs.contact&&this.watchContact(p,extras))return;
   if(!p)return;
-  const steps=this.programs.choreography[p.program]!,stage=steps[p.index]!,goal=this.programs.waypoints[stage.waypoint]!;
+  // a belief pick that waits for a decision (the plan, the commit, the recovery) owns the program: the choreography, the grip and the take are not driven by an observation (the checks above still ran)
+  const g=s.grasp;if(g?.commandId===p.commandId&&(g.status==='pending'||g.status==='commit_pending'||g.status==='grip_failed'||g.status==='refused'))return;
+  const steps=this.programs.choreography[p.program]!,stage=steps[p.index]!,goal=this.goalOf(p,stage.waypoint);
   if(t.gen.every((v,i)=>v===goal[i])&&s.q.every((q,i)=>Math.abs(q-goal[i]!)<=this.tracking!.reachTolRad))t.settled++;else t.settled=0;
   if(t.settled>=this.tracking.settleTicks){const index=p.index;this.complete(p,stage,steps,extras);if(p.index!==index)t.settled=0;}
  }

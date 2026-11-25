@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "documentType": "perception-profile",
+  "id": "perception-lossy-v1",
+  "revision": 1,
+  "digest": "762fc17b23377372bd2a4d0886936d104ed81150ca4bc1e3da429d335ab538d5",
+  "calibration": "not_calibrated",
+  "parameterSource": "assumed",
+  "updateEveryTicks": 10,
+  "latencyTicks": 5,
+  "biasM": [
+    0,
+    0
+  ],
+  "sigmaM": [
+    0.002,
+    0.002
+  ],
+  "dropoutProbability": 0.9,
+  "visibleRegionId": "nozzle-stand",
+  "maxAgeTicks": 50
+}

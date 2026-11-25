@@ -1,0 +1,34 @@
+{
+  "sourceCommit": "34cf316b822da231b869ff052527630d8450c3c2",
+  "schemaHash": "8a1f111d006484d099f4c96d8c7d9386143998dab11ee20b83c5ba730cd2bbfd",
+  "runtimeArtifactSha256": "90068fd8e71724e041dcc1c8aded61a36462fb8cc1d0d2b8646b49c7a7b69457",
+  "image": {
+    "Id": "sha256:5d0532e472a4cb07a9602761cdca5dfa8fa2764630876e1c08c4914d70d26cc0",
+    "Os": "linux",
+    "Architecture": "arm64",
+    "revision": "34cf316b822da231b869ff052527630d8450c3c2"
+  },
+  "host": {
+    "platform": "Darwin",
+    "arch": "arm64",
+    "dockerEndpoint": "unix:///Users/hoangpham/.orbstack/run/docker.sock",
+    "docker": "linux/arm64"
+  },
+  "buildExitCode": 0,
+  "testExitCode": 0,
+  "tests": {
+    "passed": 1,
+    "skipped": 0
+  },
+  "observations": {
+    "cellServed": "2",
+    "cellFinalTick": 10900,
+    "cellWallMs": 180269,
+    "benchFinalTick": 500,
+    "benchWallMs": 2052,
+    "secondBenchAdvanced": true
+  },
+  "timingScope": "Concurrent qualification; not an isolated performance benchmark",
+  "testLogSha256": "ce814a9a9e95f1fa6063fefb139379ab6e3a47f74bd83a4dd3f75e04417eb117",
+  "accepted": false
+}

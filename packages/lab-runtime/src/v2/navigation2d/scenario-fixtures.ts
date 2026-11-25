@@ -38,6 +38,8 @@ export interface ScenarioFixtureSpec{scenarioId:string;runs?:string;kind?:'scena
  operator?:{cancelWhenMoving?:true;killWorkerOnTableLeg?:true;killEngineOnTableLeg?:true};expectOutcome?:{status:string;served:string;reasons?:readonly string[]};evidence?:'complete'|'step_ack_lost';
  raw?:{ticks:number;velocities:readonly {robotId:string;vMps:number;omegaRadps:number}[]};
  fixtures:readonly string[];worldId:string;actors:readonly ActorSpec[];zones:readonly ZoneSpec[];oracles:readonly string[]}
+/** The scenario-fixture spec a run of MJ-TRAY01 uses when its tray variant has a person (tray-person-crossing-v1). */
+export const TRAY_PERSON_FIXTURE='MJ-TRAY01-person';
 const COMMON=['EVIDENCE_COMPLETE','IDENTITY_BOUND','NO_SERVED_BEFORE_HANDOFF'];
 const deepFreeze=<T>(v:T):T=>{if(v&&typeof v==='object'){for(const x of Object.values(v))deepFreeze(x);Object.freeze(v);}return v;};
 // All coordinates are the restaurant-10-tables fixture world (20 x 12 m; tables at x 4/7/10/13/16, rows y 3 and 9; aisle between y 3.4 and 8.6; kitchen pass handoff at 1.9, 6).
@@ -56,6 +58,10 @@ const SPECS:ScenarioFixtureSpec[]=[
  {scenarioId:'IR-FD07',label:'IR-FD07 (source-driven): two robots serialized by the venue-movement reservation; aisle zone reserved/released per leg, never contended; customer away from the routes',fixtures:['serve-fleet-v1'],worldId:'restaurant-10-tables',actors:[{id:'customer-1',radiusM:0.25,startTick:[600,600],speedMps:0.5,path:[[5.5,1.0],[5.5,11.0]]}],
   zones:[{id:'aisle-west',polygonM:[[2.6,3.45],[3.4,3.45],[3.4,8.55],[2.6,8.55]],entryPoints:[[2.3,6]],exitPoints:[[3.7,6]]}],
   oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PHYSICAL_CONTACT','ACTOR_SCHEDULE_APPLIED','NO_ACTOR_CONTACT','BOTH_ROBOTS_MOVED','ROBOT_MAPPING','ZONE_SINGLE_OWNER','ZONE_RELEASE_AFTER_EXIT','MIN_SEPARATION_AVAILABLE','WITHIN_TICKS']},
+ // V10: MJ-TRAY01 under tray-person-crossing-v1 (the runner picks this spec from the run's tray-experiment.json): a person (r 0.25 m, 0.5 m/s) walks from the south side of the aisle at x 8, across the AMR's route (it runs east along y 8.1 toward the eighth table, 13 / 8.1), and out through the gap between two north tables to y 10.5, where they stop clear of the route.
+ // They are on the route at about tick 2440 (the nominal run is at x 6.4 then): the AMR has to stop and wait, and goes on once they have passed. The start tick is read off the nominal run (tray-v1 case a-nominal-s7).
+ {scenarioId:TRAY_PERSON_FIXTURE,runs:'MJ-TRAY01',label:'V10: a person crosses the tray AMR\'s route; it must stop clear of them and go on once the way is free',fixtures:['serve-3d-v1'],worldId:'restaurant-10-tables',actors:[{id:'person-1',radiusM:0.25,startTick:[1875,1875],speedMps:0.8,path:[[5.5,3.7],[5.5,10.5]]}],zones:[],
+  oracles:[...COMMON,'BUSINESS_OUTCOME','ACTOR_SCHEDULE_APPLIED']},
  // Webots 3D variants: the IR-FD01 / IR-FD07 oracles on the rigid-body plant. Its worker takes no scripted actors, so WB-FD07 has the aisle zone but no walking customer.
  {scenarioId:'WB-FD01',label:'WB03: one order, one robot, kitchen -> table -> parking on the Webots 3D plant',fixtures:['serve-3d-v1'],worldId:'restaurant-10-tables',actors:[],zones:[],oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PHYSICAL_CONTACT']},
  {scenarioId:'WB-FD07',label:'WB04 (source-driven): missions the source orchestrates are serialised by the __venue_movement__ reservation on the Webots 3D plant; the aisle zone is reserved/released per leg and never contended; there is no contention rig for Webots in this release',fixtures:['serve-3d-fleet-v1'],worldId:'restaurant-10-tables',actors:[],

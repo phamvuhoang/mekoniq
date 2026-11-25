@@ -1,0 +1,341 @@
+{
+  "manifest": {
+    "runId": "859cdb43-0c1d-4f2e-babb-d4020603927e",
+    "sourceCommit": "3c9a144976882dd6ed5bcf14b892da8a4fe3020e",
+    "mode": "simulation",
+    "access": "simulated",
+    "backendSetId": "engineering-mujoco-bench-v1",
+    "backends": [
+      {
+        "id": "mujoco_3d",
+        "version": "3.17.0",
+        "model": "mujoco_drive_bench",
+        "dynamics": true
+      }
+    ],
+    "prng": {
+      "algorithm": "xoshiro128**",
+      "seeding": "sha256(seed:actorId)",
+      "version": 1
+    },
+    "clock": {
+      "tickMs": 20
+    },
+    "seed": 3,
+    "scenario": {
+      "id": "MJ-BENCH-WHEEL",
+      "revision": 1,
+      "hash": "4b6ec023c4efa98e570f9902373d3f261153f05c76c2af7aa4f603a50d773e09"
+    },
+    "project": {
+      "id": "bench:serve-payload-v1",
+      "revision": 1,
+      "hash": "3c780edcb38eaca83a79d3a10dce780d65d467bcf8747ac41f96eafb5e73e2be"
+    },
+    "world": {
+      "id": "serve-payload-v1",
+      "revision": 1,
+      "hash": "3c780edcb38eaca83a79d3a10dce780d65d467bcf8747ac41f96eafb5e73e2be"
+    },
+    "assets": [],
+    "hashAlgorithm": "sha256-canonical-json-v1",
+    "designHash": "1fe42464d5f798cc33c25550f6106c8df652c0173c523a6c4fabd22fb62d1895",
+    "adapterHash": "48d3321288e3837847282b2f456b96b271fda500437bd648aaeaacb1d316fab6",
+    "configuration": {
+      "revision": 1,
+      "hash": "0315dc6b6b971fd33caa53c7b00b1867c68c05fcb2a983ba49dbe874e75dc295"
+    },
+    "recipes": [],
+    "models": [
+      {
+        "id": "mujoco_3d",
+        "revision": "3.17.0",
+        "hash": "3c780edcb38eaca83a79d3a10dce780d65d467bcf8747ac41f96eafb5e73e2be",
+        "provenance": "simulated_plant"
+      },
+      {
+        "id": "serve-drive-nominal-v1",
+        "revision": "1",
+        "hash": "cf7b61f6b110bd4cf31c2fca3455350a8e29160b5791fd3b47345c5129468405",
+        "provenance": "assumed"
+      }
+    ],
+    "profiles": [
+      {
+        "id": "serve-control-v2",
+        "revision": 2,
+        "hash": "e80f6ad8c5cea4323c2643a9b55855db73ace512b0e3a993ba65b0d5019a72ca",
+        "provenance": "draft"
+      }
+    ],
+    "calibration": {
+      "status": "not_calibrated",
+      "revision": null,
+      "hash": null,
+      "reason": "SIMULATED_PLANT",
+      "modelMaturity": {
+        "geometry": "assumed",
+        "inertia": "assumed",
+        "drive": "assumed",
+        "contact": "assumed",
+        "sensing": "assumed"
+      }
+    }
+  },
+  "outcome": {
+    "status": "completed",
+    "served": "0",
+    "tick": 500,
+    "simTimeNs": "10000000000"
+  },
+  "tuning": {
+    "schemaVersion": 1,
+    "documentType": "tuning-result",
+    "runId": "859cdb43-0c1d-4f2e-babb-d4020603927e",
+    "status": "completed",
+    "unstable": null,
+    "fault": null,
+    "collision": null,
+    "axisIds": [
+      "amr-1/wheel-left",
+      "amr-1/wheel-right"
+    ],
+    "signal": {
+      "kind": "step",
+      "amplitude": 2,
+      "atTick": 10
+    },
+    "seed": 3,
+    "engine": {
+      "id": "mujoco_3d",
+      "version": "3.17.0",
+      "hostArch": "arm64"
+    },
+    "plant": {
+      "plantModelDigest": "e6a44a42b6a0a02cc7a54e7f5956d5aaed093fd4b3c30abcaf2df7e7d4d3cb2e",
+      "driveModelDigest": "cf7b61f6b110bd4cf31c2fca3455350a8e29160b5791fd3b47345c5129468405",
+      "controlProfileDigest": "e80f6ad8c5cea4323c2643a9b55855db73ace512b0e3a993ba65b0d5019a72ca",
+      "load": "empty"
+    },
+    "effectiveInertia": {
+      "valueKgM2": 0.08743950000000002,
+      "basis": "wheel_straight_line",
+      "provenance": "assumed"
+    },
+    "wheelMeasurement": {
+      "quantity": "wheel_angular_speed",
+      "inertiaAssumption": "straight_line_no_slip",
+      "comparison": {
+        "tick": 500,
+        "bodyForwardMps": 0.17002931297474644,
+        "wheelSurfaceMps": 0.17553728975056176
+      }
+    },
+    "suggestions": [
+      {
+        "bandwidthRadS": 5,
+        "damping": 0.7,
+        "loop": {
+          "kp": 0.6120765000000001,
+          "ki": 2.1859875000000004,
+          "kd": 0,
+          "integralLimit": 6,
+          "slewLimit": null
+        },
+        "accelerationLimit": null,
+        "clamped": []
+      },
+      {
+        "bandwidthRadS": 5,
+        "damping": 1,
+        "loop": {
+          "kp": 0.8743950000000001,
+          "ki": 2.1859875000000004,
+          "kd": 0,
+          "integralLimit": 6,
+          "slewLimit": null
+        },
+        "accelerationLimit": null,
+        "clamped": []
+      },
+      {
+        "bandwidthRadS": 10,
+        "damping": 0.7,
+        "loop": {
+          "kp": 1.2241530000000003,
+          "ki": 8.743950000000002,
+          "kd": 0,
+          "integralLimit": 6,
+          "slewLimit": null
+        },
+        "accelerationLimit": null,
+        "clamped": []
+      },
+      {
+        "bandwidthRadS": 10,
+        "damping": 1,
+        "loop": {
+          "kp": 1.7487900000000003,
+          "ki": 8.743950000000002,
+          "kd": 0,
+          "integralLimit": 6,
+          "slewLimit": null
+        },
+        "accelerationLimit": null,
+        "clamped": []
+      },
+      {
+        "bandwidthRadS": 20,
+        "damping": 0.7,
+        "loop": {
+          "kp": 2.4483060000000005,
+          "ki": 34.97580000000001,
+          "kd": 0,
+          "integralLimit": 6,
+          "slewLimit": null
+        },
+        "accelerationLimit": null,
+        "clamped": []
+      },
+      {
+        "bandwidthRadS": 20,
+        "damping": 1,
+        "loop": {
+          "kp": 3.4975800000000006,
+          "ki": 34.97580000000001,
+          "kd": 0,
+          "integralLimit": 6,
+          "slewLimit": null
+        },
+        "accelerationLimit": null,
+        "clamped": []
+      },
+      {
+        "bandwidthRadS": 40,
+        "damping": 0.7,
+        "loop": {
+          "kp": 4.896612000000001,
+          "ki": 64,
+          "kd": 0,
+          "integralLimit": 6,
+          "slewLimit": null
+        },
+        "accelerationLimit": null,
+        "clamped": [
+          "ki"
+        ]
+      },
+      {
+        "bandwidthRadS": 40,
+        "damping": 1,
+        "loop": {
+          "kp": 6.995160000000001,
+          "ki": 64,
+          "kd": 0,
+          "integralLimit": 6,
+          "slewLimit": null
+        },
+        "accelerationLimit": null,
+        "clamped": [
+          "ki"
+        ]
+      }
+    ],
+    "policy": {
+      "finalWindowS": 0.5,
+      "settleBand": 0.02,
+      "holdWindowS": 0.25
+    },
+    "metrics": {
+      "riseTimeS": {
+        "available": true,
+        "value": 0.1031937976569449,
+        "unit": "s",
+        "samples": 4871,
+        "basis": "actual"
+      },
+      "overshootPct": {
+        "available": true,
+        "value": 0,
+        "unit": "%",
+        "samples": 4871,
+        "basis": "actual"
+      },
+      "settlingTimeS": {
+        "available": false,
+        "value": null,
+        "unit": "s",
+        "reason": "NOT_SETTLED"
+      },
+      "steadyStateError": {
+        "available": true,
+        "value": 0.06619670812542267,
+        "unit": "rad/s",
+        "samples": 250,
+        "basis": "actual"
+      },
+      "rmsError": {
+        "available": true,
+        "value": 0.112976381786843,
+        "unit": "rad/s",
+        "samples": 4871,
+        "basis": "actual"
+      },
+      "peakTorqueNm": {
+        "available": true,
+        "value": 4.000000016056739,
+        "unit": "N m",
+        "samples": 4871,
+        "basis": "actual"
+      },
+      "saturationRatio": {
+        "available": true,
+        "value": 0,
+        "unit": "ratio",
+        "samples": 4871,
+        "basis": "actual"
+      }
+    },
+    "trace": {
+      "chunks": 11,
+      "sha256": "5d9e6f2112ccdcdb85bf2e4b59db2f24f6d2b811868fa244c8d1e57ce0a6320a",
+      "samples": 5000
+    },
+    "accepted": false
+  },
+  "bench": {
+    "request": {
+      "schemaVersion": 1,
+      "scenarioId": "MJ-BENCH-WHEEL",
+      "axis": "wheels",
+      "signal": {
+        "kind": "step",
+        "amplitude": 2,
+        "atTick": 10
+      },
+      "driveExperimentId": "drive-nominal-v1",
+      "controlProfile": {
+        "id": "serve-control-v2",
+        "revision": 2,
+        "digest": "e80f6ad8c5cea4323c2643a9b55855db73ace512b0e3a993ba65b0d5019a72ca"
+      }
+    },
+    "anchorTick": 4,
+    "sceneDigest": "3c780edcb38eaca83a79d3a10dce780d65d467bcf8747ac41f96eafb5e73e2be",
+    "traceIssues": [],
+    "idleLease": {
+      "durationMs": 60000,
+      "expiryReason": "BENCH_IDLE_EXPIRED"
+    }
+  },
+  "coverage": {
+    "businessSimulation": false,
+    "kinematicModel": true,
+    "dynamics": true,
+    "nativeExecution": false,
+    "physicalStop": false,
+    "sensorEvidence": false,
+    "eventStream": true
+  },
+  "faults": []
+}

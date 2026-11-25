@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "documentType": "perception-profile",
+  "id": "perception-bias-y-5mm-v1",
+  "revision": 1,
+  "digest": "7ae37f65c1fa57d20d20dc740259aa91a99cb5ece384d858c0a4c35e17512cf8",
+  "calibration": "not_calibrated",
+  "parameterSource": "assumed",
+  "updateEveryTicks": 10,
+  "latencyTicks": 5,
+  "biasM": [
+    0,
+    0.005
+  ],
+  "sigmaM": [
+    0.002,
+    0.002
+  ],
+  "dropoutProbability": 0,
+  "visibleRegionId": "nozzle-stand",
+  "maxAgeTicks": 50
+}

@@ -1,5 +1,6 @@
 // CL01 supplements an immutable R2a qualification. This checks stored evidence only;
 // it never edits that qualification, deploys a service or grants human acceptance.
+import {validateSupplement} from './r4-cloud-evidence.mjs';
 import {createHash} from 'node:crypto';
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const hex=/^[a-f0-9]{64}$/;
@@ -71,4 +72,23 @@ export function checkCloudRunEvidence(read,r2aBytes){
  }
  fail(contiguous,'STREAM_NOT_CONTIGUOUS');
  return [...new Set(errors)];
+}
+
+/** CLD03 supplements an immutable R4 record after ONE deployment ordered by the user. Stored evidence only: it never deploys, edits the record or accepts anything.
+ * The producer records checksums, public runtime receipts, deployment readbacks and candidate artifacts. */
+export function checkCloudRunR4Evidence(read,r4Bytes){
+ const errors=[];let checks,q;
+ try{checks=JSON.parse(read('checksums.json'));q=JSON.parse(r4Bytes);}catch{return ['RECORD_INVALID'];}
+ if(!checks||checks.algorithm!=='sha256'||!checks.files||typeof checks.files!=='object'||Array.isArray(checks.files)||!q)return ['RECORD_INVALID'];
+ const files=new Map();
+ for(const [path,digest] of Object.entries(checks.files)){
+  if(!safe(path)){errors.push(`ARTIFACT_PATH_INVALID:${path}`);continue;}
+  if(!hex.test(digest)){errors.push(`ARTIFACT_HASH_INVALID:${path}`);continue;}
+  let bytes;try{bytes=read(path);}catch{bytes=null;}
+  if(!bytes){errors.push(`ARTIFACT_MISSING:${path}`);continue;}
+  if(sha(bytes)!==digest){errors.push(`ARTIFACT_HASH_MISMATCH:${path}`);continue;}
+  files.set(path,bytes);
+ }
+ if(errors.length)return errors;
+ try{validateSupplement(q,r4Bytes,files);return [];}catch(error){return [error.message];}
 }

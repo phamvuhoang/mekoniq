@@ -3,9 +3,12 @@ import {PAYLOAD_SPEED_DIFFERENCES} from './payload-experiments';
 import {hashJson} from '../hash';
 import {verifiedSimulationInput,type SimulationRunInput} from './simulation-input';
 import {verifiedPhysicsInputs,changedLeaves} from './physics-inputs';
+import {trayKnobDifference} from './tray-experiments';
+/** A drive fault schedule is an input of a run: two runs compare only with the same one (both none, or the same hash). */
+export const sameFaultSchedule=(a:{driveFaultSchedule?:{hash:string}},b:{driveFaultSchedule?:{hash:string}})=>(a.driveFaultSchedule?.hash??null)===(b.driveFaultSchedule?.hash??null);
 /** Descriptive deltas in the producer's verified report window; never an engine-accuracy or performance ranking. */
 export function comparePhysicsRuns(a:SimulationRunInput,b:SimulationRunInput){
- const reasons:string[]=[],deltas:{id:string;unit:string;a:number|null;b:number|null;delta:number|null;reasons:string[];samplesA:number;samplesB:number}[]=[],inputs:string[]=[];
+ const reasons:string[]=[],knobs:string[]=[],deltas:{id:string;unit:string;a:number|null;b:number|null;delta:number|null;reasons:string[];samplesA:number;samplesB:number}[]=[],inputs:string[]=[];
  let window:{kind:string;a:{firstTick:number;lastTick:number};b:{firstTick:number;lastTick:number}}|null=null;
  try{
   const va=verifiedSimulationInput(a),vb=verifiedSimulationInput(b),pa=verifiedPhysicsInputs(va),pb=verifiedPhysicsInputs(vb);
@@ -13,12 +16,18 @@ export function comparePhysicsRuns(a:SimulationRunInput,b:SimulationRunInput){
   const {mujocoExperimentId:_a,...projectA}=pa.project,{mujocoExperimentId:_b,...projectB}=pb.project;void _a;void _b;
   same(projectA,projectB,'UNCHANGED_INPUTS_DIFFER');same(pa.resolved,pb.resolved,'MECHANICS_DIFFER');
   for(const p of ['assets.json','recipes.json','bom.json','assumptions.json','cell-layout.json','canonical-physical-model.json'])same(va.get(p),vb.get(p),'UNCHANGED_INPUTS_DIFFER');
-  const changes=['load','physics','maxLinearMps','maxAngularRadps'].filter(k=>pa.experiment[k as keyof typeof pa.experiment]!==pb.experiment[k as keyof typeof pb.experiment]);
-  const dimensions=new Set(changes.map(k=>k.startsWith('max')?'speed':k));if(dimensions.size>1)reasons.push('MULTIPLE_EXPERIMENT_DIMENSIONS');
+  // payload family: load, physics and the speed caps are the dimensions (the two speed caps count as one); tray family: the registered knobs (friction, acceleration, drive, actor), each of which moves its files together; the two families never compare
+  if(pa.experiment.family!==pb.experiment.family)reasons.push('MULTIPLE_EXPERIMENT_DIMENSIONS');
+  else if(pa.experiment.family==='tray'){knobs.push(...trayKnobDifference(pa.experimentId,pb.experimentId));if(knobs.length>1)reasons.push('MULTIPLE_EXPERIMENT_DIMENSIONS');}
+  else{
+   const changes=['load','physics','maxLinearMps','maxAngularRadps'].filter(k=>pa.experiment[k as keyof typeof pa.experiment]!==pb.experiment[k as keyof typeof pb.experiment]);
+   const dimensions=new Set(changes.map(k=>k.startsWith('max')?'speed':k));if(dimensions.size>1)reasons.push('MULTIPLE_EXPERIMENT_DIMENSIONS');
+  }
   const ma=va.report.manifest,mb=vb.report.manifest,na=va.report.navigation2d!,nb=vb.report.navigation2d!;
   const engine=(n:typeof na)=>{const e={...n.engine} as Record<string,unknown>;delete e.loadProfileRef;delete e.physicsProfileRef;return e;};
   same(engine(na),engine(nb),'ENGINE_DIFFERS');same(na.controller,nb.controller,'CONTROLLER_DIFFERS');same(na.identity,nb.identity,'PRODUCER_DIFFERS');
   for(const k of ['sourceCommit','clock','seed','scenario','simulationPerturbation','completionObservation','world','assets','prng'] as const)same(ma[k],mb[k],`${k.toUpperCase()}_DIFFERS`);
+  if(!sameFaultSchedule(ma as never,mb as never))reasons.push('FAULT_SCHEDULE_DIFFERS');
   same(va.report.outcome.status,vb.report.outcome.status,'WINDOW_DIFFERS');
   if(!['completed','cancelled'].includes(va.report.outcome.status))reasons.push('WINDOW_INCOMPLETE');
   if(va.report.outcome.status==='cancelled')same(va.report.businessEvents.filter(e=>e.type==='MissionCancellationRequested').map(e=>e.at),vb.report.businessEvents.filter(e=>e.type==='MissionCancellationRequested').map(e=>e.at),'CANCEL_SCHEDULE_DIFFERS');
@@ -28,5 +37,5 @@ export function comparePhysicsRuns(a:SimulationRunInput,b:SimulationRunInput){
   for(const id of Object.keys(metricsA) as (keyof typeof metricsA)[]){const x=metricsA[id],y=metricsB[id];if(!y){reasons.push('METRIC_POLICY_DIFFERS');continue;}const available=x.available&&y.available&&x.unit===y.unit&&Number.isFinite(x.value)&&Number.isFinite(y.value);deltas.push({id,unit:x.unit,a:x.value,b:y.value,delta:available&&!reasons.length?y.value!-x.value!:null,reasons:[...!x.available?[x.reason]:[],...!y.available?[y.reason]:[],...x.unit!==y.unit?['UNIT_DIFFERS']:[]],samplesA:x.available?x.samples:0,samplesB:y.available?y.samples:0});}
  }catch(e){reasons.push('EVIDENCE_INVALID',e instanceof Error?e.message:'INVALID_INPUT');}
  if(reasons.length)for(const d of deltas)d.delta=null;
- return {registeredDifferences:PAYLOAD_SPEED_DIFFERENCES,comparable:!reasons.length,reasons:[...new Set(reasons)],window,population:{runsA:1,runsB:1},inputs:[...new Set(inputs)].sort(),deltas,percentiles:null,note:'One run per side; no p50/p95 or performance ranking. not_calibrated. Stop distance begins at the first actual zero plant target, after the command ramp; it excludes reaction and ramp-down distance. Low sliding input 0.3 is masked by floor 0.8/cup 0.6 maximum contact mixing; no lower effective floor friction is established.'};
+ return {registeredDifferences:PAYLOAD_SPEED_DIFFERENCES,knobs,comparable:!reasons.length,reasons:[...new Set(reasons)],window,population:{runsA:1,runsB:1},inputs:[...new Set(inputs)].sort(),deltas,percentiles:null,note:'One run per side; no p50/p95 or performance ranking. not_calibrated. Stop distance begins at the first actual zero plant target, after the command ramp; it excludes reaction and ramp-down distance. Low sliding input 0.3 is masked by floor 0.8/cup 0.6 maximum contact mixing; no lower effective floor friction is established.'};
 }

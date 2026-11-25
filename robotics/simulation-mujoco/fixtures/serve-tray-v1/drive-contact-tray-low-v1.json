@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "id": "drive-contact-tray-low-v1",
+  "revision": 1,
+  "digest": "c26b74debd70c4b83de0636dd7d2b4e1bb9574a446d651ef2cd146a7495c8e14",
+  "calibration": "not_calibrated",
+  "tickMs": 20,
+  "timestepMs": 2,
+  "substeps": 10,
+  "integrator": "implicitfast",
+  "solver": {
+    "iterations": 100,
+    "tolerance": 1e-8
+  },
+  "velocityGainNmsPerRad": 2,
+  "brakeTorqueNm": 6,
+  "driveCurve": [
+    {
+      "speedRadS": 0,
+      "torqueNm": 6
+    },
+    {
+      "speedRadS": 10,
+      "torqueNm": 6
+    },
+    {
+      "speedRadS": 20,
+      "torqueNm": 0
+    }
+  ],
+  "contact": {
+    "sliding": 0.15,
+    "torsionalM": 0.005,
+    "rollingM": 0.0001
+  },
+  "numerics": {
+    "gravityMps2": [
+      0,
+      0,
+      -9.81
+    ],
+    "solver": "Newton",
+    "condim": 6,
+    "solref": [
+      0.02,
+      1
+    ],
+    "solimp": [
+      0.9,
+      0.95,
+      0.001
+    ],
+    "robotSelfContact": "masked-canonical-fixed-overlaps",
+    "casterContactRule": "explicit-floor-pair",
+    "casterPairFriction": "scene-casterFriction-tangent-zero-torsion-rolling",
+    "floorWheelFrictionRule": "max-geom",
+    "lidarSelfFilter": "exclude-robot-geom-group-1"
+  },
+  "sources": {
+    "velocityGainNmsPerRad": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/assumptions.json",
+      "revision": "1",
+      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+    },
+    "brakeTorqueNm": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/assumptions.json",
+      "revision": "1",
+      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+    },
+    "driveCurve": {
+      "kind": "assumed",
+      "documentId": "serve-3d-v1/physical-model-amr-1.json",
+      "revision": "1",
+      "locator": "wheel axle effort 6 Nm and speed 20 rad/s; assumed intermediate knee",
+      "contentSha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9"
+    },
+    "contact": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/assumptions.json",
+      "revision": "1",
+      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+    },
+    "solver": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/assumptions.json",
+      "revision": "1",
+      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+    }
+  },
+  "requiresB02MeasurementLock": false,
+  "measurementLock": {
+    "probeId": "v10-tray-low-friction",
+    "numericalInputSha256": "7dc599a083a4b63db57c65e721e536f036798e561a87a13bfa45f28b8a98ea6c",
+    "engineVersion": "3.17.0",
+    "status": "locked_not_calibrated",
+    "repeatPositionToleranceM": 0.000001,
+    "repeatAngleToleranceRad": 0.000001
+  }
+}

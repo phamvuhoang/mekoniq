@@ -1,0 +1,1 @@
+> Probe scripts of the reviews stay in the workspace copy (`docs/2026-11-19-virtual-commissioning/probes/`); they are not part of this tree. Absolute local paths in the review reports were shortened to repository-relative ones.

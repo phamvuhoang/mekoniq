@@ -1,11 +1,17 @@
+import {MEASURED_CUP_NUDGE,MEASURED_GRASP_PROGRAM} from './simulation3d/world-disturbance';
 import {exportWebReplay,readReplayInput} from './replay/export';
 import type {ReplayManifest} from './replay/reader';
+import {GRASP_PROGRAM_IDS} from './perception/grasp-programs';
 import {PAYLOAD_EXPERIMENTS} from './simulation3d/payload-experiments';
+import {TRAY_EXPERIMENTS} from './simulation3d/tray-experiments';
 import {createHash,randomBytes,randomUUID} from 'node:crypto';
 import {lstat,mkdir,opendir,rm,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import type {IncomingMessage,ServerResponse} from 'node:http';
 import {admitBackend,defaultCatalog,type CapabilityCatalog,type Access} from './capabilities';
+import {DRIVE_FAULTS,validateDriveFaultSchedule} from './control/drive-faults';
+import type {FaultScheduleEntry} from './fault-schedule';
+import {validateDriveFaultEntryShape} from './control/drive-io';
 import {classifyField,validateProjectV2,validateRunRequestV2,validateActionV2,type Issue} from './contracts';
 import {collectReadiness,type ReadinessProbe,type NativeReadinessChecks} from './readiness';
 import {offeredScenarios,requirementsByBackendSet,resolveBackends,scenarioOffered} from './scenario-matrix';
@@ -15,6 +21,8 @@ import {serveRunStream,STREAM_DEFAULTS,type StreamOptions} from './event-stream'
 import type {WallClock} from './pace';
 import {findReclaim,proofHash,saveReclaim,saveControlEpoch} from './reclaim-store';
 import {ENGINEERING_CAPABILITY,EngineeringError,type EngineeringService,type LockedEngineering} from '../engineering/gateway';
+import {BENCH_AMPLITUDES,BENCH_MAX_TICKS,BENCH_SIGNAL_KINDS,BENCH_WHEEL_DIRECTION,SUGGEST_OPTIONS} from './control/bench-signals';
+import {benchIdleLease,type BenchCatalog,type BenchInfo} from './control/bench-runner';
 /** Hooks into the v1 gateway so v2 shares its pairing token, body parser and response helper without importing it. */
 export interface V2Deps {
  worldExperiments?:boolean;sourceCommit:string;schemaHash:string;now:()=>number;catalog?:CapabilityCatalog;
@@ -40,6 +48,14 @@ export interface V2Deps {
  engineering?:EngineeringService;
  /** Wall clock of paced steps, handed to every run this gateway opens (tests count its calls); runs default to the real one. */
  wall?:WallClock;
+ /** The bench catalog the runtime built at start from its MuJoCo worker root (bench-runner.ts benchCatalog); health lists the entries of the offered bench scenarios. */
+ benchInfo?:BenchInfo;benchCatalog?:Partial<BenchCatalog>;
+ /** The maturity of each group of each plant (V15, R4-D48): a function of the sources its fixtures declare. Health lists it; no request can change it. */
+ modelMaturity?:import('../engineering/maturity').ModelMaturityByPlant;
+ /** per bench axis, the digest of the measured configuration (calibrationConfigDigest): what a calibration record is valid for */
+ calibrationConfigDigests?:Record<string,string>;
+ /** Present only when this runtime can run drive faults (a MuJoCo drive runtime): what a schedule may name for a request, and the switch for `faultCatalog` in health. */
+ driveFaultContext?:import('./control/fault-context').DriveFaultContextOf;
 }
 const COOKIE='mekoniq_lab_session_v2';
 // Local demo pairing may only drive simulations and read-only shadow; hil/live belong to native provisioning.
@@ -49,7 +65,7 @@ const UUID='[0-9a-f-]{36}';
 const PAIRING_FAILURES=5,PAIRING_WINDOW_MS=60000;
 const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
 // the MuJoCo slot is taken: a conflict, as IR-SIM's; the engine could not create the cell: unavailable, not a runtime failure (the Webots codes keep 500)
-const statusOf=(m:string)=>m==='SESSION_REQUIRED'?401:m==='RUN_NOT_FOUND'?404:m==='RECLAIM_READ_ONLY'?403:m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|^WORLD_TERMINAL$|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$|^RECOVERY_(STATE_INVALID|CHECKPOINT_MISSING)$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
+const statusOf=(m:string)=>m==='SESSION_REQUIRED'?401:m==='RUN_NOT_FOUND'?404:m==='RECLAIM_READ_ONLY'?403:m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|^WORLD_TERMINAL$|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$|^RECOVERY_(STATE_INVALID|CHECKPOINT_MISSING)$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$|FAULT_(UNKNOWN|TARGET_INVALID|PARAM_INVALID|OVERLAP|CAMPAIGN_ONLY|SCHEDULE_TOO_LONG|SCHEDULE_INVALID|TRIGGER_INVALID)$)/.test(m)?422:500;
 export function createV2Gateway(deps:V2Deps){
  const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
  const sessions=new Map<string,{publicId:string;csrf:string;expiresAt:number}>();
@@ -95,9 +111,17 @@ export function createV2Gateway(deps:V2Deps){
  const streams=new Set<ServerResponse>(),streamOptions={...STREAM_DEFAULTS,...deps.stream};
  const token=()=>randomBytes(32).toString('base64url');
  const deny=(response:ServerResponse,status:number,error:string,reasonCodes:string[],issues?:Issue[])=>deps.send(response,status,{error,reasonCodes,...issues?{issues}:{}});
- const failed=(response:ServerResponse,e:unknown)=>{const m=e instanceof Error?e.message:'RUNTIME_FAILURE',status=statusOf(m.split(':')[0]!);return deny(response,status,status===500&&m!=='SIMULATED_CRASH'?'RUNTIME_FAILURE':m.split(':')[0]!,m.includes(':')?m.split(':')[1]!.split(',').map(c=>c.trim()):[]);};
+ // a bench refused at admission carries the issues INVALID_RUN_REQUEST carries, element for element (one refusal shape for a client)
+ const failed=(response:ServerResponse,e:unknown)=>{const m=e instanceof Error?e.message:'RUNTIME_FAILURE',status=statusOf(m.split(':')[0]!),error=status===500&&m!=='SIMULATED_CRASH'?'RUNTIME_FAILURE':m.split(':')[0]!,codes=m.includes(':')?m.split(':')[1]!.split(',').map(c=>c.trim()):[];
+  return deny(response,status,error,codes,error==='INVALID_BENCH_REQUEST'?codes.map(code=>({path:'/bench',code,message:'Invalid bench request'})):undefined);};
 const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof EngineeringError?deny(response,e.status,e.code,e.reasonCodes):failed(response,e);
  const bundleFile=deps.engineering?(digest:string,path:string)=>deps.engineering!.bundleFile(digest,path):undefined;
+ // R4.2 bench (V06, V07pre): the envelope (revision 2) a draft is checked against, the closed signal catalog and the bench catalog, so the Lab reads them instead of hardcoding; only where a bench scenario is offered
+ const benchHealth=()=>{
+  const ids=offeredScenarios(catalog).filter(([,d])=>d.bench).map(([id])=>id),served=deps.benchCatalog;
+  return ids.length?{...deps.benchInfo?.tuningEnvelope?{tuningEnvelope:structuredClone(deps.benchInfo.tuningEnvelope)}:{},benchReadiness:{reasonCodes:deps.benchInfo?.reasonCodes??['BENCH_CATALOG_UNAVAILABLE']},benchIdleLease:deps.benchInfo?.idleLease??benchIdleLease(),benchSignals:{kinds:[...BENCH_SIGNAL_KINDS],maxTicks:BENCH_MAX_TICKS,amplitudes:structuredClone(BENCH_AMPLITUDES),suggestOptions:structuredClone(SUGGEST_OPTIONS),wheelDirection:BENCH_WHEEL_DIRECTION},
+   ...served?{benchCatalog:Object.fromEntries(ids.filter(id=>Object.hasOwn(served,id)).map(id=>[id,structuredClone(served[id as keyof BenchCatalog])]))}:{}}:{};
+ };
  const readinessOptions=()=>({catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks,portableChecks:deps.portableChecks});
  const handle=async function handle(request:IncomingMessage,response:ServerResponse,path:string,origin:string|undefined){
   const method=request.method,{send}=deps,sub=path.slice('/lab/v2'.length);
@@ -105,10 +129,14 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    ...deps.engineering?{engineeringCompilerProfiles:deps.engineering.compilerProfiles}:{},protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
    backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
    backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true,bearer:true,pacedStep:true,replayExport:{version:1,available:deps.worldExperiments===true,maxVersionsPerRun:2,maxRetainedVersions:8,maxConcurrentExports:2,maxConcurrentDownloads:4,maxDownloadBytes:16*1024*1024,maxPackageBytes:25*1024*1024,backendSetIds:['engineering-mujoco-cell-v1']}},deployment:{bind:deps.deployment?.bind??'loopback'},
-   ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?{mobilePayloadExperiments:Object.entries(PAYLOAD_EXPERIMENTS).map(([id,e])=>({id,loadProfileId:e.load,maxLinearMps:e.maxLinearMps,maxAngularRadps:e.maxAngularRadps,calibration:'not_calibrated',requiresNewRun:true}))}:{},
-   ...deps.worldExperiments?{worldExperiments:[{id:'world-nominal-v1',requiresNewRun:true},{id:'world-dock-drift-v1',requiresNewRun:true,cause:'registered_external_impulse'},{id:'world-cup-fall-v1',requiresNewRun:true,cause:'registered_external_impulse'}]}:{},
+   ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?{mobilePayloadExperiments:Object.entries(PAYLOAD_EXPERIMENTS).map(([id,e])=>({id,loadProfileId:e.load,maxLinearMps:e.maxLinearMps,maxAngularRadps:e.maxAngularRadps,calibration:'not_calibrated',requiresNewRun:true})),trayExperiments:Object.entries(TRAY_EXPERIMENTS).map(([id,e])=>({id,loadProfileId:e.load,driveExperimentId:e.driveExperimentId,accelerationPolicy:e.accelerationPolicy,actor:e.actor,comparedWith:e.comparedWith,calibration:'not_calibrated',requiresNewRun:true}))}:{},
+   ...deps.worldExperiments?{graspModes:[{id:'fixed_program'},{id:'belief_ground_truth',recoveryPolicyIds:['pick-recovery-v1'],programIds:GRASP_PROGRAM_IDS},{id:'belief_estimated',profileIds:['perception-nominal-v1'],recoveryPolicyIds:['pick-recovery-v1'],programIds:GRASP_PROGRAM_IDS}]}:{},
+   ...deps.worldExperiments?{worldExperiments:[{id:'world-nominal-v1',requiresNewRun:true},{id:'world-dock-drift-v1',requiresNewRun:true,cause:'registered_external_impulse'},{id:'world-cup-fall-v1',requiresNewRun:true,cause:'registered_external_impulse'},{id:MEASURED_CUP_NUDGE,requiresNewRun:true,cause:'registered_external_impulse',graspProgramId:MEASURED_GRASP_PROGRAM,graspModes:['belief_ground_truth','belief_estimated']}]}:{},
+   ...benchHealth(),
+   ...deps.modelMaturity?{modelMaturity:structuredClone(deps.modelMaturity),...deps.calibrationConfigDigests?{calibrationConfigDigests:{...deps.calibrationConfigDigests}}:{}}:{},
+   ...deps.driveFaultContext?{faultCatalog:Object.entries(DRIVE_FAULTS).filter(([,f])=>!f.campaignOnly).map(([id,f])=>({id,layer:f.layer,target:f.target,appliedBy:f.appliedBy,params:structuredClone(f.params)}))}:{},
    // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
-   capabilities:[...deps.worldExperiments?['web_replay_package_v1','sim3d_world_experiments_v1']:[],...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
+   capabilities:[...deps.worldExperiments?['web_replay_package_v1','sim3d_world_experiments_v1','sim3d_belief_grasp_v1']:[],...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
     // the arm plant needs no engineering bundle: its scene is built from the run's project
     ...enabled.has('webots_arm')&&catalog.backends.some(b=>b.id==='webots_arm'&&b.installed&&b.reachable)?['sim3d_arm_v1']:[],
     ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?['sim3d_mujoco_mobile_v1','sim3d_payload_experiments_v1']:[],
@@ -237,13 +265,24 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
 
   }
   const route=sub==='/projects/validate'?{allow:'POST',name:'validate'}:sub==='/runs'?{allow:'POST',name:'create'}:undefined;
-  const runRoute=new RegExp(`^/runs/(${UUID})(?:/(actions|report|events|telemetry|reclaim|archive|writer))?$`).exec(sub);
+  // GET /runs/:id/trace: a bench run's drive trace as read back from its chunks ({traces, issues}, 2 axes x 5,010 samples at most), owner and readers only; 409 TRACE_UNSUPPORTED for any other run
+  const runRoute=new RegExp(`^/runs/(${UUID})(?:/(actions|report|trace|events|telemetry|reclaim|archive|writer))?$`).exec(sub);
   const runAllow=runRoute?({writer:'POST',actions:'POST',reclaim:'POST',archive:'POST'}as Record<string,string>)[runRoute[2]??'']??'GET':undefined;
   if(!route&&!runRoute)return deny(response,404,'NOT_FOUND',[]);
   if(method!==(route?.allow??runAllow))return deny(response,405,'METHOD_NOT_ALLOWED',[]);
   if(method==='POST'&&!csrfValid())return deny(response,403,'CSRF_INVALID',[]);
   if(route?.name==='validate'){
-   const result=validateProjectV2(await deps.readBody(request));
+   const body=await deps.readBody(request);
+   // R4 (V08): a body that carries driveFaultSchedule is a schedule check against the catalog and the experiment, not a project
+   if(Object.hasOwn(body,'driveFaultSchedule')){
+    const keys=Object.keys(body).filter(k=>!['driveFaultSchedule','backendSetId','scenarioId','driveExperimentId'].includes(k)),entries=body.driveFaultSchedule;
+    if(keys.length||!Array.isArray(entries)||entries.length>16||typeof body.backendSetId!=='string'||typeof body.scenarioId!=='string'||(body.driveExperimentId!==undefined&&typeof body.driveExperimentId!=='string')||!entries.every(e=>validateDriveFaultEntryShape(e)))return deny(response,422,'INVALID_FAULT_SCHEDULE',['FAULT_SCHEDULE_INVALID']);
+    const ctx=await deps.driveFaultContext?.({mode:'simulation',backendSetId:body.backendSetId,scenarioId:body.scenarioId,...body.driveExperimentId?{driveExperimentId:body.driveExperimentId}:{}});
+    if(!ctx)return deny(response,422,'FAULT_BACKEND_UNSUPPORTED',['FAULT_BACKEND_UNSUPPORTED']);
+    const checked=validateDriveFaultSchedule(entries as FaultScheduleEntry[],{...ctx,campaign:false});
+    return checked.ok?send(response,200,{ok:true}):deny(response,422,'INVALID_FAULT_SCHEDULE',checked.reasonCodes);
+   }
+   const result=validateProjectV2(body);
    return result.ok?send(response,200,{ok:true}):deny(response,422,'INVALID_PROJECT',codesOf(result.issues),result.issues);
   }
   if(route?.name==='create'){
@@ -253,11 +292,19 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    let engineering:LockedEngineering|undefined;
    if(!PAIRING_ACCESS.includes(r.access))return deny(response,403,'CAPABILITY_DENIED',['ACCESS_NOT_GRANTED']);
    if(r.runtimeIdentity.sourceCommit!==deps.sourceCommit||r.runtimeIdentity.schemaHash!==deps.schemaHash)return deny(response,409,'CONTRACT_MISMATCH',['CONTRACT_MISMATCH']);
+   if(r.graspProgramId!==undefined&&deps.worldExperiments!==true)return deny(response,422,'GRASP_PROGRAM_UNAVAILABLE',['GRASP_PROGRAM_UNAVAILABLE']);
    if(r.engineeringRef){
      // Engineering never falls back to a preset: no capability, wrong mode or an unauthorised/mismatched bundle is a refusal.
      if(!deps.engineering)return deny(response,400,'ENGINEERING_CAPABILITY_REQUIRED',['ENGINEERING_CAPABILITY_REQUIRED']);
      if(r.mode!=='simulation')return deny(response,422,'ENGINEERING_MODE_INVALID',['MODE_BACKEND_MISMATCH']);
      try{engineering=await deps.engineering.admitRun(sessionId,r.engineeringRef,r.backendSetId,r.project);}catch(e){return engineeringFailed(response,e);}
+   }
+   // drive faults are checked against what the request's drive runs on before anything is built; the runner checks again against the scene it really runs
+   if(r.driveFaultSchedule?.length){
+    const ctx=await deps.driveFaultContext?.({mode:r.mode,backendSetId:r.backendSetId,scenarioId:r.scenarioId,...r.driveExperimentId?{driveExperimentId:r.driveExperimentId}:{}});
+    if(!ctx)return deny(response,422,'FAULT_BACKEND_UNSUPPORTED',['FAULT_BACKEND_UNSUPPORTED']);
+    const checked=validateDriveFaultSchedule(r.driveFaultSchedule as FaultScheduleEntry[],{...ctx,campaign:false});
+    if(!checked.ok)return deny(response,422,'INVALID_FAULT_SCHEDULE',checked.reasonCodes);
    }
    const project=engineering?engineering.runtimeProjection.project:r.project!;
    const set=Object.hasOwn(catalog.sets,r.backendSetId)?catalog.sets[r.backendSetId]:undefined;
@@ -284,7 +331,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
    creating++;const directory=join(deps.directory,randomUUID());let run:ScenarioRun|undefined;
    try{
-    const input:RunManifestInput={project,scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...r.worldExperimentId?{worldExperimentId:r.worldExperimentId}:{},...engineering?{engineering}:{}};
+    const input:RunManifestInput={project,...r.bench?{bench:r.bench as unknown as NonNullable<RunManifestInput['bench']>}:{},scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...r.worldExperimentId?{worldExperimentId:r.worldExperimentId}:{},...r.driveExperimentId?{driveExperimentId:r.driveExperimentId}:{},...r.graspMode?{graspMode:r.graspMode}:{},...r.perceptionProfileId?{perceptionProfileId:r.perceptionProfileId}:{},...r.recoveryPolicyId?{recoveryPolicyId:r.recoveryPolicyId}:{},...r.graspProgramId?{graspProgramId:r.graspProgramId}:{},...r.driveFaultSchedule?.length?{driveFaultSchedule:r.driveFaultSchedule as FaultScheduleEntry[]}:{},...engineering?{engineering}:{}};
     run=await (input.mode==='simulation'?deps.simulationFactory!:createScenarioRun)(input,{directory,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...engineering?{assets:engineering.runtimeProjection.assets as never,bundleFile}:{}});
     const reclaimToken=token();await saveReclaim(directory,{runId:run.id,proofHash:proofHash(reclaimToken),schemaHash:deps.schemaHash,input});
     // the run → bundle association is durable before the client hears about the run
@@ -400,7 +447,8 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    }catch(e){entry.archiving=false;return failed(response,e);}});
   }
   if(kind==='events'||kind==='telemetry'){streams.add(response);return serveRunStream(kind,entry.run,request,response,streamOptions,new URL(request.url??'/','http://127.0.0.1'),()=>streams.delete(response),()=>sessions.get(sessionId)===session&&deps.now()<session.expiresAt&&runs.get(entry.run.id)===entry&&readable(entry,sessionId)&&!entry.archiving);}
-  try{const snap=kind==='report'?null:await entry.run.snapshot(),value=snap?{...snap,writer:writerView(entry),...entry.readOnly?{controlAccess:snap.controlAccess??'view_reconcile'}:{}}:{...await entry.run.report(),schemaHash:deps.schemaHash,protocolMajor:2};if(runs.get(entry.run.id)!==entry||!readable(entry,sessionId)||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);return send(response,200,value);}catch(e){return failed(response,e);}
+  if(kind==='trace'&&!entry.run.trace)return deny(response,409,'TRACE_UNSUPPORTED',[]);
+  try{const snap=kind?null:await entry.run.snapshot(),value=snap?{...snap,writer:writerView(entry),...entry.readOnly?{controlAccess:snap.controlAccess??'view_reconcile'}:{}}:kind==='trace'?await entry.run.trace!():{...await entry.run.report(),schemaHash:deps.schemaHash,protocolMajor:2};if(runs.get(entry.run.id)!==entry||!readable(entry,sessionId)||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);return send(response,200,value);}catch(e){return failed(response,e);}
  };
  return Object.assign(handle,{
   /** Ends open SSE connections so the HTTP server can close. */

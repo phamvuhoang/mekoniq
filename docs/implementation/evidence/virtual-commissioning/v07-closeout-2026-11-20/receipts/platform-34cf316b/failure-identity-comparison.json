@@ -1,0 +1,16 @@
+{
+  "oldRun": 44769077141,
+  "currentRun": 44774074167,
+  "sourceCommit": "34cf316b822da231b869ff052527630d8450c3c2",
+  "oldFailureEntries": 49,
+  "currentFailureEntries": 49,
+  "introduced": [],
+  "removed": [],
+  "currentVitestSummary": [
+    "Test Files  9 failed | 124 passed (133)",
+    "Tests  47 failed | 1153 passed | 48 skipped (1248)"
+  ],
+  "pythonSummary": [
+    "1 failed, 393 passed, 1 skipped in 5.01s"
+  ]
+}

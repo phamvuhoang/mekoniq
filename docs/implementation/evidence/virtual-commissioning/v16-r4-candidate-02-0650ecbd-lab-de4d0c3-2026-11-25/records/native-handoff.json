@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "accepted": false,
+  "sourceCommit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+  "imageId": "sha256:840c286e7a2f1e3045e51f0297e8b044c4a3f101f7680f83eda5693e8bbcbee1",
+  "platform": "linux/amd64",
+  "archive": "image.tar",
+  "archiveSha256": "9fb8fb61b9bdaae9306615643309675e4fb98476395c01535d7384c8f3c8d745",
+  "nativeImageSha256": "1e034e06785a8715276ca50ca9b1a9a67c4f179f290e4d83964dbd53ae5e5709"
+}

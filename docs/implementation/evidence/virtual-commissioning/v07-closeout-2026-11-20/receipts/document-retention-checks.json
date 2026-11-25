@@ -1,0 +1,36 @@
+{
+  "accepted": false,
+  "command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check"
+  ],
+  "exitCode": 2,
+  "diagnostics": [
+    "docs/implementation/evidence/virtual-commissioning/v07-closeout-2026-11-20/briefs/task-1-brief.md:22: new blank line at EOF.",
+    "docs/implementation/evidence/virtual-commissioning/v07-closeout-2026-11-20/briefs/task-2-brief.md:27: new blank line at EOF.",
+    "docs/implementation/evidence/virtual-commissioning/v07-closeout-2026-11-20/reports/task-3-report.md:30: trailing whitespace.",
+    "+ ",
+    "docs/implementation/evidence/virtual-commissioning/v07-closeout-2026-11-20/spec/plans/01-drive-and-cil.md:426: new blank line at EOF."
+  ],
+  "classification": "Four inherited whitespace diagnostics in exact retained source documents; originals and archive copies are unchanged. No new product-code whitespace finding.",
+  "preservedFiles": [
+    {
+      "path": "briefs/task-1-brief.md",
+      "sha256": "2a213b0f11f2a55de7a8900b24b9c6081656d1f8d9bbc6a751c9917dc485d7a7"
+    },
+    {
+      "path": "briefs/task-2-brief.md",
+      "sha256": "e255e956e5d32a13564b78dc4376625fadc3c84c3c391162ad2d0a19996ba354"
+    },
+    {
+      "path": "reports/task-3-report.md",
+      "sha256": "692e7722f116226b5e8546bdafa72836ba6a328c0def3619b2da0ce96650e1c3"
+    },
+    {
+      "path": "spec/plans/01-drive-and-cil.md",
+      "sha256": "e14d7a74caf8c88322db2a518e6cd5e13f9e05e04f6519e869c0499e965371ed"
+    }
+  ]
+}

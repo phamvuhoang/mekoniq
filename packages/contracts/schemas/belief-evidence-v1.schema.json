@@ -1,0 +1,619 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.belief-evidence.v1",
+  "title": "BeliefEvidenceManifestV1",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Manifest of the durable belief, attempts and recovery streams of one run: immutable hashed chunks, coverage and an explicit terminal reason.",
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "identity",
+    "streams",
+    "coverage",
+    "gaps",
+    "terminalReason"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "belief-evidence"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runId",
+        "bootId",
+        "sceneDigest",
+        "perceptionProfileDigest",
+        "recoveryPolicyDigest",
+        "graspMode",
+        "seed"
+      ],
+      "properties": {
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "bootId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sceneDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "perceptionProfileDigest": {
+          "anyOf": [
+            {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recoveryPolicyDigest": {
+          "anyOf": [
+            {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "graspMode": {
+          "enum": [
+            "belief_ground_truth",
+            "belief_estimated"
+          ]
+        },
+        "graspProgramDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest",
+          "description": "Present only when this run selects a registered grasp program. Binds its registration, resolved grasp offsets and contact configuration."
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "diagnosticBias": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "vectorM",
+            "attempts"
+          ],
+          "description": "Test-only transient decision bias; disqualifies registered perception studies. The reader checks the exact vector against published estimates.",
+          "properties": {
+            "vectorM": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "number"
+              }
+            },
+            "attempts": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            }
+          }
+        }
+      }
+    },
+    "streams": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stream",
+          "chunks"
+        ],
+        "properties": {
+          "stream": {
+            "enum": [
+              "belief",
+              "attempts",
+              "recovery"
+            ]
+          },
+          "chunks": {
+            "type": "array",
+            "maxItems": 512,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "sha256",
+                "bytes"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "pattern": "^(belief|attempts|recovery)-[0-9]{6}-[a-f0-9]{8}\\.ndjson\\.gz$"
+                },
+                "sha256": {
+                  "$ref": "engineering-component.schema.json#/definitions/Digest"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 16777216
+                }
+              }
+            }
+          },
+          "records": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "How many records the published chunks of this stream hold; a reader compares it with what it read."
+          }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lastTick",
+        "complete"
+      ],
+      "properties": {
+        "lastTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "evaluatedThroughTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Contiguous completed estimator/controller evaluations from world tick 1 through this tick (tick 0 is initialization). Published atomically with flushed stream counts; lastTick remains the last appended record."
+        }
+      }
+    },
+    "gaps": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "firstTick",
+          "lastTick",
+          "reason"
+        ],
+        "properties": {
+          "firstTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "lastTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          }
+        }
+      }
+    },
+    "terminalReason": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "BeliefObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "objectId",
+        "kind",
+        "frameId",
+        "positionM",
+        "sigmaM",
+        "observedTick",
+        "publishedTick",
+        "ageTicks",
+        "source",
+        "valid"
+      ],
+      "properties": {
+        "objectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "kind": {
+          "const": "cup"
+        },
+        "frameId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "positionM": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "sigmaM": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 0.03
+          }
+        },
+        "observedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "publishedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "ageTicks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "source": {
+          "enum": [
+            "ground_truth",
+            "pose_estimator_sim"
+          ]
+        },
+        "valid": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 64
+        }
+      }
+    },
+    "BeliefRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tick",
+        "objectId",
+        "belief",
+        "dropped",
+        "truthAtObservedTick",
+        "errorM"
+      ],
+      "description": "Scoring record. truthAtObservedTick and errorM exist for evaluation only; they never reach the decision code. Both belief modes estimate x/y; belief z is the declared upright support surface plus half cup height, transformed into arm-base coordinates. ground_truth means exact x/y, not access to truth z.",
+      "properties": {
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "objectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "belief": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/BeliefObject"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dropped": {
+          "type": "boolean"
+        },
+        "reason": {
+          "enum": [
+            "OUT_OF_VIEW",
+            "DROPOUT"
+          ]
+        },
+        "truthAtObservedTick": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "errorM": {
+          "description": "Euclidean x/y estimator error in metres against truthAtObservedTick. Excludes z, which comes from declared support geometry in both belief modes.",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000.0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "GraspAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attemptId",
+        "cupId",
+        "index",
+        "decidedTick",
+        "mode",
+        "beliefUsed",
+        "beliefErrorAtCommitM",
+        "gates",
+        "ikResidual",
+        "outcome"
+      ],
+      "properties": {
+        "attemptId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "cupId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 15
+        },
+        "decidedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "mode": {
+          "enum": [
+            "fixed_program",
+            "belief_ground_truth",
+            "belief_estimated"
+          ]
+        },
+        "beliefUsed": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/BeliefObject"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "beliefErrorAtCommitM": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000.0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "belief",
+            "region",
+            "ik",
+            "sweep"
+          ],
+          "properties": {
+            "belief": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "region": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "ik": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "sweep": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          }
+        },
+        "ikResidual": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "positionM",
+              "orientationRad",
+              "condition"
+            ],
+            "properties": {
+              "positionM": {
+                "type": "number"
+              },
+              "orientationRad": {
+                "type": "number"
+              },
+              "condition": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "waypointsRad": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pickApproach": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "type": "number"
+              }
+            },
+            "pick": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "type": "number"
+              }
+            },
+            "lift": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "outcome": {
+          "enum": [
+            "lifted",
+            "grip_not_established",
+            "cup_dropped",
+            "refused",
+            "unknown"
+          ]
+        },
+        "refusal": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "recordedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "The tick this record was written (plan, commit or outcome); decidedTick stays the tick of the decision."
+        },
+        "stage": {
+          "enum": [
+            "plan",
+            "commit",
+            "outcome"
+          ],
+          "description": "Which step of the attempt this record is."
+        }
+      }
+    },
+    "RecoveryStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stepId",
+        "attemptId",
+        "rule",
+        "action",
+        "commandId",
+        "recordedTick",
+        "completedTick",
+        "result"
+      ],
+      "properties": {
+        "stepId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "attemptId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "rule": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "recordedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "completedTick": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        }
+      }
+    }
+  }
+}

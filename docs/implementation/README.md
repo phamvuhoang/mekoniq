@@ -104,3 +104,7 @@ Luồng hiện có: menu có version, phiên bàn/order, KDS theo phần, alloca
 Các lệnh phần cứng/provider chưa có prerequisite phải thất bại rõ ràng. Không có deploy hosted, robot thật, SMTP production, commissioning hoặc RPO/RTO production trong kết quả local. Xem [kết quả kiểm tra](verification.md), `evidence/`, `gates/A-continuity.md` và `tablet-support-matrix.json` cho phạm vi từng phép đo.
 
 Guard Cloud bổ sung (ràng buộc với đúng byte của R2a candidate-02, nên phải lấy thư mục đó từ `b57e3be^` trước khi chạy): `LAB_CLOUD_EVIDENCE_DIR=docs/implementation/evidence/cloud-run/mekoniq-2026-11-14 LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/r2a-candidate-02 pnpm test:acceptance -- cloud-run`. Guard R-MOCK đã chạy 41/41 trên commit được ghi, với log tại `lab/docs/implementation/evidence/sim-extension-r2a/mock-acceptance-02/`; bản mặc định lịch sử có thể vẫn báo `SOURCE_REVISION_STALE` khi so với HEAD khác.
+
+## R4 (virtual commissioning)
+
+Drive model, controller-in-the-loop, workbench, lỗi drive, khay ba cốc, belief/phục hồi và công cụ hiệu chuẩn: [virtual-commissioning/](virtual-commissioning/README.md). Qualification: [`docs/operations/r4-qualification.md`](../operations/r4-qualification.md).

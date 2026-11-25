@@ -8,7 +8,14 @@ Use the unchanged L00 canonical input at `robotics/simulation-3d/fixtures/serve-
 
 The compiler preserves physical link/joint identities, SI inertials and colliders, wheel radius/separation, LiDAR parent frame and beam/range/rate model. The canonical world supplies obstacle heights and assumed friction. Gazebo consumes one ros2_control velocity writer per wheel. The launcher fills one verified controller-file placeholder, then starts robot_state_publisher, the Gazebo model, controller spawners, the fixed topic bridge, and the existing simulation navigation launch. Nav2 Twist output is stamped by the worker for the Jazzy diff_drive_controller input. Dynamic motor, current, voltage, contact, and friction calibration remain unverified.
 
-The committed `robotics/simulation/fixtures/engineering-navigation-v1/{compiler-manifest,native-mapping}.json` records reproducible static outputs. The native launcher rebuilds the mapping in a temporary directory and compares the complete manifest before starting processes. The TypeScript factory also checks the committed manifest, every file digest and canonical documents. A resealed but different artifact is refused.
+The committed `robotics/simulation/fixtures/engineering-navigation-v1/{compiler-manifest,native-mapping}.json` records the original compiler profile. The TypeScript factory and offline reader admit two complete historical v1 manifests. Their compiled URDFs differ by one floating-point step in five joint-origin pitch values. Both share the exact canonical documents, mapping, output inventory and remaining output bytes.
+
+| Retained compiler output | Manifest file SHA-256 | Paired URDF SHA-256 |
+| --- | --- | --- |
+| macOS original | `03e5eb26079b0b849b148293364dd35eb73d96265364edc569161a892605277b` | `48049a8170dc1f516a201fa515d1cbe5f71943527afcfedb4519d53bd6dc36b8` |
+| Linux arm64 measurement | `2b02615ff42a8a6bf433158ada1a374d43e4a89d88f49f268fcf71b4aee2fd34` | `69a350c3f5d9b1ab23ea8613294cc1d550f9fd3e073375c5b3e98d7f0de01400` |
+
+The file hashes identify the archived manifests. Source compares each complete parsed manifest, verifies its canonical self-hash and hashes every declared file. On an assigned native host, the Python launcher also rebuilds the canonical mapping locally and requires full equality with its own compiler output before starting processes. Portable admission leaves native qualification at `not_run`.
 
 For L00 handoff, retain the original canonical document refs and portable engine lock; additionally attach the native manifest, native mapping, and all manifest outputs with source paths under `robotics/simulation/fixtures/engineering-navigation-v1/`. The document validator distinguishes a missing mapping, incomplete native artifact closure, and unresolved native environment profile. Mapping preparation alone never sets native readiness.
 

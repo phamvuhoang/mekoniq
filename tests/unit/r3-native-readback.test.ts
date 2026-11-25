@@ -1,12 +1,13 @@
+import {engineeringPython} from '../support/engineering-python';
 import {expect,test} from 'vitest';
-import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,writeFile,readFile,rm,copyFile,rename,symlink} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {DatabaseSync} from 'node:sqlite';
 import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
-import {ENGINEERING_TOPICS} from '../../packages/lab-runtime/src/v2/sil/engineering-native';
+import {ENGINEERING_TOPICS,readEngineeringCompiledWorld} from '../../packages/lab-runtime/src/v2/sil/engineering-native';
 // @ts-expect-error plain ESM artifact reader
 import {readEngineeringBag,readEngineeringObservation,readXarmObservation,readLinuxcncObservation} from '../../scripts/r3-native-readback.mjs';
 // @ts-expect-error plain ESM artifact inventory
@@ -15,7 +16,7 @@ type Doc=Record<string,any>; // eslint-disable-line @typescript-eslint/no-explic
 const commit='1'.repeat(40),sha=(b:Buffer|string)=>createHash('sha256').update(b).digest('hex'),hex='a'.repeat(64);
 async function engineering(){
  const root=await mkdtemp(join(tmpdir(),'r3-engineering-fixture-')),put=async(p:string,v:unknown)=>{await mkdir(join(root,p,'..'),{recursive:true});await writeFile(join(root,p),typeof v==='string'?v:JSON.stringify(v));};
- const p=spawnSync(resolve('.venv-irsim/bin/python'),['-m','compiler.engineering_native','--project',resolve('robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json'),'--out',join(root,'bundle')],{cwd:resolve('robotics/simulation'),encoding:'utf8',env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},timeout:15000});expect(p.status,p.stderr).toBe(0);
+ const p=spawnSync(engineeringPython,['-m','compiler.engineering_native','--project',resolve('robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json'),'--out',join(root,'bundle')],{cwd:resolve('robotics/simulation'),encoding:'utf8',env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},timeout:15000});expect(p.status,[p.error?.message,p.signal,p.stderr].filter(Boolean).join(' ')).toBe(0);
  await mkdir(join(root,'rosbag2'));const db=new DatabaseSync(join(root,'rosbag2/observations.db3'));db.exec('CREATE TABLE topics(id INTEGER PRIMARY KEY,name TEXT); CREATE TABLE messages(id INTEGER PRIMARY KEY,topic_id INTEGER,timestamp INTEGER,data BLOB)');let id=0;for(const [i,topic]of ENGINEERING_TOPICS.entries()){db.prepare('INSERT INTO topics VALUES(?,?)').run(i,topic);for(let j=0;j<11;j++)db.prepare('INSERT INTO messages VALUES(?,?,?,?)').run(++id,i,1_000_000_000+j*100_000_000,Buffer.from('synthetic CDR fixture'));}db.close();
  const bag=await readEngineeringBag(join(root,'rosbag2')),clockMapping=[{providerSimNs:'1000000000',sourceTick:0,receiveMonotonicNs:'100'},{providerSimNs:'2000000000',sourceTick:50,receiveMonotonicNs:'1000000100'}];
  const inventory:Doc={id:'engineering-amd64',available:true,reasonCodes:[],installation:'native_apt',headless:true,image:null,profileSha256:hex,inventorySha256:hex,actual:{platform:'linux',arch:'amd64',os:'ubuntu24.04',packages:{ros:'fixture'},digests:{'/fixture':hex},aptProvenance:{sources:{'/fixture':hex}},runtime:{rosDistro:'jazzy',amentPrefixes:[],overlayManifests:{},pythonPath:'',libraryPath:'',gazeboPluginPath:'',executables:Object.fromEntries(['ros2','gz','python3'].map(k=>[k,{path:'/fixture/'+k,sha256:hex}]))}}};
@@ -26,6 +27,74 @@ async function engineering(){
 }
 test('R3 engineering adapter replays copied SQLite bytes and supported observations without promoting them to a complete native case',async()=>{
  const f=await engineering();try{const before=sha(await readFile(join(f.root,'rosbag2/observations.db3')));expect(await readEngineeringObservation(f.root,{sourceCommit:commit},'engineering-amd64')).toMatchObject({rawCoverage:'tested',businessFaultReadback:'tested',qualification:'not_run'});expect(sha(await readFile(join(f.root,'rosbag2/observations.db3')))).toBe(before);}finally{await f.cleanup();}
+});
+// Both retained native-compiler-preflight exports have identical bytes for the other twelve outputs.
+// Keep compiling the registered model for every test, then install the two host-dependent files.
+const referenceFiles='tests/fixtures/engineering/native-compiler-profiles';
+async function installReference(bundle:string,profile:'mac'|'linux-arm64'){
+ const manifest=profile==='mac'?'robotics/simulation/fixtures/engineering-navigation-v1/compiler-manifest.json':join(referenceFiles,'linux-arm64-manifest.json');
+ await copyFile(manifest,join(bundle,'compiler-manifest.json'));
+ await copyFile(join(referenceFiles,profile+'.urdf'),join(bundle,'robots/amr-1.urdf'));
+}
+test.each([
+ ['mac','541648e62c684a7e5ebb426e593b2cbcee8e126e5c815149996d2a959312d945'],
+ ['linux-arm64','95576339954662f4ee1229304215dc9c00d0beecfdc07679ed4b2e4bcd77f5e5'],
+] as const)('reads retained %s compiler output before and after native sidecars appear',async(profile,manifestHash)=>{
+ const f=await engineering(),bundle=join(f.root,'bundle');
+ try{
+  await installReference(bundle,profile);
+  expect(await readEngineeringCompiledWorld(bundle)).toMatchObject({manifestHash,robots:[{entityId:'amr-1',namespace:'amr_1'}]});
+  await f.put('bundle/.native/raw-bag/metadata.yaml','sidecar');
+  await f.put('bundle/.bridge/inventory.json',{});
+  expect(await readEngineeringObservation(f.root,{sourceCommit:commit},'engineering-amd64')).toMatchObject({rawCoverage:'tested',qualification:'not_run'});
+ }finally{await f.cleanup();}
+});
+test.each(['mac','linux-arm64'] as const)('refuses %s manifest paired with the other genuine URDF',async profile=>{
+ const f=await engineering(),bundle=join(f.root,'bundle');
+ try{
+  await installReference(bundle,profile);
+  await copyFile(join(referenceFiles,profile==='mac'?'linux-arm64.urdf':'mac.urdf'),join(bundle,'robots/amr-1.urdf'));
+  await expect(readEngineeringCompiledWorld(bundle)).rejects.toThrow('BUNDLE_DIGEST_MISMATCH');
+ }finally{await f.cleanup();}
+});
+test.each(['native-mapping.json','physical-model.json','engineering-project.json','navigation-scene.json','world.sdf','robots/amr-1.urdf'])('refuses changed bytes of declared output %s',async name=>{
+ const f=await engineering(),bundle=join(f.root,'bundle');
+ try{
+  await installReference(bundle,'mac');
+  const path=join(bundle,name);
+  await writeFile(path,Buffer.concat([await readFile(path),Buffer.from(' ')]));
+  await expect(readEngineeringCompiledWorld(bundle)).rejects.toThrow('BUNDLE_DIGEST_MISMATCH');
+ }finally{await f.cleanup();}
+});
+test.each(['unknown self-consistent manifest','changed body with known hash','escaping declared path'])('refuses %s',async mutation=>{
+ const f=await engineering(),bundle=join(f.root,'bundle');
+ try{
+  await installReference(bundle,'mac');
+  const path=join(bundle,'compiler-manifest.json'),{manifestHash,...body}=JSON.parse(await readFile(path,'utf8'));
+  if(mutation==='escaping declared path')body.outputs[0].path='../unregistered';
+  else body.map.mapRevision='unregistered';
+  await writeFile(path,JSON.stringify({...body,manifestHash:mutation==='changed body with known hash'?manifestHash:hashJson(body)}));
+  await expect(readEngineeringCompiledWorld(bundle)).rejects.toThrow('NATIVE_MAPPING_MISMATCH');
+ }finally{await f.cleanup();}
+});
+test.each([
+ ['missing output','world.sdf'],['nonregular output','world.sdf'],['unexpected output','extra.sdf'],
+ ['linked manifest','compiler-manifest.json'],['linked output','world.sdf'],['linked directory','robots'],
+] as const)('refuses %s in the compiler bundle',async(mutation,name)=>{
+ const f=await engineering(),bundle=join(f.root,'bundle'),path=join(bundle,name);
+ try{
+  await installReference(bundle,'mac');
+  if(mutation==='unexpected output')await writeFile(path,'unused');
+  else if(mutation==='missing output')await rm(path);
+  else if(mutation==='nonregular output'){await rm(path);await mkdir(path);}
+  else {
+   await mkdir(join(bundle,'.native'));
+   const saved=join(bundle,'.native',name);
+   await rename(path,saved);
+   await symlink(saved,path);
+  }
+  await expect(readEngineeringCompiledWorld(bundle)).rejects.toThrow(mutation==='missing output'?'ENOENT':'BUNDLE_PATH_INVALID');
+ }finally{await f.cleanup();}
 });
 test.each(['unavailable inventory','missing bag','missing raw clock','fake evidence','wrong source','wrong architecture','replayed command','skipped raw topic'])('R3 engineering rejects %s after complete coherent artifact reseal',async mutation=>{
  const f=await engineering();try{

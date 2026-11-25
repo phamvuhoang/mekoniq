@@ -10,6 +10,7 @@ import {createEngineeringService} from '../../packages/lab-runtime/src/engineeri
 import {createMujocoCompiler} from '../../packages/lab-runtime/src/engineering/mujoco-compiler';
 import {createWebotsCompiler} from '../../packages/lab-runtime/src/engineering/webots-compiler';
 import {createNavigationCompiler} from '../../packages/lab-runtime/src/engineering/navigation-compiler';
+import {engineeringPython} from './engineering-python';
 export const sha=(b:string|Uint8Array)=>createHash('sha256').update(b).digest('hex');
 export const artifact=(path:string,value:unknown)=>{const content=JSON.stringify(value,null,2)+'\n';return {ref:{path,sha256:sha(content),bytes:Buffer.byteLength(content)},content};};
 export async function compileStudy(experiment='payload-center-v1',engine='mujoco_3d'){
@@ -21,7 +22,7 @@ export async function compileStudy(experiment='payload-center-v1',engine='mujoco
  await writeFile(join(catalogRoot,'catalog.json'),JSON.stringify({schemaVersion:1,id:'b08',components:Object.keys(c.components).map(digest=>({digest,file:`components/${digest}.json`})),quotes:[]}));
  const set=engine==='mujoco_3d'?'engineering-mujoco-3d-v1':engine==='webots_3d'?'engineering-webots-3d-v1':'engineering-irsim-2d-v1';
  const project={...JSON.parse(await readFile(join(fixture,'serve-3d-project.json'),'utf8')),requestedProfile:set,...engine==='mujoco_3d'?{mujocoExperimentId:experiment}:{}};
- const compiler=engine==='mujoco_3d'?createMujocoCompiler({workerRoot:resolve('robotics/simulation-mujoco')}):engine==='webots_3d'?createWebotsCompiler():createNavigationCompiler({python:resolve('.venv-irsim/bin/python'),workerRoot:resolve('robotics/navigation-2d'),descriptionHelperRoot:resolve('robotics/simulation')});
+ const compiler=engine==='mujoco_3d'?createMujocoCompiler({workerRoot:resolve('robotics/simulation-mujoco')}):engine==='webots_3d'?createWebotsCompiler():createNavigationCompiler({python:engineeringPython,workerRoot:resolve('robotics/navigation-2d'),descriptionHelperRoot:resolve('robotics/simulation')});
  const service=createEngineeringService({directory:join(dir,'engineering'),catalogRoot,compiler,compilers:{[set]:compiler}});
  const receipt=await service.compileEngineeringProject(project,'study');if(receipt.state!=='compiled')throw Error(JSON.stringify(receipt.problems));
  const locked=await service.admitRun('study',{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},set,undefined);

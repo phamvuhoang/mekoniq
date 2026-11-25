@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "documentType": "drive-fixture-manifest",
+  "id": "drive-v1",
+  "generator": "scripts/generate-drive-fixture.mjs",
+  "calibration": "not_calibrated",
+  "files": [
+    {
+      "path": "control-oracle-v1.json",
+      "sha256": "cebea3668fec49c8511888bbf4c03747b8e77646f215ed435b9ce64a83b29ba4",
+      "bytes": 758
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "e1e4a93900c3a5848d287ec6a031376a0cc0801c7085b52d593b49ec3931adda",
+      "bytes": 189
+    },
+    {
+      "path": "README.md",
+      "sha256": "15c929ef67807039980414a76c8bd1f127dd03df099342b2555d6ab9ecccf00e",
+      "bytes": 2191
+    },
+    {
+      "path": "serve-control-legacy-ideal-v1.json",
+      "sha256": "8ebe4d22d2e7d3c3a38fd17b21ecabc7bc520f470e7a6a2c1cd07c5895937cd6",
+      "bytes": 2132
+    },
+    {
+      "path": "serve-control-v1.json",
+      "sha256": "7f269710f275d0281afb87c1af34a8453dbc72945c631d98b906ef062b83fd35",
+      "bytes": 2146
+    },
+    {
+      "path": "serve-control-v2.json",
+      "sha256": "e9e45233581bf80913a0f3f1273d1a4d33490c11618b8c51be7bed713e468fb5",
+      "bytes": 2251
+    },
+    {
+      "path": "serve-drive-coarse-encoder-v1.json",
+      "sha256": "8253569611bf59317fbcf35dad50a4ee95aa587b137564abec0fc0c528a3bebb",
+      "bytes": 3494
+    },
+    {
+      "path": "serve-drive-ideal-v1.json",
+      "sha256": "62b31b8071ce5b72fbfa0b1e7bda785a7213b49caed7ec674c00a2ea19b3071a",
+      "bytes": 3489
+    },
+    {
+      "path": "serve-drive-latency-v1.json",
+      "sha256": "a232b3c518a1338f157bfc6737f500b286003c46940572c7f7c80fa1e659e9fe",
+      "bytes": 3491
+    },
+    {
+      "path": "serve-drive-nominal-v1.json",
+      "sha256": "4ce6154593ec018d8c186abe40ee5eb2f4a3b1c861dcc81cf3f4667239ad314b",
+      "bytes": 3489
+    },
+    {
+      "path": "serve-drive-torque-limited-v1.json",
+      "sha256": "89f5d4e931804c0179696f66f92a30fe201e980e8e4c8e669a4ac4decaff8301",
+      "bytes": 3500
+    },
+    {
+      "path": "tuning-envelope-v1.json",
+      "sha256": "5261904db2499dd9697650089122f5cdcc09240ec4e4a2eff04d9c08b0f9d9c1",
+      "bytes": 3740
+    },
+    {
+      "path": "xarm6-control-v1.json",
+      "sha256": "28ec4efa971d1f4a6655e9b396979f3d84346ef0a783beaf3b28afb169aee031",
+      "bytes": 3065
+    },
+    {
+      "path": "xarm6-drive-coarse-encoder-v1.json",
+      "sha256": "0dbc7bf01e7a5be6710ab903e932b67d22b22f3df137ca3d6817a9a7b3ef5e00",
+      "bytes": 6690
+    },
+    {
+      "path": "xarm6-drive-ideal-v1.json",
+      "sha256": "e7d18b766feda0c0886b1ea12cab83672452c51c23ab1c5ea48b8876cfb36839",
+      "bytes": 6365
+    },
+    {
+      "path": "xarm6-drive-latency-v1.json",
+      "sha256": "f90d53175bc4f18bb9fcb7ea13656b3e4850b8f1f333cced64ad1ebd1964ba44",
+      "bytes": 6697
+    },
+    {
+      "path": "xarm6-drive-nominal-v1.json",
+      "sha256": "ecf4013f9a4840c0f421c37652dd2abcd3b202f32a95e2897fd41105948baab7",
+      "bytes": 6690
+    }
+  ]
+}

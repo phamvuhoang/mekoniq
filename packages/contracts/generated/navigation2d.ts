@@ -1,5 +1,5 @@
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
-import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
+import type { CalibrationResult, Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
  * @minItems 2
  * @maxItems 2
@@ -177,6 +177,11 @@ export type Scans = LidarScanV1[];
  */
 export type CollisionIds = string[];
 /**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveAxisId".
+ */
+export type DriveAxisId = string;
+/**
  * @minItems 0
  * @maxItems 1
  */
@@ -199,6 +204,16 @@ export type Props = {
   quaternionXyzw: number[];
   restingOn: string | null;
 }[];
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveState".
+ */
+export type DriveState = 'disabled' | 'ready' | 'enabled' | 'quick_stop' | 'fault';
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveFault".
+ */
+export type DriveFault = 'COMMAND_TIMEOUT' | 'FEEDBACK_LOSS' | 'FOLLOWING_ERROR' | 'OVERSPEED' | 'EXTERNAL_TRIP';
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "Sim3DResponseV1".
@@ -227,6 +242,7 @@ export type Sim3DResponseV1 =
             ops: string[];
             engineVersion?: string;
             executableSha256?: Digest;
+            hostArch?: 'arm64' | 'x86_64';
           };
     }
   | {
@@ -271,6 +287,18 @@ export type Sim3DRequestV1 =
           armId: EngineeringId;
           sceneRef: 'arm-scene.json' | 'arm-cell-scene.json';
         }[];
+        /**
+         * A bench run (V06, D1): its drive model and control profile (bundle files, the same refs a scene's engine names) and the 1-2 axes whose 500 Hz trace every snapshot carries. A bench scene names no drive refs of its own.
+         */
+        bench?: {
+          driveModelRef: DriveDocumentRef;
+          controlProfileRef: DriveDocumentRef;
+          /**
+           * @minItems 1
+           * @maxItems 2
+           */
+          axisIds: DriveAxisId[];
+        };
       };
     }
   | {
@@ -354,12 +382,23 @@ export type Sim3DRequestV1 =
          */
         worldPerturbations?: {
           eventId: string;
-          presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
-          revision: 1;
+          presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+          revision: 1 | 2;
           targetId: string;
           targetTick: number;
+          segmentIndex?: number;
         }[];
         worldControl?: WorldControlV1;
+        /**
+         * @minItems 0
+         * @maxItems 16
+         */
+        driveCommands?: DriveCommandV1[];
+        /**
+         * @minItems 0
+         * @maxItems 32
+         */
+        faultInjections?: FaultInjectionV1[];
       };
     }
   | {
@@ -398,6 +437,11 @@ export type Sim3DRequestV1 =
     };
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveMode".
+ */
+export type DriveMode = 'csp' | 'csv';
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "ArmObstacle".
  */
 export type ArmObstacle =
@@ -425,6 +469,59 @@ export type ArmObstacle =
        */
       max: number[];
     };
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "AxisDriveModel".
+ */
+export type AxisDriveModel = AxisDriveModel1;
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ControlMetric".
+ */
+export type ControlMetric =
+  | {
+      available: true;
+      value: number;
+      unit: string;
+      samples: number;
+      basis: 'actual' | 'feedback';
+    }
+  | {
+      available: false;
+      value: null;
+      unit: string;
+      reason: string;
+    };
+/**
+ * Tagged by kind (one branch is checked, so a refusal names the field of that branch). atTick < 500 and ticks <= 500 are the bench's own tick bounds (bench-signals.ts BENCH_MAX_TICKS); a value past them is TICK_OUT_OF_RANGE.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchSignal".
+ */
+export type BenchSignal =
+  | {
+      kind: 'step';
+      amplitude: number;
+      atTick: number;
+    }
+  | {
+      kind: 'trapezoid';
+      distance: number;
+      peakVelocity: number;
+      acceleration: number;
+      atTick: number;
+    }
+  | {
+      kind: 'hold';
+      ticks: number;
+    };
+/**
+ * Per-axis drive evidence, tuning results, fault reports and the control oracle policy (R4). Readers build TuningResultV1 and FaultReportV1 from verified streams.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ControlEvidenceV1".
+ */
+export type ControlEvidenceV1 = DriveTickRecord | TuningResultV1 | FaultReportV1 | ControlOracleV1 | FaultOracleV1;
 
 export interface Navigation2DContracts {}
 /**
@@ -781,6 +878,8 @@ export interface NavigationSceneV11 {
           path: string;
           sha256: Digest;
         };
+        driveModelRef?: DriveDocumentRef;
+        controlProfileRef?: DriveDocumentRef;
       };
   policy: NavigationPolicyV1;
   /**
@@ -794,6 +893,16 @@ export interface NavigationSceneV11 {
    */
   limitations: string[];
   world3d?: World3DV1;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveDocumentRef".
+ */
+export interface DriveDocumentRef {
+  id: string;
+  revision: number;
+  path: string;
+  sha256: Digest;
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -990,6 +1099,7 @@ export interface NavigationRunEvidenceV11 {
           path: string;
           sha256: Digest;
         };
+        hostArch?: 'arm64' | 'x86_64';
       };
   /**
    * Optional (added with B05): the versions a rerun must match besides the engine and lock.
@@ -1266,6 +1376,21 @@ export interface Sim3DSnapshotV1 {
   props?: Props;
   physics?: PhysicsTickRecord;
   worldStep?: WorldStep;
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  drives?: DriveAxisSnapshot[];
+  /**
+   * @minItems 0
+   * @maxItems 2
+   */
+  driveTrace?: DriveTrace[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultReceipts?: FaultReceiptV1[];
 }
 /**
  * What the engine reports about the world it loaded (getState only): link masses and world positions, wheel radius and separation, wheel hinge axes. Compared with the physical model by the parity test.
@@ -1332,6 +1457,18 @@ export interface Sim3DModelReadbackV1 {
       forceN?: number;
     }[];
   };
+  /**
+   * Bench only (V06, D4): the effective inertia of each traced axis at the pose of the readback. A joint or the gripper: the diagonal of the joint-space mass matrix at its dof. A wheel: that diagonal plus m*r^2/2 (m the mass of the AMR body tree, r the wheel radius: straight-line drive, each wheel carries half the mass).
+   *
+   * @minItems 1
+   * @maxItems 2
+   */
+  effectiveInertiaKgM2?: {
+    axisId: DriveAxisId;
+    valueKgM2: number;
+    basis: 'mass_matrix_diagonal' | 'wheel_straight_line';
+    provenance: 'assumed';
+  }[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1412,6 +1549,40 @@ export interface PhysicsTickRecord {
     rollRad: number;
     pitchRad: number;
   }[];
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  drives?: DriveAxisSnapshot[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultIntents?: FaultInjectionV1[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultReceipts?: FaultReceiptV1[];
+  /**
+   * @minItems 0
+   * @maxItems 2
+   */
+  sensorTransforms?: {
+    entryId: string;
+    sensorId: string;
+    scanTick: number;
+    /**
+     * @minItems 0
+     * @maxItems 1080
+     */
+    rangesM: (number | null)[];
+    /**
+     * @minItems 0
+     * @maxItems 1080
+     */
+    states: ('hit' | 'no_return' | 'below_min' | 'invalid')[];
+  }[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1477,6 +1648,59 @@ export interface LoadObservation {
     quaternionXyzw: number[];
   } | null;
 }
+/**
+ * Feedback plus the true state; the actual* fields never reach a controller.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveAxisSnapshot".
+ */
+export interface DriveAxisSnapshot {
+  axisId: DriveAxisId;
+  state: DriveState;
+  fault: DriveFault | null;
+  commandSeq: number;
+  positionRad: number | null;
+  velocityRadS: number | null;
+  torqueNm: number | null;
+  tick: number;
+  targetApplied: number;
+  actualPositionRad: number;
+  actualVelocityRadS: number;
+  saturatedSubsteps: number;
+  followingErrorRad: number | null;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "FaultInjectionV1".
+ */
+export interface FaultInjectionV1 {
+  entryId: string;
+  faultId: string;
+  targetId: string;
+  params: {
+    [k: string]: number;
+  };
+  phase: 'start' | 'end';
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "FaultReceiptV1".
+ */
+export interface FaultReceiptV1 {
+  entryId: string;
+  faultId: string;
+  targetId: string;
+  params: {
+    [k: string]: number;
+  };
+  phase: 'start' | 'end';
+  appliedTick: number;
+  runId: string;
+  bootId: string;
+  sceneDigest: string;
+  requestDigest: string;
+  overriddenBy?: 'WORLD_MOVEMENT_INTERLOCK';
+}
 export interface WorldStep {
   workerPid: number;
   modelCount: 1;
@@ -1491,8 +1715,8 @@ export interface WorldStep {
    */
   disturbances?: {
     eventId: string;
-    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
-    revision: 1;
+    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+    revision: 1 | 2;
     targetId: string;
     targetTick: number;
     runId: string;
@@ -1517,7 +1741,69 @@ export interface WorldStep {
      * @maxItems 3
      */
     afterPositionM: number[];
+    segmentIndex?: number;
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    torqueMapNm?: number[];
   }[];
+  /**
+   * Pick-rig-only native placement read after mj_forward and before the first integration substep. Post-step props remain separate observations.
+   *
+   * @minItems 1
+   * @maxItems 16
+   */
+  birthObservations?: {
+    method: 'mujoco-freejoint-body-before-step-v1';
+    frame: 'map';
+    propId: string;
+    cupId: string;
+    eventId: string;
+    runId: string;
+    bootId: string;
+    requestId: string;
+    sceneDigest: string;
+    requestDigest: string;
+    targetTick: number;
+    physicsSubstepsBefore: number;
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    qposPositionM: number[];
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    bodyPositionM: number[];
+    /**
+     * @minItems 4
+     * @maxItems 4
+     */
+    quaternionXyzw: number[];
+  }[];
+}
+/**
+ * One sample per substep (dtS apart). A null entry is a missing substep (a gap): a metric over a window containing one is TRACE_GAP. actual is the true state (position for csp, velocity for csv); feedback is what the controller saw.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveTrace".
+ */
+export interface DriveTrace {
+  axisId: DriveAxisId;
+  dtS: number;
+  /**
+   * @minItems 0
+   * @maxItems 5000
+   */
+  samples: ({
+    target: number;
+    actual: number;
+    feedback: number | null;
+    torqueNm: number;
+    saturated?: boolean;
+  } | null)[];
 }
 /**
  * Sim3DRobotStateV1 as a worker ACK carries it: a MuJoCo worker sends `scans` only on the sensor's publish tick; the source client carries the last publication forward, so every Sim3DRobotStateV1 (and world evidence) still has it.
@@ -1558,6 +1844,21 @@ export interface Sim3DWireSnapshotV1 {
   props?: Props;
   physics?: PhysicsTickRecord;
   worldStep?: WorldStep;
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  drives?: DriveAxisSnapshot[];
+  /**
+   * @minItems 0
+   * @maxItems 2
+   */
+  driveTrace?: DriveTrace[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultReceipts?: FaultReceiptV1[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1595,6 +1896,19 @@ export interface WorldControlV1 {
   attachmentProxyPropId: string | null;
   movementInterlocked: boolean;
   stopLatched: boolean;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveCommandV1".
+ */
+export interface DriveCommandV1 {
+  axisId: DriveAxisId;
+  seq: number;
+  mode: DriveMode;
+  target: number;
+  enable: boolean;
+  quickStop: boolean;
+  faultReset: boolean;
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2024,13 +2338,17 @@ export interface LabWorldSceneV1 {
     terminalApproachDirection?: 'reverse';
   };
   disturbance?: {
-    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
-    revision: 1;
+    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+    revision: 1 | 2;
     targetId: string;
-    trigger: 'before_release' | 'transport';
+    trigger: 'before_release' | 'transport' | 'after_belief_commit';
     cupId: string;
   };
   controlContextVersion?: 1;
+  engine?: {
+    driveModelRef?: DriveDocumentRef;
+    controlProfileRef?: DriveDocumentRef;
+  };
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2105,12 +2423,28 @@ export interface WorldEvidenceRecord {
      */
     worldPerturbations?: {
       eventId: string;
-      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
-      revision: 1;
+      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+      revision: 1 | 2;
       targetId: string;
       targetTick: number;
+      segmentIndex?: number;
     }[];
     worldControl?: WorldControlV1;
+    /**
+     * @minItems 0
+     * @maxItems 16
+     */
+    driveCommands?: DriveCommandV1[];
+    /**
+     * @minItems 0
+     * @maxItems 32
+     */
+    faultInjections?: FaultInjectionV1[];
+    /**
+     * @minItems 0
+     * @maxItems 32
+     */
+    faultReceipts?: FaultReceiptV1[];
   } | null;
   /**
    * @maxItems 16
@@ -2126,6 +2460,11 @@ export interface WorldEvidenceRecord {
     before: Sim3DPoseV1 | null;
     after: Sim3DPoseV1 | null;
   }[];
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  drives?: DriveAxisSnapshot[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2395,4 +2734,972 @@ export interface SemanticStudyV1 {
    * @maxItems 20
    */
   limitations: string[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveFeedbackV1".
+ */
+export interface DriveFeedbackV1 {
+  axisId: DriveAxisId;
+  state: DriveState;
+  fault: DriveFault | null;
+  commandSeq: number;
+  positionRad: number | null;
+  velocityRadS: number | null;
+  torqueNm: number | null;
+  tick: number;
+}
+/**
+ * A fault-schedule entry of the R4 drive catalog (V08): the shape of FaultScheduleEntry plus catalog parameters, and targets named like axes (robot/axis). It is a separate document so the frozen FaultScheduleEntry schema keeps its bytes.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveFaultEntryV1".
+ */
+export interface DriveFaultEntryV1 {
+  id: string;
+  faultId: string;
+  targetId: string;
+  trigger:
+    | {
+        kind: 'elapsed_sim_ms';
+        value: number;
+      }
+    | {
+        kind: 'phase';
+        value: 'brew' | 'grasp' | 'handoff' | 'delivery';
+      };
+  durationMs: number;
+  params?: {
+    [k: string]: number;
+  };
+}
+/**
+ * Neutral drive command/feedback contract (R4-A). DriveFeedbackV1 carries measured values only; DriveAxisSnapshot adds the true state and is evidence-only.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveIoV1".
+ */
+export interface DriveIoV1 {
+  schemaVersion: 1;
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  commands?: DriveCommandV1[];
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  feedback?: DriveFeedbackV1[];
+}
+export interface AxisDriveModel1 {
+  axisId: DriveAxisId;
+  mode: DriveMode;
+  torque:
+    | {
+        kind: 'envelope_ref';
+        scale: number;
+      }
+    | {
+        kind: 'effort';
+        limitNm: number;
+      };
+  velocityLimitRadS: number;
+  encoder: {
+    countsPerRev: number | null;
+    velocityWindowSubsteps: number;
+  };
+  feedbackDelaySubsteps: number;
+  feedbackLossSubsteps: number;
+  commandDelaySubsteps: number;
+  commandInterpolation: 'hold' | 'linear';
+  watchdogTicks: number | null;
+  enableDelaySubsteps: number;
+  quickStopSubsteps: number;
+  onDisable: 'coast' | 'brake';
+  brakeTorqueNm: number | null;
+  followingError: {
+    limitRad: number;
+    substeps: number;
+  } | null;
+}
+/**
+ * A device model: what a servo drive is, not how it is tuned. Changes only with a better source (datasheet, measurement).
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveModelV1".
+ */
+export interface DriveModelV1 {
+  schemaVersion: 1;
+  documentType: 'drive-model';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  axes: AxisDriveModel[];
+  sources: {
+    torque: SourceRef;
+    velocity: SourceRef;
+    encoder: SourceRef;
+    delays: SourceRef;
+    watchdog: SourceRef;
+    disable: SourceRef;
+    followingError: SourceRef;
+  };
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "AxisControl".
+ */
+export interface AxisControl {
+  axisId: DriveAxisId;
+  loop: {
+    kp: number;
+    ki: number;
+    kd: number;
+    integralLimit: number | null;
+    slewLimit: number | null;
+  };
+  accelerationLimit: number | null;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ControllerConfig".
+ */
+export interface ControllerConfig {
+  controllerId: string;
+  revision: number;
+  params: {
+    [k: string]: number;
+  };
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TuningBound".
+ */
+export interface TuningBound {
+  min: number;
+  max: number;
+}
+/**
+ * A field the axis does not accept (kd and slewLimit on a velocity axis, accelerationLimit on a position axis) is absent.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "AxisEnvelope".
+ */
+export interface AxisEnvelope {
+  axisId: DriveAxisId;
+  kp: TuningBound;
+  ki: TuningBound;
+  kd?: TuningBound;
+  integralLimit: TuningBound;
+  slewLimit?: TuningBound;
+  accelerationLimit?: TuningBound;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TuningEnvelopeV1".
+ */
+export interface TuningEnvelopeV1 {
+  schemaVersion: 1;
+  documentType: 'tuning-envelope';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  axes: AxisEnvelope[];
+  source: SourceRef;
+}
+/**
+ * Values tuned in simulation on a registered bench run (R4-A §6.3 export): the run, its bench scenario, the sha256 of its recorded trace (TuningResultV1.trace.sha256), the source commit of the runtime that ran it, the axes it traced and the drive model it ran (final-fix V07 I1: sources are profile-wide, so the attribution names exactly what was tuned). Simulated and not calibrated, like everything on the bench.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TunedSourceRef".
+ */
+export interface TunedSourceRef {
+  kind: 'tuned_in_simulation';
+  benchRunId: string;
+  scenarioId: 'MJ-BENCH-WHEEL' | 'MJ-BENCH-ARM';
+  traceSha256: Digest;
+  sourceCommit: string;
+  /**
+   * The axes that bench traced (TuningResultV1.axisIds): the values of these axes were tuned on it; the other axes of the profile keep values that bench did not measure.
+   *
+   * @minItems 1
+   * @maxItems 2
+   */
+  axisIds: DriveAxisId[];
+  driveModelDigest: Digest;
+}
+/**
+ * A tuning choice: loop gains and limits per axis, bound to the plant and to the drive models it was declared against.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ControlProfileV1".
+ */
+export interface ControlProfileV1 {
+  schemaVersion: 1;
+  documentType: 'control-profile';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  plantModelDigest: Digest;
+  /**
+   * @minItems 1
+   * @maxItems 8
+   */
+  driveModelDigests: Digest[];
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  axes: AxisControl[];
+  /**
+   * @minItems 1
+   * @maxItems 4
+   */
+  controllers: ControllerConfig[];
+  sources: {
+    /**
+     * An engineering source (SourceRef), or the bench run the values were tuned on (TunedSourceRef, V07pre).
+     */
+    loop: SourceRef | TunedSourceRef;
+    /**
+     * An engineering source (SourceRef), or the bench run the values were tuned on (TunedSourceRef, V07pre).
+     */
+    limits: SourceRef | TunedSourceRef;
+    controller: SourceRef;
+  };
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ControlArtifactRef".
+ */
+export interface ControlArtifactRef {
+  path: string;
+  sha256: Digest;
+  bytes: number;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveTickRecord".
+ */
+export interface DriveTickRecord {
+  schemaVersion: 1;
+  tick: number;
+  simTimeNs: string;
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  driveCommands?: DriveCommandV1[];
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  drives: DriveAxisSnapshot[];
+}
+/**
+ * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here. A bench ends in exactly one result: completed; drive_fault (an axis latched a drive fault during the run: fault holds its tick, axis and code); unstable (the engine reported instability: unstable holds its tick and warning); collision (a snapshot named a contact of the robot or the arm the plant does not allow: collision holds its tick and the ids the snapshot named). The objects of the other results are null.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TuningResultV1".
+ */
+export interface TuningResultV1 {
+  schemaVersion: 1;
+  documentType: 'tuning-result';
+  runId: string;
+  status: 'completed' | 'drive_fault' | 'unstable' | 'collision';
+  unstable: {
+    tick: number;
+    warning: string;
+  } | null;
+  fault: {
+    tick: number;
+    axisId: DriveAxisId;
+    code: string;
+  } | null;
+  collision: {
+    tick: number;
+    /**
+     * @minItems 1
+     * @maxItems 64
+     */
+    ids: string[];
+  } | null;
+  /**
+   * @minItems 1
+   * @maxItems 2
+   */
+  axisIds: DriveAxisId[];
+  signal: BenchSignal;
+  seed: number;
+  engine: {
+    id: string;
+    version: string;
+    /**
+     * The architecture the worker reported (contracts §1): bit identity of two results only means something within one.
+     */
+    hostArch?: 'arm64' | 'x86_64';
+  };
+  /**
+   * load is the bench load id (for example empty): two runs under different loads are not comparable.
+   */
+  plant: {
+    plantModelDigest: Digest;
+    driveModelDigest: Digest;
+    controlProfileDigest: Digest;
+    load: string;
+  };
+  effectiveInertia: {
+    valueKgM2: number;
+    basis: 'mass_matrix_diagonal' | 'wheel_straight_line';
+    provenance: 'assumed';
+  } | null;
+  /**
+   * Starting gains from the effective inertia (V07pre, D4): one entry per registered (bandwidthRadS, damping) pair of the health signal catalog's suggestOptions, bandwidth first, computed by the server with the envelope of axisIds[0] (for a wheel bench, the left wheel's). null when the result has no effective inertia. A model-based starting point, not calibrated.
+   */
+  suggestions?: GainSuggestion[] | null;
+  policy: {
+    finalWindowS: number;
+    settleBand: number;
+    holdWindowS: number;
+  };
+  metrics: {
+    [k: string]: ControlMetric;
+  };
+  /**
+   * The durable trace the metrics were computed from: chunks is the number of immutable chunks, sha256 the digest of the recorded stream (the recorder's own hash chain), samples the sample count per axis.
+   */
+  trace: {
+    chunks: number;
+    sha256: Digest;
+    samples: number;
+  };
+  accepted: false;
+  wheelMeasurement?: {
+    quantity: 'wheel_angular_speed';
+    inertiaAssumption: 'straight_line_no_slip';
+    comparison: {
+      tick: number;
+      bodyForwardMps: number;
+      wheelSurfaceMps: number;
+    } | null;
+  };
+}
+/**
+ * suggestGains for one (bandwidth, damping) pair: the loop clamped into the envelope, the clamped fields, and no acceleration limit (D4 does not size one).
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "GainSuggestion".
+ */
+export interface GainSuggestion {
+  bandwidthRadS: number;
+  damping: number;
+  loop: {
+    kp: number;
+    ki: number;
+    kd: number;
+    integralLimit: number | null;
+    slewLimit: null;
+  };
+  accelerationLimit: null;
+  /**
+   * @maxItems 3
+   */
+  clamped: ('kp' | 'ki' | 'kd')[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "FaultReportV1".
+ */
+export interface FaultReportV1 {
+  schemaVersion: 1;
+  documentType: 'fault-report';
+  runId: string;
+  scheduleDigest: Digest;
+  oracleDigest: Digest;
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  entries: {
+    entryId: string;
+    faultId: string;
+    targetId: string;
+    params: {
+      [k: string]: number;
+    };
+    durationMs: number;
+    injection: {
+      appliedTick: number | null;
+      endedTick: number | null;
+      overriddenBy?: 'WORLD_MOVEMENT_INTERLOCK';
+    };
+    detection: {
+      by: ('drive' | 'controller' | 'arm_program' | 'source') | null;
+      code: string | null;
+      tick: number | null;
+      latencyTicks: number | null;
+    };
+    firstCommandChangeTick: number | null;
+    plantResponse: {
+      axisState: string | null;
+      axisFault: string | null;
+      peakActualSpeedRadS: number | null;
+      ticksToRest: number | null;
+      baseTravelM: number | null;
+    };
+    verdict: 'detected_in_time' | 'detected_late' | 'not_detected' | 'not_fired';
+  }[];
+  /**
+   * @minItems 6
+   * @maxItems 6
+   */
+  invariants: {
+    id:
+      | 'NO_FALSE_SERVE'
+      | 'NO_RESEND_AFTER_UNKNOWN'
+      | 'NO_MOTION_BEFORE_ENABLED'
+      | 'CUSTODY_UNCHANGED'
+      | 'LATCH_HELD'
+      | 'TORQUE_ZERO_AFTER_TIMEOUT';
+    result: 'pass' | 'violated' | 'not_applicable' | 'not_evidenced';
+    tick: number | null;
+    evidence: string;
+  }[];
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  evidence: ControlArtifactRef[];
+  accepted: false;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ControlOracleV1".
+ */
+export interface ControlOracleV1 {
+  schemaVersion: 1;
+  documentType: 'control-oracle';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  metricPolicy: {
+    finalWindowS: number;
+    settleBand: number;
+    holdWindowS: number;
+  };
+  sustainedOscillation: {
+    windowRatio: number;
+    thresholdRad: number;
+    thresholdRadS: number;
+  };
+  minAmplitudeQuanta: number;
+  source: SourceRef;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "FaultOracleV1".
+ */
+export interface FaultOracleV1 {
+  schemaVersion: 1;
+  documentType: 'fault-oracle';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  /**
+   * @minItems 8
+   * @maxItems 8
+   */
+  faults: {
+    faultId:
+      | 'encoder-dropout'
+      | 'motor-weak'
+      | 'drive-trip'
+      | 'command-delay'
+      | 'command-loss'
+      | 'grip-weak'
+      | 'lidar-noise'
+      | 'drive-reset';
+    required: boolean;
+    detector: ('drive' | 'controller' | 'arm_program' | 'source') | null;
+    /**
+     * @maxItems 4
+     */
+    codes: string[];
+    deadlineTicks: number | null;
+  }[];
+  invariantPolicy: {
+    holdToleranceRad: number;
+    torqueEpsNm: number;
+    timeoutSettleTicks: number;
+  };
+  source: SourceRef;
+}
+/**
+ * A single-axis control bench run (R4): one registered signal on the wheels or on one arm axis, against a user-drafted control profile. The server re-validates everything; cross-field rules (axis against scenario, signal against the axis' mode and limits) live in validateBenchRequest.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchRequestV1".
+ */
+export interface BenchRequestV1 {
+  schemaVersion: 1;
+  scenarioId: 'MJ-BENCH-WHEEL' | 'MJ-BENCH-ARM';
+  axis: 'wheels' | 'J1' | 'J2' | 'J3' | 'J4' | 'J5' | 'J6' | 'gripper';
+  signal: BenchSignal;
+  driveExperimentId:
+    'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
+  controlProfile: ControlProfileV1;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchTraceIdentity".
+ */
+export interface BenchTraceIdentity {
+  runId: string;
+  /**
+   * @minItems 1
+   * @maxItems 2
+   */
+  axisIds: DriveAxisId[];
+  plantModelDigest: Digest;
+  driveModelDigest: Digest;
+  controlProfileDigest: Digest;
+}
+/**
+ * One hashed NDJSON record. Optional bodyForwardMps is the chassis forward speed observed at the end of this same wheel tick. Older wheel traces omit it.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchTraceTick".
+ */
+export interface BenchTraceTick {
+  tick: number;
+  /**
+   * @minItems 1
+   * @maxItems 2
+   */
+  axes: {
+    axisId: DriveAxisId;
+    /**
+     * @minItems 10
+     * @maxItems 10
+     */
+    samples: {
+      target: number;
+      actual: number;
+      feedback: number | null;
+      torqueNm: number;
+      saturated: boolean;
+    }[];
+  }[];
+  bodyForwardMps?: number;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchTraceManifest".
+ */
+export interface BenchTraceManifest {
+  schemaVersion: 1;
+  documentType: 'drive-trace';
+  identity: BenchTraceIdentity;
+  dtS: 0.002;
+  substeps: 10;
+  /**
+   * @maxItems 501
+   */
+  chunks: {
+    path: string;
+    sha256: Digest;
+    bytes: number;
+    firstTick: number;
+    lastTick: number;
+  }[];
+  coverage: {
+    firstTick: 0;
+    lastTick: number;
+    complete: boolean;
+  };
+  /**
+   * @maxItems 502
+   */
+  gaps: {
+    firstTick: number;
+    lastTick: number;
+    reason: string;
+  }[];
+  terminalReason: string | null;
+}
+/**
+ * A modelled perception error (R4-D22): bias, noise, latency, dropout, view region and maximum age of the estimate a grasp may use. Every value is assumed; this is not camera data.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "PerceptionProfileV1".
+ */
+export interface PerceptionProfileV1 {
+  schemaVersion: 1;
+  documentType: 'perception-profile';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  parameterSource: 'assumed';
+  updateEveryTicks: number;
+  latencyTicks: number;
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  biasM: number[];
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  sigmaM: number[];
+  dropoutProbability: number;
+  visibleRegionId: string;
+  maxAgeTicks: number;
+}
+/**
+ * A bounded recovery table for a failed pick (R4-D27): rules over a closed catalogue of triggers, facts and steps, each with a maximum number of attempts. Every value is assumed. Not a behaviour tree.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "RecoveryPolicyV1".
+ */
+export interface RecoveryPolicyV1 {
+  schemaVersion: 1;
+  documentType: 'recovery-policy';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  parameterSource: 'assumed';
+  beliefWaitTicks: number;
+  /**
+   * @minItems 1
+   * @maxItems 8
+   */
+  rules: {
+    id: string;
+    /**
+     * @minItems 1
+     * @maxItems 3
+     */
+    on: ('GRIP_NOT_ESTABLISHED' | 'BELIEF_UNAVAILABLE' | 'BELIEF_STALE')[];
+    /**
+     * @maxItems 4
+     */
+    requires: ('arm_state_fresh' | 'no_unknown_command' | 'cup_on_declared_support' | 'cup_not_between_pads')[];
+    /**
+     * @minItems 1
+     * @maxItems 6
+     */
+    steps: ('open_gripper' | 'retreat_pick_approach' | 'await_fresh_belief' | 'retry_pick')[];
+    maxAttempts: number;
+  }[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BeliefObject".
+ */
+export interface BeliefObject {
+  objectId: string;
+  kind: 'cup';
+  frameId: string;
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  positionM: number[];
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  sigmaM: number[];
+  observedTick: number;
+  publishedTick: number;
+  ageTicks: number;
+  source: 'ground_truth' | 'pose_estimator_sim';
+  valid: boolean;
+  reason?: string;
+}
+/**
+ * Scoring record. truthAtObservedTick and errorM exist for evaluation only; they never reach the decision code. Both belief modes estimate x/y; belief z is the declared upright support surface plus half cup height, transformed into arm-base coordinates. ground_truth means exact x/y, not access to truth z.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BeliefRecord".
+ */
+export interface BeliefRecord {
+  tick: number;
+  objectId: string;
+  belief: BeliefObject | null;
+  dropped: boolean;
+  reason?: 'OUT_OF_VIEW' | 'DROPOUT';
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  truthAtObservedTick: number[];
+  /**
+   * Euclidean x/y estimator error in metres against truthAtObservedTick. Excludes z, which comes from declared support geometry in both belief modes.
+   */
+  errorM: number | null;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "GraspAttempt".
+ */
+export interface GraspAttempt {
+  attemptId: string;
+  cupId: string;
+  index: number;
+  decidedTick: number;
+  mode: 'fixed_program' | 'belief_ground_truth' | 'belief_estimated';
+  beliefUsed: BeliefObject | null;
+  beliefErrorAtCommitM: number | null;
+  gates: {
+    belief: string;
+    region: string;
+    ik: string;
+    sweep: string;
+  };
+  /**
+   * @maxItems 3
+   */
+  ikResidual: {
+    positionM: number;
+    orientationRad: number;
+    condition: number;
+  }[];
+  waypointsRad?: {
+    /**
+     * @minItems 1
+     * @maxItems 16
+     */
+    pickApproach?: number[];
+    /**
+     * @minItems 1
+     * @maxItems 16
+     */
+    pick?: number[];
+    /**
+     * @minItems 1
+     * @maxItems 16
+     */
+    lift?: number[];
+  };
+  outcome: 'lifted' | 'grip_not_established' | 'cup_dropped' | 'refused' | 'unknown';
+  refusal?: string;
+  /**
+   * The tick this record was written (plan, commit or outcome); decidedTick stays the tick of the decision.
+   */
+  recordedTick?: number;
+  /**
+   * Which step of the attempt this record is.
+   */
+  stage?: 'plan' | 'commit' | 'outcome';
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "RecoveryStep".
+ */
+export interface RecoveryStep {
+  stepId: string;
+  attemptId: string;
+  rule: string;
+  action: string;
+  commandId: string;
+  recordedTick: number;
+  completedTick: number | null;
+  result: string;
+}
+/**
+ * Manifest of the durable belief, attempts and recovery streams of one run: immutable hashed chunks, coverage and an explicit terminal reason.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BeliefEvidenceManifestV1".
+ */
+export interface BeliefEvidenceManifestV1 {
+  schemaVersion: 1;
+  documentType: 'belief-evidence';
+  identity: {
+    runId: string;
+    bootId: string;
+    sceneDigest: Digest;
+    perceptionProfileDigest: Digest | null;
+    recoveryPolicyDigest: Digest | null;
+    graspMode: 'belief_ground_truth' | 'belief_estimated';
+    graspProgramDigest?: Digest;
+    seed: number;
+    /**
+     * Test-only transient decision bias; disqualifies registered perception studies. The reader checks the exact vector against published estimates.
+     */
+    diagnosticBias?: {
+      /**
+       * @minItems 2
+       * @maxItems 2
+       */
+      vectorM: number[];
+      attempts: number;
+    };
+  };
+  /**
+   * @minItems 1
+   * @maxItems 3
+   */
+  streams: {
+    stream: 'belief' | 'attempts' | 'recovery';
+    /**
+     * @maxItems 512
+     */
+    chunks: {
+      path: string;
+      sha256: Digest;
+      bytes: number;
+    }[];
+    /**
+     * How many records the published chunks of this stream hold; a reader compares it with what it read.
+     */
+    records?: number;
+  }[];
+  coverage: {
+    lastTick: number;
+    complete: boolean;
+    /**
+     * Contiguous completed estimator/controller evaluations from world tick 1 through this tick (tick 0 is initialization). Published atomically with flushed stream counts; lastTick remains the last appended record.
+     */
+    evaluatedThroughTick?: number;
+  };
+  /**
+   * @maxItems 64
+   */
+  gaps: {
+    firstTick: number;
+    lastTick: number;
+    reason: string;
+  }[];
+  terminalReason: string | null;
+}
+/**
+ * What an identification run may change and by how much, declared and hashed BEFORE the fit (R4-C §4, contracts §8): the registered parameters with their start and bounds, the channels and weights of the objective, and the optimizer settings that make the run deterministic. At most 12 parameters (the validator names the limit).
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "IdentificationPlanV1".
+ */
+export interface IdentificationPlanV1 {
+  schemaVersion: 1;
+  documentType: 'identification-plan';
+  id: string;
+  revision: number;
+  digest: Digest;
+  datasetDigest: Digest;
+  baseDriveModelDigest: Digest;
+  plantModelDigest: Digest;
+  controlProfileDigest: Digest;
+  benchBinding: Digest;
+  /**
+   * @minItems 1
+   * @maxItems 64
+   */
+  parameters: {
+    path: string;
+    initial: number;
+    lower: number;
+    upper: number;
+    unit: string;
+  }[];
+  objective: {
+    /**
+     * @minItems 1
+     * @maxItems 8
+     */
+    channels: string[];
+    weights: {
+      [k: string]: number;
+    };
+  };
+  optimizer: {
+    method: 'bounded_least_squares';
+    maxIterations: number;
+    tolerance: number;
+    relativeStep: number;
+    maxJacobianCondition: number;
+  };
+}
+/**
+ * The outcome of one identification run (R4-C, V15): which parameters were fitted from which dataset within which declared bounds, how the fit ended, how it did on the held-out validation split, and which new model revisions it produced. A record that did not pass, touched a bound, did not converge, could not separate its parameters, or came from synthetic data / the tool self-test produces nothing. Always accepted:false.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "CalibrationRecordV1".
+ */
+export interface CalibrationRecordV1 {
+  schemaVersion: 1;
+  documentType: 'calibration-record';
+  digest: Digest;
+  planDigest: Digest;
+  datasetDigest: Digest;
+  configDigest: Digest;
+  baseDriveModelDigest: Digest;
+  fitDigest: Digest;
+  sourceKind: 'measured' | 'synthetic';
+  /**
+   * @minItems 1
+   * @maxItems 64
+   */
+  fitted: {
+    path: string;
+    value: number;
+    atBound: boolean;
+    unit: string;
+    standardError: number | null;
+  }[];
+  convergence: {
+    iterations: number;
+    converged: boolean;
+    objectiveInitial: number;
+    objectiveFinal: number;
+    /**
+     * null: the Jacobian is singular (unbounded condition number); JSON cannot carry Infinity.
+     */
+    jacobianCondition: number | null;
+  };
+  validation: CalibrationResult;
+  domain: {
+    [k: string]: {
+      min: number;
+      max: number;
+    };
+  };
+  /**
+   * @maxItems 8
+   */
+  produced: {
+    document: 'drive_model' | 'arm_physics';
+    id: string;
+    revision: number;
+    digest: Digest;
+  }[];
+  reasonCodes: (
+    | 'SYNTHETIC_DATA'
+    | 'TOOL_SELF_TEST'
+    | 'NOT_CONVERGED'
+    | 'PARAMETER_AT_BOUND'
+    | 'IDENTIFIABILITY_POOR'
+    | 'VALIDATION_FAILED'
+    | 'CONFIG_DIGEST_MISMATCH'
+    | 'PREDICTION_FAILED'
+  )[];
+  toolSelfTest: boolean;
+  accepted: false;
 }

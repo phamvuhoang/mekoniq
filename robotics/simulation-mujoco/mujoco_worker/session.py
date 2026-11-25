@@ -18,7 +18,7 @@ from pathlib import Path
 import rfc8785
 
 from . import snapshot
-from .protocol import OPS, PROTOCOL, Receipts, WorkerError, schema_validator, reject_non_finite
+from .protocol import BENCH_MAX_AXES, BENCH_MAX_TICKS, OPS, PROTOCOL, Receipts, WorkerError, schema_validator, reject_non_finite
 
 SCENE_FILE, COMPONENT_FILE, PHYSICS_FILE, BLOB_DIR = "arm-cell-scene.json", "component.json", "physics.json", "blobs"
 # The clock check compares the engine's time with the substeps the worker has asked for x the timestep (the same double MuJoCo adds). MuJoCo adds the timestep once
@@ -57,11 +57,17 @@ def overlaps(p, a, q, b):
     return math.hypot(p[0] - q[0], p[1] - q[1]) < a[0] + b[0] and abs(p[2] - q[2]) < (a[1] + b[1]) / 2
 
 
+def world_plant_digest(scene):
+    """The plant a world's combined control profile belongs to, from the scene itself (the Lab computes the same: worldPlantDigest in drive-experiments.ts)."""
+    return hashlib.sha256(rfc8785.dumps({"mobile": scene["navigation"]["robots"][0]["model"]["physicalModelDigest"], "arm": scene["models"]["armComponent"]["sha256"]})).hexdigest()
+
+
 class WorkerSession:
-    def __init__(self, *, run_id, bundle_root, lock_digest, expected_scene_digest=None, engine_factory=None, host_info=None, schema_dir=None, payload_perturbation=None):
+    def __init__(self, *, run_id, bundle_root, lock_digest, expected_scene_digest=None, engine_factory=None, host_info=None, schema_dir=None, payload_perturbation=None, expected_fixture_sha256=None):
         if payload_perturbation not in (None, "payload-cup-forward-impulse-v1"):
             raise WorkerError("PERTURBATION_UNREGISTERED", str(payload_perturbation))
         self.payload_perturbation, self.perturbation_done = payload_perturbation, False
+        self.expected_fixture_sha256, self.actors, self._actor_updates = expected_fixture_sha256, {}, []
         self.run_id, self.bundle_root, self.lock_digest, self.expected_scene_digest = run_id, Path(bundle_root), lock_digest, expected_scene_digest
         self._factory, self._host = engine_factory, host_info
         self.boot_id = str(uuid.uuid4())
@@ -71,6 +77,8 @@ class WorkerSession:
         self.cups, self.present = {}, {}  # propId -> (radius, height); cups in the scene -> position after the last step
         self.mobile = False
         self.world = False
+        self.drive_on = False
+        self.bench = None   # payload.bench of a bench run (V06): its drive refs and traced axes
         self.world_events, self.world_born = set(), set()
         self.world_disturbance_consumed=False
         self.schema_dir = Path(schema_dir) if schema_dir else Path(__file__).resolve().parents[3] / "packages" / "contracts" / "schemas"
@@ -124,7 +132,8 @@ class WorkerSession:
 
                 self._host = engine_version
             version = self._host()
-            return {"packageVersion": version, "pythonVersion": platform.python_version(), "lockDigest": self.lock_digest, "ops": list(OPS), "engineVersion": version}
+            arch = {"arm64": "arm64", "aarch64": "arm64", "x86_64": "x86_64", "amd64": "x86_64"}.get(platform.machine().lower())
+            return {"packageVersion": version, "pythonVersion": platform.python_version(), "lockDigest": self.lock_digest, "ops": list(OPS), "engineVersion": version, **({"hostArch": arch} if arch else {})}
         if self.state in ("stopped", "failed") and op not in ("getState", "stop"):
             raise WorkerError("INVALID_STATE", f"{op} on a {self.state} run")
         if request["expectedTick"] != self.tick:
@@ -136,6 +145,13 @@ class WorkerSession:
     def _op_create(self, p):
         if self.state != "new":
             raise WorkerError("INVALID_STATE", f"create on a {self.state} run")
+        bench = p.get("bench")
+        if bench is not None:
+            if p.get("sceneRef") == "lab-world-scene.json" or self.payload_perturbation:
+                raise WorkerError("BENCH_SCENE_UNSUPPORTED", "a bench runs one arm or one AMR alone, unperturbed")
+            ids = bench.get("axisIds") or []
+            if not 1 <= len(ids) <= BENCH_MAX_AXES or len(set(ids)) != len(ids):
+                raise WorkerError("BENCH_AXIS_COUNT", f"a bench traces 1 to {BENCH_MAX_AXES} distinct axes, not {ids}")
         if p.get("sceneRef") == "lab-world-scene.json":
             return self._create_world(p)
         if p.get("sceneRef") == "navigation-scene.json":
@@ -155,9 +171,11 @@ class WorkerSession:
             raise WorkerError("INVALID_REQUEST", f"arms[0] names {arms[0]['armId']!r} but the scene's arm is {scene['arm']['armId']!r}")
         if engine_seed(p["seed"]) != scene["engineSeed"]:
             raise WorkerError("SEED_MISMATCH", f"seed {p['seed']} reduces to {engine_seed(p['seed'])}, the scene was built for {scene['engineSeed']}")
-        component = json.loads(confined(self.bundle_root, COMPONENT_FILE).read_text())
+        raw = confined(self.bundle_root, COMPONENT_FILE).read_bytes()
+        component = json.loads(raw)
         physics = json.loads(confined(self.bundle_root, PHYSICS_FILE).read_text())
         blobs = confined(self.bundle_root, BLOB_DIR, directory=True)
+        drive = self._bench_drive(bench, scene["engine"], hashlib.sha256(raw).hexdigest()) if bench else None   # an arm's plant is its component's sha256 (as xarm6-control-v1 is bound)
         if self._factory is None:
             from .engine import MujocoEngine
 
@@ -165,17 +183,20 @@ class WorkerSession:
         from .compile import CompileError
 
         try:
-            self.engine = self._factory(scene, component, physics, str(blobs))
+            self.engine = self._factory(scene, component, physics, str(blobs), **({"drive": drive} if drive else {}))
         except CompileError as e:
             raise WorkerError(e.code, e.detail or e.code)
         self.scene = scene
         self.cups = {c["propId"]: (c["radiusM"], c["heightM"]) for c in scene["props"]}
-        self.state = "created"
+        self.state, self.drive_on, self.bench = "created", drive is not None, bench
+        if drive:
+            self.engine.drive.g.start_trace(bench["axisIds"])
+            return self._advance(None, None, [], tick=0, commands=self.engine.drive.g.prime_commands())  # the priming step: every axis holds where the home keyframe put it
         return self._advance(list(scene["arm"]["homeRad"]), self.engine.opening_max_m, [], tick=0)  # the priming step: home, gripper open
 
-    def _advance(self, targets, opening, placements, tick):
+    def _advance(self, targets, opening, placements, tick, commands=None):
         engine = self.scene["engine"]
-        reading = self.engine.step(targets, opening, placements)
+        reading = self.engine.step(targets, opening, placements) if commands is None else self.engine.step(targets, opening, placements, commands)
         self.substeps += engine["substeps"]
         snapshot.check_stable(reading, self.engine.arm_limits)  # first: MuJoCo resets its clock when it finds a bad state
         expected = self.substeps * (engine["timestepMs"] / 1000)
@@ -185,6 +206,47 @@ class WorkerSession:
         self.snapshot = snapshot.build(run_id=self.run_id, boot_id=self.boot_id, seq=self.seq, tick=tick, scene=self.scene, reading=reading, limits=self.engine.arm_limits)
         self.present = {pid: tuple(r["position"]) for pid, r in reading["props"].items()}
         return self.snapshot
+
+    def _drive_docs(self, refs, read, plant_digest=None):
+        """The (drive model, control profile) of a scene whose engine (or a bench payload) names both refs; None when it names neither. `read(ref)` returns the bundle document of a ref (it has already checked
+        confinement, the file list and the file hash). Schema, own digest and the binding between the two documents (and to the plant when it is a single robot) are checked here."""
+        m_ref, c_ref = refs.get("driveModelRef"), refs.get("controlProfileRef")
+        if m_ref is None and c_ref is None:
+            return None
+        if m_ref is None or c_ref is None:
+            raise WorkerError("DRIVE_PROFILE_PAIR_REQUIRED", "a drive model and a control profile come as a pair")
+        docs = []
+        for ref, schema in ((m_ref, "drive-model-v1.schema.json"), (c_ref, "control-profile-v1.schema.json")):
+            obj = read(ref)
+            self._validate_document(obj, schema)
+            if (obj["id"], obj["revision"]) != (ref["id"], ref["revision"]):
+                raise WorkerError("PROFILE_ID_MISMATCH", ref["path"])
+            if hashlib.sha256(rfc8785.dumps({k: v for k, v in obj.items() if k != "digest"})).hexdigest() != obj["digest"]:
+                raise WorkerError("DIGEST_MISMATCH", ref["path"])
+            docs.append(obj)
+        model, control = docs
+        if model["digest"] not in control["driveModelDigests"]:
+            raise WorkerError("DRIVE_DOCUMENT_INVALID", "the control profile is not declared for this drive model")
+        if plant_digest is not None and control["plantModelDigest"] != plant_digest:
+            raise WorkerError("DRIVE_DOCUMENT_INVALID", "the control profile is not bound to this plant")
+        return model, control
+
+    def _bench_drive(self, bench, engine, plant_digest):
+        """The (drive model, control profile) of a bench (D1): both refs travel in payload.bench, never also in the scene, and are admitted as a scene's are (bundle-confined, file sha256,
+        schema, own digest, driveModelDigests, the bench plant). Every traced axis is an axis of the drive model."""
+        if "driveModelRef" in engine or "controlProfileRef" in engine:
+            raise WorkerError("BENCH_DRIVE_CONFLICT", "a bench takes its drive documents from payload.bench; this scene names its own")
+
+        def read(ref):
+            raw = confined(self.bundle_root, ref["path"]).read_bytes()
+            if hashlib.sha256(raw).hexdigest() != ref["sha256"]:
+                raise WorkerError("SCENE_FILE_MISMATCH", ref["path"])
+            return json.loads(raw)
+        drive = self._drive_docs(bench, read, plant_digest)   # the wire schema requires both refs
+        unknown = set(bench["axisIds"]) - {a["axisId"] for a in drive[0]["axes"]}
+        if unknown:
+            raise WorkerError("BENCH_AXIS_UNKNOWN", f"{sorted(unknown)} are not axes of {drive[0]['id']}")
+        return drive
 
     def _validate_document(self, value, filename):
         reject_non_finite(value)
@@ -234,18 +296,38 @@ class WorkerSession:
         disturbance=scene.get('disturbance')
         if disturbance:
             binding=next((b for b in bindings if b['cupId']==disturbance['cupId']),None)
-            valid=binding and ((disturbance['presetId']=='world-dock-drift-v1' and disturbance['targetId']==rid and disturbance['trigger']=='before_release') or (disturbance['presetId']=='world-cup-fall-v1' and disturbance['targetId']==binding['propId'] and disturbance['trigger']=='transport'))
+            valid=binding and ((disturbance['presetId']=='world-dock-drift-v1' and disturbance['targetId']==rid and disturbance['trigger']=='before_release') or (disturbance['presetId']=='world-cup-fall-v1' and disturbance['targetId']==binding['propId'] and disturbance['trigger']=='transport') or (disturbance['presetId'] in ('world-cup-nudge-v1','world-cup-nudge-v2') and disturbance['targetId']==binding['propId'] and disturbance['trigger']=='after_belief_commit'))
             if not valid:raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','admitted target binding')
+        drive = self._drive_docs(scene.get("engine") or {}, document, plant_digest=world_plant_digest(scene))   # one combined drive model and profile for all nine axes, bound to this world's plant
         try:
-            self.engine = WorldEngine(scene,docs["armComponent"],docs["armPhysics"],{rid:model},docs["emptyLoad"],docs["mobilePhysics"],str(confined(self.bundle_root,"blobs",directory=True)))
+            self.engine = WorldEngine(scene,docs["armComponent"],docs["armPhysics"],{rid:model},docs["emptyLoad"],docs["mobilePhysics"],str(confined(self.bundle_root,"blobs",directory=True)),**({"drive":drive} if drive else {}))
         except CompileError as e:
             raise WorkerError(e.code,e.detail or e.code)
-        self.scene,self.world,self.state = scene,True,"created"
+        self.scene,self.world,self.state,self.drive_on = scene,True,"created",drive is not None
         self.cups = {c["propId"]:(c["radiusM"],c["heightM"]) for c in arm["props"]}
-        return self._advance_world(arm["arm"]["homeRad"],self.engine.opening_max_m,[],0,0,0)
+        return self._advance_world(arm["arm"]["homeRad"],self.engine.opening_max_m,[],0,0,0,commands=self.engine.drive.g.prime_commands() if drive else None)
 
-    def _advance_world(self,q,opening,placements,v,w,tick,disturbance=None):
-        reading = self.engine.step(q,opening,placements,v,w,disturbance)
+    def _check_drive_commands(self, commands, kin):
+        """Refuses a drive tick before anything is spent: the commands of every axis (DriveGroup.check, pure) and the (v, omega) the two wheel commands amount to against the admitted
+        navigation limits. Returns the effective command of each axis for the other admission checks."""
+        g, mob = self.engine.drive.g, getattr(self.engine, "mobile", self.engine)
+        by_id = g.check(commands)
+        left, right = by_id[mob.rid + "/wheel-left"]["target"], by_id[mob.rid + "/wheel-right"]["target"]
+        v, w = (left + right) / 2 * mob.radius, (right - left) * mob.radius / mob.separation
+        # a wheel that repeats its last seq (a silenced command channel) holds a target no controller paired with the other wheel's: only a pair of fresh commands is a body twist to admit
+        wheel_cmds = [c for c in commands if c["axisId"] in (mob.rid + "/wheel-left", mob.rid + "/wheel-right")]
+        fresh = all(c["seq"] > g.seq[g.index[c["axisId"]]] for c in wheel_cmds)
+        if not fresh:
+            # a pair with a silenced wheel is not a body twist to admit, but a fresh wheel may not carry more than any admitted pair could give one wheel: |t| <= (vmax + wmax * sep / 2) / R
+            bound = (kin["maxLinearMps"] + kin["maxAngularRadps"] * mob.separation / 2) / mob.radius * (1 + 1e-9)
+            if any(c["seq"] > g.seq[g.index[c["axisId"]]] and abs(c["target"]) > bound for c in wheel_cmds):
+                raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "a fresh wheel command exceeds what the admitted navigation limits allow one wheel")
+        if fresh and (abs(v) > kin["maxLinearMps"] * (1 + 1e-9) or abs(w) > kin["maxAngularRadps"] * (1 + 1e-9)):
+            raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "wheel commands exceed the admitted navigation limits")
+        return by_id
+
+    def _advance_world(self,q,opening,placements,v,w,tick,disturbance=None,commands=None):
+        reading = self.engine.step(q,opening,placements,v,w,disturbance) if commands is None else self.engine.step(q,opening,placements,v,w,disturbance,commands)
         self.substeps += 10
         if abs(reading["time"]-self.substeps*.002)>CLOCK_TOLERANCE_S:
             raise WorkerError("CLOCK_DRIFT","world clock mismatch",fatal=True)
@@ -271,10 +353,20 @@ class WorkerSession:
             elif i["kind"]=="remove":
                 if pl["pose"] is not None or pid not in self.present:raise bad()
             else:raise bad()
-        velocities=p.get("velocities") or [];nav=self.scene["navigation"]
-        if len(velocities)!=1 or velocities[0]["robotId"]!=nav["robots"][0]["robotId"]:raise WorkerError("ROBOT_UNKNOWN","world needs one AMR target")
-        v,w=velocities[0]["vMps"],velocities[0]["omegaRadps"];kin=nav["robots"][0]["model"]["kinematics"]
-        if not snapshot._finite([v,w]) or abs(v)>kin["maxLinearMps"] or abs(w)>kin["maxAngularRadps"]:raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE","world target exceeds navigation limits")
+        nav=self.scene["navigation"]
+        commands=None
+        if self.drive_on:
+            if p.get("velocities") or p.get("jointTargets") or p.get("gripperTargets"):raise WorkerError("INVALID_REQUEST","a world with a drive model takes driveCommands, not velocities or arm targets")
+            commands=p.get("driveCommands")
+            if commands is None:raise WorkerError("DRIVE_COMMAND_REQUIRED","every tick needs one command per drive axis")
+            effective = self._check_drive_commands(commands, nav["robots"][0]["model"]["kinematics"])
+            rid=nav["robots"][0]["robotId"];wheels=(effective[rid+"/wheel-left"]["target"],effective[rid+"/wheel-right"]["target"])
+            v,w=(1.0,0.0) if any(x!=0 for x in wheels) else (0.0,0.0)   # only whether the wheels are asked to move matters to the interlock below
+        else:
+            velocities=p.get("velocities") or []
+            if len(velocities)!=1 or velocities[0]["robotId"]!=nav["robots"][0]["robotId"]:raise WorkerError("ROBOT_UNKNOWN","world needs one AMR target")
+            v,w=velocities[0]["vMps"],velocities[0]["omegaRadps"];kin=nav["robots"][0]["model"]["kinematics"]
+            if not snapshot._finite([v,w]) or abs(v)>kin["maxLinearMps"] or abs(w)>kin["maxAngularRadps"]:raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE","world target exceeds navigation limits")
         control=p.get('worldControl')
         if self.scene.get('controlContextVersion')==1:
             if not control or control.get('version')!=1:raise WorkerError('WORLD_CONTROL_INVALID','required world context')
@@ -285,28 +377,58 @@ class WorkerSession:
                 if not isinstance(stage,int) or stage<0 or stage>=len(stages) or stages[stage]['waypoint']!=program.get('waypoint') or not any(b['cupId']==program.get('cupId') for b in self.scene['propBindings']):raise WorkerError('WORLD_CONTROL_INVALID','unadmitted program/stage/cup')
             if control.get('movementInterlocked')!=bool(program or proxy or control.get('stopLatched')) or control.get('movementInterlocked') and (v!=0 or w!=0):raise WorkerError('WORLD_CONTROL_INVALID','movement interlock')
         elif control is not None:raise WorkerError('WORLD_CONTROL_INVALID','unadmitted control context')
-        q,opening,checked=self._check_step({**p,"velocities":[],"actorUpdates":[]})
+        if self.drive_on:
+            # the dock-drift preset is admitted before release with a CLOSED commanded gripper: on a drive world the commanded opening is the gripper axis' command mapped back (closed = hi end of its range)
+            g=effective[self.scene["armCell"]["arm"]["armId"]+"/gripper"];lo,hi=self.engine.arm.grip_range
+            q,opening,checked=None,self.engine.opening_max_m*(1-(g["target"]-lo)/(hi-lo)),self._check_placements(p)
+        else:q,opening,checked=self._check_step({**p,"velocities":[],"actorUpdates":[]})
         disturbances=p.get('worldPerturbations') or []
         disturbance=disturbances[0] if len(disturbances)==1 else None
         admitted=self.scene.get('disturbance')
+        from .world_engine import WORLD_DISTURBANCES
+        measured=bool(admitted and admitted['presetId']=='world-cup-nudge-v2')
+        previous=(self.snapshot['worldStep'].get('disturbances') or [None])[0]
+        continuing=measured and previous and previous['segmentIndex']<WORLD_DISTURBANCES[admitted['presetId']]['segments']-1
+        if continuing and not disturbances:
+            raise WorkerError('WORLD_PERTURBATION_INCOMPLETE','the next pulse segment is required')
         if disturbances:
-            if not admitted or len(disturbances)!=1 or self.world_disturbance_consumed or any(disturbance.get(k)!=admitted[k] for k in ('presetId','revision','targetId')) or disturbance.get('targetTick')!=self.tick+1 or not disturbance.get('eventId'):
+            if not admitted or len(disturbances)!=1 or (self.world_disturbance_consumed and not continuing) or any(disturbance.get(k)!=admitted[k] for k in ('presetId','revision','targetId')) or disturbance.get('targetTick')!=self.tick+1 or not disturbance.get('eventId'):
                 raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','one admitted one-shot preset')
             target=disturbance['targetId'];arm=self.snapshot['arms'][0]
-            if admitted['presetId']=='world-dock-drift-v1':
+            if measured:
+                keys={'presetId','revision','targetId','eventId','targetTick','segmentIndex'}
+                if set(disturbance)!=keys or type(disturbance['segmentIndex']) is not int or disturbance['segmentIndex']!=(previous['segmentIndex']+1 if continuing else 0):
+                    raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','expected next registered segment')
+                if continuing and (previous['targetTick']!=self.tick or any(previous[k]!=disturbance[k] for k in ('eventId','targetId','presetId','revision'))):
+                    raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','preceding receipt required')
+                prop=next((x for x in self.snapshot['props'] if x['propId']==target),None)
+                valid=bool(prop) and not arm['gripper']['heldPropIds'] and (continuing or prop['restingOn']=='nozzle-stand') and not any(i['propId']==target for i in intents)
+            elif admitted['presetId']=='world-dock-drift-v1':
                 valid=target==nav['robots'][0]['robotId'] and admitted['trigger']=='before_release' and any(b['cupId']==admitted['cupId'] and b['propId'] in arm['gripper']['heldPropIds'] for b in self.scene['propBindings']) and opening is not None and opening<=.001
+            elif admitted['presetId']=='world-cup-nudge-v1':
+                prop=next((x for x in self.snapshot['props'] if x['propId']==target),None)
+                valid=bool(prop) and prop['restingOn']=='nozzle-stand' and target not in arm['gripper']['heldPropIds']
             else:
                 prop=next((x for x in self.snapshot['props'] if x['propId']==target),None)
                 valid=admitted['trigger']=='transport' and prop and prop['restingOn']==self.scene['supportMap']['mobileSupportId'] and target not in arm['gripper']['heldPropIds'] and abs(self.snapshot['robots'][0]['bodyVelocity'][0])>.01
             if not valid:raise WorkerError('WORLD_PERTURBATION_PHASE_INVALID','actual pre-release or supported transport observation required')
             before=(self.snapshot['physics']['base'][0]['poseMap']['positionM'] if target==nav['robots'][0]['robotId'] else next(x['position'] for x in self.snapshot['props'] if x['propId']==target))
             self.world_disturbance_consumed=True # before the first external force; never retry an uncertain application
-        result=self._advance_world(q,opening,checked,v,w,self.tick+1,disturbance)
+        try:
+            result=self._advance_world(q,opening,checked,v,w,self.tick+1,disturbance,commands)
+        except WorkerError as error:
+            if measured and disturbance:
+                raise WorkerError(error.code,error.detail,fatal=True) from error
+            raise
+        if self.scene.get('id')=='pick-rig-v1':
+            births=[i for i in intents if i['kind']=='birth'];native=result['worldStep'].get('birthObservations',[])
+            if len(births)!=len(native) or any(i['propId']!=r['propId'] for i,r in zip(births,native)):
+                raise WorkerError('WORLD_BIRTH_OBSERVATION_MISSING','native pre-step observation required',fatal=True)
+            if births:result['worldStep']['birthObservations']=[{**r,**{k:i[k] for k in ('eventId','cupId','targetTick')},'runId':self.run_id,'bootId':self.boot_id,'sceneDigest':self.scene['sceneDigest'],'requestId':self.current_request_id,'requestDigest':hashlib.sha256(rfc8785.dumps(p)).hexdigest()} for i,r in zip(births,native)]
         if disturbance:
-            from .world_engine import WORLD_DISTURBANCES
             target=disturbance['targetId'];preset=WORLD_DISTURBANCES[disturbance['presetId']]
             after=(result['physics']['base'][0]['poseMap']['positionM'] if target==nav['robots'][0]['robotId'] else next(x['position'] for x in result['props'] if x['propId']==target))
-            result['worldStep']['disturbances']=[{**disturbance,'runId':self.run_id,'bootId':self.boot_id,'sceneDigest':self.scene['sceneDigest'],'requestId':self.current_request_id,'requestDigest':hashlib.sha256(rfc8785.dumps(p)).hexdigest(),'frame':'map','forceMapN':preset['forceMapN'],'durationSubsteps':10,'beforePositionM':list(before),'afterPositionM':list(after)}]
+            result['worldStep']['disturbances']=[{**disturbance,'runId':self.run_id,'bootId':self.boot_id,'sceneDigest':self.scene['sceneDigest'],'requestId':self.current_request_id,'requestDigest':hashlib.sha256(rfc8785.dumps(p)).hexdigest(),'frame':'map','forceMapN':preset['forceMapN'],**({'torqueMapNm':preset['torqueMapNm']} if measured else {}),'durationSubsteps':preset['durationSubsteps'],'beforePositionM':list(before),'afterPositionM':list(after)}]
 
         self.world_events.update(seen)
         self.world_born.update(i["propId"] for i in intents if i["kind"]=="birth")
@@ -349,6 +471,9 @@ class WorkerSession:
                 raise WorkerError("DIGEST_MISMATCH", ref["path"])
             return obj
         load = profile(scene["engine"]["loadProfileRef"], "load-profile-v1.schema.json")
+        if p.get("bench") is not None and load["props"]:
+            # the wheel inertia counts the AMR's own tree (mobile_engine.traced_inertia); a free payload is a tree of its own, so its J would be silently low
+            raise WorkerError("BENCH_SCENE_UNSUPPORTED", "a wheel bench runs on an empty load only")
         physics = profile(scene["engine"]["physicsProfileRef"])
         self._check_physics_profile(physics)
         if self.payload_perturbation:
@@ -369,17 +494,24 @@ class WorkerSession:
             resolve_lidar(scene["robots"][0]["model"], model)
         except CompileError as e:
             raise WorkerError(e.code, e.detail or e.code)
+        bench = p.get("bench")
+        drive = self._bench_drive(bench, scene["engine"], model["modelDigest"]) if bench else self._drive_docs(scene["engine"], lambda ref: profile(ref), plant_digest=model["modelDigest"])
         factory = self._factory
         if factory is None:
             from .mobile_engine import MobileEngine
             factory = MobileEngine
+        from .actors import load_actors
+        actors = load_actors(self.bundle_root, self.expected_fixture_sha256, {r["robotId"] for r in scene["robots"]} | {o["id"] for o in [*scene["world"]["obstacles"], *scene["world"]["boundaries"]]})
         try:
-            engine = factory(scene, {rid: model}, load, physics)
+            engine = factory(scene, {rid: model}, load, physics, **({"drive": drive} if drive else {}), **({"actors": actors} if actors else {}))
         except CompileError as e:
             raise WorkerError(e.code, e.detail or e.code)
-        self.engine, self.scene, self.mobile = engine, scene, True
-        self.state = "created"
-        return self._advance_mobile(0, 0, tick=0)
+        self.engine, self.scene, self.mobile, self.drive_on = engine, scene, True, drive is not None
+        self.actors = {a["id"]: a["radiusM"] for a in actors}
+        self.state, self.bench = "created", bench
+        if bench:
+            engine.drive.g.start_trace(bench["axisIds"])
+        return self._advance_mobile(0, 0, tick=0, commands=engine.drive.g.prime_commands() if drive else None)
 
     def _check_physics_profile(self, p):
         """Closed v1 measurement profile; unknown numerical assumptions are refused."""
@@ -398,7 +530,7 @@ class WorkerSession:
                   "contact": obj({"sliding": number, "torsionalM": number, "rollingM": number}),
                   "sources": obj({k: {"type": "object"} for k in ("velocityGainNmsPerRad", "brakeTorqueNm", "driveCurve", "contact", "solver")}),
                   "requiresB02MeasurementLock": {"const": False}, "numerics": {"const": NUMERICS},
-                  "measurementLock": obj({"probeId": {"enum": ["b02a-locked", "b04a-drive-contact-low-v1", "b04a-drive-contact-high-v1"]},
+                  "measurementLock": obj({"probeId": {"enum": ["b02a-locked", "b04a-drive-contact-low-v1", "b04a-drive-contact-high-v1", "v10-tray-low-friction"]},
                     "numericalInputSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "engineVersion": {"const": "3.17.0"}, "status": {"const": "locked_not_calibrated"},
                     "repeatPositionToleranceM": {"const": 1e-6}, "repeatAngleToleranceRad": {"const": 1e-6}})}
         schema = obj(fields)
@@ -409,7 +541,9 @@ class WorkerSession:
         fingerprint = hashlib.sha256(rfc8785.dumps({k: p[k] for k in keys})).hexdigest()
         if fingerprint != p["measurementLock"]["numericalInputSha256"]:
             raise WorkerError("PHYSICS_PROFILE_INVALID", "numerical lock fingerprint mismatch")
-        registered = json.loads((Path(__file__).resolve().parents[1] / "fixtures/serve-payload-v1/registered-physics.json").read_text())
+        registered = {}
+        for fixture in ("serve-payload-v1", "serve-tray-v1"):   # the reviewed numerical locks of each fixture family
+            registered.update(json.loads((Path(__file__).resolve().parents[1] / "fixtures" / fixture / "registered-physics.json").read_text()))
         digest = hashlib.sha256(rfc8785.dumps({k:v for k,v in p.items() if k != "digest"})).hexdigest()
         if not any(x["digest"] == digest and x["probeId"] == p["measurementLock"]["probeId"] for x in registered.values()):
             raise WorkerError("PHYSICS_PROFILE_INVALID", "unregistered numerical profile")
@@ -419,13 +553,15 @@ class WorkerSession:
         if curve[0]["speedRadS"] != 0 or curve[-1]["torqueNm"] != 0 or any(b["speedRadS"] <= a["speedRadS"] or b["torqueNm"] > a["torqueNm"] for a,b in zip(curve,curve[1:])):
             raise WorkerError("PHYSICS_PROFILE_INVALID", "ordered non-increasing torque curve must start at rest and end at zero torque")
 
-    def _advance_mobile(self, v, w, tick):
+    def _advance_mobile(self, v, w, commands=None, *, tick):
         injected = self.payload_perturbation is not None and tick == 501 and not self.perturbation_done
         if injected:
             self.perturbation_done = True  # never repeat, including if the step fails
             declaration = self.engine.apply_payload_impulse(self.payload_perturbation)
+        if self._actor_updates:
+            self.engine.place_actors(self._actor_updates)
         try:
-            reading = self.engine.step(v, w)
+            reading = self.engine.step(v, w) if commands is None else self.engine.step(v, w, commands)
         finally:
             if injected:
                 self.engine.clear_payload_impulse()
@@ -447,8 +583,18 @@ class WorkerSession:
         return self.snapshot
 
     def _check_mobile_step(self, p):
-        if p.get("actorUpdates") or p.get("jointTargets") or p.get("gripperTargets") or p.get("propPlacements"):
-            raise WorkerError("INVALID_REQUEST", "mobile-only world admits velocities, no interaction placements, actors or arm commands")
+        from .actors import check_updates
+        updates = check_updates(self.actors, p.get("actorUpdates"))   # a declared actor on every step, nothing undeclared: refused here, before anything changes
+        if self.drive_on:
+            if p.get("velocities") or p.get("jointTargets") or p.get("gripperTargets") or p.get("propPlacements"):
+                raise WorkerError("INVALID_REQUEST", "a run with a drive model takes driveCommands only: no velocities, arm commands or placements")
+            if p.get("driveCommands") is None:
+                raise WorkerError("DRIVE_COMMAND_REQUIRED", "every tick needs one command per drive axis")
+            self._check_drive_commands(p["driveCommands"], self.scene["robots"][0]["model"]["kinematics"])
+            self._actor_updates = updates
+            return 0, 0, p["driveCommands"]
+        if p.get("jointTargets") or p.get("gripperTargets") or p.get("propPlacements"):
+            raise WorkerError("INVALID_REQUEST", "mobile-only world admits velocities and declared actors, no interaction placements or arm commands")
         targets = p.get("velocities") or []
         rid = self.scene["robots"][0]["robotId"]
         if len(targets) != 1 or targets[0].get("robotId") != rid:
@@ -457,7 +603,17 @@ class WorkerSession:
         kin = self.scene["robots"][0]["model"]["kinematics"]
         if not snapshot._finite([v,w]) or abs(v) > kin["maxLinearMps"] or abs(w) > kin["maxAngularRadps"]:
             raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "target exceeds admitted navigation limits")
-        return v,w
+        self._actor_updates = updates
+        return v,w,None
+
+    def _check_arm_drive_step(self, p):
+        """The commands of an arm tick on a drive (a bench): every axis, nothing else, no cup placed."""
+        if p["velocities"] or p["actorUpdates"] or p.get("jointTargets") or p.get("gripperTargets") or p.get("propPlacements"):
+            raise WorkerError("INVALID_REQUEST", "an arm on a drive takes driveCommands only: no velocities, actors, joint or gripper targets or placements")
+        if p.get("driveCommands") is None:
+            raise WorkerError("DRIVE_COMMAND_REQUIRED", "every tick needs one command per drive axis")
+        self.engine.drive.g.check(p["driveCommands"])
+        return p["driveCommands"]
 
     def _check_step(self, p):
         if self.payload_perturbation:
@@ -482,6 +638,9 @@ class WorkerSession:
             if not 0 <= g["openingM"] <= self.engine.opening_max_m:
                 raise WorkerError("GRIPPER_TARGET_OUT_OF_RANGE", f"openingM {g['openingM']} is outside [0, {self.engine.opening_max_m}]")
             opening = g["openingM"]
+        return list(q), opening, self._check_placements(p)
+
+    def _check_placements(self, p):
         held, present, placements = set(self.snapshot["arms"][0]["gripper"]["heldPropIds"]), dict(self.present), []
         for pl in p.get("propPlacements") or []:
             pid, pose = pl["propId"], pl["pose"]
@@ -498,7 +657,7 @@ class WorkerSession:
                         raise WorkerError("PROP_PLACEMENT_OCCUPIED", f"{pid} at {pose['position']} intersects {other}")
                 present[pid] = tuple(pose["position"])
             placements.append((pid, pose))
-        return list(q), opening, placements
+        return placements
 
     def _op_step(self, p):
         single = p.get("singleStep", False)
@@ -508,9 +667,35 @@ class WorkerSession:
             raise WorkerError("INVALID_STATE", f"step{' (singleStep)' if single else ''} on a {self.state} run")
         if p["targetTick"] != self.tick + 1:
             raise WorkerError("TICK_MISMATCH", f"targetTick {p['targetTick']} must be {self.tick + 1}")
+        if self.bench and p["targetTick"] > BENCH_MAX_TICKS:
+            raise WorkerError("BENCH_TICK_LIMIT", f"a bench ends at tick {BENCH_MAX_TICKS}")
+        if p.get("driveCommands") is not None and not self.drive_on:
+            raise WorkerError("INVALID_REQUEST", "driveCommands need a scene with a drive model and a control profile")
         if not self.world and (p.get("worldInteractions") or p.get("worldPerturbations") or p.get("worldControl")):
             raise WorkerError("INVALID_REQUEST", "world interactions require a shared world")
-        snap = self._step_world(p) if self.world else (self._advance_mobile(*self._check_mobile_step(p), tick=self.tick + 1) if self.mobile else self._advance(*self._check_step(p), tick=self.tick + 1))
+        injections = p.get("faultInjections")
+        if injections and not self.drive_on:
+            raise WorkerError("INVALID_REQUEST", "faultInjections need a scene with a drive model and a control profile")
+        group = self.engine.drive.g if self.drive_on else None
+        try:
+            if injections:
+                group.stage_faults(injections)   # admitted whole before anything runs; the drive applies them at the start of this tick
+            if self.world:
+                snap = self._step_world(p)
+            elif self.mobile:
+                snap = self._advance_mobile(*self._check_mobile_step(p), tick=self.tick + 1)
+            elif self.drive_on:
+                snap = self._advance(None, None, [], tick=self.tick + 1, commands=self._check_arm_drive_step(p))
+            else:
+                snap = self._advance(*self._check_step(p), tick=self.tick + 1)
+        finally:
+            if group is not None:
+                group.staged = None   # a step that was refused applies nothing, now or on a later tick
+        if group is not None:
+            receipts = group.take_fault_receipts()
+            if receipts:
+                digest = hashlib.sha256(rfc8785.dumps(p)).hexdigest()
+                snap["faultReceipts"] = [{**r, "runId": self.run_id, "bootId": self.boot_id, "sceneDigest": self.scene["sceneDigest"], "requestDigest": digest} for r in receipts]
         self.tick += 1
         return snap
 

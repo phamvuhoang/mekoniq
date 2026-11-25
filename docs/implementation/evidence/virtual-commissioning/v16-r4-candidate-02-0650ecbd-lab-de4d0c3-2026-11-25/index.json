@@ -1,0 +1,109 @@
+{
+ "schemaVersion": 1,
+ "accepted": false,
+ "sourceCommit": "0650ecbd126ee4b0b6004412942d5109e5b253a6",
+ "labCommit": "de4d0c352bf12c034fdeade7932202c07d0681a0",
+ "rawArchive": "robot/evidence-archive/r4-chain-0650ecbd/ (outside git; guards need the extracted archive)",
+ "records": {
+  "r4-candidate-02": {
+   "file": "qualification.json",
+   "sha256": "dca5d2c2057977ba1964a4c3dd4f195e16500280f16e349e2e9f94c8698385fd",
+   "rawDir": "r4-candidate-02"
+  },
+  "irsim": {
+   "file": "records/irsim-qualification.json",
+   "sha256": "2cfcd5459292c36511be8da8621e2f00c8171fdc3fc2e30195897c97f15602e7",
+   "rawDir": "irsim"
+  },
+  "r1": {
+   "file": "records/r1-qualification.json",
+   "sha256": "b7b4ec7fd194899a4ece56c6fb0ff5c9f723e742644c894d2f7297626dddebe6",
+   "rawDir": "r1"
+  },
+  "r1.1": {
+   "file": "records/r11-qualification.json",
+   "sha256": "0232b6088397bc81e21615adad5c3b0e6c7abb675b4250e3f82ef736be20e893",
+   "rawDir": "r11"
+  },
+  "r2a": {
+   "file": "records/r2a-qualification.json",
+   "sha256": "fd6ee1e81c70bd6578bc5d76e3a032b3e2168db86180bada0e792de8f9e4e437",
+   "rawDir": "r2a"
+  },
+  "r2b": {
+   "file": "records/r2b-qualification.json",
+   "sha256": "cfa09ce9645cd5312b85c2d0a3352a52210dd752c5327a35952f9d4d85a8b057",
+   "rawDir": "r2b"
+  }
+ },
+ "campaigns": {
+  "cil-v2": {
+   "file": "records/cil-v2-campaign.json",
+   "sha256": "45ffb5a76838cdffbee7afb092e254c1f2fb1d4c5832ba1141a8dbb92997bfa4",
+   "rawDir": "cil-v2"
+  },
+  "bench-v2": {
+   "file": "records/bench-v2-campaign.json",
+   "sha256": "4b8dbd622be161f21c7e8ecdf63bafa43c660846bfe373a4746968e61ee9ecd5",
+   "rawDir": "bench-v2"
+  },
+  "fault-v1": {
+   "file": "records/fault-v1-campaign.json",
+   "sha256": "5a3f82b3701f19f7a095c6118f4a337f302ef08b42aef9fc6a5d08b2f32c1efb",
+   "rawDir": "fault-v1"
+  },
+  "tray-v1": {
+   "file": "records/tray-v1-campaign.json",
+   "sha256": "6d9a6113ca6704a206d215333afccd19d32f0a61229d42ac69ba91bb75d06002",
+   "rawDir": "tray-v1"
+  },
+  "perception-gap-v1": {
+   "file": "records/perception-gap-v1-campaign.json",
+   "sha256": "957006482ce7ebd12b056297be848d0600035ab25e759434a83607e8613d1a8c",
+   "rawDir": "perception-gap-v1"
+  },
+  "mj-cell-recovery-v2": {
+   "file": "records/mj-cell-recovery-v2-campaign.json",
+   "sha256": "23ee256fdf8ae49b60eab9dddbd2c2e0804ec8cda5e656039c5685ae06f561f0",
+   "rawDir": "mj-cell-recovery-v2"
+  }
+ },
+ "other": {
+  "container": {
+   "file": "records/container.json",
+   "sha256": "936c8fd1290c832b919b2f07f2ad6b45f01d11953e726450daa463ff2546246c"
+  },
+  "mockRegression": {
+   "file": "records/regression-manifest.json",
+   "sha256": "991e46567c5bf90f120d766a4b0d001bd6b084ce00c5bc6f714795bc3dddc2fb"
+  },
+  "web09": {
+   "file": "records/web09.json",
+   "sha256": "3ee32021c351304f6ff8c2a48d8b548ded96f13260e5624cc1f70cda4905b7cb"
+  },
+  "perceptionStudySummary": {
+   "file": "records/perception-gap-v1-summary.json",
+   "sha256": "cf768ab543de54fe15eda8172ee9f889137e5d0e4e8d0a555e50c18891932d4c"
+  },
+  "recoverySummary": {
+   "file": "records/mj-cell-recovery-v2-summary.json",
+   "sha256": "50d9d07772aa118c38bf46b7317277f943b78544fe5af2d962567089379f3a9a"
+  },
+  "calibrationRecord": {
+   "file": "records/calibration-record.json",
+   "sha256": "8cc01259b6eef7d239d273775bd35a9b6abcaa1d399e3a129e5fb74e4561c9ad"
+  },
+  "nativeImage": {
+   "file": "records/native-image.json",
+   "sha256": "1e034e06785a8715276ca50ca9b1a9a67c4f179f290e4d83964dbd53ae5e5709"
+  },
+  "nativeHandoff": {
+   "file": "records/native-handoff.json",
+   "sha256": "34ff977aa11f9cc9d2deeb50a9a59e3c772838b83a019cd582a75643c62da12c"
+  },
+  "localReadback": {
+   "file": "records/readback-issues.json",
+   "sha256": "1ab507b641889814b4e676749ecf7e00281735509f6b642919e3c8388ac2f434"
+  }
+ }
+}
