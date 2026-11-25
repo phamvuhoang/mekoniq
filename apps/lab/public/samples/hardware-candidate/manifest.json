@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "documentType": "hardware-candidate",
+  "status": "draft",
+  "hardwareValidated": false,
+  "controlAuthority": false,
+  "bundle": {
+    "digest": "848dde50570d91aa07e2963a3e2c8ad17101c3da5e465a04c027b560ed511a11",
+    "designId": "serve-hw-c-v1",
+    "designRevision": 1,
+    "projectDigest": "a129edccc0ccaf2ca3a87400237ae77b82f4aa8c2da4bad1abec03855b93a938",
+    "assemblyDigest": "1bc981cfcab59b5a8aa060db2fba8d745a2ba8eb58518a86825dc4fa9afe371e"
+  },
+  "files": [
+    {
+      "path": "documents/bench-checklist.md",
+      "sha256": "4cfcbbc7e36ea0b024e85e9aa71a7c4958547b0d55c666090a8ce93b60463f2c",
+      "bytes": 11256
+    },
+    {
+      "path": "documents/bom.csv",
+      "sha256": "531e52240cade56d41c855cbae4c8f4f3168f4ca71d300eccd158a601ffbce88",
+      "bytes": 2571
+    },
+    {
+      "path": "documents/checks.md",
+      "sha256": "58b8f21bf4e431a55ef3907ad127e874c4b46a5f721fddfa12abcfb00bd206eb",
+      "bytes": 8442
+    },
+    {
+      "path": "documents/harness.yml",
+      "sha256": "ffe461a512c0ab3abf31d1bc564abb881165f7e138d6eb780a4029dd52430670",
+      "bytes": 8746
+    },
+    {
+      "path": "documents/io-allocation.md",
+      "sha256": "0f4a3b7170c9fc65f3b14fd6e11ffe6ac24a585c308f76192d4cd200c82a071b",
+      "bytes": 2132
+    },
+    {
+      "path": "documents/pinout.csv",
+      "sha256": "c049fe2ef417631e23f84bf236517fb990a5f7cae985d44a1bf14f6ceead57b3",
+      "bytes": 5768
+    },
+    {
+      "path": "documents/wire-list.csv",
+      "sha256": "7015c263f41b712c2e6554ae29297f9f1a2d29c0c3f18157176923dae3e8842c",
+      "bytes": 9148
+    },
+    {
+      "path": "drive-model.derived.json",
+      "sha256": "97fbd4b5d37a64c60bd12c725951b9794986e1022bef09330dd2eda8ed4da34c",
+      "bytes": 3494
+    },
+    {
+      "path": "drive-model.diff.md",
+      "sha256": "ed2c6b5495d2c5d50f81c390254d069fc30600cbdeab892fc7fa39aa0493b541",
+      "bytes": 360
+    },
+    {
+      "path": "electrical-bundle.json",
+      "sha256": "8243c7f4cbe74e1a164f218479565b6894029238648219fd2a0aa27369ea6bf9",
+      "bytes": 124215
+    },
+    {
+      "path": "electrical-design.json",
+      "sha256": "f1f8137ca55a39a9e691819c24c1767338f8217e5c177f4e0d072b097c5fa521",
+      "bytes": 26051
+    },
+    {
+      "path": "profiles/battery-24v-pack-v1.json",
+      "sha256": "31b2cdaab9f0207a24bc1418c8f1befbe7ceea815084d3a16488ba3f7764e710",
+      "bytes": 1612
+    },
+    {
+      "path": "profiles/blv-r-60w-v1.json",
+      "sha256": "638850b78fb730eef41865ad37f34666a573237a26a7979150e69bcca65e0ead",
+      "bytes": 2129
+    },
+    {
+      "path": "profiles/blvd-krd-v1.json",
+      "sha256": "aac3a7cf875685612bff538d461443a180bf2c8b9ec6b3632f55525e8a615df9",
+      "bytes": 33468
+    },
+    {
+      "path": "profiles/buzzer-24v-v1.json",
+      "sha256": "f9f7e48cbd320387269bf69a6168f89ecadfb45bef41e6a2a6ecdc3f9816dffd",
+      "bytes": 1583
+    },
+    {
+      "path": "profiles/controller-ref-v1.json",
+      "sha256": "651d8471fab9009095f32b4b484f378cece909279ccb26f51f5ae61c2262a184",
+      "bytes": 3543
+    },
+    {
+      "path": "profiles/estop-button-v1.json",
+      "sha256": "3a4157b39ee6b584bd93876d0b93fb33db11844f0b047bf04cd58fc5bc8f22f7",
+      "bytes": 2522
+    },
+    {
+      "path": "profiles/fuse-10a-v1.json",
+      "sha256": "fa5b73b4371c863298c5d84a9243358c23d0f5cc5c5820e9a0b6da33dcdfb386",
+      "bytes": 2946
+    },
+    {
+      "path": "profiles/fuse-5a-v1.json",
+      "sha256": "7ae110b132d61eb809cf8fa21bb0b5fc093be952bf2b270f887408541a4d2bfd",
+      "bytes": 2939
+    },
+    {
+      "path": "profiles/io-module-can-ref-v1.json",
+      "sha256": "e9c0ae99290fc0ef8f053dcf866a728c7f7c817ff86091b13917613dbaa9782a",
+      "bytes": 33457
+    },
+    {
+      "path": "profiles/lamp-24v-v1.json",
+      "sha256": "8a805dc21c052ae12ac77fe2cb10e92068c78b4ab599a7016f93203dc0a54321",
+      "bytes": 1575
+    },
+    {
+      "path": "profiles/safety-relay-v1.json",
+      "sha256": "013423b422e959ce4c7048c02e9d8a6409d5dc68197511c3eb6a8f567b1fbef8",
+      "bytes": 6259
+    },
+    {
+      "path": "profiles/sensor-pnp-24v-v1.json",
+      "sha256": "d3ec69b547392807fc73765211d81aa40a5114bca8390ea554c941c235195896",
+      "bytes": 2073
+    },
+    {
+      "path": "profiles/switch-dry-contact-v1.json",
+      "sha256": "9def0b99a4ef4503234d36e0f7e2c04b692e23d2b97d8d81e7802c5865729dd0",
+      "bytes": 1606
+    },
+    {
+      "path": "safety-requirements.json",
+      "sha256": "eedce849c405b80acfefabf43a4a0092503cb02a9b694503a5fa15164b9c9942",
+      "bytes": 2163
+    },
+    {
+      "path": "wiring-policy.json",
+      "sha256": "18ac54235230042e691fca57d26c3c9b4dcda0290d686d385ea9190258665a93",
+      "bytes": 4651
+    }
+  ],
+  "readiness": [
+    {
+      "id": "bench-devices",
+      "status": "blocked_external",
+      "reason": "G-BENCH1: no device of this configuration has been measured on a bench"
+    },
+    {
+      "id": "safety-assessment",
+      "status": "blocked_external",
+      "reason": "G-SAFE1: risk assessment, design and testing of the safety functions are done by a qualified person and signed; nothing here replaces that"
+    },
+    {
+      "id": "unverified:UNVERIFIED_ASSUMED_SOURCE",
+      "status": "pending",
+      "reason": "21 item(s); see documents/bench-checklist.md"
+    },
+    {
+      "id": "unverified:UNVERIFIED_BUS_EXPOSURE",
+      "status": "pending",
+      "reason": "11 item(s); see documents/bench-checklist.md"
+    },
+    {
+      "id": "unverified:UNVERIFIED_FIRMWARE",
+      "status": "pending",
+      "reason": "4 item(s); see documents/bench-checklist.md"
+    },
+    {
+      "id": "unverified:UNVERIFIED_PRICE",
+      "status": "pending",
+      "reason": "29 item(s); see documents/bench-checklist.md"
+    }
+  ],
+  "evidenceRefs": [],
+  "documents": [
+    {
+      "deviceProfile": "blv-r-60w-v1",
+      "id": "hp5140",
+      "revision": "8E",
+      "url": "https://www.orientalmotor.com/products/pdfs/opmanuals/HP-5140-8E.pdf",
+      "digest": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+    },
+    {
+      "deviceProfile": "blvd-krd-v1",
+      "id": "hp5140",
+      "revision": "8E",
+      "url": "https://www.orientalmotor.com/products/pdfs/opmanuals/HP-5140-8E.pdf",
+      "digest": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+    },
+    {
+      "deviceProfile": "blvd-krd-v1",
+      "id": "hp5143",
+      "revision": "3E",
+      "url": "https://www.orientalmotor.com/products/pdfs/opmanuals/HP-5143-3E.pdf",
+      "digest": "03101a4079faedec61bf2e791fcc309f92c2a2a6b513f019aa31ce75f64c3258"
+    }
+  ]
+}

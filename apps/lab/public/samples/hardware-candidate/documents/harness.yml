@@ -1,0 +1,419 @@
+# bundle 848dde50570d91aa07e2963a3e2c8ad17101c3da5e465a04c027b560ed511a11 electrical-compiler/1
+metadata:
+  title: "MEKONIQ harness 848dde50570d"
+  source: "bundle 848dde50570d91aa07e2963a3e2c8ad17101c3da5e465a04c027b560ed511a11 electrical-compiler/1"
+connectors:
+  "battery":
+    pincount: 2
+    pinlabels: ["OUT/NEG", "OUT/POS"]
+  "bumper-front-sw":
+    pincount: 2
+    pinlabels: ["C/1", "C/2"]
+  "bumper-left-sw":
+    pincount: 2
+    pinlabels: ["C/1", "C/2"]
+  "bumper-right-sw":
+    pincount: 2
+    pinlabels: ["C/1", "C/2"]
+  "buzzer":
+    pincount: 2
+    pinlabels: ["C/1", "C/2"]
+  "charger-sn":
+    pincount: 3
+    pinlabels: ["C/BK", "C/BN", "C/BU"]
+  "cliff-left-sn":
+    pincount: 3
+    pinlabels: ["C/BK", "C/BN", "C/BU"]
+  "cliff-right-sn":
+    pincount: 3
+    pinlabels: ["C/BK", "C/BN", "C/BU"]
+  "controller":
+    pincount: 5
+    pinlabels: ["CAN/CANH", "CAN/CANL", "CAN/GND", "PWR/GND", "PWR/VIN"]
+  "cover-sw":
+    pincount: 2
+    pinlabels: ["C/1", "C/2"]
+  "dock-sn":
+    pincount: 3
+    pinlabels: ["C/BK", "C/BN", "C/BU"]
+  "drive-left":
+    pincount: 5
+    pinlabels: ["CN1/1", "CN1/2", "CN4/5", "CN4/6", "CN4/7"]
+  "drive-right":
+    pincount: 5
+    pinlabels: ["CN1/1", "CN1/2", "CN4/5", "CN4/6", "CN4/7"]
+  "fuse-drive-left":
+    pincount: 2
+    pinlabels: ["F/IN", "F/OUT"]
+  "fuse-drive-right":
+    pincount: 2
+    pinlabels: ["F/IN", "F/OUT"]
+  "fuse-logic":
+    pincount: 2
+    pinlabels: ["F/IN", "F/OUT"]
+  "io-module":
+    pincount: 17
+    pinlabels: ["CAN/CANH", "CAN/CANL", "CAN/GND", "IO/COM", "IO/DI0", "IO/DI1", "IO/DI10", "IO/DI11", "IO/DI12", "IO/DI13", "IO/DI14", "IO/DI15", "IO/DI2", "IO/DO0", "IO/DO1", "PWR/GND", "PWR/VIN"]
+  "lamp":
+    pincount: 2
+    pinlabels: ["C/1", "C/2"]
+  "safety-relay":
+    pincount: 4
+    pinlabels: ["C/A1", "C/A2", "C/S33", "C/S34"]
+cables:
+  "W1":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["black"]
+  "W2":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["black"]
+  "W3":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["black"]
+  "W4":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["yellow"]
+  "W5":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["yellow"]
+  "W6":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["yellow"]
+  "W7":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["green"]
+  "W8":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["green"]
+  "W9":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["green"]
+  "W10":
+    wirecount: 1
+    gauge: "1 mm2"
+    colors: ["red"]
+  "W11":
+    wirecount: 1
+    gauge: "1 mm2"
+    colors: ["red"]
+  "W12":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["red"]
+  "W13":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["red"]
+    length: 0.8
+  "W14":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["red"]
+    length: 0.8
+  "W15":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["red"]
+    length: 0.8
+  "W16":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["red"]
+    length: 0.4
+  "W17":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["red"]
+    length: 0.8
+  "W18":
+    wirecount: 1
+    gauge: "1 mm2"
+    colors: ["red"]
+    length: 0.6
+  "W19":
+    wirecount: 1
+    gauge: "1 mm2"
+    colors: ["red"]
+    length: 0.6
+  "W20":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["red"]
+    length: 0.4
+  "W21":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["red"]
+    length: 0.4
+  "W22":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["black"]
+    length: 0.8
+  "W23":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["black"]
+    length: 0.8
+  "W24":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["black"]
+    length: 0.8
+  "W25":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["black"]
+    length: 0.4
+  "W26":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["black"]
+    length: 0.8
+  "W27":
+    wirecount: 1
+    gauge: "1 mm2"
+    colors: ["black"]
+    length: 0.6
+  "W28":
+    wirecount: 1
+    gauge: "1 mm2"
+    colors: ["black"]
+    length: 0.6
+  "W29":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["black"]
+    length: 0.4
+  "W30":
+    wirecount: 1
+    gauge: "0.5 mm2"
+    colors: ["black"]
+    length: 0.4
+  "W31":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["white"]
+  "W32":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["white"]
+  "W33":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["white"]
+  "W34":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["white"]
+  "W35":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["white"]
+  "W36":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["white"]
+  "W37":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["white"]
+  "W38":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["white"]
+  "W39":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["white"]
+  "W40":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["white"]
+  "W41":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["white"]
+  "W42":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["black"]
+  "W43":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["black"]
+  "W44":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["black"]
+  "W45":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["black"]
+  "W46":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["black"]
+  "W47":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["black"]
+  "W48":
+    wirecount: 1
+    gauge: "0.25 mm2"
+    colors: ["black"]
+connections:
+  - - "controller": [3]
+    - "W1": [1]
+    - "drive-left": [5]
+  - - "drive-left": [5]
+    - "W2": [1]
+    - "drive-right": [5]
+  - - "drive-right": [5]
+    - "W3": [1]
+    - "io-module": [3]
+  - - "controller": [1]
+    - "W4": [1]
+    - "drive-left": [4]
+  - - "drive-left": [4]
+    - "W5": [1]
+    - "drive-right": [4]
+  - - "drive-right": [4]
+    - "W6": [1]
+    - "io-module": [1]
+  - - "controller": [2]
+    - "W7": [1]
+    - "drive-left": [3]
+  - - "drive-left": [3]
+    - "W8": [1]
+    - "drive-right": [3]
+  - - "drive-right": [3]
+    - "W9": [1]
+    - "io-module": [2]
+  - - "battery": [2]
+    - "W10": [1]
+    - "fuse-drive-left": [1]
+  - - "battery": [2]
+    - "W11": [1]
+    - "fuse-drive-right": [1]
+  - - "battery": [2]
+    - "W12": [1]
+    - "fuse-logic": [1]
+  - - "charger-sn": [2]
+    - "W13": [1]
+    - "fuse-logic": [2]
+  - - "cliff-left-sn": [2]
+    - "W14": [1]
+    - "fuse-logic": [2]
+  - - "cliff-right-sn": [2]
+    - "W15": [1]
+    - "fuse-logic": [2]
+  - - "controller": [5]
+    - "W16": [1]
+    - "fuse-logic": [2]
+  - - "dock-sn": [2]
+    - "W17": [1]
+    - "fuse-logic": [2]
+  - - "drive-left": [1]
+    - "W18": [1]
+    - "fuse-drive-left": [2]
+  - - "drive-right": [1]
+    - "W19": [1]
+    - "fuse-drive-right": [2]
+  - - "fuse-logic": [2]
+    - "W20": [1]
+    - "io-module": [17]
+  - - "fuse-logic": [2]
+    - "W21": [1]
+    - "safety-relay": [1]
+  - - "battery": [1]
+    - "W22": [1]
+    - "charger-sn": [3]
+  - - "battery": [1]
+    - "W23": [1]
+    - "cliff-left-sn": [3]
+  - - "battery": [1]
+    - "W24": [1]
+    - "cliff-right-sn": [3]
+  - - "battery": [1]
+    - "W25": [1]
+    - "controller": [4]
+  - - "battery": [1]
+    - "W26": [1]
+    - "dock-sn": [3]
+  - - "battery": [1]
+    - "W27": [1]
+    - "drive-left": [2]
+  - - "battery": [1]
+    - "W28": [1]
+    - "drive-right": [2]
+  - - "battery": [1]
+    - "W29": [1]
+    - "io-module": [16]
+  - - "battery": [1]
+    - "W30": [1]
+    - "safety-relay": [2]
+  - - "bumper-front-sw": [1]
+    - "W31": [1]
+    - "io-module": [5]
+  - - "bumper-left-sw": [1]
+    - "W32": [1]
+    - "io-module": [6]
+  - - "bumper-right-sw": [1]
+    - "W33": [1]
+    - "io-module": [7]
+  - - "buzzer": [1]
+    - "W34": [1]
+    - "io-module": [14]
+  - - "charger-sn": [1]
+    - "W35": [1]
+    - "io-module": [8]
+  - - "cliff-left-sn": [1]
+    - "W36": [1]
+    - "io-module": [9]
+  - - "cliff-right-sn": [1]
+    - "W37": [1]
+    - "io-module": [10]
+  - - "cover-sw": [1]
+    - "W38": [1]
+    - "io-module": [11]
+  - - "dock-sn": [1]
+    - "W39": [1]
+    - "io-module": [12]
+  - - "io-module": [13]
+    - "W40": [1]
+    - "safety-relay": [3]
+  - - "io-module": [15]
+    - "W41": [1]
+    - "lamp": [1]
+  - - "bumper-front-sw": [2]
+    - "W42": [1]
+    - "io-module": [4]
+  - - "bumper-left-sw": [2]
+    - "W43": [1]
+    - "io-module": [4]
+  - - "bumper-right-sw": [2]
+    - "W44": [1]
+    - "io-module": [4]
+  - - "buzzer": [2]
+    - "W45": [1]
+    - "io-module": [4]
+  - - "cover-sw": [2]
+    - "W46": [1]
+    - "io-module": [4]
+  - - "io-module": [4]
+    - "W47": [1]
+    - "lamp": [2]
+  - - "io-module": [4]
+    - "W48": [1]
+    - "safety-relay": [4]
+# Tài liệu sinh tự động từ dữ liệu thiết kế; không thay thế đo điện hay đánh giá an toàn. / Generated from design data; it does not replace electrical measurement or a safety assessment.

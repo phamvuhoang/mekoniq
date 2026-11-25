@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "documentType": "stop-report",
+  "accepted": false,
+  "calibration": "not_calibrated",
+  "digest": "2360bae690cb2ac51b0e9124c0290250d8aa79f2cd1451ac8f6c0f8c9df87f39",
+  "runId": "eb022b49-be89-43a3-91e5-61549f47be83",
+  "function": "emergency",
+  "entryId": "s1",
+  "verdict": "fired",
+  "appliedTick": 412,
+  "receipt": {
+    "entryId": "s1",
+    "function": "emergency",
+    "appliedBy": "worker",
+    "appliedTick": 412,
+    "runId": "eb022b49-be89-43a3-91e5-61549f47be83",
+    "bootId": "d8c396a3-5f79-4438-825a-b3b1852a862a",
+    "sceneDigest": "dd646f2e7595203d967d893beb695df70c53fe206aa6ed8881a0c861d9cd8386",
+    "requestDigest": "ecce81c49ddb5d0b48a3fc3e7242d904b4905dbbd9e68d801659384aae1891e0"
+  },
+  "metrics": {
+    "stopTimeMs": 3200,
+    "stopDistanceM": 0.7956733931729532,
+    "peakDecelerationMps2": 0.1783236330667436,
+    "torqueZeroTick": 412,
+    "cupMaxSlipMm": 2.8149523070944285,
+    "cupTipped": false,
+    "postStopDriftMm": 0.1635081752062841,
+    "wheelSlip": false
+  },
+  "drives": [
+    {
+      "axisId": "amr-1/wheel-left",
+      "state": "fault",
+      "fault": "EXTERNAL_TRIP"
+    },
+    {
+      "axisId": "amr-1/wheel-right",
+      "state": "fault",
+      "fault": "EXTERNAL_TRIP"
+    }
+  ],
+  "invariants": [
+    {
+      "id": "TORQUE_ZERO_AT_EMERGENCY",
+      "result": "pass",
+      "detail": "zero torque on every chain axis from tick 412 to the end of the evidence (905 ticks)"
+    },
+    {
+      "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+      "result": "pass",
+      "detail": "no axis of the chain was enabled again after the stop"
+    },
+    {
+      "id": "NO_AUTO_RESTART",
+      "result": "pass",
+      "detail": "needs_attention with EMERGENCY_STOP at tick 412; the chain stayed latched to the end"
+    },
+    {
+      "id": "RECEIPT_MATCHES_INTENT",
+      "result": "pass",
+      "detail": "one receipt for tick 412, applied by the worker"
+    },
+    {
+      "id": "NO_FALSE_SERVE",
+      "result": "pass",
+      "detail": "served 0, status needs_attention; nothing was served after the stop"
+    }
+  ],
+  "decidingParameters": [
+    {
+      "id": "rollingResistanceM",
+      "value": 0.0001,
+      "source": {
+        "kind": "assumed",
+        "documentId": "serve-payload-v1/assumptions.json",
+        "revision": "1",
+        "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+        "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+      }
+    },
+    {
+      "id": "floorContactSliding",
+      "value": 0.6,
+      "source": {
+        "kind": "assumed",
+        "documentId": "serve-payload-v1/assumptions.json",
+        "revision": "1",
+        "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+        "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+      }
+    },
+    {
+      "id": "onDisable",
+      "value": "coast",
+      "source": {
+        "kind": "assumed",
+        "documentId": "docs/research/virtual-drive-spike/results.json",
+        "revision": "1",
+        "locator": "case 3: group-bit switch-off and brake softness",
+        "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+      }
+    },
+    {
+      "id": "brakeTorqueNm",
+      "value": null,
+      "source": {
+        "kind": "assumed",
+        "documentId": "docs/research/virtual-drive-spike/results.json",
+        "revision": "1",
+        "locator": "case 3: group-bit switch-off and brake softness",
+        "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+      }
+    }
+  ],
+  "limits": [
+    "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+    "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+    "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+  ]
+}

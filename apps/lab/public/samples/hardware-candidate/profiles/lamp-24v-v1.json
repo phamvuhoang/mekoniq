@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "documentType": "device-profile",
+  "id": "lamp-24v-v1",
+  "revision": 1,
+  "component": {
+    "id": "ref-lamp-24v",
+    "revision": "1",
+    "digest": "1d66e96f6cac197233136f9976353f58985488c9e3178bc99d360c94073b6f61"
+  },
+  "variant": {
+    "orderCode": null,
+    "hardwareRevision": null,
+    "firmware": null
+  },
+  "kind": "indicator",
+  "documents": [],
+  "connectors": [
+    {
+      "id": "C",
+      "label": "Terminals",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "+",
+          "role": "power",
+          "portId": "vin",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device lamp-24v: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "2",
+          "name": "-",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device lamp-24v: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      ]
+    }
+  ],
+  "ioPoints": [],
+  "interfaces": [],
+  "drive": null,
+  "digest": "83ba32f3a8bd230f88a09dd462ed8d59dae70f05ae11fb094a7fd39012b6aac2"
+}

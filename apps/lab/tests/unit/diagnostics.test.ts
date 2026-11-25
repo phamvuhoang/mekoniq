@@ -64,11 +64,11 @@ describe('panel',()=>{
  test('without a selection the panel asks for one',()=>{expect(diagnosticsPanel({targets:[{id:'a',label:'a'}],selected:null,device:null,tags:[],alarms:[]})).toContain('empty-inline');});
 });
 describe('stop rows',()=>{
- const rep=(fn:StopReportV1['function'],metrics:object)=>({function:fn,verdict:'fired',appliedTick:412,metrics,invariants:[]}) as unknown as StopReportV1;
+ const rep=(fn:StopReportV1['function'],metrics:object)=>({function:fn,verdict:'fired',appliedTick:412,metrics,invariants:[],decidingParameters:[]}) as unknown as StopReportV1;
  test('a number shows as a number, an unmeasured one as null with its reason, and the order is fixed',()=>{
   const rows=stopRows([rep('emergency',{stopDistanceM:0.796,stopTimeMs:3200,peakDecelerationMps2:0.18,cupMaxSlipMm:2.8,cupTipped:false}),rep('normal',{stopDistanceM:{unavailable:'NOT_AT_REST'},stopTimeMs:{unavailable:'NOT_AT_REST'}})]);
   expect(rows.map(r=>r.function)).toEqual(['normal','emergency']);
   expect(rows[0]).toMatchObject({distanceM:null,why:'NOT_AT_REST'});expect(rows[1]).toMatchObject({distanceM:0.796,timeMs:3200,cupTipped:false,why:null});
-  expect(stopRow({...rep('emergency',{}),invariants:[{id:'NO_AUTO_RESTART',result:'violated',detail:''}]} as StopReportV1).violated).toEqual(['NO_AUTO_RESTART']);
+  expect(stopRow({...rep('emergency',{}),decidingParameters:[],invariants:[{id:'NO_AUTO_RESTART',result:'violated',detail:''}]} as StopReportV1).violated).toEqual(['NO_AUTO_RESTART']);
  });
 });

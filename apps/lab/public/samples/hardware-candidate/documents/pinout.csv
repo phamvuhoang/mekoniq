@@ -1,0 +1,152 @@
+# bundle 848dde50570d91aa07e2963a3e2c8ad17101c3da5e465a04c027b560ed511a11 electrical-compiler/1
+device,connector,pin,name,role,net
+battery,OUT,POS,POS,power,pwr/rail-24v
+battery,OUT,NEG,NEG,return,ret/rail-24v
+bumper-front-sw,C,1,1,di,sig/bumper-front
+bumper-front-sw,C,2,2,return,sigret/io-module.IO/COM
+bumper-left-sw,C,1,1,di,sig/bumper-left
+bumper-left-sw,C,2,2,return,sigret/io-module.IO/COM
+bumper-right-sw,C,1,1,di,sig/bumper-right
+bumper-right-sw,C,2,2,return,sigret/io-module.IO/COM
+buzzer,C,1,+,power,sig/buzzer
+buzzer,C,2,-,return,sigret/io-module.IO/COM
+charger-sn,C,BN,BN +V,power,pwr/rail-24v
+charger-sn,C,BU,BU 0 V,return,ret/rail-24v
+charger-sn,C,BK,BK out,do,sig/charger-present
+cliff-left-sn,C,BN,BN +V,power,pwr/rail-24v
+cliff-left-sn,C,BU,BU 0 V,return,ret/rail-24v
+cliff-left-sn,C,BK,BK out,do,sig/cliff-left
+cliff-right-sn,C,BN,BN +V,power,pwr/rail-24v
+cliff-right-sn,C,BU,BU 0 V,return,ret/rail-24v
+cliff-right-sn,C,BK,BK out,do,sig/cliff-right
+controller,PWR,VIN,VIN,power,pwr/rail-24v
+controller,PWR,GND,GND,return,ret/rail-24v
+controller,CAN,CANH,CANH,bus,bus/can0/CAN_H
+controller,CAN,CANL,CANL,bus,bus/can0/CAN_L
+controller,CAN,GND,CAN GND,return,bus/can0/CAN_GND
+cover-sw,C,1,1,di,sig/cover-switch
+cover-sw,C,2,2,return,sigret/io-module.IO/COM
+dock-sn,C,BN,BN +V,power,pwr/rail-24v
+dock-sn,C,BU,BU 0 V,return,ret/rail-24v
+dock-sn,C,BK,BK out,do,sig/dock-detect
+drive-left,CN1,1,VIN,power,pwr/rail-24v
+drive-left,CN1,2,GND,return,ret/rail-24v
+drive-left,CN1,3,FG,pe,
+drive-left,CN2,1,MOTOR,motor_phase,
+drive-left,CN3,1,ENC/MB,encoder,
+drive-left,CN4,1,OUT0+,do,
+drive-left,CN4,2,OUT0-,return,
+drive-left,CN4,3,OUT1+,do,
+drive-left,CN4,4,OUT1-,return,
+drive-left,CN4,5,CAN_L,bus,bus/can0/CAN_L
+drive-left,CN4,6,CAN_H,bus,bus/can0/CAN_H
+drive-left,CN4,7,CAN_GND,return,bus/can0/CAN_GND
+drive-left,CN4,8,485GND,return,
+drive-left,CN4,9,TR+,bus,
+drive-left,CN4,10,TR-,bus,
+drive-left,CN4,11,HWTO1+,sto,safety/req-estop (review)
+drive-left,CN4,12,HWTO1-,sto,safety/req-estop (review)
+drive-left,CN4,13,0V,return,
+drive-left,CN4,14,EDM-,do,
+drive-left,CN4,15,IN-COM,return,
+drive-left,CN4,16,IN0,di,
+drive-left,CN4,17,IN1,di,
+drive-left,CN4,18,IN2,di,
+drive-left,CN4,19,IN3,di,
+drive-left,CN4,20,NET-VIN,power,
+drive-left,CN4,21,NET-GND,return,
+drive-left,CN4,22,485GND,return,
+drive-left,CN4,23,TR+,bus,
+drive-left,CN4,24,TR-,bus,
+drive-left,CN4,25,+V,power,
+drive-left,CN4,26,HWTO2+,sto,
+drive-left,CN4,27,HWTO2-,sto,
+drive-left,CN4,28,EDM+,do,
+drive-right,CN1,1,VIN,power,pwr/rail-24v
+drive-right,CN1,2,GND,return,ret/rail-24v
+drive-right,CN1,3,FG,pe,
+drive-right,CN2,1,MOTOR,motor_phase,
+drive-right,CN3,1,ENC/MB,encoder,
+drive-right,CN4,1,OUT0+,do,
+drive-right,CN4,2,OUT0-,return,
+drive-right,CN4,3,OUT1+,do,
+drive-right,CN4,4,OUT1-,return,
+drive-right,CN4,5,CAN_L,bus,bus/can0/CAN_L
+drive-right,CN4,6,CAN_H,bus,bus/can0/CAN_H
+drive-right,CN4,7,CAN_GND,return,bus/can0/CAN_GND
+drive-right,CN4,8,485GND,return,
+drive-right,CN4,9,TR+,bus,
+drive-right,CN4,10,TR-,bus,
+drive-right,CN4,11,HWTO1+,sto,
+drive-right,CN4,12,HWTO1-,sto,
+drive-right,CN4,13,0V,return,
+drive-right,CN4,14,EDM-,do,
+drive-right,CN4,15,IN-COM,return,
+drive-right,CN4,16,IN0,di,
+drive-right,CN4,17,IN1,di,
+drive-right,CN4,18,IN2,di,
+drive-right,CN4,19,IN3,di,
+drive-right,CN4,20,NET-VIN,power,
+drive-right,CN4,21,NET-GND,return,
+drive-right,CN4,22,485GND,return,
+drive-right,CN4,23,TR+,bus,
+drive-right,CN4,24,TR-,bus,
+drive-right,CN4,25,+V,power,
+drive-right,CN4,26,HWTO2+,sto,safety/req-estop (review)
+drive-right,CN4,27,HWTO2-,sto,safety/req-estop (review)
+drive-right,CN4,28,EDM+,do,
+estop-button,C,S1,S1,sto,safety/req-estop (review)
+estop-button,C,S2,S2,sto,safety/req-estop (review)
+estop-button,C,S3,S3,sto,
+estop-button,C,S4,S4,sto,
+fuse-drive-left,F,IN,IN,power,pwr/rail-24v
+fuse-drive-left,F,OUT,OUT,power,pwr/rail-24v
+fuse-drive-right,F,IN,IN,power,pwr/rail-24v
+fuse-drive-right,F,OUT,OUT,power,pwr/rail-24v
+fuse-logic,F,IN,IN,power,pwr/rail-24v
+fuse-logic,F,OUT,OUT,power,pwr/rail-24v
+io-module,PWR,VIN,VIN,power,pwr/rail-24v
+io-module,PWR,GND,GND,return,ret/rail-24v
+io-module,CAN,CANH,CANH,bus,bus/can0/CAN_H
+io-module,CAN,CANL,CANL,bus,bus/can0/CAN_L
+io-module,CAN,GND,CAN GND,return,bus/can0/CAN_GND
+io-module,IO,DI0,DI0,di,sig/bumper-front
+io-module,IO,DI1,DI1,di,sig/bumper-left
+io-module,IO,DI2,DI2,di,sig/estop-status
+io-module,IO,DI3,DI3,di,
+io-module,IO,DI4,DI4,di,
+io-module,IO,DI5,DI5,di,
+io-module,IO,DI6,DI6,di,
+io-module,IO,DI7,DI7,di,
+io-module,IO,DI8,DI8,di,
+io-module,IO,DI9,DI9,di,
+io-module,IO,DI10,DI10,di,sig/bumper-right
+io-module,IO,DI11,DI11,di,sig/charger-present
+io-module,IO,DI12,DI12,di,sig/cliff-left
+io-module,IO,DI13,DI13,di,sig/cliff-right
+io-module,IO,DI14,DI14,di,sig/cover-switch
+io-module,IO,DI15,DI15,di,sig/dock-detect
+io-module,IO,DO0,DO0,do,sig/buzzer
+io-module,IO,DO1,DO1,do,sig/lamp-status
+io-module,IO,DO2,DO2,do,
+io-module,IO,DO3,DO3,do,
+io-module,IO,COM,COM,return,sigret/io-module.IO/COM
+lamp,C,1,+,power,sig/lamp-status
+lamp,C,2,-,return,sigret/io-module.IO/COM
+motor-left,MOTOR,1,MOTOR,motor_phase,
+motor-left,ENC,1,ENC/MB,encoder,
+motor-right,MOTOR,1,MOTOR,motor_phase,
+motor-right,ENC,1,ENC/MB,encoder,
+safety-relay,C,A1,A1,power,pwr/rail-24v
+safety-relay,C,A2,A2,return,ret/rail-24v
+safety-relay,C,S11,S11,sto,
+safety-relay,C,S12,S12,sto,
+safety-relay,C,S21,S21,sto,
+safety-relay,C,S22,S22,sto,
+safety-relay,C,13,13,sto,
+safety-relay,C,14,14,sto,
+safety-relay,C,23,23,sto,
+safety-relay,C,24,24,sto,
+safety-relay,C,S33,S33,di,sig/estop-status
+safety-relay,C,S34,S34,di,sigret/io-module.IO/COM
+# Tài liệu sinh tự động từ dữ liệu thiết kế; không thay thế đo điện hay đánh giá an toàn. / Generated from design data; it does not replace electrical measurement or a safety assessment.

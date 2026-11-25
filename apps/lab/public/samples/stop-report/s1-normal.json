@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "documentType": "stop-report",
+  "accepted": false,
+  "calibration": "not_calibrated",
+  "digest": "0c18298965bcf13df9dc2266fb01b9d47a0d45e31df16a37ee2d551df12936a0",
+  "runId": "4de503cf-aee5-45d1-adc9-e64e14064dea",
+  "function": "normal",
+  "entryId": "s1",
+  "verdict": "fired",
+  "appliedTick": 412,
+  "receipt": {
+    "entryId": "s1",
+    "function": "normal",
+    "appliedBy": "controller",
+    "appliedTick": 412,
+    "runId": "4de503cf-aee5-45d1-adc9-e64e14064dea",
+    "bootId": "e06e42af-1a0d-42a7-ba34-cb2a1ae23628",
+    "sceneDigest": "051cba6f12b72e141c73131c7d551c9b8d4f1264026fd254666bbfe3164a3922",
+    "requestDigest": "4a49ce7473f23fe58ebd26eae368ab06ca503a74ac505f96dbbb485cf6211bff"
+  },
+  "metrics": {
+    "stopTimeMs": 640,
+    "stopDistanceM": 0.1670112815044357,
+    "peakDecelerationMps2": 1.1125460694738842,
+    "torqueZeroTick": {
+      "unavailable": "NOT_APPLICABLE"
+    },
+    "cupMaxSlipMm": 0.951535309094048,
+    "cupTipped": false,
+    "postStopDriftMm": 0.02468001143403355,
+    "wheelSlip": true
+  },
+  "drives": [
+    {
+      "axisId": "amr-1/wheel-left",
+      "state": "enabled",
+      "fault": null
+    },
+    {
+      "axisId": "amr-1/wheel-right",
+      "state": "enabled",
+      "fault": null
+    }
+  ],
+  "invariants": [
+    {
+      "id": "TORQUE_ZERO_AT_EMERGENCY",
+      "result": "not_applicable",
+      "detail": "only an emergency stop cuts torque"
+    },
+    {
+      "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+      "result": "not_applicable",
+      "detail": "a normal stop keeps the drive enabled"
+    },
+    {
+      "id": "NO_AUTO_RESTART",
+      "result": "not_applicable",
+      "detail": "a normal stop is not latched"
+    },
+    {
+      "id": "RECEIPT_MATCHES_INTENT",
+      "result": "pass",
+      "detail": "one receipt for tick 412, applied by the controller"
+    },
+    {
+      "id": "NO_FALSE_SERVE",
+      "result": "pass",
+      "detail": "served 0, status needs_attention; nothing was served after the stop"
+    }
+  ],
+  "decidingParameters": [
+    {
+      "id": "rollingResistanceM",
+      "value": 0.0001,
+      "source": {
+        "kind": "assumed",
+        "documentId": "serve-payload-v1/assumptions.json",
+        "revision": "1",
+        "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+        "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+      }
+    },
+    {
+      "id": "floorContactSliding",
+      "value": 0.6,
+      "source": {
+        "kind": "assumed",
+        "documentId": "serve-payload-v1/assumptions.json",
+        "revision": "1",
+        "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+        "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+      }
+    },
+    {
+      "id": "onDisable",
+      "value": "brake",
+      "source": {
+        "kind": "assumed",
+        "documentId": "docs/research/virtual-drive-spike/results.json",
+        "revision": "1",
+        "locator": "case 3: group-bit switch-off and brake softness",
+        "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+      }
+    },
+    {
+      "id": "brakeTorqueNm",
+      "value": 6,
+      "source": {
+        "kind": "assumed",
+        "documentId": "docs/research/virtual-drive-spike/results.json",
+        "revision": "1",
+        "locator": "case 3: group-bit switch-off and brake softness",
+        "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+      }
+    }
+  ],
+  "limits": [
+    "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+    "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+    "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+  ]
+}

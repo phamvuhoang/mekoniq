@@ -1,0 +1,32 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "documents/bench-checklist.md": "4cfcbbc7e36ea0b024e85e9aa71a7c4958547b0d55c666090a8ce93b60463f2c",
+    "documents/bom.csv": "531e52240cade56d41c855cbae4c8f4f3168f4ca71d300eccd158a601ffbce88",
+    "documents/checks.md": "58b8f21bf4e431a55ef3907ad127e874c4b46a5f721fddfa12abcfb00bd206eb",
+    "documents/harness.yml": "ffe461a512c0ab3abf31d1bc564abb881165f7e138d6eb780a4029dd52430670",
+    "documents/io-allocation.md": "0f4a3b7170c9fc65f3b14fd6e11ffe6ac24a585c308f76192d4cd200c82a071b",
+    "documents/pinout.csv": "c049fe2ef417631e23f84bf236517fb990a5f7cae985d44a1bf14f6ceead57b3",
+    "documents/wire-list.csv": "7015c263f41b712c2e6554ae29297f9f1a2d29c0c3f18157176923dae3e8842c",
+    "drive-model.derived.json": "97fbd4b5d37a64c60bd12c725951b9794986e1022bef09330dd2eda8ed4da34c",
+    "drive-model.diff.md": "ed2c6b5495d2c5d50f81c390254d069fc30600cbdeab892fc7fa39aa0493b541",
+    "electrical-bundle.json": "8243c7f4cbe74e1a164f218479565b6894029238648219fd2a0aa27369ea6bf9",
+    "electrical-design.json": "f1f8137ca55a39a9e691819c24c1767338f8217e5c177f4e0d072b097c5fa521",
+    "manifest.json": "b63d75b6da7f7f10a6ecf3d87ebb3bd23d005f03a1b84598f43e89c4bce5a1ec",
+    "profiles/battery-24v-pack-v1.json": "31b2cdaab9f0207a24bc1418c8f1befbe7ceea815084d3a16488ba3f7764e710",
+    "profiles/blv-r-60w-v1.json": "638850b78fb730eef41865ad37f34666a573237a26a7979150e69bcca65e0ead",
+    "profiles/blvd-krd-v1.json": "aac3a7cf875685612bff538d461443a180bf2c8b9ec6b3632f55525e8a615df9",
+    "profiles/buzzer-24v-v1.json": "f9f7e48cbd320387269bf69a6168f89ecadfb45bef41e6a2a6ecdc3f9816dffd",
+    "profiles/controller-ref-v1.json": "651d8471fab9009095f32b4b484f378cece909279ccb26f51f5ae61c2262a184",
+    "profiles/estop-button-v1.json": "3a4157b39ee6b584bd93876d0b93fb33db11844f0b047bf04cd58fc5bc8f22f7",
+    "profiles/fuse-10a-v1.json": "fa5b73b4371c863298c5d84a9243358c23d0f5cc5c5820e9a0b6da33dcdfb386",
+    "profiles/fuse-5a-v1.json": "7ae110b132d61eb809cf8fa21bb0b5fc093be952bf2b270f887408541a4d2bfd",
+    "profiles/io-module-can-ref-v1.json": "e9c0ae99290fc0ef8f053dcf866a728c7f7c817ff86091b13917613dbaa9782a",
+    "profiles/lamp-24v-v1.json": "8a805dc21c052ae12ac77fe2cb10e92068c78b4ab599a7016f93203dc0a54321",
+    "profiles/safety-relay-v1.json": "013423b422e959ce4c7048c02e9d8a6409d5dc68197511c3eb6a8f567b1fbef8",
+    "profiles/sensor-pnp-24v-v1.json": "d3ec69b547392807fc73765211d81aa40a5114bca8390ea554c941c235195896",
+    "profiles/switch-dry-contact-v1.json": "9def0b99a4ef4503234d36e0f7e2c04b692e23d2b97d8d81e7802c5865729dd0",
+    "safety-requirements.json": "eedce849c405b80acfefabf43a4a0092503cb02a9b694503a5fa15164b9c9942",
+    "wiring-policy.json": "18ac54235230042e691fca57d26c3c9b4dcda0290d686d385ea9190258665a93"
+  }
+}

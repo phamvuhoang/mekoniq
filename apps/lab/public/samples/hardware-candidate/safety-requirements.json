@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "documentType": "safety-requirements",
+  "id": "serve-safety-requirements-v1",
+  "revision": 1,
+  "requirements": [
+    {
+      "id": "req-estop",
+      "function": "emergency stop removes torque from both wheels through the power-removal inputs of the two drives",
+      "trigger": "emergency stop button, two normally closed channels, through a safety relay",
+      "stopCategory": 0,
+      "deviceIds": [
+        "estop-button",
+        "safety-relay",
+        "drive-left",
+        "drive-right"
+      ],
+      "signalIds": [
+        "estop-chain",
+        "sto-left",
+        "sto-right"
+      ],
+      "documents": [
+        {
+          "id": "hp5140",
+          "kind": "manual",
+          "title": "BLV Series R Type Operating Manual, Installation and Connection Edition (HP-5140-8E)",
+          "revision": "8E",
+          "url": "https://www.orientalmotor.com/products/pdfs/opmanuals/HP-5140-8E.pdf",
+          "digest": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd",
+          "license": "unreviewed"
+        }
+      ],
+      "notes": "The drive manual asks for a risk assessment and a verification test of the power-removal function (HP-5140-8E p.7). No certificate for BLVD-KRD is pinned and no risk assessment exists. A person responsible for safety must complete this register."
+    },
+    {
+      "id": "req-estop-contactor",
+      "function": "emergency stop opens the drive supply through a contactor, because the ZLAC8015D has no torque-off input",
+      "trigger": "emergency stop button, two normally closed channels, through a safety relay and a contactor",
+      "stopCategory": 0,
+      "deviceIds": [
+        "estop-button",
+        "safety-relay",
+        "contactor"
+      ],
+      "signalIds": [
+        "estop-chain",
+        "sto-left",
+        "sto-right"
+      ],
+      "documents": [],
+      "notes": "Opening the supply of a drive that regenerates needs a bleeder resistor (ZLAC8015D manual 3.6). No document supports the contactor arrangement yet; it is a question for the hardware lead."
+    }
+  ],
+  "digest": "140f75f26a41b10b066e23292df9f0f9434b81d17be9381c3ce8526a3d3a2595"
+}

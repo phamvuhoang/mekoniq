@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "documentType": "device-profile",
+  "id": "battery-24v-pack-v1",
+  "revision": 1,
+  "component": {
+    "id": "ref-battery-24v-pack",
+    "revision": "1",
+    "digest": "005b05631825169f983ca690c79b5f9807a36e7998f0c7f8b882565c11ae19a5"
+  },
+  "variant": {
+    "orderCode": null,
+    "hardwareRevision": null,
+    "firmware": null
+  },
+  "kind": "battery",
+  "documents": [],
+  "connectors": [
+    {
+      "id": "OUT",
+      "label": "Output",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "POS",
+          "name": "POS",
+          "role": "power",
+          "portId": "out",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device battery-24v-pack: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "NEG",
+          "name": "NEG",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device battery-24v-pack: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      ]
+    }
+  ],
+  "ioPoints": [],
+  "interfaces": [],
+  "drive": null,
+  "digest": "8ce380ce0ab9ef72137d9428725095f5df4c33d6cb808b8b7cc8ff53b3a7a274"
+}

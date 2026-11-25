@@ -1,0 +1,32 @@
+# bundle 848dde50570d91aa07e2963a3e2c8ad17101c3da5e465a04c027b560ed511a11 electrical-compiler/1
+line_id,component,sku,qty,candidate,unit_price,currency,price_date,missing_price
+serve-caster:1:3a95e23a,serve-caster,,2,true,,,,yes
+serve-chassis:1:ac075954,serve-chassis,,1,true,,,,yes
+serve-lidar:1:ccb41c58,serve-lidar,,1,true,,,,yes
+serve-support:1:4080c1c5,serve-support,,2,true,,,,yes
+serve-tray:1:5590e4c9,serve-tray,,3,true,,,,yes
+serve-wheel:1:53264351,serve-wheel,,2,true,,,,yes
+eld/drive/orientalmotor-blvd-krd:35e8b1c0,orientalmotor-blvd-krd,BLVD-KRD,2,true,,,,yes
+eld/part/orientalmotor-blv-r-60w:38e9860c,orientalmotor-blv-r-60w,BLMR260HK-A,2,true,,,,yes
+eld/part/ref-battery-24v-pack:005b0563,ref-battery-24v-pack,BAT-REF,1,true,,,,yes
+eld/part/ref-buzzer-24v:e114b3e8,ref-buzzer-24v,BUZ-REF,1,true,,,,yes
+eld/part/ref-controller-ref:0f558007,ref-controller-ref,CTRL-REF,1,true,,,,yes
+eld/part/ref-estop-button:af99cf79,ref-estop-button,ESTOP-REF,1,true,,,,yes
+eld/part/ref-fuse-10a:4de14491,ref-fuse-10a,FUSE-10A,2,true,,,,yes
+eld/part/ref-fuse-5a:e6582950,ref-fuse-5a,FUSE-5A,1,true,,,,yes
+eld/part/ref-io-module-can-ref:9db73067,ref-io-module-can-ref,IOM-REF,1,true,,,,yes
+eld/part/ref-lamp-24v:1d66e96f,ref-lamp-24v,LAMP-REF,1,true,,,,yes
+eld/part/ref-safety-relay:7559048e,ref-safety-relay,SAFRLY-REF,1,true,,,,yes
+eld/part/ref-sensor-pnp-24v:81878906,ref-sensor-pnp-24v,SNS-REF,4,true,,,,yes
+eld/part/ref-switch-dry-contact:5cc95cdd,ref-switch-dry-contact,SW-REF,4,true,,,,yes
+mate/DFMC_0_5/14-ST-2_54__PHOENIX_CONTACT___AWG26_to_20,mating-DFMC_0_5/14-ST-2_54__PHOENIX_CONTACT___AWG26_to_20,"DFMC 0,5/14-ST-2,54 (PHOENIX CONTACT), AWG26 to 20",2,true,,,,yes
+mate/F32FSS-03V-KX_with_LF3F-41GF-P2.0_contacts__J.S.T.___cable_LC03D06A_sold_separately,mating-F32FSS-03V-KX_with_LF3F-41GF-P2.0_contacts__J.S.T.___cable_LC03D06A_sold_separately,F32FSS-03V-KX with LF3F-41GF-P2.0 contacts (J.S.T.); cable LC03D06A sold separately,2,true,,,,yes
+wire/0.25mm2:black,wire-0.25mm2:black,,1,true,,,,yes
+wire/0.25mm2:green,wire-0.25mm2:green,,1,true,,,,yes
+wire/0.25mm2:white,wire-0.25mm2:white,,1,true,,,,yes
+wire/0.25mm2:yellow,wire-0.25mm2:yellow,,1,true,,,,yes
+wire/0.5mm2:black,wire-0.5mm2:black,,5,true,,,,yes
+wire/0.5mm2:red,wire-0.5mm2:red,,5,true,,,,yes
+wire/1mm2:black,wire-1mm2:black,,2,true,,,,yes
+wire/1mm2:red,wire-1mm2:red,,2,true,,,,yes
+# Tài liệu sinh tự động từ dữ liệu thiết kế; không thay thế đo điện hay đánh giá an toàn. / Generated from design data; it does not replace electrical measurement or a safety assessment.

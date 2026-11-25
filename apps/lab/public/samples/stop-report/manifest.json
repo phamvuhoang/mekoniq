@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "documentType": "stop-report-sample",
+  "accepted": false,
+  "calibration": "not_calibrated",
+  "files": [
+    {
+      "path": "s1-normal.json",
+      "sha256": "1ec288d1384969e0b2933c7c69858e7707f9740c6f9ee2b36f0bbbb65fa61722"
+    },
+    {
+      "path": "s1-protective.json",
+      "sha256": "a75f6393845a6c04aeedd2d026b11f1d4875092c3e596a2f746dbf1187276998"
+    },
+    {
+      "path": "s1-emergency-coast.json",
+      "sha256": "ef528111e004313cc832fcb1efbd4341e37cf57af8f08fa45cbc58bdcdab7b6b"
+    },
+    {
+      "path": "s1-emergency-brake.json",
+      "sha256": "7528b8ee6045c56ad064306ca55776b3153e0071dfa58b877b8d1f7d8bb5f6af"
+    }
+  ]
+}

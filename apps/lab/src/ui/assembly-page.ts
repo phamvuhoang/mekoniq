@@ -13,6 +13,8 @@ import {mayAutoProbe} from '../runtime/target';
 import {loadBom,loadCompiledScene} from '../scenarios/engineering';
 import {hashJson} from '../twin/hash';
 import {electricalPanel} from './electrical-panel';
+import {samplesPanel,type SamplesState} from './samples-panel';
+import {fetchStatic,loadHardwareSample,loadStopSample,validEntry,verifySample} from '../reports/samples';
 import {electricalView,pinSignal,serveOptions} from '../design/electrical';
 import type {ElectricalBundleV1,ElectricalDesignV1,TcoComparisonV1} from '../shared/engineering';
 import {tr} from '../i18n';
@@ -40,6 +42,7 @@ export class AssemblyWorkspace {
   private validating=false;
   private validationError='';
   // R5 electrical section: the server's bundles by option id; nothing here is computed locally
+  private samples:SamplesState={entries:null,error:'',open:null,verify:null,hardware:null,stop:null};
   private caps:string[]|null=null;private elOption='serve-hw-c-v1';private elDesigns=new Map<string,ElectricalDesignV1>();private elBundles=new Map<string,ElectricalBundleV1>();
   private elRejection:string[]|null=null;private elBusy=false;private elFilter:'all'|'blocking'|'warning'|'unverified'='all';private elWire:string|null=null;private elCompare:TcoComparisonV1|null=null;private elCompareError='';private elPackaging=false;
   constructor(private readonly rerender:()=>void,private readonly rt:TwinRuntime=httpTwinRuntime(),private readonly download:(name:string,data:string)=>void=()=>{}) {
@@ -150,10 +153,12 @@ ${compile}
 <h3>${tr('Kết quả compile','コンパイル結果','Compile result')}</h3>${receiptView}${bom}
 ${validation}
 ${electrical}
+${samplesPanel(this.samples)}
 <div id="asm-scene" data-testid="asm-scene" class="asm-scene" role="img" aria-label="${tr('Cảnh đã compile','コンパイル済みシーン','Compiled scene')}">${this.scene?'':tr('Chưa có cảnh: compile để xem hình học do compiler tạo ra.','シーンなし: コンパイルするとコンパイラ生成のジオメトリを表示します。','No scene yet: compile to see the compiler\'s own geometry.')}</div></section>`;
   }
   mounted():void {
     void this.restore();
+    if (!this.samples.entries&&!this.samples.error) void this.loadSampleCatalog();
     // a new connection since the last answer: a page that may ask its own runtime by itself asks again
     if (this.restored&&this.canCompile===null&&!this.probing&&this.autoProbe()) void this.probe().then(()=>this.rerender());
     const importer=document.getElementById('asm-import') as HTMLInputElement|null;
@@ -178,6 +183,7 @@ ${electrical}
       case 'asm-serve3d': this.openServe(serve3dProject(),serve3dCatalog);break;
       case 'asm-fleet3d': this.openServe(fleet3dProject(),serve3dCatalog);break;
       case 'asm-validate': if (value) void this.validate(value);break;
+      case 'el-sample': if (value) void this.openSample(value as 'hardware-candidate'|'stop-report');break;
       case 'el-option': if (value) {this.elOption=value;this.elRejection=null;this.elWire=null;this.rerender();}break;
       case 'el-compile': void this.compileElectrical();break;
       case 'el-filter': this.elFilter=value as typeof this.elFilter;this.rerender();break;
@@ -208,6 +214,20 @@ ${electrical}
     try {const bundle=await this.rt.compileElectrical(ref,base);this.elDesigns.set(this.elOption,base);this.elBundles.set(this.elOption,bundle);}
     catch (e) {const t=e as {code?:string;reasonCodes?:string[]};this.elRejection=[...(t.reasonCodes?.length?t.reasonCodes:[t.code??String(e)])];}
     finally {this.elBusy=false;this.rerender();}
+  }
+  private async loadSampleCatalog():Promise<void> {
+    try {const list=JSON.parse(new TextDecoder().decode(await fetchStatic('samples/catalog.json'))) as unknown[];this.samples={...this.samples,entries:list.filter(validEntry)};}
+    catch (e) {this.samples={...this.samples,entries:[],error:(e as Error).message};}
+    this.rerender();
+  }
+  private async openSample(id:'hardware-candidate'|'stop-report'):Promise<void> {
+    const entry=this.samples.entries?.find(e=>e.id===id);if (!entry) return;
+    this.samples={...this.samples,open:id,verify:null,hardware:null,stop:null,error:''};this.rerender();
+    try {
+      const verify=await verifySample(entry,fetchStatic);
+      this.samples={...this.samples,verify,hardware:verify.ok&&id==='hardware-candidate'?await loadHardwareSample(entry,fetchStatic):null,stop:verify.ok&&id==='stop-report'?await loadStopSample(entry,fetchStatic):null};
+    } catch (e) {this.samples={...this.samples,error:(e as Error).message};}
+    this.rerender();
   }
   private async pin(signalId:string,target?:null):Promise<void> {
     const base=this.elDesigns.get(this.elOption)??serveOptions().find(o=>o.id===this.elOption)?.design;if (!base) return;

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "hardware-candidate",
+    "kind": "hardware_candidate",
+    "manifest": "samples/hardware-candidate/manifest.json",
+    "sha256": "b63d75b6da7f7f10a6ecf3d87ebb3bd23d005f03a1b84598f43e89c4bce5a1ec",
+    "calibration": "not_calibrated",
+    "accepted": false
+  },
+  {
+    "id": "stop-report",
+    "kind": "stop_report",
+    "manifest": "samples/stop-report/manifest.json",
+    "sha256": "13a8573e9ca57df1bd53cba5e2cd871744747d15a69d7ac89d18a222abde437d",
+    "calibration": "not_calibrated",
+    "accepted": false
+  }
+]
