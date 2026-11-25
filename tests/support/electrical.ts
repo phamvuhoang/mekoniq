@@ -86,3 +86,14 @@ export function allocContext(o:{points?:Point[];signals?:SignalV1[];cycleMs?:num
   buses:[{id:'can0',protocol:'canopen',controllerDeviceId:'controller',cycleMs:o.cycleMs??10,members:[{deviceId:'controller',interfaceId:'can0',address:null},...(o.moduleOnBus===false?[]:[{deviceId:'io',interfaceId:'can0',address:1}]),...extra.filter(e=>e.onBus!==false).map((e,i)=>({deviceId:e.id,interfaceId:'can0',address:2+i}))]}]};
  return {design:full,profiles:new Map(devices.map(x=>[x.id,x.profile])),resolved:{placements:[],bom:{lines:[]}} as never,project:{id:'project-test',revision:1,digest:'p'.repeat(64)}};
 }
+
+import {loadCatalog} from '../../packages/lab-runtime/src/engineering/catalog';
+/** One of the shipped Serve options with its catalog profiles and components, as the compiler sees it after admission. */
+export async function shippedContext(option:'serve-hw-a-v1'|'serve-hw-b-v1'|'serve-hw-c-v1',tweak:(d:ElectricalDesignV1)=>ElectricalDesignV1=d=>d){
+ const catalog=await loadCatalog('robotics/catalog'),json=async(n:string)=>JSON.parse(await readFile(`robotics/catalog/electrical/${n}`,'utf8'));
+ const design=tweak(await json(`${option}.json`)),policy=await json('wiring-policy-v1.json') as WiringPolicyV1,safety=await json('serve-safety-requirements-v1.json') as SafetyRequirementsV1;
+ const byId=Object.values(catalog.deviceProfiles);
+ const profiles=new Map(design.devices.map(d=>[d.id,byId.find(p=>p.id===d.profile.id&&p.revision===d.profile.revision)!]));
+ const context:DesignContext={design,profiles,components:catalog.components,resolved:{placements:[],bom:{lines:[],incompleteTotal:false,missingPriceLineIds:[]}} as never,project:{id:design.project.id,revision:design.project.revision,digest:'p'.repeat(64)}};
+ return {context,policy,safety,catalog};
+}

@@ -10,6 +10,7 @@ import {ALLOWED_UNITS,type Checked,type Problem,type Scalar} from '../contracts'
 import type {DeviceProfileV1,ElectricalDesignV1,SafetyRequirementsV1,WiringPolicyV1} from '../../../../contracts/generated/engineering';
 export type {DeviceProfileV1,IOPointV1,DriveCapabilityV1,SafetyClaim,DeviceDocument} from '../../../../contracts/generated/engineering';
 export type {ElectricalDesignV1,SignalV1,StopFunctionV1,WiringPolicyV1,SafetyRequirementsV1,DocumentRef} from '../../../../contracts/generated/engineering';
+export type {CheckResult,IoAllocationV1,NetlistV1,ElectricalBundleV1} from '../../../../contracts/generated/engineering';
 export type {Checked,Problem};
 
 const ajv=new Ajv({allErrors:true,strict:true,discriminator:true});addFormats(ajv);
