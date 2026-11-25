@@ -2,7 +2,7 @@
 
 **Trạng thái ngày 2026-11-14: đã deploy vào `mekoniq / asia-southeast1`; CL01 qua HTTP đạt.** Người dùng đã cho phép triển khai theo D60. Dịch vụ `mekoniq-lab-runtime-00002-9lx` chạy image amd64 của source `4f893ac`, cùng pin Lab. URL chuẩn: `https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app`. [Bản ghi CL01](../implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md) giữ lệnh, digest, health và kết quả gốc; chưa được người duyệt chấp nhận. Qualification R2a gốc giữ `G-CLOUD1=blocked_external`; guard `cloud-run` mới xác nhận G-CLOUD1 `tested` bằng bản bổ sung gắn với đúng SHA-256 của qualification, không sửa dữ liệu gốc.
 
-Runtime là tiến trình mà Lab (giao diện web) điều khiển qua HTTP. Image (`deploy/lab-runtime/`, D59) có các backend mock và cánh tay MuJoCo; không có Webots, IR-SIM, LinkForge hay công cụ thuật toán. Các lệnh bên dưới dùng project `mekoniq`, origin `https://mekoniq-lab.vercel.app` và tên secret `lab-access-key`. Cấu hình không chứa bí mật nằm trong `deploy/lab-runtime/mekoniq.env.example`; giá trị khóa chỉ lưu trong Secret Manager và trình quản lý mật khẩu.
+Runtime là tiến trình mà Lab (giao diện web) điều khiển qua HTTP. Image (`deploy/lab-runtime/`, D59) có các backend mock và cánh tay MuJoCo; không có Webots, IR-SIM, LinkForge hay công cụ thuật toán. Các lệnh bên dưới dùng project `mekoniq`, origin `https://lab.mekoniq.app` và tên secret `lab-access-key`. Cấu hình không chứa bí mật nằm trong `deploy/lab-runtime/mekoniq.env.example`; giá trị khóa chỉ lưu trong Secret Manager và trình quản lý mật khẩu.
 
 ## MuJoCo trên x86-64 thật và dưới giả lập
 
@@ -36,7 +36,7 @@ gcloud services enable run.googleapis.com artifactregistry.googleapis.com cloudb
 gcloud artifacts repositories create lab --repository-format=docker --location=asia-southeast1 --project=mekoniq
 ```
 
-- Origin của Lab: `LAB_ORIGIN`, chính xác dạng `scheme://host[:port]`, chữ thường, không đường dẫn, không dấu `*`, không dấu `/` cuối. `https` (hoặc `http` chỉ cho host loopback). Ví dụ `https://mekoniq-lab.vercel.app`. Script thoát mã 2 và nêu tên biến nếu sai.
+- Origin của Lab: `LAB_ORIGIN`, chính xác dạng `scheme://host[:port]`, chữ thường, không đường dẫn, không dấu `*`, không dấu `/` cuối. `https` (hoặc `http` chỉ cho host loopback). Ví dụ `https://lab.mekoniq.app`. Script thoát mã 2 và nêu tên biến nếu sai.
 - Khóa truy cập là secret trong Secret Manager, tạo bằng tay (mục 2). Script chỉ nhận **tên** secret.
 
 ## 2. Secret khóa truy cập (tạo tay)
@@ -103,7 +103,7 @@ gcloud builds submit "$CTX" --config="$CTX/cloudbuild.yaml" --substitutions=_COM
 Lần triển khai đã ghi dùng digest cố định và tài khoản riêng `mekoniq-lab-runtime@mekoniq.iam.gserviceaccount.com`, chỉ được đọc secret `lab-access-key`. Project mới chưa có tài khoản Compute mặc định nên dùng trực tiếp lệnh `gcloud run deploy` với các cờ của script và thêm `--service-account=…`; xem `deploy-command.json` trong bản ghi CL01. Script chưa có tham số chọn service account. Khi triển khai lại, giữ nguyên và kiểm tra `serviceAccountName` này; khi tạo một dịch vụ mới cần chỉ rõ tài khoản phù hợp.
 
 ```sh
-export GCP_PROJECT=mekoniq GCP_REGION=asia-southeast1 LAB_ORIGIN=https://mekoniq-lab.vercel.app ACCESS_KEY_SECRET=lab-access-key IMAGE   # IMAGE như mục 3; SERVICE tùy chọn, mặc định mekoniq-lab-runtime
+export GCP_PROJECT=mekoniq GCP_REGION=asia-southeast1 LAB_ORIGIN=https://lab.mekoniq.app ACCESS_KEY_SECRET=lab-access-key IMAGE   # IMAGE như mục 3; SERVICE tùy chọn, mặc định mekoniq-lab-runtime
 deploy/lab-runtime/cloud-run.sh              # chạy thử: chỉ in lệnh, không gọi gcloud
 deploy/lab-runtime/cloud-run.sh --execute    # chạy thật, theo lệnh của người dùng
 ```
@@ -137,7 +137,7 @@ Phải thấy `sourceCommit` bằng commit Lab đã ghim, `schemaHash`, `feature
 2. **Ghép nối bằng khóa**, khóa không đi qua tham số dòng lệnh:
 
 ```sh
-read -rs KEY; printf '{"token":"%s"}' "$KEY" | curl -s -X POST -H 'Origin: https://mekoniq-lab.vercel.app' -H 'Content-Type: application/json' --data-binary @- https://SERVICE_HOST/lab/v2/sessions -o /dev/null -w '%{http_code}\n'; unset KEY
+read -rs KEY; printf '{"token":"%s"}' "$KEY" | curl -s -X POST -H 'Origin: https://lab.mekoniq.app' -H 'Content-Type: application/json' --data-binary @- https://SERVICE_HOST/lab/v2/sessions -o /dev/null -w '%{http_code}\n'; unset KEY
 ```
 
 Mong đợi `201` (thân trả `sessionToken`; lệnh trên chỉ in mã trạng thái, đừng dán token vào nhật ký). Khóa sai: `401 PAIRING_INVALID`; quá 5 lần sai trong một phút: `429 PAIRING_RATE_LIMITED`. Sau đó mở Lab (origin `LAB_ORIGIN`), nối tới URL dịch vụ bằng khóa truy cập.

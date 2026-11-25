@@ -30,7 +30,7 @@ docker run --rm --read-only --tmpfs /tmp -p 127.0.0.1:8080:8080 \
 | `LAB_DATA_DIR` | Writable run directory; image default `/tmp/runs`, persistent profile `/data/runs`. Exclusive process lease acquired before providers start. |
 | `PORT` | Listening port; default 8080 (Cloud Run sets it). |
 | `LAB_PUBLIC_HOST` | The `Host` the runtime must accept, as the proxy forwards it (for Cloud Run the service host without scheme, e.g. `svc-xyz.a.run.app`). Becomes `--public-host`; omitted when empty. |
-| `LAB_ALLOW_ORIGIN` | The one browser origin allowed (e.g. `https://mekoniq-lab.vercel.app`). Becomes `--allow-origin`; omitted when empty. |
+| `LAB_ALLOW_ORIGIN` | The one browser origin allowed (e.g. `https://lab.mekoniq.app`). Becomes `--allow-origin`; omitted when empty. |
 
 Flags: `--bind 0.0.0.0 --data-dir "$LAB_DATA_DIR" --engineering-catalog /app/catalog --engineering-portable-only --mujoco-python /opt/venv-mujoco/bin/python --mujoco-worker /app/robotics/simulation-mujoco --mujoco-lock …/requirements.lock`, `MEKONIQ_LAB_MUJOCO=1`. The default remains ephemeral under `/tmp`; mount the persistent profile named volume to retain committed run data. The remaining filesystem is read-only. The entrypoint `exec`s Node, so Node is PID 1 and a `SIGTERM` (`docker stop`, Cloud Run) closes the gateway and exits 0.
 
