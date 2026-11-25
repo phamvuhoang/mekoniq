@@ -12,6 +12,9 @@ import {httpTwinRuntime,type TwinRuntime} from '../scenarios/controls';
 import {mayAutoProbe} from '../runtime/target';
 import {loadBom,loadCompiledScene} from '../scenarios/engineering';
 import {hashJson} from '../twin/hash';
+import {electricalPanel} from './electrical-panel';
+import {electricalView,pinSignal,serveOptions} from '../design/electrical';
+import type {ElectricalBundleV1,ElectricalDesignV1,TcoComparisonV1} from '../shared/engineering';
 import {tr} from '../i18n';
 import {esc} from './icons';
 
@@ -36,6 +39,9 @@ export class AssemblyWorkspace {
   private validation:ValidationState|null=null;
   private validating=false;
   private validationError='';
+  // R5 electrical section: the server's bundles by option id; nothing here is computed locally
+  private caps:string[]|null=null;private elOption='serve-hw-c-v1';private elDesigns=new Map<string,ElectricalDesignV1>();private elBundles=new Map<string,ElectricalBundleV1>();
+  private elRejection:string[]|null=null;private elBusy=false;private elFilter:'all'|'blocking'|'warning'|'unverified'='all';private elWire:string|null=null;private elCompare:TcoComparisonV1|null=null;private elCompareError='';private elPackaging=false;
   constructor(private readonly rerender:()=>void,private readonly rt:TwinRuntime=httpTwinRuntime(),private readonly download:(name:string,data:string)=>void=()=>{}) {
     // a new draft: the reference world and entities, no parts chosen yet, so every blocker is visible from the start
     const base=referenceProject();
@@ -80,8 +86,8 @@ export class AssemblyWorkspace {
   private connection():string {return `${this.rt.target?.base??'/lab/v2'}|${this.rt.paired}`;}
   private async probe():Promise<void> {
     this.probed=this.connection();this.probing=true;
-    try {this.canCompile=!!(await this.rt.health()).capabilities?.includes('engineering_bundle_v1');this.reach=this.canCompile?'ok':'missing';}
-    catch {this.canCompile=false;this.reach='unreachable';}
+    try {const h=await this.rt.health();this.caps=h.capabilities??[];this.canCompile=!!h.capabilities?.includes('engineering_bundle_v1');this.reach=this.canCompile?'ok':'missing';}
+    catch {this.canCompile=false;this.reach='unreachable';this.caps=null;}
     finally {this.probing=false;}
   }
   /** Takes everything the archive holds into the catalog (nothing is dropped) and opens its project with the identity it was saved with. */
@@ -113,6 +119,8 @@ export class AssemblyWorkspace {
     const ref=this.currentRef(),validation=modelValidationPanel({v:this.validation,view:validationView(this.validation,{projectDigest:hashJson(p),ref},p),robots:p.runtimeProject.entities.filter(e=>e.kind==='amr').map(e=>e.id),canValidate:!!ref&&!!this.rt.validateEngineeringModel&&!!this.canCompile,busy:this.validating||this.busy,error:this.validationError});
     const world=p.runtimeProject.world,worldEdit=`<p class="asm-world"><label for="asm-world-width">${tr('Chiều rộng mặt bằng (m)','レイアウト幅(m)','World width (m)')}</label> <input id="asm-world-width" type="number" min="1" max="200" step="0.5" value="${esc(world.width)}"> · ${tr('chiều cao','高さ','height')} ${esc(world.height)} m · <code>${esc(world.id)}</code> · ${world.points.filter(q=>q.kind==='table').length} ${tr('bàn','テーブル','tables')} · ${world.obstacles.length} ${tr('vật cản','障害物','obstacles')}</p>`;
     const estimates=`<div data-testid="asm-estimates"><p>${tr('Khối lượng AMR','AMR質量','AMR mass')}: <span data-testid="asm-est-mass">${num(summary.massKg,'kg')}</span> · ${tr('Năng lượng dùng được (danh định, chưa có duty/derating)','使用可能エネルギー(公称、デューティ/ディレーティング前)','Usable energy (nominal, before duty or derating)')}: <span data-testid="asm-est-energy">${num(summary.nominalUsableWh,'Wh')}</span></p>${summary.missing.length?`<ul class="asm-problems" data-testid="asm-est-missing">${summary.missing.map(m=>`<li data-code="${esc(m.code)}"><b>${esc(m.code)}</b> ${esc(m.detail)}</li>`).join('')}</ul>`:''}</div>`;
+    const options=serveOptions(),design=this.elDesigns.get(this.elOption)??options.find(o=>o.id===this.elOption)?.design??null,bundle=this.elBundles.get(this.elOption)??null;
+    const electrical=electricalPanel({view:electricalView({capabilities:this.caps,bundle,design,rejection:this.elRejection,busy:this.elBusy}),options:options.map(o=>({id:o.id,label:o.label})),optionId:this.elOption,bundle,design,filter:this.elFilter,selectedWire:this.elWire,compare:this.elCompare,compareError:this.elCompareError,busy:this.elBusy,packaging:this.elPackaging});
     return `<section class="panel assembly-page" data-testid="assembly-page" aria-labelledby="asm-title">
 <div class="panel-heading"><h2 id="asm-title">${tr('Lắp ráp kỹ thuật','エンジニアリング組立','Engineering assembly')}</h2>
 <p>${tr('Bản xem trước ngoại tuyến là cấu trúc; thông số của linh kiện ứng viên là giả định cho tới khi có nguồn.','オフラインのプレビューは構造のみ。候補部品のパラメータは出典が揃うまで仮定です。','The offline preview is structural; candidate part parameters are assumptions until sourced.')}</p></div>
@@ -141,6 +149,7 @@ ${compile}
 <h3>${tr('Mặt bằng','レイアウト','World')}</h3>${worldEdit}
 <h3>${tr('Kết quả compile','コンパイル結果','Compile result')}</h3>${receiptView}${bom}
 ${validation}
+${electrical}
 <div id="asm-scene" data-testid="asm-scene" class="asm-scene" role="img" aria-label="${tr('Cảnh đã compile','コンパイル済みシーン','Compiled scene')}">${this.scene?'':tr('Chưa có cảnh: compile để xem hình học do compiler tạo ra.','シーンなし: コンパイルするとコンパイラ生成のジオメトリを表示します。','No scene yet: compile to see the compiler\'s own geometry.')}</div></section>`;
   }
   mounted():void {
@@ -169,6 +178,14 @@ ${validation}
       case 'asm-serve3d': this.openServe(serve3dProject(),serve3dCatalog);break;
       case 'asm-fleet3d': this.openServe(fleet3dProject(),serve3dCatalog);break;
       case 'asm-validate': if (value) void this.validate(value);break;
+      case 'el-option': if (value) {this.elOption=value;this.elRejection=null;this.elWire=null;this.rerender();}break;
+      case 'el-compile': void this.compileElectrical();break;
+      case 'el-filter': this.elFilter=value as typeof this.elFilter;this.rerender();break;
+      case 'el-wire': this.elWire=value??null;this.rerender();break;
+      case 'el-pin': if (value) void this.pin(value);break;
+      case 'el-unpin': if (value) void this.pin(value,null);break;
+      case 'el-compare': void this.compareElectrical();break;
+      case 'el-package': void this.packageElectrical();break;
     }
   }
   submit(form:HTMLFormElement):boolean {
@@ -182,10 +199,43 @@ ${validation}
     const width=Number(value);
     if (id==='asm-world-width'&&Number.isFinite(width)&&width>=1&&width<=200&&width!==this.design().runtimeProject.world.width) this.edit(p=>({...p,revision:p.revision+1,runtimeProject:{...p.runtimeProject,revision:p.runtimeProject.revision+1,world:{...p.runtimeProject.world,revision:p.runtimeProject.world.revision+1,width}}}));
   }
+  /** Needs the receipt of a compiled engineering bundle for this exact draft (the electrical design binds to its project); the server answers with a bundle or a refusal code. */
+  private async compileElectrical(design?:ElectricalDesignV1):Promise<void> {
+    const ref=this.currentRef(),base=design??this.elDesigns.get(this.elOption)??serveOptions().find(o=>o.id===this.elOption)?.design;
+    if (!base||this.elBusy) return;
+    if (!ref||!this.rt.compileElectrical) {this.elRejection=[ref?'ELECTRICAL_CAPABILITY_REQUIRED':'ENGINEERING_BUNDLE_NOT_COMPILED'];this.rerender();return;}
+    this.elBusy=true;this.elRejection=null;this.rerender();
+    try {const bundle=await this.rt.compileElectrical(ref,base);this.elDesigns.set(this.elOption,base);this.elBundles.set(this.elOption,bundle);}
+    catch (e) {const t=e as {code?:string;reasonCodes?:string[]};this.elRejection=[...(t.reasonCodes?.length?t.reasonCodes:[t.code??String(e)])];}
+    finally {this.elBusy=false;this.rerender();}
+  }
+  private async pin(signalId:string,target?:null):Promise<void> {
+    const base=this.elDesigns.get(this.elOption)??serveOptions().find(o=>o.id===this.elOption)?.design;if (!base) return;
+    let to:{deviceId:string;pointId:string}|null=null;
+    if (target!==null) {const [deviceId,pointId]=((document.getElementById(`el-pin-${signalId}`) as HTMLSelectElement|null)?.value??'').split('|');if (!deviceId||!pointId) return;to={deviceId,pointId};}
+    await this.compileElectrical(pinSignal(base,signalId,to));
+  }
+  private async compareElectrical():Promise<void> {
+    if (!this.rt.compareElectrical||this.elBusy) return;
+    const digests=serveOptions().map(o=>this.elBundles.get(o.id)?.digest).filter((d):d is string=>!!d);
+    this.elCompareError='';
+    if (digests.length<2) {this.elCompareError='NEEDS_TWO_COMPILED_OPTIONS';this.rerender();return;}
+    this.elBusy=true;this.rerender();
+    try {this.elCompare=await this.rt.compareElectrical(digests);} catch (e) {this.elCompareError=(e as {code?:string}).code??String(e);}
+    finally {this.elBusy=false;this.rerender();}
+  }
+  private async packageElectrical():Promise<void> {
+    const bundle=this.elBundles.get(this.elOption);
+    if (!bundle||bundle.state!=='compiled'||!this.rt.packageElectrical||this.elPackaging) return;
+    this.elPackaging=true;this.rerender();
+    try {const pkg=await this.rt.packageElectrical(bundle.digest);this.download(`${this.elOption}.hardware-candidate.json`,JSON.stringify(pkg,null,2));}
+    catch (e) {this.elRejection=[(e as {code?:string}).code??String(e)];}
+    finally {this.elPackaging=false;this.rerender();}
+  }
   private openServe(design:EngineeringProject=serveProject(),catalog:()=>AssemblyCatalog=serveCatalog):void {
     mergeCatalog(this.catalog,catalog());
     this.store.load(design);
-    this.receipt=null;this.bom=null;this.scene=null;this.message='';
+    this.receipt=null;this.bom=null;this.scene=null;this.message='';this.elBundles.clear();this.elDesigns.clear();this.elCompare=null;this.elRejection=null;
     this.rerender();
   }
   private async validate(robotId:string):Promise<void> {
@@ -200,7 +250,7 @@ ${validation}
     // additive: components of a design opened earlier stay available, so undo can come back to it
     mergeCatalog(this.catalog,referenceCatalog());
     this.store.load(referenceProject());
-    this.receipt=null;this.bom=null;this.scene=null;this.message='';
+    this.receipt=null;this.bom=null;this.scene=null;this.message='';this.elBundles.clear();this.elDesigns.clear();this.elCompare=null;this.elRejection=null;
     this.rerender();
   }
   private exportDesign():void {

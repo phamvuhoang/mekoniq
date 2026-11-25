@@ -6,7 +6,7 @@ import type {RunVerification} from '../reports/contracts/verification-types';
 // TODO(interim-copy): RunView/RunReport mirror source packages/lab-runtime/src/v2/{scenario-runner,report}.ts; replace with the pinned artifact types (F07).
 import type {LabProjectV2} from '../shared/types';
 import type {TwinSample} from '../twin/store';
-import type {BundleReceipt,EngineeringAssessment,EngineeringProject,EngineeringRef} from '../shared/engineering';
+import type {BundleReceipt,EngineeringAssessment,EngineeringProject,EngineeringRef,ElectricalBundleV1,ElectricalDesignV1,TcoComparisonV1,HardwareCandidateV1} from '../shared/engineering';
 import type {ModelValidationReportV1} from '../shared/navigation2d';
 import {validModelValidationReport} from './model-validation';
 import {RunEntries} from '../runtime/run-entries';
@@ -127,6 +127,10 @@ export interface TwinRuntime {
  compileEngineering?(project:EngineeringProject):Promise<BundleReceipt>;
  /** Read access to a bundle this session compiled (or reclaimed): its manifest and content-addressed blobs. */
  engineeringManifest?(bundleDigest:string):Promise<EngineeringManifest>;
+ /** R5: present only against a runtime that advertises electrical_bundle_v1. The server's bundle is all the page shows. */
+ compileElectrical?(ref:EngineeringRef,design:ElectricalDesignV1):Promise<ElectricalBundleV1>;
+ compareElectrical?(digests:string[]):Promise<TcoComparisonV1>;
+ packageElectrical?(digest:string):Promise<{manifest:HardwareCandidateV1;files:{path:string;bytes:number;contentBase64:string}[]}>;
  engineeringBlob?(sha256:string):Promise<Uint8Array>;
  /** LinkForge shadow validation of one robot of a bundle this session owns (POST /engineering/validate), and a report read back by digest. */
  validateEngineeringModel?(ref:EngineeringRef,robotId:string):Promise<ModelValidationReportV1>;
@@ -207,6 +211,9 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
    if(r.reportDigest!==digest)throw new TwinRuntimeError('MODEL_VALIDATION_DIGEST_MISMATCH',[],502);
    return r;
   },
+  compileElectrical:(ref,design)=>request<ElectricalBundleV1>('/engineering/electrical',{ref,design}),
+  compareElectrical:digests=>request<TcoComparisonV1>('/engineering/electrical/compare',{digests}),
+  packageElectrical:digest=>request<{manifest:HardwareCandidateV1;files:{path:string;bytes:number;contentBase64:string}[]}>(`/engineering/electrical/${encodeURIComponent(digest)}/package`),
   engineeringManifest:digest=>request<EngineeringManifest>(`/engineering/bundles/${encodeURIComponent(digest)}/manifest`),
   async engineeringBlob(sha256){
    const response=await send(`${target.base}/engineering/blobs/${encodeURIComponent(sha256)}`,{...auth(),cache:'no-store'},target);

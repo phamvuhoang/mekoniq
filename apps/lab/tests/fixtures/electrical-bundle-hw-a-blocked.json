@@ -1,0 +1,2900 @@
+{
+  "schemaVersion": 1,
+  "documentType": "electrical-bundle",
+  "state": "blocked",
+  "inputs": {
+    "project": {
+      "id": "serve-serve-3d",
+      "revision": 1,
+      "digest": "a129edccc0ccaf2ca3a87400237ae77b82f4aa8c2da4bad1abec03855b93a938"
+    },
+    "assemblyDigest": "1bc981cfcab59b5a8aa060db2fba8d745a2ba8eb58518a86825dc4fa9afe371e",
+    "design": {
+      "id": "serve-hw-a-v1",
+      "revision": 1,
+      "digest": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+    },
+    "profiles": [
+      {
+        "id": "battery-24v-pack-v1",
+        "revision": 1,
+        "digest": "8ce380ce0ab9ef72137d9428725095f5df4c33d6cb808b8b7cc8ff53b3a7a274",
+        "evidenceLevel": "candidate"
+      },
+      {
+        "id": "blv-r-60w-v1",
+        "revision": 1,
+        "digest": "ddfef645872ce5dbc0ee1284518ca5e3a76a4e7f949626d1ae8807385b94c8a2",
+        "evidenceLevel": "candidate"
+      },
+      {
+        "id": "blvd-krd-v1",
+        "revision": 1,
+        "digest": "93e934ecfb67d5d640bcc92e537eda6d03def00d97a4e631a132e61de26e03e0",
+        "evidenceLevel": "candidate"
+      },
+      {
+        "id": "buzzer-24v-v1",
+        "revision": 1,
+        "digest": "680555695088aacab2cfc869ca4ad32091a690a7ffb82931484c142e93868b13",
+        "evidenceLevel": "candidate"
+      },
+      {
+        "id": "controller-ref-v1",
+        "revision": 1,
+        "digest": "2a069b1b07ba6152f87b2120b9c60e74934a772b6e45c9428c2943d68ddc84d7",
+        "evidenceLevel": "candidate"
+      },
+      {
+        "id": "estop-button-v1",
+        "revision": 1,
+        "digest": "61f1238f69084be8c805cb79e80c0edbebe028016d16050c5857b2c08e012865",
+        "evidenceLevel": "candidate"
+      },
+      {
+        "id": "fuse-10a-v1",
+        "revision": 1,
+        "digest": "16f1c443badee544b784a589ecd3d621c6804737bfba11bc352062f07374dcc1",
+        "evidenceLevel": "candidate"
+      },
+      {
+        "id": "fuse-5a-v1",
+        "revision": 1,
+        "digest": "8ff9894e22dcaa729691416c7e4329c7d3d6c5347fa228e6c6acb7c7836aa42c",
+        "evidenceLevel": "candidate"
+      },
+      {
+        "id": "lamp-24v-v1",
+        "revision": 1,
+        "digest": "83ba32f3a8bd230f88a09dd462ed8d59dae70f05ae11fb094a7fd39012b6aac2",
+        "evidenceLevel": "candidate"
+      },
+      {
+        "id": "safety-relay-v1",
+        "revision": 1,
+        "digest": "5cfe293b1ec2f2334b9785794ebf871b9e3fa08d258b15af3d76c12fa94290b3",
+        "evidenceLevel": "candidate"
+      },
+      {
+        "id": "sensor-pnp-24v-v1",
+        "revision": 1,
+        "digest": "dcfd90752ff5e5bd5ca3610e35543c5710e0443ca3b4ad61d934accee869a7a4",
+        "evidenceLevel": "candidate"
+      },
+      {
+        "id": "switch-dry-contact-v1",
+        "revision": 1,
+        "digest": "7bce4e084cf505919353e34574886faed28220f79d87d2d8d64ad0d9325a9856",
+        "evidenceLevel": "candidate"
+      }
+    ],
+    "safetyRequirementsDigest": "140f75f26a41b10b066e23292df9f0f9434b81d17be9381c3ce8526a3d3a2595",
+    "wiringPolicyDigest": "0e7bce99b1ec3c90bcb6920bbbe1972d3d2a3ff236c04680759da40412075d42",
+    "compilerVersion": "electrical-compiler/1",
+    "schemaHash": "12036f013ef504018b59a366bbab48d16ccb03739bcbe1bfee8a1ca8322bfb41"
+  },
+  "allocation": {
+    "assigned": [],
+    "unassigned": [
+      {
+        "signalId": "brake-release",
+        "reasons": [
+          {
+            "code": "DIRECTION_MISMATCH",
+            "candidates": 12
+          },
+          {
+            "code": "ELECTRICAL_MISMATCH",
+            "candidates": 12
+          },
+          {
+            "code": "OUTPUT_OVERCURRENT",
+            "candidates": 6
+          },
+          {
+            "code": "POINT_RESERVED",
+            "candidates": 14
+          },
+          {
+            "code": "SAFETY_POINT_RESERVED",
+            "candidates": 4
+          }
+        ]
+      },
+      {
+        "signalId": "bumper-front",
+        "reasons": [
+          {
+            "code": "DIRECTION_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "ELECTRICAL_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "POINT_RESERVED",
+            "candidates": 14
+          },
+          {
+            "code": "NOT_BUS_EXPOSED",
+            "candidates": 18
+          },
+          {
+            "code": "SAFETY_POINT_RESERVED",
+            "candidates": 4
+          }
+        ]
+      },
+      {
+        "signalId": "bumper-left",
+        "reasons": [
+          {
+            "code": "DIRECTION_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "ELECTRICAL_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "POINT_RESERVED",
+            "candidates": 14
+          },
+          {
+            "code": "NOT_BUS_EXPOSED",
+            "candidates": 18
+          },
+          {
+            "code": "SAFETY_POINT_RESERVED",
+            "candidates": 4
+          }
+        ]
+      },
+      {
+        "signalId": "bumper-right",
+        "reasons": [
+          {
+            "code": "DIRECTION_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "ELECTRICAL_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "POINT_RESERVED",
+            "candidates": 14
+          },
+          {
+            "code": "NOT_BUS_EXPOSED",
+            "candidates": 18
+          },
+          {
+            "code": "SAFETY_POINT_RESERVED",
+            "candidates": 4
+          }
+        ]
+      },
+      {
+        "signalId": "buzzer",
+        "reasons": [
+          {
+            "code": "DIRECTION_MISMATCH",
+            "candidates": 12
+          },
+          {
+            "code": "ELECTRICAL_MISMATCH",
+            "candidates": 12
+          },
+          {
+            "code": "OUTPUT_OVERCURRENT",
+            "candidates": 6
+          },
+          {
+            "code": "POINT_RESERVED",
+            "candidates": 14
+          },
+          {
+            "code": "NOT_BUS_EXPOSED",
+            "candidates": 18
+          },
+          {
+            "code": "SAFETY_POINT_RESERVED",
+            "candidates": 4
+          }
+        ]
+      },
+      {
+        "signalId": "charger-present",
+        "reasons": [
+          {
+            "code": "DIRECTION_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "ELECTRICAL_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "POINT_RESERVED",
+            "candidates": 14
+          },
+          {
+            "code": "NOT_BUS_EXPOSED",
+            "candidates": 18
+          },
+          {
+            "code": "SAFETY_POINT_RESERVED",
+            "candidates": 4
+          }
+        ]
+      },
+      {
+        "signalId": "cliff-left",
+        "reasons": [
+          {
+            "code": "DIRECTION_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "ELECTRICAL_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "POINT_RESERVED",
+            "candidates": 14
+          },
+          {
+            "code": "NOT_BUS_EXPOSED",
+            "candidates": 18
+          },
+          {
+            "code": "SAFETY_POINT_RESERVED",
+            "candidates": 4
+          }
+        ]
+      },
+      {
+        "signalId": "cliff-right",
+        "reasons": [
+          {
+            "code": "DIRECTION_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "ELECTRICAL_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "POINT_RESERVED",
+            "candidates": 14
+          },
+          {
+            "code": "NOT_BUS_EXPOSED",
+            "candidates": 18
+          },
+          {
+            "code": "SAFETY_POINT_RESERVED",
+            "candidates": 4
+          }
+        ]
+      },
+      {
+        "signalId": "cover-switch",
+        "reasons": [
+          {
+            "code": "DIRECTION_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "ELECTRICAL_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "POINT_RESERVED",
+            "candidates": 14
+          },
+          {
+            "code": "NOT_BUS_EXPOSED",
+            "candidates": 18
+          },
+          {
+            "code": "SAFETY_POINT_RESERVED",
+            "candidates": 4
+          }
+        ]
+      },
+      {
+        "signalId": "dock-detect",
+        "reasons": [
+          {
+            "code": "DIRECTION_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "ELECTRICAL_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "POINT_RESERVED",
+            "candidates": 14
+          },
+          {
+            "code": "NOT_BUS_EXPOSED",
+            "candidates": 18
+          },
+          {
+            "code": "SAFETY_POINT_RESERVED",
+            "candidates": 4
+          }
+        ]
+      },
+      {
+        "signalId": "estop-status",
+        "reasons": [
+          {
+            "code": "DIRECTION_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "ELECTRICAL_MISMATCH",
+            "candidates": 6
+          },
+          {
+            "code": "POINT_RESERVED",
+            "candidates": 14
+          },
+          {
+            "code": "NOT_BUS_EXPOSED",
+            "candidates": 18
+          },
+          {
+            "code": "SAFETY_POINT_RESERVED",
+            "candidates": 4
+          }
+        ]
+      },
+      {
+        "signalId": "lamp-status",
+        "reasons": [
+          {
+            "code": "DIRECTION_MISMATCH",
+            "candidates": 12
+          },
+          {
+            "code": "ELECTRICAL_MISMATCH",
+            "candidates": 12
+          },
+          {
+            "code": "OUTPUT_OVERCURRENT",
+            "candidates": 6
+          },
+          {
+            "code": "POINT_RESERVED",
+            "candidates": 14
+          },
+          {
+            "code": "NOT_BUS_EXPOSED",
+            "candidates": 18
+          },
+          {
+            "code": "SAFETY_POINT_RESERVED",
+            "candidates": 4
+          }
+        ]
+      }
+    ],
+    "spare": [],
+    "reserved": [
+      {
+        "deviceId": "drive-left",
+        "pointId": "EDM",
+        "function": "edm"
+      },
+      {
+        "deviceId": "drive-left",
+        "pointId": "HWTO1",
+        "function": "safety:safe_input"
+      },
+      {
+        "deviceId": "drive-left",
+        "pointId": "HWTO2",
+        "function": "safety:safe_input"
+      },
+      {
+        "deviceId": "drive-left",
+        "pointId": "IN0",
+        "function": "ID-SEL0"
+      },
+      {
+        "deviceId": "drive-left",
+        "pointId": "IN1",
+        "function": "ID-SEL1"
+      },
+      {
+        "deviceId": "drive-left",
+        "pointId": "IN2",
+        "function": "STOP"
+      },
+      {
+        "deviceId": "drive-left",
+        "pointId": "IN3",
+        "function": "FREE"
+      },
+      {
+        "deviceId": "drive-left",
+        "pointId": "OUT0",
+        "function": "COMM-PWR"
+      },
+      {
+        "deviceId": "drive-left",
+        "pointId": "OUT1",
+        "function": "ALM-B"
+      },
+      {
+        "deviceId": "drive-right",
+        "pointId": "EDM",
+        "function": "edm"
+      },
+      {
+        "deviceId": "drive-right",
+        "pointId": "HWTO1",
+        "function": "safety:safe_input"
+      },
+      {
+        "deviceId": "drive-right",
+        "pointId": "HWTO2",
+        "function": "safety:safe_input"
+      },
+      {
+        "deviceId": "drive-right",
+        "pointId": "IN0",
+        "function": "ID-SEL0"
+      },
+      {
+        "deviceId": "drive-right",
+        "pointId": "IN1",
+        "function": "ID-SEL1"
+      },
+      {
+        "deviceId": "drive-right",
+        "pointId": "IN2",
+        "function": "STOP"
+      },
+      {
+        "deviceId": "drive-right",
+        "pointId": "IN3",
+        "function": "FREE"
+      },
+      {
+        "deviceId": "drive-right",
+        "pointId": "OUT0",
+        "function": "COMM-PWR"
+      },
+      {
+        "deviceId": "drive-right",
+        "pointId": "OUT1",
+        "function": "ALM-B"
+      },
+      {
+        "deviceId": "fuse-drive-left",
+        "pointId": "RATED",
+        "function": "protection_rating"
+      },
+      {
+        "deviceId": "fuse-drive-right",
+        "pointId": "RATED",
+        "function": "protection_rating"
+      },
+      {
+        "deviceId": "fuse-logic",
+        "pointId": "RATED",
+        "function": "protection_rating"
+      }
+    ]
+  },
+  "netlist": {
+    "nets": [
+      {
+        "id": "axis/amr-1/wheel-left",
+        "kind": "axis",
+        "nodes": [
+          {
+            "deviceId": "drive-left",
+            "pin": "ch0"
+          },
+          {
+            "deviceId": "motor-left",
+            "pin": "motor"
+          }
+        ],
+        "reviewRequired": false
+      },
+      {
+        "id": "axis/amr-1/wheel-right",
+        "kind": "axis",
+        "nodes": [
+          {
+            "deviceId": "drive-right",
+            "pin": "ch0"
+          },
+          {
+            "deviceId": "motor-right",
+            "pin": "motor"
+          }
+        ],
+        "reviewRequired": false
+      },
+      {
+        "id": "bus/can0/CAN_GND",
+        "kind": "bus",
+        "nodes": [
+          {
+            "deviceId": "controller",
+            "pin": "CAN/GND"
+          },
+          {
+            "deviceId": "drive-left",
+            "pin": "CN4/7"
+          },
+          {
+            "deviceId": "drive-right",
+            "pin": "CN4/7"
+          }
+        ],
+        "reviewRequired": false
+      },
+      {
+        "id": "bus/can0/CAN_H",
+        "kind": "bus",
+        "nodes": [
+          {
+            "deviceId": "controller",
+            "pin": "CAN/CANH"
+          },
+          {
+            "deviceId": "drive-left",
+            "pin": "CN4/6"
+          },
+          {
+            "deviceId": "drive-right",
+            "pin": "CN4/6"
+          }
+        ],
+        "reviewRequired": false
+      },
+      {
+        "id": "bus/can0/CAN_L",
+        "kind": "bus",
+        "nodes": [
+          {
+            "deviceId": "controller",
+            "pin": "CAN/CANL"
+          },
+          {
+            "deviceId": "drive-left",
+            "pin": "CN4/5"
+          },
+          {
+            "deviceId": "drive-right",
+            "pin": "CN4/5"
+          }
+        ],
+        "reviewRequired": false
+      },
+      {
+        "id": "pwr/rail-24v",
+        "kind": "power",
+        "nodes": [
+          {
+            "deviceId": "battery",
+            "pin": "OUT/POS"
+          },
+          {
+            "deviceId": "charger-sn",
+            "pin": "C/BN"
+          },
+          {
+            "deviceId": "cliff-left-sn",
+            "pin": "C/BN"
+          },
+          {
+            "deviceId": "cliff-right-sn",
+            "pin": "C/BN"
+          },
+          {
+            "deviceId": "controller",
+            "pin": "PWR/VIN"
+          },
+          {
+            "deviceId": "dock-sn",
+            "pin": "C/BN"
+          },
+          {
+            "deviceId": "drive-left",
+            "pin": "CN1/1"
+          },
+          {
+            "deviceId": "drive-right",
+            "pin": "CN1/1"
+          },
+          {
+            "deviceId": "fuse-drive-left",
+            "pin": "F/IN"
+          },
+          {
+            "deviceId": "fuse-drive-left",
+            "pin": "F/OUT"
+          },
+          {
+            "deviceId": "fuse-drive-right",
+            "pin": "F/IN"
+          },
+          {
+            "deviceId": "fuse-drive-right",
+            "pin": "F/OUT"
+          },
+          {
+            "deviceId": "fuse-logic",
+            "pin": "F/IN"
+          },
+          {
+            "deviceId": "fuse-logic",
+            "pin": "F/OUT"
+          },
+          {
+            "deviceId": "safety-relay",
+            "pin": "C/A1"
+          }
+        ],
+        "reviewRequired": false
+      },
+      {
+        "id": "ret/rail-24v",
+        "kind": "return",
+        "nodes": [
+          {
+            "deviceId": "battery",
+            "pin": "OUT/NEG"
+          },
+          {
+            "deviceId": "charger-sn",
+            "pin": "C/BU"
+          },
+          {
+            "deviceId": "cliff-left-sn",
+            "pin": "C/BU"
+          },
+          {
+            "deviceId": "cliff-right-sn",
+            "pin": "C/BU"
+          },
+          {
+            "deviceId": "controller",
+            "pin": "PWR/GND"
+          },
+          {
+            "deviceId": "dock-sn",
+            "pin": "C/BU"
+          },
+          {
+            "deviceId": "drive-left",
+            "pin": "CN1/2"
+          },
+          {
+            "deviceId": "drive-right",
+            "pin": "CN1/2"
+          },
+          {
+            "deviceId": "safety-relay",
+            "pin": "C/A2"
+          }
+        ],
+        "reviewRequired": false
+      },
+      {
+        "id": "safety/req-estop",
+        "kind": "safety",
+        "nodes": [
+          {
+            "deviceId": "drive-left",
+            "pin": "CN4/11"
+          },
+          {
+            "deviceId": "drive-left",
+            "pin": "CN4/12"
+          },
+          {
+            "deviceId": "drive-right",
+            "pin": "CN4/26"
+          },
+          {
+            "deviceId": "drive-right",
+            "pin": "CN4/27"
+          },
+          {
+            "deviceId": "estop-button",
+            "pin": "C/S1"
+          },
+          {
+            "deviceId": "estop-button",
+            "pin": "C/S2"
+          }
+        ],
+        "reviewRequired": true
+      }
+    ],
+    "wires": [
+      {
+        "id": "bus/can0/CAN_GND:controller.CAN/GND~drive-left.CN4/7",
+        "netId": "bus/can0/CAN_GND",
+        "from": {
+          "deviceId": "controller",
+          "pin": "CAN/GND"
+        },
+        "to": {
+          "deviceId": "drive-left",
+          "pin": "CN4/7"
+        },
+        "csaMm2": 0.25,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "black",
+        "lengthM": null,
+        "currentA": null
+      },
+      {
+        "id": "bus/can0/CAN_GND:drive-left.CN4/7~drive-right.CN4/7",
+        "netId": "bus/can0/CAN_GND",
+        "from": {
+          "deviceId": "drive-left",
+          "pin": "CN4/7"
+        },
+        "to": {
+          "deviceId": "drive-right",
+          "pin": "CN4/7"
+        },
+        "csaMm2": 0.25,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "black",
+        "lengthM": null,
+        "currentA": null
+      },
+      {
+        "id": "bus/can0/CAN_H:controller.CAN/CANH~drive-left.CN4/6",
+        "netId": "bus/can0/CAN_H",
+        "from": {
+          "deviceId": "controller",
+          "pin": "CAN/CANH"
+        },
+        "to": {
+          "deviceId": "drive-left",
+          "pin": "CN4/6"
+        },
+        "csaMm2": 0.25,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "yellow",
+        "lengthM": null,
+        "currentA": null
+      },
+      {
+        "id": "bus/can0/CAN_H:drive-left.CN4/6~drive-right.CN4/6",
+        "netId": "bus/can0/CAN_H",
+        "from": {
+          "deviceId": "drive-left",
+          "pin": "CN4/6"
+        },
+        "to": {
+          "deviceId": "drive-right",
+          "pin": "CN4/6"
+        },
+        "csaMm2": 0.25,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "yellow",
+        "lengthM": null,
+        "currentA": null
+      },
+      {
+        "id": "bus/can0/CAN_L:controller.CAN/CANL~drive-left.CN4/5",
+        "netId": "bus/can0/CAN_L",
+        "from": {
+          "deviceId": "controller",
+          "pin": "CAN/CANL"
+        },
+        "to": {
+          "deviceId": "drive-left",
+          "pin": "CN4/5"
+        },
+        "csaMm2": 0.25,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "green",
+        "lengthM": null,
+        "currentA": null
+      },
+      {
+        "id": "bus/can0/CAN_L:drive-left.CN4/5~drive-right.CN4/5",
+        "netId": "bus/can0/CAN_L",
+        "from": {
+          "deviceId": "drive-left",
+          "pin": "CN4/5"
+        },
+        "to": {
+          "deviceId": "drive-right",
+          "pin": "CN4/5"
+        },
+        "csaMm2": 0.25,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "green",
+        "lengthM": null,
+        "currentA": null
+      },
+      {
+        "id": "pwr/rail-24v:battery.OUT/POS~fuse-drive-left.F/IN",
+        "netId": "pwr/rail-24v",
+        "from": {
+          "deviceId": "battery",
+          "pin": "OUT/POS"
+        },
+        "to": {
+          "deviceId": "fuse-drive-left",
+          "pin": "F/IN"
+        },
+        "csaMm2": 1,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "red",
+        "lengthM": null,
+        "currentA": {
+          "value": 3.3,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "pwr/rail-24v:battery.OUT/POS~fuse-drive-right.F/IN",
+        "netId": "pwr/rail-24v",
+        "from": {
+          "deviceId": "battery",
+          "pin": "OUT/POS"
+        },
+        "to": {
+          "deviceId": "fuse-drive-right",
+          "pin": "F/IN"
+        },
+        "csaMm2": 1,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "red",
+        "lengthM": null,
+        "currentA": {
+          "value": 3.3,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "pwr/rail-24v:battery.OUT/POS~fuse-logic.F/IN",
+        "netId": "pwr/rail-24v",
+        "from": {
+          "deviceId": "battery",
+          "pin": "OUT/POS"
+        },
+        "to": {
+          "deviceId": "fuse-logic",
+          "pin": "F/IN"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "red",
+        "lengthM": null,
+        "currentA": {
+          "value": 2.18,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "pwr/rail-24v:charger-sn.C/BN~fuse-logic.F/OUT",
+        "netId": "pwr/rail-24v",
+        "from": {
+          "deviceId": "charger-sn",
+          "pin": "C/BN"
+        },
+        "to": {
+          "deviceId": "fuse-logic",
+          "pin": "F/OUT"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "red",
+        "lengthM": {
+          "value": 0.8,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 0.02,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "pwr/rail-24v:cliff-left-sn.C/BN~fuse-logic.F/OUT",
+        "netId": "pwr/rail-24v",
+        "from": {
+          "deviceId": "cliff-left-sn",
+          "pin": "C/BN"
+        },
+        "to": {
+          "deviceId": "fuse-logic",
+          "pin": "F/OUT"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "red",
+        "lengthM": {
+          "value": 0.8,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 0.02,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "pwr/rail-24v:cliff-right-sn.C/BN~fuse-logic.F/OUT",
+        "netId": "pwr/rail-24v",
+        "from": {
+          "deviceId": "cliff-right-sn",
+          "pin": "C/BN"
+        },
+        "to": {
+          "deviceId": "fuse-logic",
+          "pin": "F/OUT"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "red",
+        "lengthM": {
+          "value": 0.8,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 0.02,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "pwr/rail-24v:controller.PWR/VIN~fuse-logic.F/OUT",
+        "netId": "pwr/rail-24v",
+        "from": {
+          "deviceId": "controller",
+          "pin": "PWR/VIN"
+        },
+        "to": {
+          "deviceId": "fuse-logic",
+          "pin": "F/OUT"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "red",
+        "lengthM": {
+          "value": 0.4,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 2,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "pwr/rail-24v:dock-sn.C/BN~fuse-logic.F/OUT",
+        "netId": "pwr/rail-24v",
+        "from": {
+          "deviceId": "dock-sn",
+          "pin": "C/BN"
+        },
+        "to": {
+          "deviceId": "fuse-logic",
+          "pin": "F/OUT"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "red",
+        "lengthM": {
+          "value": 0.8,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 0.02,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "pwr/rail-24v:drive-left.CN1/1~fuse-drive-left.F/OUT",
+        "netId": "pwr/rail-24v",
+        "from": {
+          "deviceId": "drive-left",
+          "pin": "CN1/1"
+        },
+        "to": {
+          "deviceId": "fuse-drive-left",
+          "pin": "F/OUT"
+        },
+        "csaMm2": 1,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "red",
+        "lengthM": {
+          "value": 0.6,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 3.3,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "pwr/rail-24v:drive-right.CN1/1~fuse-drive-right.F/OUT",
+        "netId": "pwr/rail-24v",
+        "from": {
+          "deviceId": "drive-right",
+          "pin": "CN1/1"
+        },
+        "to": {
+          "deviceId": "fuse-drive-right",
+          "pin": "F/OUT"
+        },
+        "csaMm2": 1,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "red",
+        "lengthM": {
+          "value": 0.6,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 3.3,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "pwr/rail-24v:fuse-logic.F/OUT~safety-relay.C/A1",
+        "netId": "pwr/rail-24v",
+        "from": {
+          "deviceId": "fuse-logic",
+          "pin": "F/OUT"
+        },
+        "to": {
+          "deviceId": "safety-relay",
+          "pin": "C/A1"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "red",
+        "lengthM": {
+          "value": 0.4,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 0.1,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "ret/rail-24v:battery.OUT/NEG~charger-sn.C/BU",
+        "netId": "ret/rail-24v",
+        "from": {
+          "deviceId": "battery",
+          "pin": "OUT/NEG"
+        },
+        "to": {
+          "deviceId": "charger-sn",
+          "pin": "C/BU"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "black",
+        "lengthM": {
+          "value": 0.8,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 0.02,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "ret/rail-24v:battery.OUT/NEG~cliff-left-sn.C/BU",
+        "netId": "ret/rail-24v",
+        "from": {
+          "deviceId": "battery",
+          "pin": "OUT/NEG"
+        },
+        "to": {
+          "deviceId": "cliff-left-sn",
+          "pin": "C/BU"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "black",
+        "lengthM": {
+          "value": 0.8,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 0.02,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "ret/rail-24v:battery.OUT/NEG~cliff-right-sn.C/BU",
+        "netId": "ret/rail-24v",
+        "from": {
+          "deviceId": "battery",
+          "pin": "OUT/NEG"
+        },
+        "to": {
+          "deviceId": "cliff-right-sn",
+          "pin": "C/BU"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "black",
+        "lengthM": {
+          "value": 0.8,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 0.02,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "ret/rail-24v:battery.OUT/NEG~controller.PWR/GND",
+        "netId": "ret/rail-24v",
+        "from": {
+          "deviceId": "battery",
+          "pin": "OUT/NEG"
+        },
+        "to": {
+          "deviceId": "controller",
+          "pin": "PWR/GND"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "black",
+        "lengthM": {
+          "value": 0.4,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 2,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "ret/rail-24v:battery.OUT/NEG~dock-sn.C/BU",
+        "netId": "ret/rail-24v",
+        "from": {
+          "deviceId": "battery",
+          "pin": "OUT/NEG"
+        },
+        "to": {
+          "deviceId": "dock-sn",
+          "pin": "C/BU"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "black",
+        "lengthM": {
+          "value": 0.8,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 0.02,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "ret/rail-24v:battery.OUT/NEG~drive-left.CN1/2",
+        "netId": "ret/rail-24v",
+        "from": {
+          "deviceId": "battery",
+          "pin": "OUT/NEG"
+        },
+        "to": {
+          "deviceId": "drive-left",
+          "pin": "CN1/2"
+        },
+        "csaMm2": 1,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "black",
+        "lengthM": {
+          "value": 0.6,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 3.3,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "ret/rail-24v:battery.OUT/NEG~drive-right.CN1/2",
+        "netId": "ret/rail-24v",
+        "from": {
+          "deviceId": "battery",
+          "pin": "OUT/NEG"
+        },
+        "to": {
+          "deviceId": "drive-right",
+          "pin": "CN1/2"
+        },
+        "csaMm2": 1,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "black",
+        "lengthM": {
+          "value": 0.6,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 3.3,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      },
+      {
+        "id": "ret/rail-24v:battery.OUT/NEG~safety-relay.C/A2",
+        "netId": "ret/rail-24v",
+        "from": {
+          "deviceId": "battery",
+          "pin": "OUT/NEG"
+        },
+        "to": {
+          "deviceId": "safety-relay",
+          "pin": "C/A2"
+        },
+        "csaMm2": 0.5,
+        "csaSource": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        },
+        "colour": "black",
+        "lengthM": {
+          "value": 0.4,
+          "unit": "m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "estimated from a 0.5 m chassis; measure on the first build",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        "currentA": {
+          "value": 0.1,
+          "unit": "A",
+          "source": {
+            "kind": "derived",
+            "documentId": "electrical-compiler",
+            "revision": "1",
+            "locator": "sum of the continuous currents of the loads behind this wire",
+            "contentSha256": "fa88d26ec714cc35ff7ddfedaf949562cc39e2552d7d7861b02a744ad9519780"
+          }
+        }
+      }
+    ],
+    "cables": [
+      {
+        "id": "axis/amr-1/wheel-left/encoder",
+        "kind": "encoder",
+        "from": "drive-left",
+        "to": "motor-left",
+        "part": null
+      },
+      {
+        "id": "axis/amr-1/wheel-left/motor",
+        "kind": "motor",
+        "from": "drive-left",
+        "to": "motor-left",
+        "part": null
+      },
+      {
+        "id": "axis/amr-1/wheel-right/encoder",
+        "kind": "encoder",
+        "from": "drive-right",
+        "to": "motor-right",
+        "part": null
+      },
+      {
+        "id": "axis/amr-1/wheel-right/motor",
+        "kind": "motor",
+        "from": "drive-right",
+        "to": "motor-right",
+        "part": null
+      }
+    ]
+  },
+  "checks": [
+    {
+      "ruleId": "IOA_SIGNAL_UNALLOCATED",
+      "level": "blocking",
+      "path": "/signals/bumper-front",
+      "detail": "bumper-front has no I/O point: DIRECTION_MISMATCH (6), ELECTRICAL_MISMATCH (6), POINT_RESERVED (14), NOT_BUS_EXPOSED (18), SAFETY_POINT_RESERVED (4)",
+      "sources": []
+    },
+    {
+      "ruleId": "IOA_SIGNAL_UNALLOCATED",
+      "level": "blocking",
+      "path": "/signals/bumper-left",
+      "detail": "bumper-left has no I/O point: DIRECTION_MISMATCH (6), ELECTRICAL_MISMATCH (6), POINT_RESERVED (14), NOT_BUS_EXPOSED (18), SAFETY_POINT_RESERVED (4)",
+      "sources": []
+    },
+    {
+      "ruleId": "IOA_SIGNAL_UNALLOCATED",
+      "level": "blocking",
+      "path": "/signals/bumper-right",
+      "detail": "bumper-right has no I/O point: DIRECTION_MISMATCH (6), ELECTRICAL_MISMATCH (6), POINT_RESERVED (14), NOT_BUS_EXPOSED (18), SAFETY_POINT_RESERVED (4)",
+      "sources": []
+    },
+    {
+      "ruleId": "IOA_SIGNAL_UNALLOCATED",
+      "level": "blocking",
+      "path": "/signals/buzzer",
+      "detail": "buzzer has no I/O point: DIRECTION_MISMATCH (12), ELECTRICAL_MISMATCH (12), OUTPUT_OVERCURRENT (6), POINT_RESERVED (14), NOT_BUS_EXPOSED (18), SAFETY_POINT_RESERVED (4)",
+      "sources": []
+    },
+    {
+      "ruleId": "IOA_SIGNAL_UNALLOCATED",
+      "level": "blocking",
+      "path": "/signals/charger-present",
+      "detail": "charger-present has no I/O point: DIRECTION_MISMATCH (6), ELECTRICAL_MISMATCH (6), POINT_RESERVED (14), NOT_BUS_EXPOSED (18), SAFETY_POINT_RESERVED (4)",
+      "sources": []
+    },
+    {
+      "ruleId": "IOA_SIGNAL_UNALLOCATED",
+      "level": "blocking",
+      "path": "/signals/cliff-left",
+      "detail": "cliff-left has no I/O point: DIRECTION_MISMATCH (6), ELECTRICAL_MISMATCH (6), POINT_RESERVED (14), NOT_BUS_EXPOSED (18), SAFETY_POINT_RESERVED (4)",
+      "sources": []
+    },
+    {
+      "ruleId": "IOA_SIGNAL_UNALLOCATED",
+      "level": "blocking",
+      "path": "/signals/cliff-right",
+      "detail": "cliff-right has no I/O point: DIRECTION_MISMATCH (6), ELECTRICAL_MISMATCH (6), POINT_RESERVED (14), NOT_BUS_EXPOSED (18), SAFETY_POINT_RESERVED (4)",
+      "sources": []
+    },
+    {
+      "ruleId": "IOA_SIGNAL_UNALLOCATED",
+      "level": "blocking",
+      "path": "/signals/cover-switch",
+      "detail": "cover-switch has no I/O point: DIRECTION_MISMATCH (6), ELECTRICAL_MISMATCH (6), POINT_RESERVED (14), NOT_BUS_EXPOSED (18), SAFETY_POINT_RESERVED (4)",
+      "sources": []
+    },
+    {
+      "ruleId": "IOA_SIGNAL_UNALLOCATED",
+      "level": "blocking",
+      "path": "/signals/dock-detect",
+      "detail": "dock-detect has no I/O point: DIRECTION_MISMATCH (6), ELECTRICAL_MISMATCH (6), POINT_RESERVED (14), NOT_BUS_EXPOSED (18), SAFETY_POINT_RESERVED (4)",
+      "sources": []
+    },
+    {
+      "ruleId": "IOA_SIGNAL_UNALLOCATED",
+      "level": "blocking",
+      "path": "/signals/estop-status",
+      "detail": "estop-status has no I/O point: DIRECTION_MISMATCH (6), ELECTRICAL_MISMATCH (6), POINT_RESERVED (14), NOT_BUS_EXPOSED (18), SAFETY_POINT_RESERVED (4)",
+      "sources": []
+    },
+    {
+      "ruleId": "IOA_SIGNAL_UNALLOCATED",
+      "level": "blocking",
+      "path": "/signals/lamp-status",
+      "detail": "lamp-status has no I/O point: DIRECTION_MISMATCH (12), ELECTRICAL_MISMATCH (12), OUTPUT_OVERCURRENT (6), POINT_RESERVED (14), NOT_BUS_EXPOSED (18), SAFETY_POINT_RESERVED (4)",
+      "sources": []
+    },
+    {
+      "ruleId": "IOA_SIGNAL_UNALLOCATED",
+      "level": "warning",
+      "path": "/signals/brake-release",
+      "detail": "brake-release has no I/O point: DIRECTION_MISMATCH (12), ELECTRICAL_MISMATCH (12), OUTPUT_OVERCURRENT (6), POINT_RESERVED (14), SAFETY_POINT_RESERVED (4)",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / CAN bus interface, planning assumption",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "CAN bus interface, planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / ampacity table is a planning assumption",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "ampacity table is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / estimated from a 0.5 m chassis; measure on the first build",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "estimated from a 0.5 m chassis; measure on the first build",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / planning estimate until a part is chosen",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "planning estimate until a part is chosen",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / planning limit of 3 % on a 24 V rail",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "planning limit of 3 % on a 24 V rail",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / rated current of the fuse is 10 A (the rating is carried as the maximum current of this point)",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "rated current of the fuse is 10 A (the rating is carried as the maximum current of this point)",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / rated current of the fuse is 5 A (the rating is carried as the maximum current of this point)",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "rated current of the fuse is 5 A (the rating is carried as the maximum current of this point)",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / reference device battery-24v-pack: values are planning assumptions until a part is chosen",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "reference device battery-24v-pack: values are planning assumptions until a part is chosen",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / reference device buzzer-24v: values are planning assumptions until a part is chosen",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "reference device buzzer-24v: values are planning assumptions until a part is chosen",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / reference device controller-ref: values are planning assumptions until a part is chosen",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "reference device controller-ref: values are planning assumptions until a part is chosen",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / reference device estop-button: values are planning assumptions until a part is chosen",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "reference device estop-button: values are planning assumptions until a part is chosen",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / reference device fuse-10a: values are planning assumptions until a part is chosen",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "reference device fuse-10a: values are planning assumptions until a part is chosen",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / reference device fuse-5a: values are planning assumptions until a part is chosen",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "reference device fuse-5a: values are planning assumptions until a part is chosen",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / reference device lamp-24v: values are planning assumptions until a part is chosen",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "reference device lamp-24v: values are planning assumptions until a part is chosen",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / reference device safety-relay: values are planning assumptions until a part is chosen",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "reference device safety-relay: values are planning assumptions until a part is chosen",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / reference device sensor-pnp-24v: values are planning assumptions until a part is chosen",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "reference device sensor-pnp-24v: values are planning assumptions until a part is chosen",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / reference device switch-dry-contact: values are planning assumptions until a part is chosen",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "reference device switch-dry-contact: values are planning assumptions until a part is chosen",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_ASSUMED_SOURCE",
+      "level": "unverified",
+      "path": "/sources",
+      "detail": "assumed: r5-assumptions / voltage drop limit is a planning assumption",
+      "sources": [
+        {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "voltage drop limit is a planning assumption",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      ]
+    },
+    {
+      "ruleId": "UNVERIFIED_FIRMWARE",
+      "level": "unverified",
+      "path": "/devices/controller",
+      "detail": "controller (controller-ref-v1) has no pinned firmware; I/O mapping and PDO layout depend on it",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_FIRMWARE",
+      "level": "unverified",
+      "path": "/devices/drive-left",
+      "detail": "drive-left (blvd-krd-v1) has no pinned firmware; I/O mapping and PDO layout depend on it",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_FIRMWARE",
+      "level": "unverified",
+      "path": "/devices/drive-right",
+      "detail": "drive-right (blvd-krd-v1) has no pinned firmware; I/O mapping and PDO layout depend on it",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/eld/drive/orientalmotor-blvd-krd:35e8b1c0",
+      "detail": "orientalmotor-blvd-krd has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/eld/part/orientalmotor-blv-r-60w:38e9860c",
+      "detail": "orientalmotor-blv-r-60w has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/eld/part/ref-battery-24v-pack:005b0563",
+      "detail": "ref-battery-24v-pack has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/eld/part/ref-buzzer-24v:e114b3e8",
+      "detail": "ref-buzzer-24v has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/eld/part/ref-controller-ref:0f558007",
+      "detail": "ref-controller-ref has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/eld/part/ref-estop-button:af99cf79",
+      "detail": "ref-estop-button has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/eld/part/ref-fuse-10a:4de14491",
+      "detail": "ref-fuse-10a has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/eld/part/ref-fuse-5a:e6582950",
+      "detail": "ref-fuse-5a has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/eld/part/ref-lamp-24v:1d66e96f",
+      "detail": "ref-lamp-24v has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/eld/part/ref-safety-relay:7559048e",
+      "detail": "ref-safety-relay has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/eld/part/ref-sensor-pnp-24v:81878906",
+      "detail": "ref-sensor-pnp-24v has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/eld/part/ref-switch-dry-contact:5cc95cdd",
+      "detail": "ref-switch-dry-contact has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/mate/DFMC_0_5/14-ST-2_54__PHOENIX_CONTACT___AWG26_to_20",
+      "detail": "mating-DFMC_0_5/14-ST-2_54__PHOENIX_CONTACT___AWG26_to_20 has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/mate/F32FSS-03V-KX_with_LF3F-41GF-P2.0_contacts__J.S.T.___cable_LC03D06A_sold_separately",
+      "detail": "mating-F32FSS-03V-KX_with_LF3F-41GF-P2.0_contacts__J.S.T.___cable_LC03D06A_sold_separately has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/serve-caster:1:3a95e23a",
+      "detail": "serve-caster has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/serve-chassis:1:ac075954",
+      "detail": "serve-chassis has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/serve-lidar:1:ccb41c58",
+      "detail": "serve-lidar has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/serve-support:1:4080c1c5",
+      "detail": "serve-support has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/serve-tray:1:5590e4c9",
+      "detail": "serve-tray has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/serve-wheel:1:53264351",
+      "detail": "serve-wheel has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/wire/0.25mm2:black",
+      "detail": "wire-0.25mm2:black has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/wire/0.25mm2:green",
+      "detail": "wire-0.25mm2:green has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/wire/0.25mm2:yellow",
+      "detail": "wire-0.25mm2:yellow has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/wire/0.5mm2:black",
+      "detail": "wire-0.5mm2:black has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/wire/0.5mm2:red",
+      "detail": "wire-0.5mm2:red has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/wire/1mm2:black",
+      "detail": "wire-1mm2:black has no quotation",
+      "sources": []
+    },
+    {
+      "ruleId": "UNVERIFIED_PRICE",
+      "level": "unverified",
+      "path": "/bom/wire/1mm2:red",
+      "detail": "wire-1mm2:red has no quotation",
+      "sources": []
+    }
+  ],
+  "bom": {
+    "lines": [
+      {
+        "lineId": "serve-caster:1:3a95e23a",
+        "componentId": "serve-caster",
+        "componentRevision": "1",
+        "componentDigest": "3a95e23a85170d4d72f6ef70180bbc9bb6af4d1e385d69aa0a837b80903474b9",
+        "sku": null,
+        "candidate": true,
+        "qty": 2,
+        "massKg": 0.15,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [
+          {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "ball mass",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          },
+          {
+            "kind": "derived",
+            "documentId": "serve-fixture-inertia-formulas",
+            "revision": "1",
+            "locator": "cylinder: m*(3r²+h²)/12, m*r²/2",
+            "contentSha256": "6c9c0cdbd2fb8742a8466d8f20450af61dee85b2550a59fd06f2e0e9f709173e"
+          }
+        ],
+        "instanceIds": [
+          "caster-front",
+          "caster-rear"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "serve-chassis:1:ac075954",
+        "componentId": "serve-chassis",
+        "componentRevision": "1",
+        "componentDigest": "ac0759549d13c6027e5f4d20095b7ff5566320677cc8ba86e38496f958c5fc18",
+        "sku": null,
+        "candidate": true,
+        "qty": 1,
+        "massKg": 14,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [
+          {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "base mass",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          },
+          {
+            "kind": "derived",
+            "documentId": "serve-fixture-inertia-formulas",
+            "revision": "1",
+            "locator": "box: m*(b²+c²)/12",
+            "contentSha256": "f599bb79cdb1c918a4fef990a06a6a8e9bd840792103a464ed0e82b4596607eb"
+          }
+        ],
+        "instanceIds": [
+          "chassis"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "serve-lidar:1:ccb41c58",
+        "componentId": "serve-lidar",
+        "componentRevision": "1",
+        "componentDigest": "ccb41c58602005b21b277f5260422d48bea6145d7121f7ed8e4c519a71778fa2",
+        "sku": null,
+        "candidate": true,
+        "qty": 1,
+        "massKg": 0.19,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [
+          {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "head mass",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          },
+          {
+            "kind": "derived",
+            "documentId": "serve-fixture-inertia-formulas",
+            "revision": "1",
+            "locator": "cylinder: m*(3r²+h²)/12, m*r²/2",
+            "contentSha256": "bc4e398f06a059e534880c0db0fdabfbb1eed4c418401635c6cde621bc172170"
+          }
+        ],
+        "instanceIds": [
+          "lidar"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "serve-support:1:4080c1c5",
+        "componentId": "serve-support",
+        "componentRevision": "1",
+        "componentDigest": "4080c1c5f1ac90b8a111795cfda1640f9fa60ba8fad9cb24de64dd8ff46cdc88",
+        "sku": null,
+        "candidate": true,
+        "qty": 2,
+        "massKg": 0.35,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [
+          {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "rod mass",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          },
+          {
+            "kind": "derived",
+            "documentId": "serve-fixture-inertia-formulas",
+            "revision": "1",
+            "locator": "box: m*(b²+c²)/12",
+            "contentSha256": "0ce1e181810b754866e5481d9a2921885a1a8e954a77d22adb747fd54e017ab5"
+          }
+        ],
+        "instanceIds": [
+          "support-left",
+          "support-right"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "serve-tray:1:5590e4c9",
+        "componentId": "serve-tray",
+        "componentRevision": "1",
+        "componentDigest": "5590e4c9a1944597d0812fbff08f11e9380e2f2bf1c74d97ccecb44c85b4c926",
+        "sku": null,
+        "candidate": true,
+        "qty": 3,
+        "massKg": 0.8,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [
+          {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "plate mass",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          },
+          {
+            "kind": "derived",
+            "documentId": "serve-fixture-inertia-formulas",
+            "revision": "1",
+            "locator": "box: m*(b²+c²)/12",
+            "contentSha256": "bab62ed17a78d1484a3aba84c916dc135811aa8546d99270d2d52ac3ac9dbc27"
+          }
+        ],
+        "instanceIds": [
+          "tray-1",
+          "tray-2",
+          "tray-3"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "serve-wheel:1:53264351",
+        "componentId": "serve-wheel",
+        "componentRevision": "1",
+        "componentDigest": "5326435150fc961d1e137b8943c3bdd545b3747b455b3532336ef9a320f8549a",
+        "sku": null,
+        "candidate": true,
+        "qty": 2,
+        "massKg": 1.4,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [
+          {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "hub mass",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          },
+          {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "rim mass",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          },
+          {
+            "kind": "derived",
+            "documentId": "serve-fixture-inertia-formulas",
+            "revision": "1",
+            "locator": "box: m*(b²+c²)/12",
+            "contentSha256": "71938a7f6c6a0e9803a01606899942704eb74988e3c31689319b40a23b5cf34e"
+          },
+          {
+            "kind": "derived",
+            "documentId": "serve-fixture-inertia-formulas",
+            "revision": "1",
+            "locator": "cylinder: m*(3r²+h²)/12, m*r²/2",
+            "contentSha256": "127e0be44b8d0cfa740eafc683fcf8d09aa9f2acdcfee7532b27bb470c2268e5"
+          }
+        ],
+        "instanceIds": [
+          "wheel-left",
+          "wheel-right"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "eld/drive/orientalmotor-blvd-krd:35e8b1c0",
+        "componentId": "orientalmotor-blvd-krd",
+        "componentRevision": "1",
+        "componentDigest": "35e8b1c0c77cbb5c9347389076d4e53a1d2a2ed664906a373cf7e6c6cd9f30ab",
+        "sku": "BLVD-KRD",
+        "candidate": true,
+        "qty": 2,
+        "massKg": null,
+        "voltageRangeV": [
+          15,
+          55
+        ],
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "drive-left",
+          "drive-right"
+        ],
+        "requiredAccessories": [
+          "F32FSS-03V-KX with LF3F-41GF-P2.0 contacts (J.S.T.); cable LC03D06A sold separately",
+          "DFMC 0,5/14-ST-2,54 (PHOENIX CONTACT), AWG26 to 20"
+        ]
+      },
+      {
+        "lineId": "eld/part/orientalmotor-blv-r-60w:38e9860c",
+        "componentId": "orientalmotor-blv-r-60w",
+        "componentRevision": "1",
+        "componentDigest": "38e9860cfd6fdaa3cabd3abe6b0d9243f4f5d3511dd19f61ea49c24a899e636d",
+        "sku": "BLMR260HK-A",
+        "candidate": true,
+        "qty": 2,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "motor-left",
+          "motor-right"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "eld/part/ref-battery-24v-pack:005b0563",
+        "componentId": "ref-battery-24v-pack",
+        "componentRevision": "1",
+        "componentDigest": "005b05631825169f983ca690c79b5f9807a36e7998f0c7f8b882565c11ae19a5",
+        "sku": "BAT-REF",
+        "candidate": true,
+        "qty": 1,
+        "massKg": null,
+        "voltageRangeV": [
+          22,
+          29
+        ],
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "battery"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "eld/part/ref-buzzer-24v:e114b3e8",
+        "componentId": "ref-buzzer-24v",
+        "componentRevision": "1",
+        "componentDigest": "e114b3e823e5e68e54cdcc21243002111e80a76af58654fc7ee845a1398fa12b",
+        "sku": "BUZ-REF",
+        "candidate": true,
+        "qty": 1,
+        "massKg": null,
+        "voltageRangeV": [
+          18,
+          30
+        ],
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "buzzer"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "eld/part/ref-controller-ref:0f558007",
+        "componentId": "ref-controller-ref",
+        "componentRevision": "1",
+        "componentDigest": "0f558007ffd837eb299945932c4911325a8a803f1e73b04c4b57308534975b6c",
+        "sku": "CTRL-REF",
+        "candidate": true,
+        "qty": 1,
+        "massKg": null,
+        "voltageRangeV": [
+          9,
+          36
+        ],
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "controller"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "eld/part/ref-estop-button:af99cf79",
+        "componentId": "ref-estop-button",
+        "componentRevision": "1",
+        "componentDigest": "af99cf79cf5c411349cae189a6ed535ad8d8334624b2899cc052256b1291d7da",
+        "sku": "ESTOP-REF",
+        "candidate": true,
+        "qty": 1,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "estop-button"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "eld/part/ref-fuse-10a:4de14491",
+        "componentId": "ref-fuse-10a",
+        "componentRevision": "1",
+        "componentDigest": "4de14491b79c890c636f40fa3fab356a9948c1338fa7d913e52c705a82915152",
+        "sku": "FUSE-10A",
+        "candidate": true,
+        "qty": 2,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "fuse-drive-left",
+          "fuse-drive-right"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "eld/part/ref-fuse-5a:e6582950",
+        "componentId": "ref-fuse-5a",
+        "componentRevision": "1",
+        "componentDigest": "e65829507de566e5e127079be366fd932bfbfca666222d768b46d243fc7b7ef3",
+        "sku": "FUSE-5A",
+        "candidate": true,
+        "qty": 1,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "fuse-logic"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "eld/part/ref-lamp-24v:1d66e96f",
+        "componentId": "ref-lamp-24v",
+        "componentRevision": "1",
+        "componentDigest": "1d66e96f6cac197233136f9976353f58985488c9e3178bc99d360c94073b6f61",
+        "sku": "LAMP-REF",
+        "candidate": true,
+        "qty": 1,
+        "massKg": null,
+        "voltageRangeV": [
+          18,
+          30
+        ],
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "lamp"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "eld/part/ref-safety-relay:7559048e",
+        "componentId": "ref-safety-relay",
+        "componentRevision": "1",
+        "componentDigest": "7559048ec81b7ae135eeef474fd545b8ff4e5c017191c5799d3c5b06530f2e8a",
+        "sku": "SAFRLY-REF",
+        "candidate": true,
+        "qty": 1,
+        "massKg": null,
+        "voltageRangeV": [
+          18,
+          30
+        ],
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "safety-relay"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "eld/part/ref-sensor-pnp-24v:81878906",
+        "componentId": "ref-sensor-pnp-24v",
+        "componentRevision": "1",
+        "componentDigest": "818789064fc8862c17ffb21bde03032923ea1f704794d31cf44c635e119f8137",
+        "sku": "SNS-REF",
+        "candidate": true,
+        "qty": 4,
+        "massKg": null,
+        "voltageRangeV": [
+          10,
+          30
+        ],
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "charger-sn",
+          "cliff-left-sn",
+          "cliff-right-sn",
+          "dock-sn"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "eld/part/ref-switch-dry-contact:5cc95cdd",
+        "componentId": "ref-switch-dry-contact",
+        "componentRevision": "1",
+        "componentDigest": "5cc95cdd1b5e9a77969871fa6917081d61dca7348a17189ca4c697b51dc214ff",
+        "sku": "SW-REF",
+        "candidate": true,
+        "qty": 4,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "bumper-front-sw",
+          "bumper-left-sw",
+          "bumper-right-sw",
+          "cover-sw"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "mate/DFMC_0_5/14-ST-2_54__PHOENIX_CONTACT___AWG26_to_20",
+        "componentId": "mating-DFMC_0_5/14-ST-2_54__PHOENIX_CONTACT___AWG26_to_20",
+        "componentRevision": "1",
+        "componentDigest": "364ebdc5f6c4fdd7a9165b1b08af9c81603b05f317f0635d70c02d6f48ae0209",
+        "sku": "DFMC 0,5/14-ST-2,54 (PHOENIX CONTACT), AWG26 to 20",
+        "candidate": true,
+        "qty": 2,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "drive-left",
+          "drive-right"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "mate/F32FSS-03V-KX_with_LF3F-41GF-P2.0_contacts__J.S.T.___cable_LC03D06A_sold_separately",
+        "componentId": "mating-F32FSS-03V-KX_with_LF3F-41GF-P2.0_contacts__J.S.T.___cable_LC03D06A_sold_separately",
+        "componentRevision": "1",
+        "componentDigest": "c8cf6c7d18471ab77096173ff8553ff7ad12550a908bc22a85c3a399df9cb460",
+        "sku": "F32FSS-03V-KX with LF3F-41GF-P2.0 contacts (J.S.T.); cable LC03D06A sold separately",
+        "candidate": true,
+        "qty": 2,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [
+          "drive-left",
+          "drive-right"
+        ],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "wire/0.25mm2:black",
+        "componentId": "wire-0.25mm2:black",
+        "componentRevision": "1",
+        "componentDigest": "ed4fe85aef825d61eee1ad8ca30785d5a858c42f38f804fb6987d57261ba5d59",
+        "sku": null,
+        "candidate": true,
+        "qty": 1,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "wire/0.25mm2:green",
+        "componentId": "wire-0.25mm2:green",
+        "componentRevision": "1",
+        "componentDigest": "a40bbf808af2bd1c9047dc54caf3f625cc0cd49e2b33677efb69684e242c5338",
+        "sku": null,
+        "candidate": true,
+        "qty": 1,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "wire/0.25mm2:yellow",
+        "componentId": "wire-0.25mm2:yellow",
+        "componentRevision": "1",
+        "componentDigest": "51f5bed3e6d7d6f803d358bffff95cad1ce4ff721e715d8e04f282c28baf5200",
+        "sku": null,
+        "candidate": true,
+        "qty": 1,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "wire/0.5mm2:black",
+        "componentId": "wire-0.5mm2:black",
+        "componentRevision": "1",
+        "componentDigest": "e2aefe06f64ebb9c85b81d46c0c771dc605fcd346bf5144635e51856348ca17c",
+        "sku": null,
+        "candidate": true,
+        "qty": 5,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "wire/0.5mm2:red",
+        "componentId": "wire-0.5mm2:red",
+        "componentRevision": "1",
+        "componentDigest": "fadb5b5bf688288e375cabd9b9849fcb2be1861e0dfc6500a6bfa63615d5a223",
+        "sku": null,
+        "candidate": true,
+        "qty": 5,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "wire/1mm2:black",
+        "componentId": "wire-1mm2:black",
+        "componentRevision": "1",
+        "componentDigest": "8aee1ff0c298c3c87141d2b5127dfafee91e4504b7ae8b674a2a595d88135056",
+        "sku": null,
+        "candidate": true,
+        "qty": 2,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [],
+        "requiredAccessories": []
+      },
+      {
+        "lineId": "wire/1mm2:red",
+        "componentId": "wire-1mm2:red",
+        "componentRevision": "1",
+        "componentDigest": "91dd0644a1cb572983001ad04e6ba5c4b72a9438ac89785fce5f9c710c26c6ed",
+        "sku": null,
+        "candidate": true,
+        "qty": 2,
+        "massKg": null,
+        "voltageRangeV": null,
+        "price": null,
+        "sources": [],
+        "instanceIds": [],
+        "requiredAccessories": []
+      }
+    ],
+    "missingPriceLineIds": [
+      "serve-caster:1:3a95e23a",
+      "serve-chassis:1:ac075954",
+      "serve-lidar:1:ccb41c58",
+      "serve-support:1:4080c1c5",
+      "serve-tray:1:5590e4c9",
+      "serve-wheel:1:53264351",
+      "eld/drive/orientalmotor-blvd-krd:35e8b1c0",
+      "eld/part/orientalmotor-blv-r-60w:38e9860c",
+      "eld/part/ref-battery-24v-pack:005b0563",
+      "eld/part/ref-buzzer-24v:e114b3e8",
+      "eld/part/ref-controller-ref:0f558007",
+      "eld/part/ref-estop-button:af99cf79",
+      "eld/part/ref-fuse-10a:4de14491",
+      "eld/part/ref-fuse-5a:e6582950",
+      "eld/part/ref-lamp-24v:1d66e96f",
+      "eld/part/ref-safety-relay:7559048e",
+      "eld/part/ref-sensor-pnp-24v:81878906",
+      "eld/part/ref-switch-dry-contact:5cc95cdd",
+      "mate/DFMC_0_5/14-ST-2_54__PHOENIX_CONTACT___AWG26_to_20",
+      "mate/F32FSS-03V-KX_with_LF3F-41GF-P2.0_contacts__J.S.T.___cable_LC03D06A_sold_separately",
+      "wire/0.25mm2:black",
+      "wire/0.25mm2:green",
+      "wire/0.25mm2:yellow",
+      "wire/0.5mm2:black",
+      "wire/0.5mm2:red",
+      "wire/1mm2:black",
+      "wire/1mm2:red"
+    ],
+    "incompleteTotal": true,
+    "total": null
+  },
+  "driveModelDraft": null,
+  "hardwareValidated": false,
+  "controlAuthority": false,
+  "digest": "d28f5b497cb8ec61ebcd1bd86475aea392b49dd65516240a511351825f7231a3"
+}
