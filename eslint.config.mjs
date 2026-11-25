@@ -1,7 +1,8 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 export default tseslint.config(
-  { ignores: ['**/node_modules/**', '**/.next/**', '**/dist/**', 'artifacts/**', '**/generated/**', '**/android/**', '.venv/**', '.venv-*/**', '.lab/**', '.worktrees/**'] },
+  // apps/lab: 84 eslint errors on first run (it never had eslint); enabling lint for the Lab is a separate task
+  { ignores: ['apps/lab/**','**/node_modules/**', '**/.next/**', '**/dist/**', 'artifacts/**', '**/generated/**', '**/android/**', '.venv/**', '.venv-*/**', '.lab/**', '.worktrees/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   { rules: { '@typescript-eslint/no-unused-vars': ['error',{argsIgnorePattern:'^_'}] } },

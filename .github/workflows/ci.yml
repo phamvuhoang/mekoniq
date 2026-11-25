@@ -36,7 +36,7 @@ jobs:
       - name: Restore and verify the published regression corpus
         run: bash scripts/restore-platform-ci-inputs.sh >> "$GITHUB_ENV"
       - run: pnpm contracts:check && pnpm typecheck && pnpm lint && pnpm build
-      - run: pnpm test:unit
+      - run: pnpm test:unit && pnpm --filter mekoniq-robot-lab test:unit
       - run: pnpm test:contracts
       - run: pnpm test:adapters
       - name: Run integration with its owned database and cleanup receipt
