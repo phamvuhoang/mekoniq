@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/engineering.ts @ 0650ecbd126ee4b0b6004412942d5109e5b253a6 (sha256 060586c160557e696404e0e3230615b196766454d0811baa4d23a9b2e21c05d4). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/engineering.ts @ 3fc5e544f3020e7c70401b6cfe112c9f062396e2 (sha256 4894ee59e626b7d7f573dd472f5708ae547b31b1a20ad4df0a88ed8d2816e130). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
 import type {LabProjectV2,AssetRevision} from './types';
 export type CoffeeRecipe=Record<string,unknown>;
@@ -2154,4 +2154,424 @@ export interface EngineeringRunManifest {
     startSimTimeNs: string;
     endSimTimeNs: string;
   };
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "DeviceDocument".
+ */
+export interface DeviceDocument {
+  id: EngineeringId;
+  kind:
+    | 'datasheet'
+    | 'manual'
+    | 'safety_manual'
+    | 'certificate'
+    | 'description_file'
+    | 'description_summary'
+    | 'drawing'
+    | 'quotation'
+    | 'vendor_page';
+  title: string;
+  revision: string;
+  url: string;
+  digest: Digest;
+  license: string;
+}
+/**
+ * Verbatim claim from a document. Certified only when a certificate names the order code of the profile; computed, never typed.
+ *
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "SafetyClaim".
+ */
+export interface SafetyClaim {
+  function: 'sto' | 'ss1' | 'sbc' | 'safe_input';
+  claim: string;
+  documentId: EngineeringId;
+  locator: string;
+  certificate: Certificate | null;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "Certificate".
+ */
+export interface Certificate {
+  documentId: EngineeringId;
+  body: string;
+  number: string;
+  /**
+   * @minItems 1
+   * @maxItems 32
+   */
+  models: [string, ...string[]];
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "Connector".
+ */
+export interface Connector {
+  id: EngineeringId;
+  label: string;
+  matingPart: string | null;
+  /**
+   * @minItems 1
+   * @maxItems 64
+   */
+  pins: [Pin, ...Pin[]];
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "Pin".
+ */
+export interface Pin {
+  pin: string;
+  name: string;
+  role:
+    | 'power'
+    | 'return'
+    | 'pe'
+    | 'di'
+    | 'do'
+    | 'ai'
+    | 'ao'
+    | 'bus'
+    | 'sto'
+    | 'brake'
+    | 'motor_phase'
+    | 'encoder'
+    | 'shield'
+    | 'nc';
+  portId: string | null;
+  source: SourceRef;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "IOPointV1".
+ */
+export interface IOPointV1 {
+  pointId: EngineeringId;
+  direction: 'input' | 'output';
+  pin: string;
+  commonPin: string | null;
+  electrical: {
+    type:
+      | 'pnp_sink_input'
+      | 'npn_source_input'
+      | 'dry_contact_input'
+      | 'pnp_source_output'
+      | 'npn_sink_output'
+      | 'relay_output'
+      | 'analog_voltage'
+      | 'analog_current';
+    /**
+     * @minItems 2
+     * @maxItems 2
+     */
+    voltageRangeV: [number, number];
+    maxCurrentA: Scalar | null;
+  };
+  /**
+   * @minItems 1
+   * @maxItems 32
+   */
+  functions: [string, ...string[]];
+  defaultFunction: string;
+  reassignable: boolean;
+  assignmentPersistence: 'retained' | 'volatile' | 'fixed';
+  busExposure: {
+    kind: 'cyclic' | 'acyclic' | 'none';
+    object: string | null;
+    bit: number | null;
+    precondition: string | null;
+    updatePeriodMs: number | null;
+  };
+  safety: SafetyClaim | null;
+  source: SourceRef;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "DeviceInterface".
+ */
+export interface DeviceInterface {
+  id: EngineeringId;
+  portId: string;
+  protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+  profile: 'cia402' | null;
+  descriptionDocumentId: string | null;
+  source: SourceRef;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "DriveCapabilityV1".
+ */
+export interface DriveCapabilityV1 {
+  axes: 1 | 2;
+  /**
+   * @minItems 1
+   * @maxItems 6
+   */
+  modes:
+    | ['csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt']
+    | ['csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt', 'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt']
+    | [
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt'
+      ]
+    | [
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt'
+      ]
+    | [
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt'
+      ]
+    | [
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt',
+        'csp' | 'csv' | 'cst' | 'pp' | 'pv' | 'pt'
+      ];
+  ratedCurrentA: Scalar;
+  peakCurrentA: Scalar;
+  profileAccelerationRadS2: Scalar | null;
+  feedback: {
+    /**
+     * @maxItems 8
+     */
+    kinds:
+      | []
+      | [string]
+      | [string, string]
+      | [string, string, string]
+      | [string, string, string, string]
+      | [string, string, string, string, string]
+      | [string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string, string];
+    countsPerRev: Scalar | null;
+  };
+  watchdog: {
+    kind: 'heartbeat' | 'sync_timeout' | 'modbus_timeout' | 'none';
+    rangeMs: [number, number] | null;
+    source: SourceRef;
+  };
+  stop: {
+    quickStop: boolean;
+    quickStopOption: Scalar | null;
+    faultReactionOption: Scalar | null;
+    torqueOff: SafetyClaim | null;
+    /**
+     * @maxItems 8
+     */
+    torqueOffPointIds:
+      | []
+      | [string]
+      | [string, string]
+      | [string, string, string]
+      | [string, string, string, string]
+      | [string, string, string, string, string]
+      | [string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string]
+      | [string, string, string, string, string, string, string, string];
+    monitorOutputPointId: string | null;
+    brakeOutputPointId: string | null;
+    source: SourceRef;
+  };
+  /**
+   * @maxItems 64
+   */
+  faultMap: {
+    vendorCode: string;
+    neutral: 'COMMAND_TIMEOUT' | 'FEEDBACK_LOSS' | 'FOLLOWING_ERROR' | 'OVERSPEED' | 'EXTERNAL_TRIP' | 'OTHER';
+    source: SourceRef;
+  }[];
+}
+/**
+ * What a device is, taken from pinned manufacturer documents: connectors, pins, I/O points, interfaces, drive capability, safety claims (verbatim). There is deliberately no field for an evidence level, a safety level or a verified state: those are pure functions of the document and its sources.
+ *
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "DeviceProfileV1".
+ */
+export interface DeviceProfileV1 {
+  schemaVersion: 1;
+  documentType: 'device-profile';
+  id: EngineeringId;
+  revision: number;
+  digest: Digest;
+  component: {
+    id: EngineeringId;
+    revision: string;
+    digest: Digest;
+  };
+  variant: {
+    orderCode: string | null;
+    hardwareRevision: string | null;
+    firmware: string | null;
+  };
+  kind:
+    | 'servo_drive'
+    | 'motor'
+    | 'battery'
+    | 'compute'
+    | 'io_module'
+    | 'sensor'
+    | 'indicator'
+    | 'switch'
+    | 'safety_device'
+    | 'power_conversion'
+    | 'protection';
+  /**
+   * @maxItems 32
+   */
+  documents: DeviceDocument[];
+  /**
+   * @maxItems 16
+   */
+  connectors:
+    | []
+    | [Connector]
+    | [Connector, Connector]
+    | [Connector, Connector, Connector]
+    | [Connector, Connector, Connector, Connector]
+    | [Connector, Connector, Connector, Connector, Connector]
+    | [Connector, Connector, Connector, Connector, Connector, Connector]
+    | [Connector, Connector, Connector, Connector, Connector, Connector, Connector]
+    | [Connector, Connector, Connector, Connector, Connector, Connector, Connector, Connector]
+    | [Connector, Connector, Connector, Connector, Connector, Connector, Connector, Connector, Connector]
+    | [Connector, Connector, Connector, Connector, Connector, Connector, Connector, Connector, Connector, Connector]
+    | [
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector
+      ]
+    | [
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector
+      ]
+    | [
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector
+      ]
+    | [
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector
+      ]
+    | [
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector
+      ]
+    | [
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector,
+        Connector
+      ];
+  /**
+   * @maxItems 32
+   */
+  ioPoints: IOPointV1[];
+  /**
+   * @maxItems 8
+   */
+  interfaces:
+    | []
+    | [DeviceInterface]
+    | [DeviceInterface, DeviceInterface]
+    | [DeviceInterface, DeviceInterface, DeviceInterface]
+    | [DeviceInterface, DeviceInterface, DeviceInterface, DeviceInterface]
+    | [DeviceInterface, DeviceInterface, DeviceInterface, DeviceInterface, DeviceInterface]
+    | [DeviceInterface, DeviceInterface, DeviceInterface, DeviceInterface, DeviceInterface, DeviceInterface]
+    | [
+        DeviceInterface,
+        DeviceInterface,
+        DeviceInterface,
+        DeviceInterface,
+        DeviceInterface,
+        DeviceInterface,
+        DeviceInterface
+      ]
+    | [
+        DeviceInterface,
+        DeviceInterface,
+        DeviceInterface,
+        DeviceInterface,
+        DeviceInterface,
+        DeviceInterface,
+        DeviceInterface,
+        DeviceInterface
+      ];
+  drive: DriveCapabilityV1 | null;
 }
