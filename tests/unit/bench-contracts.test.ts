@@ -25,6 +25,7 @@ describe('bench kit',()=>{
  it('pdo.tx without the statusword',()=>{expect(codes(variant(k=>{k.axes[0].pdo.tx=['6064:00'];}))).toEqual(['KIT_PDO_TX_INCOMPLETE']);});
  it('pdo.tx without the position',()=>{expect(codes(variant(k=>{k.axes[0].pdo.tx=['6041:00'];}))).toEqual(['KIT_PDO_TX_INCOMPLETE']);});
  it('sdoWrites containing 0x1010',()=>{expect(codes(variant(k=>{k.axes[0].sdoWrites=[{object:'1010:01',value:1,bytes:4,why:'x',source:k.power.source}];}))).toEqual(['KIT_SDO_FORBIDDEN']);});
+ it.each(['1010:01','1600:01','1A00:01','1C12:00','1C13:00','6040:00','6060:00','60FF:00','6071:00','607A:00','60B1:00','60B2:00','60FE:01'])('sdoWrites can never command motion or state: %s',o=>{expect(codes(variant(k=>{k.axes[0].sdoWrites=[{object:o,value:1,bytes:2,why:'x',source:k.power.source}];}))).toEqual(['KIT_SDO_FORBIDDEN']);});
  it('sdoWrites containing a PDO mapping object',()=>{expect(codes(variant(k=>{k.axes[0].sdoWrites=[{object:'1600:01',value:1,bytes:4,why:'x',source:k.power.source}];}))).toEqual(['KIT_SDO_FORBIDDEN']);});
  it('maxSpeedRadS above the ceiling',()=>{expect(codes(variant(k=>{k.limits.maxSpeedRadS=31;}))).toEqual(['KIT_LIMIT_ABOVE_CEILING']);});
  it('maxTorquePermille above the ceiling',()=>{expect(codes(variant(k=>{k.limits.maxTorquePermille=301;}))).toEqual(['KIT_LIMIT_ABOVE_CEILING']);});

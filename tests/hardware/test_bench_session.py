@@ -57,6 +57,10 @@ class Rig:
         return self.until(lambda r: states(r) == ["enabled"] * 2)
 
 
+def coasted(r):
+    return any(s.coasted_while_moving for s in r.bus.slaves)
+
+
 def states(r):
     return [f["state"] for f in r["feedback"]]
 
@@ -237,6 +241,7 @@ def test_command_timeout_trips_on_the_5th_tick_without_a_fresh_seq_as_drive_grou
     r.step(enable=False)
     res = r.step(enable=False, faultReset=True)
     assert states(res) == ["disabled"] * 2 and [f["fault"] for f in res["feedback"]] == [None, None]
+    assert not coasted(r)
     assert states(r.enable()) == ["enabled"] * 2
 
 
@@ -257,7 +262,7 @@ def test_overspeed_is_latched_by_the_worker(route):
         res = r.step(enable=False)
     assert res["feedback"][0]["fault"] == "OVERSPEED"
     res = r.step(enable=False, faultReset=True)
-    assert states(res) == ["disabled"] * 2
+    assert states(res) == ["disabled"] * 2 and not coasted(r)
 
 
 @pytest.mark.parametrize("route", ["method", "event"])
@@ -319,7 +324,7 @@ def test_quick_stop_follows_605a_and_never_enables_while_commanded(option, after
         res = r.step(target=2.0, quickStop=True)
         seen.append(states(res)[0])
         assert "enabled" not in states(res) and not any(set(controlwords(res, i)) & ADVANCING for i in range(2))
-    assert seen[0] == "quick_stop" and seen[-1] == after
+    assert seen[0] == "quick_stop" and seen[-1] == after and [f["fault"] for f in res["feedback"]] == [None, None] and not coasted(r)
     assert states(r.enable()) == ["enabled"] * 2   # level semantics: quickStop back to 0 with enable 1 re-enables
 
 
@@ -402,7 +407,11 @@ def test_silence_ends_the_session(watchdog):
         assert code(r.do, op) == "BENCH_ORDER_VIOLATION"
     assert code(r.step) == "BENCH_ORDER_VIOLATION"
     r.do("describe")
+    rec = record(r)
     assert r.do("stop")["controlwords"] == [0, 0]
+    if not watchdog:   # the slave did not trip and still runs in Operation enabled: stop must hold the ramp, not cut torque
+        assert_held(rec)
+    assert not coasted(r)
 
 
 @pytest.mark.parametrize("option", [2, 6])
@@ -411,7 +420,7 @@ def test_stop_ends_with_controlword_zero_on_every_axis(option):
     r.enable()
     for _ in range(20):
         r.step(target=2.0)
-    assert r.do("stop")["controlwords"] == [0, 0]
+    assert r.do("stop")["controlwords"] == [0, 0] and not coasted(r)
     assert code(r.step) == "BENCH_ORDER_VIOLATION"
 
 
@@ -534,7 +543,7 @@ def test_the_quick_stop_ramp_is_held_until_rest_or_until_the_drive_leaves(option
     rec = record(r)
     trigger(r, how)
     assert_held(rec)
-    assert not any(s.coasted_from_quick_stop for s in r.bus.slaves)
+    assert not any(s.coasted_while_moving for s in r.bus.slaves)
     if how != "stop":
         assert r.do("stop")["controlwords"] == [0, 0]
 
@@ -550,7 +559,7 @@ def test_quick_stop_hold_ms_is_live_and_ends_the_hold_by_time(how):
     cws = [c for c, _, _ in rec]
     first = cws.index(0x0002)
     assert cws.index(0x0000, first) - first == 10                                  # 40 ms = 10 cycles of 4 ms, then disable voltage while still moving
-    assert r.bus.slaves[0].coasted_from_quick_stop
+    assert r.bus.slaves[0].coasted_while_moving
 
 
 def test_stop_with_the_default_hold_stays_inside_its_ack_deadline():
@@ -597,7 +606,7 @@ def test_a_commanded_quick_stop_on_605a_6_is_held_by_the_drive_and_never_release
         res = r.step(target=5.0, quickStop=True)
     assert states(res) == ["quick_stop"] * 2 and res["feedback"][0]["velocityRadS"] == pytest.approx(0, abs=1e-3)
     assert {c for c, _, _ in rec} == {0x0002}
-    assert not any(s.coasted_from_quick_stop for s in r.bus.slaves)
+    assert not any(s.coasted_while_moving for s in r.bus.slaves)
 
 
 def test_dropping_enable_at_rest_disables_at_once():
@@ -621,3 +630,48 @@ def test_leaving_a_held_quick_stop_asks_for_operation_enabled(resume, after):
     assert states(res) == [after] * 2
     assert 0x0000 not in {c for c, _, _ in rec}
     assert rec[0][0] == 0x000F
+
+
+# ---- fix round 1 -----------------------------------------------------------------------------------------------------------------------------------------------------
+def test_the_double_coasts_when_torque_is_cut_from_operation_enabled_at_speed():
+    r = Rig()
+    at_speed(r)
+    v0 = r.bus.slaves[0].vel
+    for _ in range(5):
+        r.bus.exchange([{"controlword": 0x0000, "targetRaw": 0}] * 2)
+    assert coasted(r) and r.bus.slaves[0].vel > 0.9 * v0   # freewheeling, not a 20 ms stop
+
+
+SDO_FORBIDDEN = ["1010:01", "1600:01", "1A00:01", "1C12:00", "1C13:00", "6040:00", "6060:00", "60FF:00", "6071:00", "607A:00", "60B1:00", "60B2:00", "60FE:01"]
+
+
+@pytest.mark.parametrize("obj", SDO_FORBIDDEN)
+def test_kit_sdo_writes_can_never_command_motion_or_state(obj):
+    r = Rig(with_sdo(kit(), {"object": obj, "value": 9 if obj == "6060:00" else 15, "bytes": 2}), upto="scan")
+    assert code(r.do, "configure") == "BENCH_SDO_NOT_LISTED" and r.bus.writes == []
+
+
+@pytest.mark.parametrize("faults", [False, True])
+def test_a_lost_enable_latches_and_never_restarts_without_a_reset_edge(faults):
+    r = Rig(kit(powerLossFaults=faults, events=[{"atCycle": 200, "do": "cut_power", "logic": False}, {"atCycle": 260, "do": "restore_power"}]))
+    at_speed(r)
+    res = r.until(lambda x: x["feedback"][0]["state"] == "fault", n=40, target=5.0)
+    assert res["feedback"][0]["fault"] == "EXTERNAL_TRIP"
+    for _ in range(40):   # power is back, enable is still asked, no reset edge: the axis stays down
+        res = r.step(target=0.0)
+        assert res["feedback"][0]["state"] == "fault" and not set(controlwords(res)) & ADVANCING
+    if not faults:
+        assert res["vendor"][0]["statusword"] & 0x4F == 0x40 and res["vendor"][0]["errorCode"] == 0   # the drive itself sits in Switch on disabled, no error
+    r.step(target=0.0, faultReset=True)
+    assert states(r.until(lambda x: states(x) == ["enabled"] * 2, n=10)) == ["enabled"] * 2
+
+
+@pytest.mark.parametrize("rev,ok", [(None, True), ("1", True), ("0x00000001", True), ("2", False)])
+def test_identity_includes_the_revision_when_the_kit_expects_one(rev, ok):
+    k = kit()
+    k["axes"][0]["expect"]["revision"] = rev
+    r = Rig(k, upto="scan")
+    if ok:
+        r.do("configure")
+    else:
+        assert code(r.do, "configure") == "BENCH_IDENTITY_CHANGED" and r.bus.writes == []

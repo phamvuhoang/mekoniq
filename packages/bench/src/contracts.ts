@@ -77,8 +77,10 @@ const check=<T>(ref:string,doc:unknown,rules:(d:T)=>Problem[]=()=>[]):Problem[]=
 };
 
 const idx=(object:string)=>parseInt(object.slice(0,4),16);
-/** 0x1010 (store parameters) and every PDO mapping or assignment object: the worker maps PDOs itself, never through sdoWrites. */
-const sdoForbidden=(object:string)=>{const n=idx(object);return n===0x1010||(n>=0x1600&&n<=0x17ff)||(n>=0x1a00&&n<=0x1bff)||n===0x1c12||n===0x1c13;};
+/** 0x1010 (store parameters), every PDO mapping or assignment object (the worker maps PDOs itself), and every object that commands motion or state
+ * (controlword, mode, targets, offsets, digital outputs). The same list is `MOTION` in robotics/bench/bench_worker/session.py (BENCH_SDO_NOT_LISTED); keep them equal. */
+const SDO_MOTION=[0x1010,0x6040,0x6060,0x60ff,0x6071,0x607a,0x60b1,0x60b2,0x60fe];
+const sdoForbidden=(object:string)=>{const n=idx(object);return SDO_MOTION.includes(n)||(n>=0x1600&&n<=0x17ff)||(n>=0x1a00&&n<=0x1bff)||n===0x1c12||n===0x1c13;};
 const lacks=(list:string[],need:string[])=>need.filter(o=>!list.some(x=>x.toUpperCase()===o));
 
 function kitRules(k:BenchKitV1):Problem[]{

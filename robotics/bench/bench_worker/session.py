@@ -18,6 +18,9 @@ OVERSPEED_FACTOR = 1.2                             # the virtual drive's factor 
 CHANNEL_DEFAULTS = {"quickStopRestRadS": 0.05, "quickStopHoldMs": 2000, "wkcErrorCyclesToLoss": 5}   # kit `channel` knobs: tuning for real hardware, not code
 MODE_CODE = {"csv": 9, "pv": 3}
 MAPPING = ("1C12", "1C13")                         # plus 1600-17FF and 1A00-1BFF
+# Objects a kit may never write by SDO: store (1010), PDO mapping/assignment, and everything that commands motion or state. The same list is in
+# packages/bench/src/contracts.ts `sdoForbidden` (KIT_SDO_FORBIDDEN); keep the two equal, each refuses on its own.
+MOTION = ("1010", "6040", "6060", "60FF", "6071", "607A", "60B1", "60B2", "60FE")
 WRITE_OPS = ("configure", "start", "silence", "imuConfigure")
 ORDER = {"open": ("new",), "scan": ("open", "scanned"), "configure": ("scanned",), "start": ("configured",), "step": ("started",), "silence": ("started",)}
 
@@ -25,6 +28,15 @@ ORDER = {"open": ("new",), "scan": ("open", "scanned"), "configure": ("scanned",
 def _is_mapping(obj):
     i = int(obj[:4], 16)
     return obj[:4] in MAPPING or 0x1600 <= i <= 0x17FF or 0x1A00 <= i <= 0x1BFF
+
+
+def _same_revision(expect, actual):
+    if expect is None:
+        return True
+    try:
+        return int(expect, 0) == int(actual)
+    except (TypeError, ValueError):
+        return str(expect) == str(actual)
 
 
 def _hex(v):
@@ -65,12 +77,13 @@ class BenchSession:
 
     def _describe(self, payload):
         return {"protocol": "mekoniq-bench/1", "role": "bus", "backend": self.kit["bus"]["backend"], "kitId": self.kit["id"], "kitDigest": self.kit["digest"],
-                "readOnly": self.read_only, "phase": self.phase, "lockDigest": None}
+                "readOnly": self.read_only, "phase": self.phase, "lockDigest": None}   # ponytail: no lock file before .venv-bench exists (K08); then its sha256
 
     def _open(self, payload):
         self.phase = "open"
         return {"interface": self.kit["bus"]["interface"]}
 
+    # ponytail: reads one PDO (0x1600 / 0x1A00) and trusts that 0x1C12/0x1C13 assign it; read the assignment back when a drive with several PDOs reaches the bench
     def _read_map(self, pos, idx):
         n = self.bus.sdo_read(pos, f"{idx}:00", 1)
         return [f"{v >> 16:04X}:{v >> 8 & 0xFF:02X}" for v in (self.bus.sdo_read(pos, f"{idx}:{k:02X}", 4) for k in range(1, n + 1))]
@@ -83,7 +96,8 @@ class BenchSession:
         out, ok = [], {s["position"] for s in slaves} == set(by_pos)
         for s in slaves:
             a = by_pos.get(s["position"])
-            match = a is not None and _hex(s["vendorId"]) == a["expect"]["vendorId"].upper().replace("0X", "0x") and _hex(s["productCode"]) == a["expect"]["productCode"].upper().replace("0X", "0x")
+            match = a is not None and _hex(s["vendorId"]) == a["expect"]["vendorId"].upper().replace("0X", "0x") and _hex(s["productCode"]) == a["expect"]["productCode"].upper().replace("0X", "0x") \
+                and _same_revision(a["expect"]["revision"], s["revision"])
             ok = ok and match
             out.append(s | {"vendorId": _hex(s["vendorId"]), "productCode": _hex(s["productCode"]), "axisId": a and a["axisId"], "identityMatches": match,
                             "rxPdo": self._read_map(s["position"], "1600"), "txPdo": self._read_map(s["position"], "1A00")})
@@ -97,7 +111,7 @@ class BenchSession:
         plan = [(o, v, b) for o, (v, b) in own.items()]
         for w in a["sdoWrites"]:
             obj = w["object"].upper()
-            if obj.startswith("1010") or _is_mapping(obj):
+            if obj[:4] in MOTION or _is_mapping(obj):
                 raise BenchError("BENCH_SDO_NOT_LISTED", f"{a['axisId']}: {obj} is never written from sdoWrites")
             if obj in own or obj == "6080:00":
                 if own.get(obj, (None,))[0] != w["value"]:
@@ -222,7 +236,8 @@ class BenchSession:
 
     def _cause_cleared(self, i):
         v = self.last[i] and velocity_from_raw(self.last[i]["velocityRaw"] or 0, self.axes[i]["units"])
-        return {"OVERSPEED": v is not None and abs(v) < self.max_speed, "FEEDBACK_LOSS": self.wkc_bad[i] == 0}.get(self.latched[i], True)
+        return {"OVERSPEED": v is not None and abs(v) < self.max_speed, "FEEDBACK_LOSS": self.wkc_bad[i] == 0,
+                "EXTERNAL_TRIP": neutral_state(self.sw[i]) != FAULT}.get(self.latched[i], True)
 
     def _exchange(self, outputs):
         """One bus cycle in slave-position order; updates statuswords, unwrapped positions and the worker's own fault checks."""
@@ -234,6 +249,10 @@ class BenchSession:
             self.cw[i] = outputs[i]["controlword"]
             if inp["wkcOk"]:
                 self.wkc_bad[i] = 0
+                # BK-D11 / KCF01: Operation enabled lost while the worker still wrote 0x000F (no quick stop, disable or worker fault of its own) is latched,
+                # so level `enable` cannot restart the axis when power returns. A drive Fault latches in the drive itself.
+                if neutral_state(self.sw[i]) == ENABLED and outputs[i]["controlword"] == ENABLE_OPERATION and neutral_state(inp["statusword"]) not in (ENABLED, FAULT):
+                    self._latch(i, "EXTERNAL_TRIP")
                 self.sw[i], self.last[i] = inp["statusword"], inp
                 self.unwrap[i].update(inp["positionRaw"])
                 v = None if inp["velocityRaw"] is None else abs(velocity_from_raw(inp["velocityRaw"], self.axes[i]["units"]))
@@ -247,6 +266,7 @@ class BenchSession:
             axes.append((i, {"axisId": self.axes[i]["axisId"], "controlword": outputs[i]["controlword"], "statusword": inp["statusword"], "targetRaw": outputs[i]["targetRaw"],
                              "positionRaw": inp["positionRaw"], "velocityRaw": inp["velocityRaw"], "torqueRaw": inp["torqueRaw"]}))
         self.cycle_no += 1
+        # ponytail: wkc = slaves with a good working counter, not the frame's raw counter; report the raw value when SoemBus (K08) has it
         return {"cycle": self.cycle_no - 1, "tMonoNs": t, "wkc": sum(1 for x in inputs if x["wkcOk"]), "axes": [row for _, row in sorted(axes)]}
 
     def _feedback(self, i, tick):
@@ -269,7 +289,7 @@ class BenchSession:
         by_pos = sorted(range(self.n), key=lambda i: self.axes[i]["slavePosition"])
         axes = []
         for i, s in zip(by_pos, r["slaves"]):
-            u = self.axes[i]["units"]
+            u, self.sw[i] = self.axes[i]["units"], s["statusword"]   # stop decides from what the slaves say now
             axes.append({"axisId": self.axes[i]["axisId"], "positionRad": position_from_raw(self.unwrap[i].update(s["positionRaw"]), u),
                          "velocityRadS": None if s["velocityRaw"] is None else velocity_from_raw(s["velocityRaw"], u)})
         return r | {"axes": axes}
@@ -280,7 +300,7 @@ class BenchSession:
         try:
             if self.phase in ("started", "silenced"):
                 for _ in range(int(self.hold_ms // self.cycle_ms) + 2):
-                    moving = [self.phase == "started" and neutral_state(self.sw[i]) in (ENABLED, QUICK_STOP) for i in range(self.n)]
+                    moving = [neutral_state(self.sw[i]) in (ENABLED, QUICK_STOP) for i in range(self.n)]   # also after silence: a slave that did not trip still runs
                     outs = [{"controlword": self._quick_stop_word(i) if moving[i] else 0x0000, "targetRaw": 0} for i in range(self.n)]
                     self._exchange(outs)
                     if not any(o["controlword"] for o in outs):

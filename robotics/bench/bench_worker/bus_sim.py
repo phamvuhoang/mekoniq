@@ -7,8 +7,10 @@ It is configured only through the kit's `simSlave` object (ruling R4); every kno
     enableDelayCycles   5     cycles of 'enable operation' in Switched on before Operation enabled
     quickStopOption     2     605Ah: 1-3 leave Quick stop active for Switch on disabled once at rest; 5-8 stay in Quick stop active
     quickStopResume     true  in Quick stop active with 605Ah 5-8, 'enable operation' returns to Operation enabled (transition 16); false = the drive lacks it
-    quickStopDecelRawPerCycle 2000  the quick-stop ramp (5 rad/s = 104 304 raw takes 52 cycles, about 10 ticks); 0x0000 received while still moving in Quick stop
-                              active makes the slave coast (slow decay) and sets `slaves[i].coasted_from_quick_stop`
+    quickStopDecelRawPerCycle 2000  the quick-stop ramp (5 rad/s = 104 304 raw takes 52 cycles, about 10 ticks)
+                              Torque removed while moving (Operation enabled or Quick stop active left for Switch on disabled, Ready to switch on or Switched on
+                              with |v| >= REST_RAW) makes the motor freewheel (500 ms decay) and sets `slaves[i].coasted_while_moving`
+    powerLossFaults     true  motor power lost above Switch on disabled: Fault 0x3220; false = the drive drops to Switch on disabled without an error
     watchdogMs          100   slave-side watchdog: this long without a frame -> AL SAFE-OP (0x001B) and Fault 0x8130; null = never trips
     velocityScale       1.0   the slave tracks targetRaw x scale (0.8 = 20 % low)
     ignoreQuickStop     false the slave ignores the quick stop command in Operation enabled
@@ -18,6 +20,7 @@ It is configured only through the kit's `simSlave` object (ruling R4); every kno
     corruptReadback     null  an object ('6072:00', '1600:02', ...) whose SDO read returns the written value + 0x100 (a mapping entry reads back another subindex)
     events              []    [{atCycle, do, ...}] applied before exchange number atCycle (0 = the first after start):
                               inject_error {position, code} | force_velocity {position, rawVelocity|null} | wkc_loss {cycles} | cut_power {logic: bool}
+                              | restore_power {} (motor power only)
 
 The same knobs are Python attributes/methods for the bench's own tests (`writes`, `corrupt_readback`, `inject_error`, `force_velocity`, `wkc_loss`, `cut_power`);
 the events call those methods, so both routes share one implementation. All numbers are `assumed`.
@@ -32,7 +35,7 @@ REST_RAW = 20                      # assumed: below this |velocity| (raw/s) a qu
 WATCHDOG_ERROR, UNDERVOLTAGE = 0x8130, 0x3220
 BITS = {"6040:00": 16, "6041:00": 16, "6060:00": 8, "6061:00": 8, "6072:00": 16, "6077:00": 16, "603F:00": 16, "60B8:00": 16}
 COAST_TAU_MS = 500.0               # assumed: a coasting rotor, power stage off
-DEFAULTS = {"quickStopResume": True, "quickStopDecelRawPerCycle": 2000, "enableDelayCycles": 5, "quickStopOption": 2, "watchdogMs": 100, "velocityScale": 1.0, "ignoreQuickStop": False, "serials": ["SIM-0001", "SIM-0002"],
+DEFAULTS = {"powerLossFaults": True, "quickStopResume": True, "quickStopDecelRawPerCycle": 2000, "enableDelayCycles": 5, "quickStopOption": 2, "watchdogMs": 100, "velocityScale": 1.0, "ignoreQuickStop": False, "serials": ["SIM-0001", "SIM-0002"],
             "initialErrorCode": None, "initialPositionRaw": 0, "corruptReadback": None, "events": []}
 DEFAULT_TX = ["6041:00", "6064:00", "606C:00"]
 
@@ -49,7 +52,7 @@ class _Slave:
         self.pending = None
         self.pos, self.vel, self.target = float(cfg["initialPositionRaw"]), 0.0, 0
         self.forced = None
-        self.coasting = self.coasted_from_quick_stop = False
+        self.coasting = self.coasted_while_moving = False
         self.last_cw, self.enable_count = 0, 0
         self.od = {}
 
@@ -121,6 +124,9 @@ class SimBus:
             for s in self.slaves:
                 s.state, s.target = "NRTSO", 0
 
+    def restore_power(self):
+        self.power = True
+
     def _event(self, e):
         do = e["do"]
         if do == "inject_error":
@@ -131,6 +137,8 @@ class SimBus:
             self.wkc_loss(e["cycles"])
         elif do == "cut_power":
             self.cut_power(e["logic"])
+        elif do == "restore_power":
+            self.restore_power()
         else:
             raise ValueError(f"unknown simSlave event {do!r}")
 
@@ -142,7 +150,10 @@ class SimBus:
         """One CiA 402 state machine step on the received controlword."""
         st, rising_reset = s.state, cw & 0x80 and not s.last_cw & 0x80
         if not self.power and st in ("RTSO", "SO", "OE", "QSA") and s.pending is None:
-            s.pending = UNDERVOLTAGE
+            if self.cfg["powerLossFaults"]:
+                s.pending = UNDERVOLTAGE
+            else:
+                st = "SOD"
         if s.pending is not None and st not in ("FRA", "F"):
             st, s.error, s.pending = "FRA", s.pending, None
         elif st == "FRA":
@@ -151,8 +162,6 @@ class SimBus:
             if rising_reset:
                 st, s.error = "SOD", 0
         elif not cw & 0x02:                                  # disable voltage
-            if st == "QSA" and abs(s.vel) >= REST_RAW:
-                s.coasting = s.coasted_from_quick_stop = True   # the ramp was cut: torque off while moving
             st = "SOD"
         elif not cw & 0x04:                                  # quick stop
             if st == "OE" and not self.cfg["ignoreQuickStop"]:
@@ -174,6 +183,8 @@ class SimBus:
                 st = "OE"
         if st != "SO":
             s.enable_count = 0
+        if s.state in ("OE", "QSA") and st in ("SOD", "RTSO", "SO") and abs(s.vel) >= REST_RAW:
+            s.coasting = s.coasted_while_moving = True       # torque removed while moving: the rotor freewheels
         if st == "QSA" and self.cfg["quickStopOption"] in (1, 2, 3) and abs(s.vel) < REST_RAW:
             st = "SOD"
         s.state, s.last_cw = st, cw
