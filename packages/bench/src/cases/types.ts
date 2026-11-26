@@ -6,7 +6,8 @@ import type {BenchCycleRow,BenchKitV1,BenchPolicy,BenchTickRecord,Measurement} f
  * (axisId -> {'605A:00': value}), the script's own notes (`meta`, plus `error` when the case code threw), and the results of `silence` and of the `stop`
  * runCase sends after it. evaluate() sees nothing else. */
 export interface CaseTrace{ticks:BenchTickRecord[];cycles:BenchCycleRow[];prompts:{id:string;answer:string}[];objects?:Record<string,Record<string,number>>;meta?:Record<string,unknown>;silence?:Record<string,unknown>;stop?:Record<string,unknown>}
-export interface CaseVerdict{status:'tested'|'failed'|'not_run'|'unsupported_by_device';reason:string|null;measurements:Measurement[]}
+/** `observed`: what an identity case read, by checklist path (KID02: '/devices/drive-left' -> the firmware string); closuresFor copies it into the record. */
+export interface CaseVerdict{status:'tested'|'failed'|'not_run'|'unsupported_by_device';reason:string|null;measurements:Measurement[];observed?:Record<string,string>}
 export interface CaseScript{
  ticks:number;
  /** The commands of tick k from the feedback of tick k-1 ([] at k = 0). `seq` is local to the case: 1 + the tick that first sent it, so at most k + 1 and never

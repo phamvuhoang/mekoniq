@@ -50,12 +50,26 @@
           "maxLength": 200
         },
         "nicDriver": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "nicMacSha256": {
-          "$ref": "#/definitions/Digest"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "python": {
           "type": "string",
@@ -63,9 +77,16 @@
           "maxLength": 200
         },
         "pysoem": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "node": {
           "type": "string",
@@ -110,7 +131,14 @@
           ]
         },
         "lockSha256": {
-          "$ref": "#/definitions/Digest"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [

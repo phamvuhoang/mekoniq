@@ -16,6 +16,7 @@ Worker latches (per axis; reported as state "fault" with the code; the stop sequ
   So a drive that faulted after the trip needs two separate rising edges, the first for the drive, the second for the latch. Never 0x0080 without a rising
   edge, never a word toward enable while latched."""
 import math
+import platform
 import re
 import time
 
@@ -27,6 +28,7 @@ from .units import Unwrap32, position_from_raw, torque_from_raw, velocity_from_r
 
 MAX_SPEED_RADS, MAX_TORQUE_PERMILLE = 30, 300      # the hard ceiling of B1 (spec B1 §6): changing it is a reviewed code change, never a flag
 OVERSPEED_FACTOR = 1.2                             # the virtual drive's factor (spec B1 §5.2)
+WORKER_VERSION = "1.0.0"   # the bench record carries it (worker.version); bump on any change of behaviour
 CHANNEL_DEFAULTS = {"quickStopRestRadS": 0.05, "quickStopHoldMs": 2000, "wkcErrorCyclesToLoss": 5, "enableTimeoutTicks": 100}   # kit `channel` knobs: tuning for real hardware, not code
 MODE_CODE = {"csv": 9, "pv": 3}
 MAPPING = ("1C12", "1C13")                         # plus 1600-17FF and 1A00-1BFF
@@ -91,7 +93,8 @@ class BenchSession:
 
     def _describe(self, payload):
         return {"protocol": "mekoniq-bench/1", "role": "bus", "backend": self.kit["bus"]["backend"], "kitId": self.kit["id"], "kitDigest": self.kit["digest"],
-                "readOnly": self.read_only, "phase": self.phase, "lockDigest": None}   # ponytail: no lock file before .venv-bench exists (K08); then its sha256
+                "readOnly": self.read_only, "phase": self.phase, "lockDigest": None,
+                "version": WORKER_VERSION, "python": platform.python_version(), "pysoem": None}   # ponytail: no lock file before .venv-bench exists (K08); then its sha256
 
     def _open(self, payload):
         self.phase = "open"

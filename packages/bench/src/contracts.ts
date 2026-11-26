@@ -30,13 +30,14 @@ export interface BenchSessionV1{
 export interface BenchPolicy{
  schemaVersion:1;documentType:'bench-policy';digest:string;source:SourceRef;
  tickLatenessMaxMs:number;enableTimeoutTicks:number;trackingToleranceRadS:{relative:number;absolute:number};settleMs:number;revolutionCheck:{revolutions:number;toleranceDeg:number};
- velocityUnitTolerance:number;creepSpeedRadS:number;restSpeedRadS:number;lagLevels:number[];lagTrials:number;silenceMs:number;soakMinutes:number;wkcErrorCyclesToLoss:number;
+ velocityUnitTolerance:number;creepSpeedRadS:number;restSpeedRadS:number;lagLevels:number[];lagTrials:number;silenceMs:number;soakMinutes:number;
  delaySplit:'even_command_first';validationTrialsPerCondition:number;lidarDistancesM:number[];badFrameFractionMax:number;shadowStaleAfterMs:number;
 }
 export interface BenchTickRecord{schemaVersion:1;tick:number;tMonoNs:number;latenessNs:number;armed:boolean;driveCommands:DriveCommandV1[];feedback:DriveFeedbackV1[];vendor:{axisId:string;statusword:number;errorCode:number|null}[]}
 export interface BenchCycleRow{cycle:number;tMonoNs:number;wkc:number;axes:{axisId:string;controlword:number;statusword:number;targetRaw:number;positionRaw:number;velocityRaw:number|null;torqueRaw:number|null}[]}
-export interface HostIdentity{os:string;kernel:string;cpu:string;nicDriver:string;nicMacSha256:string;python:string;pysoem:string;node:string;testLevel:'protocol_double'|'hardware'}
-export interface WorkerIdentity{protocol:'mekoniq-bench/1';version:string;busBackend:'sim'|'soem';lockSha256:string}
+/** nicDriver, nicMacSha256 and pysoem are null on the simulated bus; lockSha256 is null until the worker has a lock file (K08). */
+export interface HostIdentity{os:string;kernel:string;cpu:string;nicDriver:string|null;nicMacSha256:string|null;python:string;pysoem:string|null;node:string;testLevel:'protocol_double'|'hardware'}
+export interface WorkerIdentity{protocol:'mekoniq-bench/1';version:string;busBackend:'sim'|'soem';lockSha256:string|null}
 export interface Measurement{id:string;value:number;unit:string;uncertaintyAbs:number;caseId:string;n:number}
 export interface BenchRecordV1{
  schemaVersion:1;documentType:'bench-record';accepted:false;hardwareValidated:false;controlAuthority:false;

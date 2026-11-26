@@ -30,7 +30,6 @@
   "lagTrials": 30,
   "silenceMs": 1000,
   "soakMinutes": 10,
-  "wkcErrorCyclesToLoss": 5,
   "delaySplit": "even_command_first",
   "validationTrialsPerCondition": 3,
   "lidarDistancesM": [
@@ -40,5 +39,5 @@
   ],
   "badFrameFractionMax": 0.01,
   "shadowStaleAfterMs": 500,
-  "digest": "f783d111dcdc9c27ade7204b0f789cf49a2a8a25363804f4c083d1b2df95ba85"
+  "digest": "7c159b28549524b841d84585b718b0d472c51ee4d635e40bd7536ebf127c1497"
 }

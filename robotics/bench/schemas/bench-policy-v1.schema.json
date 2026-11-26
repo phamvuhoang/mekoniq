@@ -99,10 +99,6 @@
       "type": "number",
       "exclusiveMinimum": 0
     },
-    "wkcErrorCyclesToLoss": {
-      "type": "integer",
-      "minimum": 1
-    },
     "delaySplit": {
       "enum": [
         "even_command_first"
@@ -147,7 +143,6 @@
     "lagTrials",
     "silenceMs",
     "soakMinutes",
-    "wkcErrorCyclesToLoss",
     "delaySplit",
     "validationTrialsPerCondition",
     "lidarDistancesM",
