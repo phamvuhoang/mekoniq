@@ -16,6 +16,7 @@ Worker latches (per axis; reported as state "fault" with the code; the stop sequ
   So a drive that faulted after the trip needs two separate rising edges, the first for the drive, the second for the latch. Never 0x0080 without a rising
   edge, never a word toward enable while latched."""
 import math
+import re
 import time
 
 from . import BenchError
@@ -101,6 +102,9 @@ class BenchSession:
         return [f"{v >> 16:04X}:{v >> 8 & 0xFF:02X}" for v in (self.bus.sdo_read(pos, f"{idx}:{k:02X}", 4) for k in range(1, n + 1))]
 
     def _scan(self, payload):
+        objects = payload.get("objects", [])   # read by SDO on every slave, e.g. 605A:00 for KCF05; reading is allowed in read-only mode
+        if not isinstance(objects, list) or not all(isinstance(o, str) and re.fullmatch(r"[0-9A-F]{4}:[0-9A-F]{2}", o) for o in objects):
+            raise BenchError("BENCH_ORDER_VIOLATION", f"scan objects must be 'XXXX:XX' (upper-case hex), got {str(objects)[:200]}")
         slaves = self.bus.scan()
         if len(slaves) != self.n:
             raise BenchError("BENCH_SLAVE_COUNT", f"{len(slaves)} slaves on the bus, the kit has {self.n} axes")
@@ -112,7 +116,9 @@ class BenchSession:
                 and _same_revision(a["expect"]["revision"], s["revision"])
             ok = ok and match
             out.append(s | {"vendorId": _hex(s["vendorId"]), "productCode": _hex(s["productCode"]), "axisId": a and a["axisId"], "identityMatches": match,
-                            "rxPdo": self._read_map(s["position"], "1600"), "txPdo": self._read_map(s["position"], "1A00")})
+                            "rxPdo": self._read_map(s["position"], "1600"), "txPdo": self._read_map(s["position"], "1A00"),
+                            # ponytail: 4-byte reads; SoemBus (K08) sizes and signs each object from the device profile
+                            "objects": {o: self.bus.sdo_read(s["position"], o, 4) for o in objects}})
         self.identity_ok, self.phase = ok, "scanned"
         return {"slaves": out}
 
@@ -216,11 +222,12 @@ class BenchSession:
             self.pulse[i] = edges[i] and self.latched[i] == "EXTERNAL_TRIP" and neutral_state(self.sw[i]) == FAULT   # R-a: reset the drive, keep the latch
             if edges[i] and self.latched[i] and not self.pulse[i] and self._cause_cleared(i):
                 self.latched[i], self.wkc_bad[i] = None, 0
-        rows, t0 = [], time.monotonic_ns()
+        rows, t0, stale = [], time.monotonic_ns(), [False] * self.n
         for k in range(self.cpt):
             outputs = []
             for i, a in enumerate(self.axes):
                 target, expired = self.channels[i].cycle()
+                stale[i] = expired
                 state, cmd = neutral_state(self.sw[i]), self.accepted[i]
                 if expired and state not in (DISABLED, FAULT):
                     self._latch(i, "COMMAND_TIMEOUT")
@@ -238,7 +245,8 @@ class BenchSession:
                 outputs.append({"controlword": cw, "targetRaw": velocity_to_raw(target, a["units"])})
             rows.append(self._exchange(outputs))
         for i, cmd in enumerate(self.accepted):   # R-b: an enable attempt that does not succeed latches instead of staying armed
-            asking = cmd["enable"] and not cmd["quickStop"] and not self.latched[i] and neutral_state(self.sw[i]) not in (ENABLED, FAULT)
+            # a stale command (expired channel) asks for nothing: the gate already writes 0x0000, and the cause to report is the channel, not the drive
+            asking = cmd["enable"] and not cmd["quickStop"] and not self.latched[i] and not stale[i] and neutral_state(self.sw[i]) not in (ENABLED, FAULT)
             self.waiting[i] = self.waiting[i] + 1 if asking else 0
             if self.waiting[i] >= self.enable_timeout:
                 self._latch(i, "EXTERNAL_TRIP")

@@ -5,7 +5,7 @@ It is configured only through the kit's `simSlave` object (ruling R4); every kno
     defaultRxPdo        RxPDO mapping the slaves boot with (kit fixtures: DC kit has 60FF:00, AC kit has not)
     requiresDc          the slaves refuse SAFE-OP -> OP unless bus.sync is 'dc_sync0' (BENCH_NOT_OPERATIONAL)
     enableDelayCycles   5     cycles of 'enable operation' in Switched on before Operation enabled
-    quickStopOption     2     605Ah: 1-3 leave Quick stop active for Switch on disabled once at rest; 5-8 stay in Quick stop active
+    quickStopOption     2     605Ah (also its SDO value): 1-3 leave Quick stop active for Switch on disabled once at rest; 5-8 stay in Quick stop active
     quickStopResume     true  in Quick stop active with 605Ah 5-8, 'enable operation' returns to Operation enabled (transition 16); false = the drive lacks it
     quickStopDecelRawPerCycle 2000  the quick-stop ramp (5 rad/s = 104 304 raw takes 52 cycles, about 10 ticks)
                               Torque removed while moving (Operation enabled or Quick stop active left for Switch on disabled, Ready to switch on or Switched on
@@ -63,6 +63,7 @@ class SimBus:
         self.cfg = cfg = DEFAULTS | kit.get("simSlave", {})
         self.slaves = [_Slave(s, cfg) for s in cfg["serials"]]
         for s in self.slaves:
+            s.od["605A:00"] = cfg["quickStopOption"]   # readable by SDO (scan objects, KCF05); the behaviour reads cfg
             self._load_map(s, "1600", cfg["defaultRxPdo"])
             self._load_map(s, "1A00", DEFAULT_TX)
         self.writes = []

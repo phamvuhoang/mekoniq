@@ -8,6 +8,8 @@
    whole tick) gets 0x0000 at once; a moving axis in Operation enabled or Quick stop active gets 0x0002, held until the drive has left those states by itself,
    or it has been at rest for a whole tick, or quickStopHoldMs has elapsed; only then 0x0000.
 3. Leaving a held quick stop (`quickStop: false, enable: true` in Quick stop active) asks for Operation enabled with 0x000F (transition 16, table again).
+   A drive without transition 16 stays in Quick stop active: after channel.enableTimeoutTicks the worker latches EXTERNAL_TRIP (session.py, R-b) and rule 2
+   ends the axis disabled.
 
 Pure: the caller keeps the counters (cycles at rest in a row, ms since the sequence began)."""
 from .cia402 import DISABLE_VOLTAGE, QUICK_STOP_CW, device_state

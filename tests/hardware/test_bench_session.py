@@ -170,6 +170,18 @@ def test_scan_reports_identity_and_distinct_serials():
     assert len({s["serial"] for s in slaves}) == 2
 
 
+@pytest.mark.parametrize("option", [2, 6])
+def test_scan_reads_the_requested_objects_also_in_read_only(option):
+    r = Rig(kit(quickStopOption=option), read_only=True, upto="open")
+    assert [s["objects"] for s in r.do("scan", {"objects": ["605A:00"]})["slaves"]] == [{"605A:00": option}] * 2
+    assert r.bus.writes == []
+
+
+def test_scan_without_objects_reads_none_and_a_malformed_object_is_refused():
+    assert [s["objects"] for s in Rig(upto="scan").do("scan")["slaves"]] == [{}, {}]
+    assert code(Rig(upto="open").do, "scan", {"objects": ["605A"]}) == "BENCH_ORDER_VIOLATION"
+
+
 # ---- the full sequence, on both kits ---------------------------------------------------------------------------------------------------------------------------------
 @pytest.mark.parametrize("name", ["kit-sim-v1.json", "kit-sim-ac-v1.json"])
 def test_full_sequence(name):
@@ -296,6 +308,18 @@ def test_cutting_motor_power_trips_the_drive():
     r.enable()
     res = r.until(lambda x: x["feedback"][0]["state"] == "fault", n=20)
     assert res["feedback"][0]["fault"] == "EXTERNAL_TRIP" and res["vendor"][0]["errorCode"] == 0x3220
+
+
+def test_a_stale_enable_on_a_disabled_axis_is_not_an_enable_timeout():
+    # K03 minor: the enable timeout counted on an expired channel and reported EXTERNAL_TRIP where the cause is the stale command (no new seq)
+    r = Rig(kit(motorPower=False))
+    r.step()
+    for _ in range(150):
+        res = r.step(fresh=False)
+    assert states(res) == ["disabled"] * 2 and [f["fault"] for f in res["feedback"]] == [None, None]
+    for _ in range(100):   # fresh commands that cannot enable still latch (R-b)
+        res = r.step()
+    assert [f["fault"] for f in res["feedback"]] == ["EXTERNAL_TRIP"] * 2
 
 
 def test_velocity_scale_knob():

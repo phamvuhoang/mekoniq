@@ -11,8 +11,9 @@ STATES = (
     (0x006F, 0x0021, "ready_to_switch_on", READY, SWITCH_ON, DISABLE_VOLTAGE),
     (0x006F, 0x0023, "switched_on", READY, ENABLE_OPERATION, DISABLE_VOLTAGE),
     (0x006F, 0x0027, "operation_enabled", ENABLED, ENABLE_OPERATION, QUICK_STOP_CW),
-    # Released with enable: transition 16 back to Operation enabled (605Ah 5-7). To be confirmed against the pinned drive manual at the first hardware session;
-    # a drive without transition 16 simply stays in Quick stop active and the worker does not escalate.
+    # Released with enable: transition 16 back to Operation enabled (605Ah 5-7). To be confirmed against the pinned drive manual at the first hardware session.
+    # A drive without transition 16 stays in Quick stop active; the enable attempt then times out (channel.enableTimeoutTicks), the worker latches
+    # EXTERNAL_TRIP (session.py, R-b) and the stop sequence (stopseq rule 2) ends the axis disabled.
     (0x006F, 0x0007, "quick_stop_active", QUICK_STOP, ENABLE_OPERATION, QUICK_STOP_CW),
     (0x004F, 0x000F, "fault_reaction_active", FAULT, DISABLE_VOLTAGE, DISABLE_VOLTAGE),
     (0x004F, 0x0008, "fault", FAULT, DISABLE_VOLTAGE, DISABLE_VOLTAGE),
