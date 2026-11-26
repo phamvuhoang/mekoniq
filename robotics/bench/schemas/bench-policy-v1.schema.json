@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.bench-policy.v1",
+  "title": "BenchPolicy",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "bench-policy"
+    },
+    "digest": {
+      "$ref": "#/definitions/Digest"
+    },
+    "source": {
+      "$ref": "#/definitions/SourceRef"
+    },
+    "tickLatenessMaxMs": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "enableTimeoutTicks": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "trackingToleranceRadS": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "relative": {
+          "type": "number",
+          "minimum": 0
+        },
+        "absolute": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "relative",
+        "absolute"
+      ]
+    },
+    "settleMs": {
+      "type": "number",
+      "minimum": 0
+    },
+    "revolutionCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "revolutions": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "toleranceDeg": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "revolutions",
+        "toleranceDeg"
+      ]
+    },
+    "velocityUnitTolerance": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1
+    },
+    "creepSpeedRadS": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "restSpeedRadS": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "lagLevels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "number",
+        "exclusiveMinimum": 0,
+        "maximum": 1
+      }
+    },
+    "lagTrials": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "silenceMs": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "soakMinutes": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "wkcErrorCyclesToLoss": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "delaySplit": {
+      "enum": [
+        "even_command_first"
+      ]
+    },
+    "validationTrialsPerCondition": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "lidarDistancesM": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    },
+    "badFrameFractionMax": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "shadowStaleAfterMs": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "digest",
+    "source",
+    "tickLatenessMaxMs",
+    "enableTimeoutTicks",
+    "trackingToleranceRadS",
+    "settleMs",
+    "revolutionCheck",
+    "velocityUnitTolerance",
+    "creepSpeedRadS",
+    "restSpeedRadS",
+    "lagLevels",
+    "lagTrials",
+    "silenceMs",
+    "soakMinutes",
+    "wkcErrorCyclesToLoss",
+    "delaySplit",
+    "validationTrialsPerCondition",
+    "lidarDistancesM",
+    "badFrameFractionMax",
+    "shadowStaleAfterMs"
+  ],
+  "definitions": {
+    "Digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "SourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "manufacturer",
+            "measured",
+            "derived",
+            "assumed"
+          ]
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "contentSha256": {
+          "$ref": "#/definitions/Digest"
+        },
+        "uncertaintyAbs": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "kind",
+        "documentId",
+        "revision",
+        "locator",
+        "contentSha256"
+      ]
+    }
+  }
+}

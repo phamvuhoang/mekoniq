@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.bench-session.v1",
+  "title": "BenchSessionV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "bench-session"
+    },
+    "operator": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "observer": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "startedAt": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "declarations": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "estopCutsMotorPower": {
+          "type": "boolean"
+        },
+        "estopTestedToday": {
+          "type": "boolean"
+        },
+        "motorsClamped": {
+          "type": "boolean"
+        },
+        "shaftLoad": {
+          "enum": [
+            "bare",
+            "marker_disc"
+          ]
+        },
+        "powerWiredBy": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "mainsQualified": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "readManualSections": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "required": [
+        "estopCutsMotorPower",
+        "estopTestedToday",
+        "motorsClamped",
+        "shaftLoad",
+        "powerWiredBy",
+        "mainsQualified",
+        "readManualSections"
+      ]
+    },
+    "instruments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "kind": {
+            "enum": [
+              "tape",
+              "marker",
+              "multimeter",
+              "other"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "note"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "operator",
+    "observer",
+    "location",
+    "startedAt",
+    "declarations",
+    "instruments"
+  ]
+}

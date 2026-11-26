@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "documentType": "bench-kit",
+  "id": "kit-sim-v1",
+  "revision": 1,
+  "electricalDesign": null,
+  "power": {
+    "motor": "dc_low_voltage",
+    "nominalV": 48,
+    "logicSeparate": true,
+    "source": {
+      "kind": "assumed",
+      "documentId": "bench-sim",
+      "revision": "1",
+      "locator": "motor supply",
+      "contentSha256": "1fc00709e847473b70f89d14aedeb0f7e582d61fccd8d699879f369ce35c9091"
+    }
+  },
+  "bus": {
+    "backend": "sim",
+    "interface": null,
+    "cycleMs": 4,
+    "sync": "sm_sync",
+    "mode": "csv"
+  },
+  "simSlave": {
+    "defaultRxPdo": [
+      "6040:00",
+      "60FF:00"
+    ],
+    "requiresDc": false
+  },
+  "axes": [
+    {
+      "axisId": "amr-1/wheel-left",
+      "slavePosition": 1,
+      "profile": {
+        "id": "bench-sim-drive",
+        "revision": 1,
+        "digest": "1fc00709e847473b70f89d14aedeb0f7e582d61fccd8d699879f369ce35c9091"
+      },
+      "expect": {
+        "vendorId": "0x53494D00",
+        "productCode": "0x00000001",
+        "revision": null
+      },
+      "pdo": {
+        "rx": [
+          "6040:00",
+          "60FF:00"
+        ],
+        "tx": [
+          "6041:00",
+          "6064:00",
+          "606C:00"
+        ]
+      },
+      "units": {
+        "positionCountsPerRev": {
+          "value": 131072,
+          "unit": "count/rev",
+          "source": {
+            "kind": "assumed",
+            "documentId": "bench-sim",
+            "revision": "1",
+            "locator": "encoder resolution",
+            "contentSha256": "1fc00709e847473b70f89d14aedeb0f7e582d61fccd8d699879f369ce35c9091"
+          }
+        },
+        "velocityRawPerRadS": {
+          "value": 20860.76,
+          "unit": "raw/(rad/s)",
+          "source": {
+            "kind": "assumed",
+            "documentId": "bench-sim",
+            "revision": "1",
+            "locator": "counts per second per rad/s",
+            "contentSha256": "1fc00709e847473b70f89d14aedeb0f7e582d61fccd8d699879f369ce35c9091"
+          }
+        },
+        "ratedTorqueNm": {
+          "value": 0.32,
+          "unit": "N*m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "bench-sim",
+            "revision": "1",
+            "locator": "rated torque",
+            "contentSha256": "1fc00709e847473b70f89d14aedeb0f7e582d61fccd8d699879f369ce35c9091"
+          }
+        },
+        "polarity": 1,
+        "gearRatio": 1
+      },
+      "sdoWrites": []
+    },
+    {
+      "axisId": "amr-1/wheel-right",
+      "slavePosition": 2,
+      "profile": {
+        "id": "bench-sim-drive",
+        "revision": 1,
+        "digest": "1fc00709e847473b70f89d14aedeb0f7e582d61fccd8d699879f369ce35c9091"
+      },
+      "expect": {
+        "vendorId": "0x53494D00",
+        "productCode": "0x00000001",
+        "revision": null
+      },
+      "pdo": {
+        "rx": [
+          "6040:00",
+          "60FF:00"
+        ],
+        "tx": [
+          "6041:00",
+          "6064:00",
+          "606C:00"
+        ]
+      },
+      "units": {
+        "positionCountsPerRev": {
+          "value": 131072,
+          "unit": "count/rev",
+          "source": {
+            "kind": "assumed",
+            "documentId": "bench-sim",
+            "revision": "1",
+            "locator": "encoder resolution",
+            "contentSha256": "1fc00709e847473b70f89d14aedeb0f7e582d61fccd8d699879f369ce35c9091"
+          }
+        },
+        "velocityRawPerRadS": {
+          "value": 20860.76,
+          "unit": "raw/(rad/s)",
+          "source": {
+            "kind": "assumed",
+            "documentId": "bench-sim",
+            "revision": "1",
+            "locator": "counts per second per rad/s",
+            "contentSha256": "1fc00709e847473b70f89d14aedeb0f7e582d61fccd8d699879f369ce35c9091"
+          }
+        },
+        "ratedTorqueNm": {
+          "value": 0.32,
+          "unit": "N*m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "bench-sim",
+            "revision": "1",
+            "locator": "rated torque",
+            "contentSha256": "1fc00709e847473b70f89d14aedeb0f7e582d61fccd8d699879f369ce35c9091"
+          }
+        },
+        "polarity": -1,
+        "gearRatio": 1
+      },
+      "sdoWrites": []
+    }
+  ],
+  "limits": {
+    "maxSpeedRadS": 20,
+    "maxAccelRadS2": 20,
+    "maxTorquePermille": 300,
+    "source": {
+      "kind": "assumed",
+      "documentId": "bench-sim",
+      "revision": "1",
+      "locator": "limits",
+      "contentSha256": "1fc00709e847473b70f89d14aedeb0f7e582d61fccd8d699879f369ce35c9091"
+    }
+  },
+  "channel": {
+    "interpolation": "linear",
+    "watchdogTicks": 5
+  },
+  "sensors": {
+    "lidar": null,
+    "imu": null
+  },
+  "digest": "4c5598b872de5fd11a0790c677cf7e418bb83a34d1f8f9989b5b59d0d8cf5e23"
+}

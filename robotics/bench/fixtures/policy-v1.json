@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "documentType": "bench-policy",
+  "source": {
+    "kind": "assumed",
+    "documentId": "bench-policy",
+    "revision": "1",
+    "locator": "spec 04 section 4 proposed values",
+    "contentSha256": "1fc00709e847473b70f89d14aedeb0f7e582d61fccd8d699879f369ce35c9091"
+  },
+  "tickLatenessMaxMs": 5,
+  "enableTimeoutTicks": 100,
+  "trackingToleranceRadS": {
+    "relative": 0.05,
+    "absolute": 0.05
+  },
+  "settleMs": 500,
+  "revolutionCheck": {
+    "revolutions": 10,
+    "toleranceDeg": 5
+  },
+  "velocityUnitTolerance": 0.02,
+  "creepSpeedRadS": 0.5,
+  "restSpeedRadS": 0.05,
+  "lagLevels": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "lagTrials": 30,
+  "silenceMs": 1000,
+  "soakMinutes": 10,
+  "wkcErrorCyclesToLoss": 5,
+  "delaySplit": "even_command_first",
+  "validationTrialsPerCondition": 3,
+  "lidarDistancesM": [
+    0.5,
+    1.5,
+    3
+  ],
+  "badFrameFractionMax": 0.01,
+  "shadowStaleAfterMs": 500,
+  "digest": "f783d111dcdc9c27ade7204b0f789cf49a2a8a25363804f4c083d1b2df95ba85"
+}

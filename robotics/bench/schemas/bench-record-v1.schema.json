@@ -1,0 +1,650 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.bench-record.v1",
+  "title": "BenchRecordV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "bench-record"
+    },
+    "accepted": {
+      "const": false
+    },
+    "hardwareValidated": {
+      "const": false
+    },
+    "controlAuthority": {
+      "const": false
+    },
+    "candidateId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "sourceCommit": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "host": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "os": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "kernel": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "cpu": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "nicDriver": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "nicMacSha256": {
+          "$ref": "#/definitions/Digest"
+        },
+        "python": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "pysoem": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "node": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "testLevel": {
+          "enum": [
+            "protocol_double",
+            "hardware"
+          ]
+        }
+      },
+      "required": [
+        "os",
+        "kernel",
+        "cpu",
+        "nicDriver",
+        "nicMacSha256",
+        "python",
+        "pysoem",
+        "node",
+        "testLevel"
+      ]
+    },
+    "worker": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "mekoniq-bench/1"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "busBackend": {
+          "enum": [
+            "sim",
+            "soem"
+          ]
+        },
+        "lockSha256": {
+          "$ref": "#/definitions/Digest"
+        }
+      },
+      "required": [
+        "protocol",
+        "version",
+        "busBackend",
+        "lockSha256"
+      ]
+    },
+    "kit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "digest": {
+          "$ref": "#/definitions/Digest"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "digest"
+      ]
+    },
+    "parts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "identity": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "manifestSha256": {
+                  "$ref": "#/definitions/Digest"
+                },
+                "kitDigest": {
+                  "$ref": "#/definitions/Digest"
+                }
+              },
+              "required": [
+                "manifestSha256",
+                "kitDigest"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "conformance": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "manifestSha256": {
+                  "$ref": "#/definitions/Digest"
+                },
+                "kitDigest": {
+                  "$ref": "#/definitions/Digest"
+                }
+              },
+              "required": [
+                "manifestSha256",
+                "kitDigest"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "measure": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "manifestSha256": {
+                  "$ref": "#/definitions/Digest"
+                },
+                "kitDigest": {
+                  "$ref": "#/definitions/Digest"
+                }
+              },
+              "required": [
+                "manifestSha256",
+                "kitDigest"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sensors": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "manifestSha256": {
+                  "$ref": "#/definitions/Digest"
+                },
+                "kitDigest": {
+                  "$ref": "#/definitions/Digest"
+                }
+              },
+              "required": [
+                "manifestSha256",
+                "kitDigest"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "compare": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "manifestSha256": {
+                  "$ref": "#/definitions/Digest"
+                },
+                "kitDigest": {
+                  "$ref": "#/definitions/Digest"
+                }
+              },
+              "required": [
+                "manifestSha256",
+                "kitDigest"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "identity",
+        "conformance",
+        "measure",
+        "sensors",
+        "compare"
+      ]
+    },
+    "policyDigest": {
+      "$ref": "#/definitions/Digest"
+    },
+    "conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "shaftLoad": {
+          "enum": [
+            "bare",
+            "marker_disc"
+          ]
+        },
+        "busMode": {
+          "enum": [
+            "csv",
+            "pv"
+          ]
+        },
+        "cycleMs": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "sync": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "shaftLoad",
+        "busMode",
+        "cycleMs",
+        "sync"
+      ]
+    },
+    "devices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "deviceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "profileId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "vendorId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "productCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "serial": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "firmware": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "deviceId",
+          "profileId",
+          "vendorId",
+          "productCode",
+          "revision",
+          "serial",
+          "firmware"
+        ]
+      }
+    },
+    "deviations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text"
+        ]
+      }
+    },
+    "cases": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "enum": [
+              "tested",
+              "failed",
+              "not_run",
+              "unsupported_by_device"
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "session": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "reason",
+          "session",
+          "artifacts"
+        ]
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "enum": [
+              "tested",
+              "failed",
+              "not_run",
+              "blocked_external"
+            ]
+          },
+          "accepted": {
+            "const": false
+          }
+        },
+        "required": [
+          "status",
+          "accepted"
+        ]
+      }
+    },
+    "closures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ruleId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "result": {
+            "enum": [
+              "confirmed",
+              "contradicted",
+              "not_measured"
+            ]
+          },
+          "caseId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "observed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ruleId",
+          "path",
+          "result",
+          "caseId",
+          "observed"
+        ]
+      }
+    },
+    "measurements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "value": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "uncertaintyAbs": {
+            "type": "number",
+            "minimum": 0
+          },
+          "caseId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "n": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "id",
+          "value",
+          "unit",
+          "uncertaintyAbs",
+          "caseId",
+          "n"
+        ]
+      }
+    },
+    "externalGates": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "G-SAFE1": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "enum": [
+                "blocked_external"
+              ]
+            },
+            "accepted": {
+              "const": false
+            }
+          },
+          "required": [
+            "status",
+            "accepted"
+          ]
+        }
+      },
+      "required": [
+        "G-SAFE1"
+      ]
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "sha256": {
+            "$ref": "#/definitions/Digest"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "path",
+          "sha256",
+          "bytes"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "accepted",
+    "hardwareValidated",
+    "controlAuthority",
+    "candidateId",
+    "sourceCommit",
+    "host",
+    "worker",
+    "kit",
+    "parts",
+    "policyDigest",
+    "conditions",
+    "devices",
+    "deviations",
+    "cases",
+    "gates",
+    "closures",
+    "measurements",
+    "externalGates",
+    "artifacts"
+  ],
+  "definitions": {
+    "Digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

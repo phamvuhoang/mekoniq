@@ -1,0 +1,165 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.bench-tick.v1",
+  "title": "BenchTickRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "tick": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "tMonoNs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "latenessNs": {
+      "type": "integer"
+    },
+    "armed": {
+      "type": "boolean"
+    },
+    "driveCommands": {
+      "type": "array",
+      "items": {
+        "$ref": "mekoniq.drive-io.v1#/definitions/DriveCommandV1"
+      }
+    },
+    "feedback": {
+      "type": "array",
+      "items": {
+        "$ref": "mekoniq.drive-io.v1#/definitions/DriveFeedbackV1"
+      }
+    },
+    "vendor": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "axisId": {
+            "$ref": "mekoniq.drive-io.v1#/definitions/DriveAxisId"
+          },
+          "statusword": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "errorCode": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "axisId",
+          "statusword",
+          "errorCode"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "tick",
+    "tMonoNs",
+    "latenessNs",
+    "armed",
+    "driveCommands",
+    "feedback",
+    "vendor"
+  ],
+  "definitions": {
+    "BenchCycleRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cycle": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tMonoNs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wkc": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "axes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "axisId": {
+                "$ref": "mekoniq.drive-io.v1#/definitions/DriveAxisId"
+              },
+              "controlword": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "statusword": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "targetRaw": {
+                "type": "integer"
+              },
+              "positionRaw": {
+                "type": "integer"
+              },
+              "velocityRaw": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "torqueRaw": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "axisId",
+              "controlword",
+              "statusword",
+              "targetRaw",
+              "positionRaw",
+              "velocityRaw",
+              "torqueRaw"
+            ]
+          }
+        }
+      },
+      "required": [
+        "cycle",
+        "tMonoNs",
+        "wkc",
+        "axes"
+      ]
+    }
+  }
+}

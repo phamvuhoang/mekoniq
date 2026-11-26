@@ -1,0 +1,586 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.bench-kit.v1",
+  "title": "BenchKitV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "bench-kit"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "digest": {
+      "$ref": "#/definitions/Digest"
+    },
+    "electricalDesign": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "digest": {
+              "$ref": "#/definitions/Digest"
+            }
+          },
+          "required": [
+            "id",
+            "revision",
+            "digest"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "power": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "motor": {
+          "enum": [
+            "dc_low_voltage",
+            "ac_mains"
+          ]
+        },
+        "nominalV": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "logicSeparate": {
+          "type": "boolean"
+        },
+        "source": {
+          "$ref": "#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "motor",
+        "nominalV",
+        "logicSeparate",
+        "source"
+      ]
+    },
+    "bus": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "backend": {
+          "enum": [
+            "sim",
+            "soem"
+          ]
+        },
+        "interface": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cycleMs": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "sync": {
+          "enum": [
+            "dc_sync0",
+            "sm_sync",
+            "free_run"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "csv",
+            "pv"
+          ]
+        }
+      },
+      "required": [
+        "backend",
+        "interface",
+        "cycleMs",
+        "sync",
+        "mode"
+      ]
+    },
+    "simSlave": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "defaultRxPdo": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9A-Fa-f]{4}:[0-9A-Fa-f]{2}$"
+          }
+        },
+        "requiresDc": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "defaultRxPdo",
+        "requiresDc"
+      ]
+    },
+    "axes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "axisId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+/[A-Za-z0-9_.-]+$",
+            "maxLength": 200
+          },
+          "slavePosition": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "profile": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "digest": {
+                "$ref": "#/definitions/Digest"
+              }
+            },
+            "required": [
+              "id",
+              "revision",
+              "digest"
+            ]
+          },
+          "expect": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "vendorId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "productCode": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "revision": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "vendorId",
+              "productCode",
+              "revision"
+            ]
+          },
+          "pdo": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "rx": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9A-Fa-f]{4}:[0-9A-Fa-f]{2}$"
+                }
+              },
+              "tx": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9A-Fa-f]{4}:[0-9A-Fa-f]{2}$"
+                }
+              }
+            },
+            "required": [
+              "rx",
+              "tx"
+            ]
+          },
+          "units": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "positionCountsPerRev": {
+                "$ref": "#/definitions/Scalar"
+              },
+              "velocityRawPerRadS": {
+                "$ref": "#/definitions/Scalar"
+              },
+              "ratedTorqueNm": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Scalar"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "polarity": {
+                "enum": [
+                  1,
+                  -1
+                ]
+              },
+              "gearRatio": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "positionCountsPerRev",
+              "velocityRawPerRadS",
+              "ratedTorqueNm",
+              "polarity",
+              "gearRatio"
+            ]
+          },
+          "sdoWrites": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "object": {
+                  "type": "string",
+                  "pattern": "^[0-9A-Fa-f]{4}:[0-9A-Fa-f]{2}$"
+                },
+                "value": {
+                  "type": "integer"
+                },
+                "bytes": {
+                  "enum": [
+                    1,
+                    2,
+                    4
+                  ]
+                },
+                "why": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "source": {
+                  "$ref": "#/definitions/SourceRef"
+                }
+              },
+              "required": [
+                "object",
+                "value",
+                "bytes",
+                "why",
+                "source"
+              ]
+            }
+          }
+        },
+        "required": [
+          "axisId",
+          "slavePosition",
+          "profile",
+          "expect",
+          "pdo",
+          "units",
+          "sdoWrites"
+        ]
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxSpeedRadS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "maxAccelRadS2": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "maxTorquePermille": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "source": {
+          "$ref": "#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "maxSpeedRadS",
+        "maxAccelRadS2",
+        "maxTorquePermille",
+        "source"
+      ]
+    },
+    "channel": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "interpolation": {
+          "enum": [
+            "hold",
+            "linear"
+          ]
+        },
+        "watchdogTicks": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "interpolation",
+        "watchdogTicks"
+      ]
+    },
+    "sensors": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lidar": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "driver": {
+                  "const": "ld19"
+                },
+                "port": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "baud": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "profile": {
+                  "$ref": "#/definitions/ProfileRef"
+                }
+              },
+              "required": [
+                "driver",
+                "port",
+                "baud",
+                "profile"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "imu": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "driver": {
+                  "const": "wit"
+                },
+                "port": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "baud": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "profile": {
+                  "$ref": "#/definitions/ProfileRef"
+                },
+                "rateHz": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "algorithm": {
+                  "enum": [
+                    "6axis",
+                    "9axis"
+                  ]
+                }
+              },
+              "required": [
+                "driver",
+                "port",
+                "baud",
+                "profile",
+                "rateHz",
+                "algorithm"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "lidar",
+        "imu"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "id",
+    "revision",
+    "digest",
+    "electricalDesign",
+    "power",
+    "bus",
+    "axes",
+    "limits",
+    "channel",
+    "sensors"
+  ],
+  "definitions": {
+    "Digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "SourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "manufacturer",
+            "measured",
+            "derived",
+            "assumed"
+          ]
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "contentSha256": {
+          "$ref": "#/definitions/Digest"
+        },
+        "uncertaintyAbs": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "kind",
+        "documentId",
+        "revision",
+        "locator",
+        "contentSha256"
+      ]
+    },
+    "Scalar": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "source": {
+          "$ref": "#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "value",
+        "unit",
+        "source"
+      ]
+    },
+    "ProfileRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "digest": {
+          "$ref": "#/definitions/Digest"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "digest"
+      ]
+    }
+  }
+}
