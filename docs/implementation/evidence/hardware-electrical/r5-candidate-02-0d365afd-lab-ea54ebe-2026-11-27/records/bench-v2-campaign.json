@@ -288,7 +288,7 @@
       "MJ-BENCH-ARM": "xarm6-control-v1.json"
     }
   },
-  "sourceCommit": "6da4ca945f8989e8b24362c87f6cb7e42b61df3d",
+  "sourceCommit": "0d365afd26314d7cb1bee717769c0ab2db83f136",
   "hostArch": "arm64",
   "accepted": false,
   "execution": "actual_mujoco",

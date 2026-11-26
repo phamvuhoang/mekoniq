@@ -9,7 +9,7 @@
  "note": "evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; the arm is a Webots plant with assumed parameters (not_calibrated), gripping is an event, and no real arm, MuJoCo, Linux or hardware gate is in its scope",
  "identity": {
   "before": {
-   "sourceCommit": "6da4ca945f8989e8b24362c87f6cb7e42b61df3d",
+   "sourceCommit": "0d365afd26314d7cb1bee717769c0ab2db83f136",
    "dirty": false,
    "dirtyReasons": [],
    "toolClosures": {
@@ -32,10 +32,10 @@
     "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
    },
    "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
-   "at": "2026-11-26T00:33:15.188Z"
+   "at": "2026-11-26T13:02:20.388Z"
   },
   "after": {
-   "sourceCommit": "6da4ca945f8989e8b24362c87f6cb7e42b61df3d",
+   "sourceCommit": "0d365afd26314d7cb1bee717769c0ab2db83f136",
    "dirty": false,
    "dirtyReasons": [],
    "toolClosures": {
@@ -58,16 +58,16 @@
     "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
    },
    "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
-   "at": "2026-11-26T00:38:41.918Z"
+   "at": "2026-11-26T13:07:52.160Z"
   },
   "identityStable": true
  },
  "lab": {
-  "commit": "78c9c3883348f69d939189ffc4250b624af8ee25",
+  "commit": "ea54ebe729c6e175a56f723ab7b278853c2cb492",
   "dirty": false,
   "pin": {
-   "sourceCommit": "6da4ca945f8989e8b24362c87f6cb7e42b61df3d",
-   "artifactSha256": "3a9ee947a342d5ebebe8742deff467f14788fc7db65f7d7086728a4344891140",
+   "sourceCommit": "0d365afd26314d7cb1bee717769c0ab2db83f136",
+   "artifactSha256": "061c633740f6aa236a1430468d5d77222b1682c79c6f065e224bc382f97291b3",
    "portableToolsDigest": "2c788ca437f59bbc99212b58667c55cbe4050c572d44bcfbd0781bb09d849caa",
    "schemaHash": "20dcb91def3429f6212ff00bc8c627e4227a10949b071848d1880cf3bb134db2"
   }
@@ -76,37 +76,37 @@
  "algorithm": null,
  "r1Record": {
   "file": "r1-record.json",
-  "sha256": "cf1bebe4ffad9ae61d05856ed316bf93df6df8ba72d84c2b409ddc46e719f584",
+  "sha256": "0ad92102096b7ab55364b1136faa5679efa82fbf15e6de4b4ed47b2eb71c7dc7",
   "candidate": "r1",
-  "sourceCommit": "6da4ca945f8989e8b24362c87f6cb7e42b61df3d"
+  "sourceCommit": "0d365afd26314d7cb1bee717769c0ab2db83f136"
  },
  "irsimRecord": {
   "file": "irsim-record.json",
-  "sha256": "846fed815448a43d6e6ce8335335fef5641ab49908923e2b34c9d603343d775d",
+  "sha256": "b8710caedeb0a83454b721e17ae7b50ea38b110ce72a5a0aadbe6d5e37743457",
   "candidate": "irsim",
-  "sourceCommit": "6da4ca945f8989e8b24362c87f6cb7e42b61df3d"
+  "sourceCommit": "0d365afd26314d7cb1bee717769c0ab2db83f136"
  },
  "mockRegression": {
   "file": "mock-regression.json",
-  "sha256": "591fbdebb6d00e21886e2d1b6aeb061cf1d2b6d234a032a33b8fe8a9bfbebae4",
-  "labCommit": "78c9c3883348f69d939189ffc4250b624af8ee25",
+  "sha256": "97db3186086e5da1e16c6defb9b3f590341f87477ae8712495ee67fde2f3a201",
+  "labCommit": "ea54ebe729c6e175a56f723ab7b278853c2cb492",
   "source": "(outside the repositories)"
  },
  "suites": [
   {
    "id": "arm-static",
-   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/arm-fixture.test.ts tests/unit/capabilities-webots-arm.test.ts tests/contracts/sim-extension-contracts.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-6da4ca94/r11/suites/arm-static.json --reporter=default",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/arm-fixture.test.ts tests/unit/capabilities-webots-arm.test.ts tests/contracts/sim-extension-contracts.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-0d365afd/r11/suites/arm-static.json --reporter=default",
    "cwd": "source",
-   "startedAt": "2026-11-26T00:33:15.262Z",
-   "finishedAt": "2026-11-26T00:33:17.294Z",
+   "startedAt": "2026-11-26T13:02:20.463Z",
+   "finishedAt": "2026-11-26T13:02:22.445Z",
    "exitCode": 0,
    "log": "suites/arm-static.log",
-   "logSha256": "8414b8e39371765bb1bc447879624e3105ce1bfc06d14d9ba23af6c8547b179c",
+   "logSha256": "6a4bf5d94501872bd2da5e3b89454d75c0e1ae23dd9ceb67dd6f296d5fc38717",
    "repo": "source",
    "kind": "vitest",
    "result": {
     "file": "suites/arm-static.json",
-    "sha256": "ec874e6a092d95e2f01a359761b1e68291378047d373c8ad67a4d292fc996549",
+    "sha256": "975cc26a1ab5ef29fc97403513d05e15d8e41dfe2687870eb1be3f1beaf2e013",
     "summary": {
      "passed": 20,
      "failed": 0,
@@ -117,18 +117,18 @@
   },
   {
    "id": "arm-py",
-   "command": "PYTHONPATH=<workspace>/source/robotics/simulation-3d PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=<tmp>/mekoniq-pycache-10224 PYTHONNOUSERSITE=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <workspace>/source/.venv-webots/bin/python -m pytest -p no:cacheprovider robotics/simulation-3d/tests -q --junitxml=<workspace>/evidence-archive/r5-chain-6da4ca94/r11/suites/arm-py.xml",
+   "command": "PYTHONPATH=<workspace>/source/robotics/simulation-3d PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=<tmp>/mekoniq-pycache-88731 PYTHONNOUSERSITE=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <workspace>/source/.venv-webots/bin/python -m pytest -p no:cacheprovider robotics/simulation-3d/tests -q --junitxml=<workspace>/evidence-archive/r5-chain-0d365afd/r11/suites/arm-py.xml",
    "cwd": "source",
-   "startedAt": "2026-11-26T00:33:17.295Z",
-   "finishedAt": "2026-11-26T00:33:19.714Z",
+   "startedAt": "2026-11-26T13:02:22.445Z",
+   "finishedAt": "2026-11-26T13:02:24.849Z",
    "exitCode": 0,
    "log": "suites/arm-py.log",
-   "logSha256": "d4de42b672acc589321580cb542f4cdea48d43e06c74f18d0cc1202b4fa4f3c0",
+   "logSha256": "b3aacde69e30e3bdf907058be6033019afeec0b4333249de1a7ca36be0972f18",
    "repo": "source",
    "kind": "pytest",
    "result": {
     "file": "suites/arm-py.xml",
-    "sha256": "b215222557a7963918f3084503f11111b7a6ba2c1175224c37f3433858e7a310",
+    "sha256": "1b0816a08be3e559bbeb7e5b9f54ebfda9fb77849b20943f342f6274b05de098",
     "summary": {
      "passed": 78,
      "failed": 0,
@@ -139,18 +139,18 @@
   },
   {
    "id": "arm-worker",
-   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/webots-arm-worker.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-6da4ca94/r11/suites/arm-worker.json --reporter=default",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/webots-arm-worker.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-0d365afd/r11/suites/arm-worker.json --reporter=default",
    "cwd": "source",
-   "startedAt": "2026-11-26T00:33:19.715Z",
-   "finishedAt": "2026-11-26T00:33:30.293Z",
+   "startedAt": "2026-11-26T13:02:24.849Z",
+   "finishedAt": "2026-11-26T13:02:34.786Z",
    "exitCode": 0,
    "log": "suites/arm-worker.log",
-   "logSha256": "6b1893367c6b67dd1cf0980a33707484b24bd5f1196ba25279b9285e15af9e99",
+   "logSha256": "a0d735da7771eedd4a0fe462ac723295391f95012049f146c352ea13b105c62d",
    "repo": "source",
    "kind": "vitest",
    "result": {
     "file": "suites/arm-worker.json",
-    "sha256": "7f1f895b907476e976cc6db37e09c455ea142254a8b4029631c2d3ba2d4e04d7",
+    "sha256": "8723c2252928ddae83fed5b040960988bbea224204c231779757d8a2d6cf9765",
     "summary": {
      "passed": 5,
      "failed": 0,
@@ -161,18 +161,18 @@
   },
   {
    "id": "arm-programs",
-   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/webots-arm-programs.test.ts tests/unit/webots-arm-ports.test.ts tests/unit/mock-arm-tracking.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-6da4ca94/r11/suites/arm-programs.json --reporter=default",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/webots-arm-programs.test.ts tests/unit/webots-arm-ports.test.ts tests/unit/mock-arm-tracking.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-0d365afd/r11/suites/arm-programs.json --reporter=default",
    "cwd": "source",
-   "startedAt": "2026-11-26T00:33:30.294Z",
-   "finishedAt": "2026-11-26T00:33:40.232Z",
+   "startedAt": "2026-11-26T13:02:34.787Z",
+   "finishedAt": "2026-11-26T13:02:44.722Z",
    "exitCode": 0,
    "log": "suites/arm-programs.log",
-   "logSha256": "54f952b37f20d40f4655e94f9230569b7963216b2bf29e567245889304a49e44",
+   "logSha256": "0ef55bc773ae007157c2471c4c6caf094b8fa6bdd20518a8cb128443a991a165",
    "repo": "source",
    "kind": "vitest",
    "result": {
     "file": "suites/arm-programs.json",
-    "sha256": "16d50b424a6e422bca676add530a8aa57f2884112665bb14a06223a2323f0e14",
+    "sha256": "eb86cbfd3f1d8ffece60f4f843509cf93ce1930517506d1faebeb66178ea87f4",
     "summary": {
      "passed": 25,
      "failed": 0,
@@ -183,18 +183,18 @@
   },
   {
    "id": "arm-bv01",
-   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/webots-arm-bv01.test.ts tests/integration/webots-arm-double.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-6da4ca94/r11/suites/arm-bv01.json --reporter=default",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/webots-arm-bv01.test.ts tests/integration/webots-arm-double.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-0d365afd/r11/suites/arm-bv01.json --reporter=default",
    "cwd": "source",
-   "startedAt": "2026-11-26T00:33:40.232Z",
-   "finishedAt": "2026-11-26T00:35:01.096Z",
+   "startedAt": "2026-11-26T13:02:44.723Z",
+   "finishedAt": "2026-11-26T13:04:06.561Z",
    "exitCode": 0,
    "log": "suites/arm-bv01.log",
-   "logSha256": "934a8f7febcbdf71e8be477b6ff507218a389274f9d1ba55eaf565886fd9d98a",
+   "logSha256": "bab8ff7c0afd6db153668da6503a2e7718955e97dc173ede678788147a3b96a8",
    "repo": "source",
    "kind": "vitest",
    "result": {
     "file": "suites/arm-bv01.json",
-    "sha256": "dc4a966d6fdab5175bb6d8d921d45b11666d99508c5fb506549a45e26dfe8438",
+    "sha256": "f7b134e06521e5640fb19573054ce7a7a4f712e54dc144b5615ff1d08b278f35",
     "summary": {
      "passed": 7,
      "failed": 0,
@@ -205,18 +205,18 @@
   },
   {
    "id": "arm-faults",
-   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/webots-arm-faults.test.ts tests/integration/webots-arm-readiness.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-6da4ca94/r11/suites/arm-faults.json --reporter=default",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/webots-arm-faults.test.ts tests/integration/webots-arm-readiness.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-0d365afd/r11/suites/arm-faults.json --reporter=default",
    "cwd": "source",
-   "startedAt": "2026-11-26T00:35:01.097Z",
-   "finishedAt": "2026-11-26T00:37:58.553Z",
+   "startedAt": "2026-11-26T13:04:06.561Z",
+   "finishedAt": "2026-11-26T13:07:10.617Z",
    "exitCode": 0,
    "log": "suites/arm-faults.log",
-   "logSha256": "c6e299fc3aded7d124c7b4d98c7c5efbe3cc39ac4edf53437a383725c6be8fa0",
+   "logSha256": "7a335ef3a4445236c3c7eb0556643b15319f2b2ff8c1ddd826371d4a9be68d6e",
    "repo": "source",
    "kind": "vitest",
    "result": {
     "file": "suites/arm-faults.json",
-    "sha256": "27a10c22cb5a6281f503fbc6a2ae95281853210642e73111441c44c4ab9d6598",
+    "sha256": "65c560568a5344ee6f5a5884d1db74df7bafa50b893d515d908deea6389f6614",
     "summary": {
      "passed": 11,
      "failed": 0,
@@ -227,18 +227,18 @@
   },
   {
    "id": "arm-regress",
-   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/bv01-mock-golden.test.ts tests/integration/lab-v2-arm.test.ts tests/security/webots-authority.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-6da4ca94/r11/suites/arm-regress.json --reporter=default",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/bv01-mock-golden.test.ts tests/integration/lab-v2-arm.test.ts tests/security/webots-authority.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-0d365afd/r11/suites/arm-regress.json --reporter=default",
    "cwd": "source",
-   "startedAt": "2026-11-26T00:37:58.554Z",
-   "finishedAt": "2026-11-26T00:38:12.529Z",
+   "startedAt": "2026-11-26T13:07:10.618Z",
+   "finishedAt": "2026-11-26T13:07:23.938Z",
    "exitCode": 0,
    "log": "suites/arm-regress.log",
-   "logSha256": "da0ebf3ded8d6add5371e6a6b08515333b1f84c90632bc2c976f204c1c3b6f48",
+   "logSha256": "970944b49ffd0eb82aa3742da462d1bc2c8c7497bc57aed2003b82075515bea1",
    "repo": "source",
    "kind": "vitest",
    "result": {
     "file": "suites/arm-regress.json",
-    "sha256": "3ebb1a0e842575ec19700172fec7a69332e5f84f41fee3958e141b4637175c95",
+    "sha256": "b4f822b69dfee05fe8b952ce96957e45ce7e249a3d58b7a0a32d08739c2ae4ae",
     "summary": {
      "passed": 16,
      "failed": 0,
@@ -249,18 +249,18 @@
   },
   {
    "id": "lab-arm-unit",
-   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/apps/lab/node_modules/vitest/vitest.mjs run tests/unit/arm-chain.test.ts tests/unit/webots-coffee.test.ts tests/unit/twin-workspace.test.ts tests/integration/webots-launcher.test.ts tests/integration/runtime-artifact.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-6da4ca94/r11/suites/lab-arm-unit.json --reporter=default",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/apps/lab/node_modules/vitest/vitest.mjs run tests/unit/arm-chain.test.ts tests/unit/webots-coffee.test.ts tests/unit/twin-workspace.test.ts tests/integration/webots-launcher.test.ts tests/integration/runtime-artifact.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/r5-chain-0d365afd/r11/suites/lab-arm-unit.json --reporter=default",
    "cwd": "apps/lab",
-   "startedAt": "2026-11-26T00:38:12.530Z",
-   "finishedAt": "2026-11-26T00:38:14.477Z",
+   "startedAt": "2026-11-26T13:07:23.938Z",
+   "finishedAt": "2026-11-26T13:07:25.805Z",
    "exitCode": 0,
    "log": "suites/lab-arm-unit.log",
-   "logSha256": "10b18fc158b1d532a4470a947a006c7e5e74d14fe8a9c7db12e7dfa3fda08b2c",
+   "logSha256": "5988a935287e4b21ac3db5baecb9b19cc028dea3b225c1e36376425c8d641a44",
    "repo": "lab",
    "kind": "vitest",
    "result": {
     "file": "suites/lab-arm-unit.json",
-    "sha256": "2cf533fc115fcf6a8864dbe4097823e302c99d802bc90dcd0c3aca636242cde9",
+    "sha256": "dbd6ff771560545a742483cb39d80fb8da4879f79e87291acd8de893c1708d57",
     "summary": {
      "passed": 30,
      "failed": 0,
@@ -271,18 +271,18 @@
   },
   {
    "id": "lab-e2e-webots-coffee",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r5-chain-6da4ca94/r11/suites/lab-e2e-webots-coffee.json LAB_IRSIM_SCREENSHOTS=<workspace>/evidence-archive/r5-chain-6da4ca94/r11/screens MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/apps/lab/scripts/test-irsim-e2e.mjs --provider webots webots-coffee.spec.ts",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/r5-chain-0d365afd/r11/suites/lab-e2e-webots-coffee.json LAB_IRSIM_SCREENSHOTS=<workspace>/evidence-archive/r5-chain-0d365afd/r11/screens MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/apps/lab/scripts/test-irsim-e2e.mjs --provider webots webots-coffee.spec.ts",
    "cwd": "apps/lab",
-   "startedAt": "2026-11-26T00:38:14.477Z",
-   "finishedAt": "2026-11-26T00:38:41.143Z",
+   "startedAt": "2026-11-26T13:07:25.806Z",
+   "finishedAt": "2026-11-26T13:07:51.375Z",
    "exitCode": 0,
    "log": "suites/lab-e2e-webots-coffee.log",
-   "logSha256": "009fcb51fa3fc4e01615747f72ffca967468b94c58db5bde582b08eff18f5fb7",
+   "logSha256": "99ff69a01db0815273b9c59abf630fa4df323537d7a18c6d9fedfa96e99bbfc6",
    "repo": "lab",
    "kind": "playwright",
    "result": {
     "file": "suites/lab-e2e-webots-coffee.json",
-    "sha256": "68d98b942b0b5ae6839667209f2ff3ddb1cd876a559acdee91819d1845330955",
+    "sha256": "d5128f812ed81fc8d0507dcde80076896070e54cd8cec09c6463d138c97e9a01",
     "summary": {
      "passed": 1,
      "failed": 0,
@@ -297,8 +297,8 @@
    "id": "licenses",
    "command": "<home>/.nvm/versions/node/v24.22.2/bin/node scripts/portable-licenses.mjs --check",
    "cwd": "source",
-   "startedAt": "2026-11-26T00:38:41.144Z",
-   "finishedAt": "2026-11-26T00:38:41.529Z",
+   "startedAt": "2026-11-26T13:07:51.377Z",
+   "finishedAt": "2026-11-26T13:07:51.757Z",
    "exitCode": 0,
    "log": "suites/licenses.log",
    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -422,17 +422,17 @@
  "artifacts": [
   {
    "file": "irsim-record.json",
-   "sha256": "846fed815448a43d6e6ce8335335fef5641ab49908923e2b34c9d603343d775d",
+   "sha256": "b8710caedeb0a83454b721e17ae7b50ea38b110ce72a5a0aadbe6d5e37743457",
    "bytes": 357980
   },
   {
    "file": "mock-regression.json",
-   "sha256": "591fbdebb6d00e21886e2d1b6aeb061cf1d2b6d234a032a33b8fe8a9bfbebae4",
+   "sha256": "97db3186086e5da1e16c6defb9b3f590341f87477ae8712495ee67fde2f3a201",
    "bytes": 60113
   },
   {
    "file": "r1-record.json",
-   "sha256": "cf1bebe4ffad9ae61d05856ed316bf93df6df8ba72d84c2b409ddc46e719f584",
+   "sha256": "0ad92102096b7ab55364b1136faa5679efa82fbf15e6de4b4ed47b2eb71c7dc7",
    "bytes": 577760
   },
   {
@@ -442,92 +442,92 @@
   },
   {
    "file": "suites/arm-bv01.json",
-   "sha256": "dc4a966d6fdab5175bb6d8d921d45b11666d99508c5fb506549a45e26dfe8438",
-   "bytes": 3569
+   "sha256": "f7b134e06521e5640fb19573054ce7a7a4f712e54dc144b5615ff1d08b278f35",
+   "bytes": 3570
   },
   {
    "file": "suites/arm-bv01.log",
-   "sha256": "934a8f7febcbdf71e8be477b6ff507218a389274f9d1ba55eaf565886fd9d98a",
+   "sha256": "bab8ff7c0afd6db153668da6503a2e7718955e97dc173ede678788147a3b96a8",
    "bytes": 1246
   },
   {
    "file": "suites/arm-faults.json",
-   "sha256": "27a10c22cb5a6281f503fbc6a2ae95281853210642e73111441c44c4ab9d6598",
-   "bytes": 5145
+   "sha256": "65c560568a5344ee6f5a5884d1db74df7bafa50b893d515d908deea6389f6614",
+   "bytes": 5137
   },
   {
    "file": "suites/arm-faults.log",
-   "sha256": "c6e299fc3aded7d124c7b4d98c7c5efbe3cc39ac4edf53437a383725c6be8fa0",
-   "bytes": 2174
+   "sha256": "7a335ef3a4445236c3c7eb0556643b15319f2b2ff8c1ddd826371d4a9be68d6e",
+   "bytes": 2173
   },
   {
    "file": "suites/arm-programs.json",
-   "sha256": "16d50b424a6e422bca676add530a8aa57f2884112665bb14a06223a2323f0e14",
-   "bytes": 9902
+   "sha256": "eb86cbfd3f1d8ffece60f4f843509cf93ce1930517506d1faebeb66178ea87f4",
+   "bytes": 9913
   },
   {
    "file": "suites/arm-programs.log",
-   "sha256": "54f952b37f20d40f4655e94f9230569b7963216b2bf29e567245889304a49e44",
+   "sha256": "0ef55bc773ae007157c2471c4c6caf094b8fa6bdd20518a8cb128443a991a165",
    "bytes": 1101
   },
   {
    "file": "suites/arm-py.log",
-   "sha256": "d4de42b672acc589321580cb542f4cdea48d43e06c74f18d0cc1202b4fa4f3c0",
+   "sha256": "b3aacde69e30e3bdf907058be6033019afeec0b4333249de1a7ca36be0972f18",
    "bytes": 179
   },
   {
    "file": "suites/arm-py.xml",
-   "sha256": "b215222557a7963918f3084503f11111b7a6ba2c1175224c37f3433858e7a310",
+   "sha256": "1b0816a08be3e559bbeb7e5b9f54ebfda9fb77849b20943f342f6274b05de098",
    "bytes": 9524
   },
   {
    "file": "suites/arm-regress.json",
-   "sha256": "3ebb1a0e842575ec19700172fec7a69332e5f84f41fee3958e141b4637175c95",
-   "bytes": 6472
+   "sha256": "b4f822b69dfee05fe8b952ce96957e45ce7e249a3d58b7a0a32d08739c2ae4ae",
+   "bytes": 6467
   },
   {
    "file": "suites/arm-regress.log",
-   "sha256": "da0ebf3ded8d6add5371e6a6b08515333b1f84c90632bc2c976f204c1c3b6f48",
+   "sha256": "970944b49ffd0eb82aa3742da462d1bc2c8c7497bc57aed2003b82075515bea1",
    "bytes": 862
   },
   {
    "file": "suites/arm-static.json",
-   "sha256": "ec874e6a092d95e2f01a359761b1e68291378047d373c8ad67a4d292fc996549",
+   "sha256": "975cc26a1ab5ef29fc97403513d05e15d8e41dfe2687870eb1be3f1beaf2e013",
    "bytes": 7019
   },
   {
    "file": "suites/arm-static.log",
-   "sha256": "8414b8e39371765bb1bc447879624e3105ce1bfc06d14d9ba23af6c8547b179c",
+   "sha256": "6a4bf5d94501872bd2da5e3b89454d75c0e1ae23dd9ceb67dd6f296d5fc38717",
    "bytes": 485
   },
   {
    "file": "suites/arm-worker.json",
-   "sha256": "7f1f895b907476e976cc6db37e09c455ea142254a8b4029631c2d3ba2d4e04d7",
-   "bytes": 2439
+   "sha256": "8723c2252928ddae83fed5b040960988bbea224204c231779757d8a2d6cf9765",
+   "bytes": 2441
   },
   {
    "file": "suites/arm-worker.log",
-   "sha256": "6b1893367c6b67dd1cf0980a33707484b24bd5f1196ba25279b9285e15af9e99",
+   "sha256": "a0d735da7771eedd4a0fe462ac723295391f95012049f146c352ea13b105c62d",
    "bytes": 920
   },
   {
    "file": "suites/lab-arm-unit.json",
-   "sha256": "2cf533fc115fcf6a8864dbe4097823e302c99d802bc90dcd0c3aca636242cde9",
-   "bytes": 10247
+   "sha256": "dbd6ff771560545a742483cb39d80fb8da4879f79e87291acd8de893c1708d57",
+   "bytes": 10233
   },
   {
    "file": "suites/lab-arm-unit.log",
-   "sha256": "10b18fc158b1d532a4470a947a006c7e5e74d14fe8a9c7db12e7dfa3fda08b2c",
+   "sha256": "5988a935287e4b21ac3db5baecb9b19cc028dea3b225c1e36376425c8d641a44",
    "bytes": 811
   },
   {
    "file": "suites/lab-e2e-webots-coffee.json",
-   "sha256": "68d98b942b0b5ae6839667209f2ff3ddb1cd876a559acdee91819d1845330955",
+   "sha256": "d5128f812ed81fc8d0507dcde80076896070e54cd8cec09c6463d138c97e9a01",
    "bytes": 4166
   },
   {
    "file": "suites/lab-e2e-webots-coffee.log",
-   "sha256": "009fcb51fa3fc4e01615747f72ffca967468b94c58db5bde582b08eff18f5fb7",
+   "sha256": "99ff69a01db0815273b9c59abf630fa4df323537d7a18c6d9fedfa96e99bbfc6",
    "bytes": 1093
   },
   {

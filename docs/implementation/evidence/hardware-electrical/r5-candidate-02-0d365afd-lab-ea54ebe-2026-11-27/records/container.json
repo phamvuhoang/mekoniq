@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "accepted": false,
+  "sourceCommit": "0d365afd26314d7cb1bee717769c0ab2db83f136",
+  "cld01": {
+    "status": "tested",
+    "platform": "linux/arm64",
+    "imageTag": "mekoniq-lab-runtime:r4-0d365afd",
+    "imageId": "sha256:8961b7d0eb0645f098b9d507fe93e97146aa86d9e11a10581f77bdb875849033",
+    "sourceCommit": "0d365afd26314d7cb1bee717769c0ab2db83f136",
+    "result": {
+      "file": "cld01.json",
+      "sha256": "a720f70601d4e51a706caab2423be55f948497a23ba47860d1200f17c39e055e"
+    }
+  },
+  "cld02": {
+    "status": "not_run",
+    "reason": "native_linux_x86_64_host_required (scripts/r4-cld02.sh); amd64 build skipped"
+  }
+}

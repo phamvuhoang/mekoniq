@@ -2,12 +2,12 @@
 
 R5 đóng R5.0–R5.5 (hồ sơ thiết bị, phần Điện, tài liệu và gói ứng viên, dừng khẩn và chẩn đoán, UI). Bảng case và gate nằm ở [`scripts/sim-extension-r5.mjs`](../../scripts/sim-extension-r5.mjs) (48 case, chín gate đóng R5, hai gate ngoài `G-BENCH1` và `G-SAFE1` luôn `blocked_external`). Mọi record `accepted:false`; chấp nhận chỉ là sidecar do người viết.
 
-## Trạng thái ngày 2026-11-26
+## Trạng thái ngày 2026-11-27
 
-- **Record đầu tiên: `r5-candidate-01`** ở source `6da4ca94` / Lab `78c9c38` (identity ổn định, `accepted:false`): 40/48 case `tested`, 8 `not_run`, 0 `failed`. `tested`: G-DEV1, G-ELE1, G-DOC1, G-STP1, G-WEB3, G-REG6. `not_run`: G-VIO1 (VIO01–04, E14 cắt), G-DGN1 (DGN02/04), G-CLOUD3 (CLD05/06). G-BENCH1, G-SAFE1 `blocked_external`. JSON cấp trên và `index.json`: [`evidence/hardware-electrical/r5-candidate-01-6da4ca94-lab-78c9c38-2026-11-26/`](../implementation/evidence/hardware-electrical/r5-candidate-01-6da4ca94-lab-78c9c38-2026-11-26/README.md); archive thô `robot/evidence-archive/r5-chain-6da4ca94/` (ngoài Git).
-- **Guard:** trong chuỗi, guard 27 (R4) và 31 (R5) đạt 11/12 vì test đọc toàn bộ artifact chạm timeout 300 s; reader trực tiếp trả `problems: []`. Sau khi ghi, commit `test:` `f4c72c29` nâng riêng timeout đó lên 1 200 s; guard chạy lại: R4 12/12 exit 0 (322 s), R5 12/12 exit 0 (339 s); SHA-256 hai `qualification.json` không đổi.
+- **Record hiện tại: `r5-candidate-02`** ở source `0d365afd` / Lab `ea54ebe` (identity ổn định, `accepted:false`): 43/48 case `tested`, 5 `not_run`, 0 `failed`. `tested`: G-DEV1, G-ELE1, G-DOC1, G-STP1, G-DGN1, G-WEB3, G-REG6. `not_run`: G-VIO1 (VIO01–04, E14 cắt), G-CLOUD3 (chỉ còn CLD06 `deploy_order_pending`; CLD04 và CLD05 `tested`). G-BENCH1, G-SAFE1 `blocked_external`. JSON cấp trên và `index.json`: [`evidence/hardware-electrical/r5-candidate-02-0d365afd-lab-ea54ebe-2026-11-27/`](../implementation/evidence/hardware-electrical/r5-candidate-02-0d365afd-lab-ea54ebe-2026-11-27/README.md); archive thô `robot/evidence-archive/r5-chain-0d365afd/`, CLD05 `robot/evidence-archive/r5-cld05-0d365afd/` (ngoài Git). `r5-candidate-01` (`6da4ca94` / `78c9c38`) bị thay thế, còn trong lịch sử git.
+- **Guard:** trong chuỗi (timeout 1 200 s) guard 27 (R4 `r4-candidate-03`) và 31 (R5) đều 13/13, exit 0.
 - **Quyết định phạm vi (người dùng, 26/11):** giữ cắt E14. R5 được công bố là **"R5 không có I/O ảo"** khi tám gate còn lại đạt; G-VIO1 và VIO01–04 giữ `not_run`.
-- **Giới hạn của candidate 01** (sửa ở candidate kế tiếp): oracle dừng, allocator khi chưa biết chu kỳ, verifier gói, Diagnostics trước mẫu đầu, nhãn brake/coast của câu gợi ý, phép so CLD04 và verifier S4. Chi tiết trong README của bản ghi.
+- **Việc còn lại để đóng:** deploy Cloud Run image của `0d365afd` (người dùng đã cho phép), ghi CLD06 dưới `evidence/cloud-run/` (guard `cloud-run` và `LAB_R5_CLOSING=1 … sim-extension` gắn vào byte của record R5), rồi push `main`. Không ký acceptance.
 
 ## Chạy chuỗi ghi
 
