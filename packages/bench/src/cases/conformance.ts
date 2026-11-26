@@ -9,18 +9,18 @@ import {validateBenchTick,type BenchKitV1,type BenchPolicy,type BenchTickRecord,
 import type {BenchCase,CaseScript,CaseTrace,CaseVerdict} from './types';
 
 const TICK_MS=20;
-type Part={target?:number|number[];enable?:boolean;quickStop?:boolean;faultReset?:boolean;/** repeat the last seq: a stale command */stale?:boolean};
+export type Part={target?:number|number[];enable?:boolean;quickStop?:boolean;faultReset?:boolean;/** repeat the last seq: a stale command */stale?:boolean};
 const tested=(measurements:Measurement[]=[]):CaseVerdict=>({status:'tested',reason:null,measurements});
 const failed=(reason:string):CaseVerdict=>({status:'failed',reason,measurements:[]});
 const m=(caseId:string,id:string,value:number,unit:string,uncertaintyAbs:number,n=1):Measurement=>({id,value,unit,uncertaintyAbs,caseId,n});
-const allEnabled=(fb:readonly DriveFeedbackV1[])=>fb.length>0&&fb.every(f=>f.state==='enabled');
-const settleTicks=(p:BenchPolicy)=>Math.ceil(p.settleMs/TICK_MS);
+export const allEnabled=(fb:readonly DriveFeedbackV1[])=>fb.length>0&&fb.every(f=>f.state==='enabled');
+export const settleTicks=(p:BenchPolicy)=>Math.ceil(p.settleMs/TICK_MS);
 const torque=(x:BenchTickRecord)=>x.driveCommands.every(c=>c.enable&&!c.quickStop);
 const resolution=(kit:BenchKitV1)=>({velocity:1/Math.min(...kit.axes.map(a=>a.units.velocityRawPerRadS.value)),position:2*Math.PI/Math.min(...kit.axes.map(a=>a.units.positionCountsPerRev.value))});
 
 /** Asks for enable at rest until every axis reports enabled (at most policy.enableTimeoutTicks), then plays `motion(j)` from j = 0. Each tick gets a new seq
  * unless the part says `stale`. */
-function afterEnable(kit:BenchKitV1,p:BenchPolicy,motionTicks:number,motion:(j:number)=>Part,extra:Partial<CaseScript>={}):CaseScript{
+export function afterEnable(kit:BenchKitV1,p:BenchPolicy,motionTicks:number,motion:(j:number)=>Part,extra:Partial<CaseScript>={}):CaseScript{
  let on=-1,seq=0;
  return {ticks:p.enableTimeoutTicks+motionTicks,...extra,commandsAt(k,fb){
   if(on<0&&allEnabled(fb))on=k;

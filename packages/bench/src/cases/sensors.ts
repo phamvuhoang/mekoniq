@@ -39,9 +39,9 @@ export function scanRows(frames:readonly LidarFrameRow[]):LidarScanRow[]{
 const tested=(measurements:Measurement[]):CaseVerdict=>({status:'tested',reason:null,measurements});
 const failed=(reason:string):CaseVerdict=>({status:'failed',reason,measurements:[]});
 const m=(caseId:string,id:string,value:number,unit:string,uncertaintyAbs:number,n=1):Measurement=>({id,value,unit,uncertaintyAbs,caseId,n});
-const mean=(x:number[])=>x.reduce((a,b)=>a+b,0)/x.length;
-const std=(x:number[])=>{const u=mean(x);return Math.sqrt(x.reduce((a,b)=>a+(b-u)**2,0)/(x.length-1));};
-const median=(x:number[])=>{const s=[...x].sort((a,b)=>a-b);return s.length%2?s[s.length>>1]!:(s[s.length/2-1]!+s[s.length/2]!)/2;};
+export const mean=(x:number[])=>x.reduce((a,b)=>a+b,0)/x.length;
+export const std=(x:number[])=>{const u=mean(x);return Math.sqrt(x.reduce((a,b)=>a+(b-u)**2,0)/(x.length-1));};
+export const median=(x:number[])=>{const s=[...x].sort((a,b)=>a-b);return s.length%2?s[s.length>>1]!:(s[s.length/2-1]!+s[s.length/2]!)/2;};
 const soakTicks=(p:BenchPolicy)=>Math.round(p.soakMinutes*60*1000/TICK_MS);
 /** Frames the decoder dropped (bytes / frame length) over those dropped plus those it gave; a frame is counted by its bytes, so this is the fraction of the stream lost. */
 const lostFraction=(droppedBytes:number,frameLen:number,good:number)=>{const lost=droppedBytes/frameLen;return lost/(lost+good);};

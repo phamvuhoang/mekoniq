@@ -2,13 +2,15 @@
 import type {BenchKitV1,BenchPolicy} from '../contracts';
 import {CONFORMANCE_CASES} from './conformance';
 import {IDENTITY_CASES} from './identity';
+import {MEASURE_CASES} from './measure';
 import {SENSOR_CASES} from './sensors';
 import type {BenchCase,CaseTrace,CaseVerdict} from './types';
 export type * from './types';
 export {CONFORMANCE_CASES,trackingCase} from './conformance';
 export {IDENTITY_CASES,IDENTITY_STRINGS,identityScan,reliedObjects,simDescriptions} from './identity';
+export {MEASURE_CASES,lagTrialsOf,trialRows,type LagTrial} from './measure';
 export {LIDAR_RANGE_M,SENSOR_CASES,scanRows,toLidarScan,type Ld19Frame} from './sensors';
-export const BENCH_CASES:readonly BenchCase[]=[...IDENTITY_CASES,...CONFORMANCE_CASES,...SENSOR_CASES];
+export const BENCH_CASES:readonly BenchCase[]=[...IDENTITY_CASES,...CONFORMANCE_CASES,...MEASURE_CASES,...SENSOR_CASES];
 export const benchCase=(id:string):BenchCase|undefined=>BENCH_CASES.find(c=>c.id===id);
 /** THE verdict of a case, a pure function of what is stored: the runner's own decision when it made one (`trace.meta.runner`, only ever not_run or failed),
  * otherwise the case's evaluate. runCase returns exactly this and the record reader recomputes it, so a stored `tested` can only come from evaluate. */
