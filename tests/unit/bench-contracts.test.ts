@@ -105,4 +105,10 @@ describe('bench record',()=>{
   const sim={...record,host:{...record.host,testLevel:'protocol_double' as const},worker:{...record.worker,busBackend:'sim' as const}};
   expect(codesOf(sim)).toEqual(['RECORD_DOUBLE_GRANTS_HARDWARE_GATE']);
   expect(validateBenchRecord({...sim,gates:{'G-KSW1':{status:'tested',accepted:false},'G-KID1':{status:'blocked_external',accepted:false}}}).ok).toBe(true);});
+ it('a hardware record needs its NIC, pysoem and lock identity; the simulated bus may leave them null',()=>{
+  const of=(r:unknown)=>{const v=validateBenchRecord(r);return v.ok?[]:v.problems.map(p=>[p.code,p.path]);};
+  expect(of({...record,host:{...record.host,nicDriver:null,pysoem:null}})).toEqual([['RECORD_HARDWARE_IDENTITY_MISSING','/host/nicDriver']]);
+  expect(of({...record,worker:{...record.worker,lockSha256:null}})).toEqual([['RECORD_HARDWARE_IDENTITY_MISSING','/worker/lockSha256']]);
+  expect(of({...record,host:{...record.host,testLevel:'protocol_double',nicDriver:null,nicMacSha256:null,pysoem:null},worker:{...record.worker,busBackend:'sim',lockSha256:null},gates:{}})).toEqual([]);
+ });
 });

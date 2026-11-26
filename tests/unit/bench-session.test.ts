@@ -6,7 +6,7 @@ import {afterAll,afterEach,describe,expect,it} from 'vitest';
 import {sealBench,type BenchKitV1,type BenchPolicy,type BenchTickRecord} from '../../packages/bench/src/contracts';
 import {fakeClock} from '../../packages/bench/src/clock';
 import {ttyArming,type Arming} from '../../packages/bench/src/arming';
-import {spawnBenchWorker,type BenchWorker} from '../../packages/bench/src/worker';
+import {BenchWorkerError,spawnBenchWorker,type BenchWorker} from '../../packages/bench/src/worker';
 import {runCase,startBenchSession,type RunContext} from '../../packages/bench/src/session';
 import {verdictOf,type BenchCase} from '../../packages/bench/src/cases/index';
 
@@ -181,8 +181,8 @@ describe('ending a case',()=>{
   const spy:BenchWorker={request:(...a)=>{sent++;const p=w.request(...a);p.catch((e:{outcome:string})=>lost.push(e.outcome));return p;},close:()=>w.close(),get tick(){return w.tick;},get pid(){return w.pid;},get stderr(){return w.stderr;}};
   const c=ctx(spy,kit,{onTick:t=>{if(t.tick===5)process.kill(-w.pid!,'SIGKILL');}});
   await expect(runCase(holdCase({ticks:50}),c)).rejects.toMatchObject({code:'WORKER_LOST'});
-  // 6 steps, the 7th lost on the wire (unknown, never resent), then the catch's best-effort stop, which the terminal client refuses without writing
-  expect(sent).toBe(8);expect(lost).toEqual(['unknown','not_sent']);expect(c.disarmed).toBe(true);
+  // 6 steps, the 7th lost on the wire (unknown, never resent), then the catch's best-effort stop sequence and wire stop, which the terminal client refuses without writing
+  expect(sent).toBe(9);expect(lost).toEqual(['unknown','not_sent','not_sent']);expect(c.disarmed).toBe(true);
   await expect(runCase(holdCase(),c)).rejects.toMatchObject({code:'WORKER_LOST',outcome:'not_sent'});
  },20_000);
  it('stdin closed while the axes are enabled (KSW10): the worker stops and its last stderr line says controlwords 0',async()=>{
@@ -234,6 +234,24 @@ describe('ending a case',()=>{
   const x=ctx(w,kit),r=await runCase(holdCase({ticks:20,target:2,evaluate:()=>{throw new Error('evaluate bug');}}),x);
   expect(r.verdict).toEqual({status:'failed',reason:'CASE_EVALUATE_ERROR',measurements:[]});expect(r.trace.meta).toMatchObject({error:'evaluate bug'});
   expect(r.trace.ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);expect(x.disarmed).toBe(true);expect(x.passed.size).toBe(0);
+ },20_000);
+});
+
+describe('fix round 1',()=>{
+ it('a BenchWorkerError from a live worker (request in flight) in the catch path still ends with the wire stop',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);let broken=false;
+  const spy:BenchWorker={request:(op,payload,t)=>op==='step'&&broken?Promise.reject(new BenchWorkerError('BENCH_REQUEST_IN_FLIGHT','not_sent','test')):w.request(op,payload,t),
+   close:()=>w.close(),get tick(){return w.tick;},get pid(){return w.pid;},get stderr(){return w.stderr;}};
+  const x=ctx(spy,kit,{onTick:t=>{if(t.tick===20)broken=true;}});
+  await expect(runCase(holdCase({ticks:100,target:2}),x)).rejects.toMatchObject({code:'BENCH_REQUEST_IN_FLIGHT'});
+  expect(x.disarmed).toBe(true);
+  await expect(w.request('describe',{},w.tick)).rejects.toMatchObject({code:'WORKER_LOST',outcome:'not_sent'});   // the worker took the stop and closed
+ },20_000);
+ it.each(['runner','error'])('a script whose meta carries the reserved key %s is not_run BENCH_SCRIPT_INVALID before any step',async key=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const base=holdCase(),c:BenchCase={...base,script:(k,p)=>({...base.script(k,p),meta:{[key]:{status:'tested',reason:null}}})};
+  const r=await runCase(c,ctx(w,kit));
+  expect(r.verdict).toEqual({status:'not_run',reason:'BENCH_SCRIPT_INVALID',measurements:[]});expect(w.tick).toBe(0);
  },20_000);
 });
 

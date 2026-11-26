@@ -107,6 +107,8 @@ const recordRules=(r:BenchRecordV1):Problem[]=>{
  const sim=r.worker.busBackend==='sim',double=r.host.testLevel==='protocol_double',out:Problem[]=[];
  if(sim&&!double)out.push(problem('RECORD_SIM_NOT_DOUBLE','/host/testLevel','a record from the simulated bus must be labelled protocol_double'));
  if(!sim&&double)out.push(problem('RECORD_HARDWARE_MARKED_DOUBLE','/host/testLevel','a record from the real bus cannot be labelled protocol_double'));
+ const missing=sim?undefined:(['/host/nicDriver','/host/nicMacSha256','/host/pysoem','/worker/lockSha256'] as const).find(p=>{const [,o,k]=p.split('/') as [string,'host'|'worker',string];return (r[o] as unknown as Record<string,unknown>)[k]===null;});
+ if(missing)out.push(problem('RECORD_HARDWARE_IDENTITY_MISSING',missing,'only the simulated bus may leave the NIC, pysoem and lock identity null'));
  if(double)for(const [id,g] of Object.entries(r.gates))if(!SOFTWARE_GATES.includes(id)&&g.status!=='blocked_external')out.push(problem('RECORD_DOUBLE_GRANTS_HARDWARE_GATE',`/gates/${id}/status`,'a protocol_double record can only leave a hardware gate blocked_external'));
  return out;
 };

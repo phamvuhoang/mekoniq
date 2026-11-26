@@ -1,6 +1,6 @@
 // K05 (KSW06): a bench record from the simulated slave, written in parts, assembled, read back fail-closed. Every verdict in the record is recomputed from the
 // stored traces; editing a status, a chunk or the file set is caught. Temp directories live under os.tmpdir() (run with TMPDIR outside any repository).
-import {appendFileSync,cpSync,mkdtempSync,readdirSync,readFileSync,rmSync,unlinkSync,writeFileSync} from 'node:fs';
+import {appendFileSync,cpSync,mkdtempSync,readdirSync,readFileSync,rmSync,symlinkSync,truncateSync,unlinkSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {afterAll,afterEach,beforeAll,describe,expect,it} from 'vitest';
@@ -10,7 +10,8 @@ import {spawnBenchWorker,type BenchWorker} from '../../packages/bench/src/worker
 import {runCase,startBenchSession} from '../../packages/bench/src/session';
 import {benchCase,trackingCase,type BenchCase,type CaseVerdict} from '../../packages/bench/src/cases/index';
 import {readTrace,writeManifest} from '../../packages/bench/src/evidence';
-import {assembleBenchRecord,sessionExtra,verifyBenchRecord,writeBenchPart,type PartKind} from '../../packages/bench/src/record';
+import {READ_LIMITS} from '../../packages/lab-runtime/src/v2/navigation2d/evidence';
+import {assembleBenchRecord,BENCH_DEVIATIONS,sessionExtra,verifyBenchRecord,writeBenchPart,type PartKind} from '../../packages/bench/src/record';
 import {closuresFor} from '../../packages/bench/src/closures';
 import {benchEvidence} from '../../packages/bench/src/bench-evidence';
 import {deviceEvidenceLevel} from '../../packages/lab-runtime/src/engineering/electrical/profiles';
@@ -71,7 +72,8 @@ describe('a record from the simulated slave',()=>{
  it('a stored trace round-trips: evaluate on the reloaded trace gives the live verdict',async()=>{
   for(const r of conformance.results){
    const t=await readTrace(join(out,'conformance/cases',r.caseId));
-   expect(t).toEqual(JSON.parse(JSON.stringify(r.trace)));   // exact up to JSON itself (-0 is stored as 0)expect(benchCase(r.caseId)!.evaluate(t,kitOf(SIM),POLICY)).toEqual(r.verdict);
+   expect(t).toEqual(JSON.parse(JSON.stringify(r.trace)));   // exact up to JSON itself (-0 is stored as 0)
+   expect(benchCase(r.caseId)!.evaluate(t,kitOf(SIM),POLICY)).toEqual(r.verdict);
   }
  });
  it('benchEvidence never goes above the R5 level on a protocol_double record',()=>{
@@ -116,6 +118,48 @@ describe('fail-closed readback',()=>{
  it('a part whose own manifest no longer matches its files: PART_MANIFEST_MISMATCH',async()=>{
   const d=copy();appendFileSync(join(d,'conformance/session.json'),' ');await writeManifest(d);
   expect((await verifyBenchRecord(d)).issues).toContainEqual({code:'PART_MANIFEST_MISMATCH',path:'conformance/session.json'});
+ });
+ it('deviations are the fixed list of spec B1 §5.4 in every record; edited or emptied: GATE_TABLE_MISMATCH',async()=>{
+  expect(record.deviations).toEqual(BENCH_DEVIATIONS);expect(BENCH_DEVIATIONS.map(x=>x.id)).toHaveLength(5);
+  for(const edit of [(r:BenchRecordV1)=>{r.deviations=[];},(r:BenchRecordV1)=>{r.deviations[0]!.text='the bench is the same as the virtual drive';}]){
+   const d=copy(),p=join(d,'bench-record.json'),r=JSON.parse(readFileSync(p,'utf8')) as BenchRecordV1;edit(r);writeFileSync(p,JSON.stringify(r));await writeManifest(d);
+   expect((await verifyBenchRecord(d)).issues).toEqual([{code:'GATE_TABLE_MISMATCH',path:'/deviations'}]);
+  }
+ });
+});
+
+describe('a hostile record directory: verify returns issues, never throws, never follows a link',()=>{
+ /** verify must resolve, not reject */
+ const issuesOf=async(d:string)=>{const r=await verifyBenchRecord(d);expect(r.ok).toBe(false);return r.issues;};
+ it('a symlink to a file outside the record: FILE_UNEXPECTED',async()=>{
+  const d=copy();symlinkSync('/etc/hosts',join(d,'conformance/hosts'));
+  expect(await issuesOf(d)).toContainEqual({code:'FILE_UNEXPECTED',path:'conformance/hosts'});
+ });
+ it('a symlink to a directory: FILE_UNEXPECTED, not descended into',async()=>{
+  const d=copy();symlinkSync('/etc',join(d,'etc'));
+  expect(await issuesOf(d)).toEqual([{code:'FILE_UNEXPECTED',path:'etc'}]);
+ });
+ it('a part directory replaced by a symlink to a copy of itself: FILE_UNEXPECTED, the part is not read',async()=>{
+  const d=copy(),twin=fresh('twin');cpSync(join(d,'conformance'),twin,{recursive:true});rmSync(join(d,'conformance'),{recursive:true});symlinkSync(twin,join(d,'conformance'));
+  const issues=await issuesOf(d);
+  expect(issues).toContainEqual({code:'FILE_UNEXPECTED',path:'conformance'});expect(issues).toContainEqual({code:'VERDICT_NOT_REPRODUCED',path:'/cases/KCF02'});
+ });
+ it('a malformed part manifest: RECORD_SCHEMA_INVALID',async()=>{
+  const d=copy();writeFileSync(join(d,'conformance/manifest.json'),'{"files":');await writeManifest(d);
+  expect(await issuesOf(d)).toContainEqual({code:'RECORD_SCHEMA_INVALID',path:'conformance/manifest.json'});
+ });
+ it('files:[null] in the record manifest: RECORD_SCHEMA_INVALID',async()=>{
+  const d=copy();writeFileSync(join(d,'manifest.json'),JSON.stringify({hashAlgorithm:'sha256',files:[null]}));
+  expect(await issuesOf(d)).toEqual([{code:'RECORD_SCHEMA_INVALID',path:'manifest.json'}]);
+ });
+ it('slaves:[null] in identity.json: RECORD_SCHEMA_INVALID',async()=>{
+  const d=copy(),p=join(d,'identity/identity.json'),x=JSON.parse(readFileSync(p,'utf8'));x.slaves=[null];writeFileSync(p,JSON.stringify(x));await writeManifest(d);
+  expect(await issuesOf(d)).toContainEqual({code:'RECORD_SCHEMA_INVALID',path:'identity/identity.json'});
+ });
+ it('a listed file larger than the per-file limit: SIZE_MISMATCH without reading it (sparse file)',async()=>{
+  const d=copy(),bytes=READ_LIMITS.chunkBytes+1;writeFileSync(join(d,'big.bin'),'');truncateSync(join(d,'big.bin'),bytes);
+  const m=JSON.parse(readFileSync(join(d,'manifest.json'),'utf8'));m.files.push({path:'big.bin',sha256:'0'.repeat(64),bytes});writeFileSync(join(d,'manifest.json'),JSON.stringify(m));
+  expect(await issuesOf(d)).toContainEqual({code:'SIZE_MISMATCH',path:'big.bin'});
  });
 });
 

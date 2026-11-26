@@ -7,7 +7,7 @@ import type {Arming} from './arming';
 import {verdictOf,type CaseTrace,type CaseVerdict,type BenchCase} from './cases/index';
 import type {Clock} from './clock';
 import type {BenchKitV1,BenchPolicy,BenchTickRecord,BenchCycleRow} from './contracts';
-import {BenchWorkerError,type BenchOp,type BenchWorker} from './worker';
+import type {BenchOp,BenchWorker} from './worker';
 
 const TICK_NS=20_000_000n;
 export interface RunContext{
@@ -43,7 +43,8 @@ const powerOff=(v:{statusword:number})=>(v.statusword&0x02)===0;
 /** How a case ends. Every path that sent anything ends with a stop that is sent and awaited: the stop sequence of steps (`stopAxes`), or the wire `stop` op once
  * a `silence` has been sent, also from the catch, whatever threw (a terminal worker refuses at once, so that is safe). Every end other than a clean script,
  * an `evaluate`d verdict and no recorded script error disarms the run; a thrown error is rethrown after the stop, every other abnormal end is a `failed` verdict.
- * A step sequence that is refused or does not end, or that throws something other than a worker error, falls back to the wire `stop` (no clock, no step).
+ * A step sequence that is refused, does not end, or throws falls back to the wire `stop` (no clock, no step; a lost worker refuses it at once).
+ * `meta.runner` and `meta.error` are the runner's: a script that sets either is refused before any step.
  * The verdict is verdictOf(trace): whatever the runner decides itself is stored in trace.meta.runner, so the stored trace alone gives it back. */
 export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTrace;verdict:CaseVerdict}>{
  const trace:CaseTrace={ticks:[],cycles:[],prompts:[]},{worker,kit,policy,clock}=ctx;
@@ -53,7 +54,7 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
  const s=c.script(kit,policy);
  // ponytail: operator prompts (KCF01, KCF09) need a question io in the context; until a case has one, a case with prompts does not run
  if(s.prompts?.length)return decided('not_run','BENCH_PROMPT_UNAVAILABLE');
- if(s.silence&&s.silence.atTick!==s.ticks)return decided('not_run','BENCH_SCRIPT_INVALID');   // silence is sent after the last tick, never mid-script
+ if(s.silence&&s.silence.atTick!==s.ticks||s.meta&&(Object.hasOwn(s.meta,'runner')||Object.hasOwn(s.meta,'error')))return decided('not_run','BENCH_SCRIPT_INVALID');   // silence after the last tick only; runner and error are reserved
  if(c.needsTorque&&!armedRuns.has(ctx)){
   if(!await ctx.arming.arm(`${c.id}: torque on ${kit.axes.map(a=>a.axisId).join(', ')}`))return decided('not_run','BENCH_NOT_ARMED');
   armedRuns.add(ctx);
@@ -125,8 +126,9 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   if(scriptError)reason??='CASE_SCRIPT_ERROR';   // also an onTick throw during the stop ticks of a clean end
  }catch(e){
   disarm();
-  // best effort, whatever threw: the first error is the one reported. The step sequence needs the clock that may be what threw; the wire stop needs none
-  try{await stop(true);}catch(f){if(!(f instanceof BenchWorkerError))await stopOp().catch(()=>{});}
+  // best effort, whatever threw: the first error is the one reported. The step sequence needs the clock (or a worker request) that may be what threw; the wire
+  // stop needs neither, and a lost worker refuses it at once (not_sent)
+  try{await stop(true);}catch{await stopOp().catch(()=>{});}
   throw e;
  }
  if(scriptError)trace.meta={...trace.meta,error:scriptError};
