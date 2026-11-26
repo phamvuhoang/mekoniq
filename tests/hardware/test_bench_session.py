@@ -675,3 +675,71 @@ def test_identity_includes_the_revision_when_the_kit_expects_one(rev, ok):
         r.do("configure")
     else:
         assert code(r.do, "configure") == "BENCH_IDENTITY_CHANGED" and r.bus.writes == []
+
+
+# ---- fix round 2: a latched axis can still reset a faulted drive (R-a); an enable that does not succeed latches (R-b) ------------------------------------------------------
+def drop_power_at_speed(k):
+    r = Rig(k)
+    at_speed(r)
+    r.bus.cut_power()
+    res = r.until(lambda x: x["feedback"][0]["state"] == "fault", n=10, target=5.0)
+    assert res["feedback"][0]["fault"] == "EXTERNAL_TRIP" and res["vendor"][0]["statusword"] & 0x4F == 0x40   # worker latch, drive in Switch on disabled
+    return r
+
+
+def test_a_drive_fault_after_the_trip_needs_two_reset_edges_one_for_the_drive_one_for_the_latch():
+    r = drop_power_at_speed(kit(powerLossFaults=False))
+    for _ in range(20):
+        r.step(target=0.0)
+    r.bus.restore_power()
+    r.bus.inject_error(1, 0x3220)
+    res = r.until(lambda x: x["vendor"][0]["statusword"] & 0x4F == 0x08, n=5, target=0.0)
+    res = r.step(target=0.0, faultReset=True)          # first rising edge: reset the drive, keep the worker latch
+    cws = [row["axes"][0]["controlword"] for row in res["cycles"]]
+    assert cws.count(0x0080) == 1 and cws[0] == 0x0080 and not set(cws) & ADVANCING
+    assert res["vendor"][0]["statusword"] & 0x4F == 0x40 and res["feedback"][0]["fault"] == "EXTERNAL_TRIP"
+    for _ in range(5):                                 # faultReset held high: no edge, no second pulse, no clear
+        res = r.step(target=0.0, faultReset=True)
+        assert 0x0080 not in controlwords(res) and res["feedback"][0]["fault"] == "EXTERNAL_TRIP"
+    r.step(target=0.0)
+    res = r.step(target=0.0, faultReset=True)          # second rising edge: the drive is not in Fault, the latch clears
+    assert res["feedback"][0]["fault"] is None
+    assert r.until(lambda x: x["feedback"][0]["state"] == "enabled", n=10)
+
+
+def test_a_held_reset_never_clears_a_second_trip():
+    r = drop_power_at_speed(kit(powerLossFaults=False))
+    r.bus.restore_power()
+    r.step(target=0.0, faultReset=True)
+    r.until(lambda x: x["feedback"][0]["state"] == "enabled", n=10, faultReset=True)
+    r.bus.inject_error(1, 0x3220)
+    res = r.until(lambda x: x["feedback"][0]["state"] == "fault", n=5, faultReset=True)
+    for _ in range(10):
+        res = r.step(target=0.0, faultReset=True)
+        assert res["feedback"][0]["state"] == "fault" and 0x0080 not in controlwords(res)
+
+
+def test_an_enable_that_does_not_succeed_latches_after_enable_timeout_ticks():
+    k = kit(powerLossFaults=False)
+    k["channel"]["enableTimeoutTicks"] = 10
+    r = drop_power_at_speed(k)
+    res = r.step(target=0.0, faultReset=True)          # power still absent: the drive is not in Fault, the latch clears ...
+    assert res["feedback"][0]["fault"] is None
+    seen = [r.step(target=0.0)["feedback"][0] for _ in range(12)]
+    assert [f["state"] for f in seen[:8]] == ["disabled"] * 8 and seen[-1]["fault"] == "EXTERNAL_TRIP"   # ... but the enable attempt does not stay armed
+    r.bus.restore_power()
+    for _ in range(20):
+        res = r.step(target=0.0)
+        assert res["feedback"][0]["state"] == "fault" and not set(controlwords(res)) & ADVANCING
+
+
+def test_a_session_without_motor_power_never_enables_and_latches_at_the_timeout():
+    k = kit(motorPower=False)
+    k["channel"]["enableTimeoutTicks"] = 10
+    r = Rig(k)
+    seen = [r.step(target=0.0) for _ in range(12)]
+    assert all(states(x) != ["enabled"] * 2 for x in seen) and [f["fault"] for f in seen[-1]["feedback"]] == ["EXTERNAL_TRIP"] * 2
+    r.bus.restore_power()
+    for _ in range(20):
+        res = r.step(target=0.0)
+        assert "enabled" not in states(res) and not any(set(controlwords(res, i)) & ADVANCING for i in range(2))

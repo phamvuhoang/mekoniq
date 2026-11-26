@@ -33,7 +33,7 @@ describe('bench kit',()=>{
  it('power.motor outside the two values is a schema error',()=>{const r=validateBenchKit(variant(k=>{k.power.motor='ac_low';}));expect(r.ok).toBe(false);if(!r.ok)expect(r.problems[0]).toMatchObject({code:'SCHEMA_INVALID',path:'/power/motor'});});
  it('a wrong digest is reported',()=>{expect(codes({...dc,digest:'0'.repeat(64)})).toEqual(['KIT_DIGEST_MISMATCH']);});
  it('the optional worker knobs (channel quick-stop rest/hold, wkc loss; axis faultMap) are valid, an unknown fault name is not',()=>{
-  expect(codes(variant(k=>{Object.assign(k.channel,{quickStopRestRadS:0.05,quickStopHoldMs:2000,wkcErrorCyclesToLoss:5});k.axes[0].faultMap={'0x7500':'COMMAND_TIMEOUT','0x2222':'OTHER'};}))).toEqual([]);
+  expect(codes(variant(k=>{Object.assign(k.channel,{quickStopRestRadS:0.05,quickStopHoldMs:2000,wkcErrorCyclesToLoss:5,enableTimeoutTicks:100});k.axes[0].faultMap={'0x7500':'COMMAND_TIMEOUT','0x2222':'OTHER'};}))).toEqual([]);
   expect(codes(variant(k=>{k.axes[0].faultMap={'0x7500':'MELTDOWN'};}))).toEqual(['SCHEMA_INVALID']);});
  it('simSlave with the soem backend is refused',()=>{expect(codes(variant(k=>{k.bus.backend='soem';k.bus.interface='eth0';}))).toEqual(['KIT_SIM_SLAVE_FORBIDDEN']);});
 });

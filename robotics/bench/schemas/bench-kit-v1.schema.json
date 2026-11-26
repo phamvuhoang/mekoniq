@@ -406,6 +406,10 @@
         "wkcErrorCyclesToLoss": {
           "type": "integer",
           "minimum": 1
+        },
+        "enableTimeoutTicks": {
+          "type": "integer",
+          "minimum": 1
         }
       },
       "required": [

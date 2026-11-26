@@ -3,7 +3,18 @@ command channel and the CiA 402 table. Step mode: no thread, no clock decides an
 
 Every gate before torque fails closed on its own (spec B1 §6): the op gates in `handle`, the command check in `_step`, and `_gate`, which sees every controlword
 just before it goes on the bus and replaces any word that leads toward enable by 0x0000 while read-only, quick stop, a worker fault, a stale channel or a session
-that is not started forbids it."""
+that is not started forbids it.
+
+Worker latches (per axis; reported as state "fault" with the code; the stop sequence of stopseq rule 2 runs while one is set):
+- COMMAND_TIMEOUT, OVERSPEED, FEEDBACK_LOSS: the worker's own checks (spec B1 5.2). A rising faultReset edge clears them once the cause is gone; in that same
+  tick the table sends 0x0080 if the drive is in Fault, so one edge resets both.
+- EXTERNAL_TRIP, for "no automatic restart" (BK-D11, KCF01), in two cases: (1) the drive left Operation enabled while the worker was still writing 0x000F;
+  (2) an enable attempt did not succeed: the command asked to run (enable, no quickStop, no latch) for `channel.enableTimeoutTicks` ticks (default 100) while the
+  axis was neither enabled nor in a drive Fault. Without (2), clearing the latch with motor power still absent would leave enable armed and the motor would
+  start by itself when power returns.
+  A rising faultReset edge on EXTERNAL_TRIP: if the drive is in Fault, the worker writes 0x0080 for one cycle and the latch stays; if not, the latch clears.
+  So a drive that faulted after the trip needs two separate rising edges, the first for the drive, the second for the latch. Never 0x0080 without a rising
+  edge, never a word toward enable while latched."""
 import math
 import time
 
@@ -15,7 +26,7 @@ from .units import Unwrap32, position_from_raw, torque_from_raw, velocity_from_r
 
 MAX_SPEED_RADS, MAX_TORQUE_PERMILLE = 30, 300      # the hard ceiling of B1 (spec B1 §6): changing it is a reviewed code change, never a flag
 OVERSPEED_FACTOR = 1.2                             # the virtual drive's factor (spec B1 §5.2)
-CHANNEL_DEFAULTS = {"quickStopRestRadS": 0.05, "quickStopHoldMs": 2000, "wkcErrorCyclesToLoss": 5}   # kit `channel` knobs: tuning for real hardware, not code
+CHANNEL_DEFAULTS = {"quickStopRestRadS": 0.05, "quickStopHoldMs": 2000, "wkcErrorCyclesToLoss": 5, "enableTimeoutTicks": 100}   # kit `channel` knobs: tuning for real hardware, not code
 MODE_CODE = {"csv": 9, "pv": 3}
 MAPPING = ("1C12", "1C13")                         # plus 1600-17FF and 1A00-1BFF
 # Objects a kit may never write by SDO: store (1010), PDO mapping/assignment, and everything that commands motion or state. The same list is in
@@ -53,6 +64,7 @@ class BenchSession:
         self.max_speed = lim["maxSpeedRadS"]
         knobs = CHANNEL_DEFAULTS | {k: ch[k] for k in CHANNEL_DEFAULTS if k in ch}
         self.rest_rads, self.hold_ms, self.wkc_to_loss = knobs["quickStopRestRadS"], knobs["quickStopHoldMs"], knobs["wkcErrorCyclesToLoss"]
+        self.enable_timeout, self.waiting, self.pulse = knobs["enableTimeoutTicks"], [0] * self.n, [False] * self.n
         self.channels = [CommandChannel(accel_rad_s2=lim["maxAccelRadS2"], max_speed_rad_s=min(self.max_speed, MAX_SPEED_RADS), cycles_per_tick=self.cpt,
                                         cycle_s=self.cycle_ms / 1000, watchdog_ticks=ch["watchdogTicks"], interpolation=ch["interpolation"]) for _ in self.axes]
         self.phase, self.tick, self.cycle_no, self.identity_ok, self.allowed = "new", 0, 0, False, set()
@@ -201,7 +213,8 @@ class BenchSession:
             edges.append(fresh and c["faultReset"] and not self.accepted[i]["faultReset"])
             prev = self.accepted[i]   # a repeated seq keeps its command (as DriveGroup does), but may only tighten it: a quick stop or a disable is never ignored
             self.accepted[i] = c if fresh else prev | {"quickStop": prev["quickStop"] or c["quickStop"], "enable": prev["enable"] and c["enable"]}
-            if edges[i] and self.latched[i] and self._cause_cleared(i):
+            self.pulse[i] = edges[i] and self.latched[i] == "EXTERNAL_TRIP" and neutral_state(self.sw[i]) == FAULT   # R-a: reset the drive, keep the latch
+            if edges[i] and self.latched[i] and not self.pulse[i] and self._cause_cleared(i):
                 self.latched[i], self.wkc_bad[i] = None, 0
         rows, t0 = [], time.monotonic_ns()
         for k in range(self.cpt):
@@ -214,7 +227,7 @@ class BenchSession:
                 if (self.latched[i] or not cmd["enable"]) and state in (ENABLED, QUICK_STOP):   # stopseq rule 2; a commanded quick stop is the table's (rule 1)
                     cw = self._quick_stop_word(i)
                 elif self.latched[i]:
-                    cw = 0x0000
+                    cw = 0x0080 if self.pulse[i] and k == 0 else 0x0000
                 else:
                     self.qs_ms[i] = 0
                     cw = next_controlword(self.sw[i], cmd["enable"] and not expired, cmd["quickStop"], edges[i] and k == 0)
@@ -224,6 +237,12 @@ class BenchSession:
                     target = 0.0
                 outputs.append({"controlword": cw, "targetRaw": velocity_to_raw(target, a["units"])})
             rows.append(self._exchange(outputs))
+        for i, cmd in enumerate(self.accepted):   # R-b: an enable attempt that does not succeed latches instead of staying armed
+            asking = cmd["enable"] and not cmd["quickStop"] and not self.latched[i] and neutral_state(self.sw[i]) not in (ENABLED, FAULT)
+            self.waiting[i] = self.waiting[i] + 1 if asking else 0
+            if self.waiting[i] >= self.enable_timeout:
+                self._latch(i, "EXTERNAL_TRIP")
+                self.waiting[i] = 0
         self.tick += 1
         return {"feedback": [self._feedback(i, self.tick - 1) for i in range(self.n)],
                 "vendor": [{"axisId": a["axisId"], "statusword": self.sw[i], "errorCode": self.last[i] and self.last[i]["errorCode"]} for i, a in enumerate(self.axes)],
@@ -249,8 +268,7 @@ class BenchSession:
             self.cw[i] = outputs[i]["controlword"]
             if inp["wkcOk"]:
                 self.wkc_bad[i] = 0
-                # BK-D11 / KCF01: Operation enabled lost while the worker still wrote 0x000F (no quick stop, disable or worker fault of its own) is latched,
-                # so level `enable` cannot restart the axis when power returns. A drive Fault latches in the drive itself.
+                # EXTERNAL_TRIP case (1) of the module docstring; a drive Fault latches in the drive itself
                 if neutral_state(self.sw[i]) == ENABLED and outputs[i]["controlword"] == ENABLE_OPERATION and neutral_state(inp["statusword"]) not in (ENABLED, FAULT):
                     self._latch(i, "EXTERNAL_TRIP")
                 self.sw[i], self.last[i] = inp["statusword"], inp

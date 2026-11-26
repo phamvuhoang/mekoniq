@@ -10,6 +10,7 @@ It is configured only through the kit's `simSlave` object (ruling R4); every kno
     quickStopDecelRawPerCycle 2000  the quick-stop ramp (5 rad/s = 104 304 raw takes 52 cycles, about 10 ticks)
                               Torque removed while moving (Operation enabled or Quick stop active left for Switch on disabled, Ready to switch on or Switched on
                               with |v| >= REST_RAW) makes the motor freewheel (500 ms decay) and sets `slaves[i].coasted_while_moving`
+    motorPower          true  false = the slaves start without motor power (restore_power brings it)
     powerLossFaults     true  motor power lost above Switch on disabled: Fault 0x3220; false = the drive drops to Switch on disabled without an error
     watchdogMs          100   slave-side watchdog: this long without a frame -> AL SAFE-OP (0x001B) and Fault 0x8130; null = never trips
     velocityScale       1.0   the slave tracks targetRaw x scale (0.8 = 20 % low)
@@ -35,7 +36,7 @@ REST_RAW = 20                      # assumed: below this |velocity| (raw/s) a qu
 WATCHDOG_ERROR, UNDERVOLTAGE = 0x8130, 0x3220
 BITS = {"6040:00": 16, "6041:00": 16, "6060:00": 8, "6061:00": 8, "6072:00": 16, "6077:00": 16, "603F:00": 16, "60B8:00": 16}
 COAST_TAU_MS = 500.0               # assumed: a coasting rotor, power stage off
-DEFAULTS = {"powerLossFaults": True, "quickStopResume": True, "quickStopDecelRawPerCycle": 2000, "enableDelayCycles": 5, "quickStopOption": 2, "watchdogMs": 100, "velocityScale": 1.0, "ignoreQuickStop": False, "serials": ["SIM-0001", "SIM-0002"],
+DEFAULTS = {"motorPower": True, "powerLossFaults": True, "quickStopResume": True, "quickStopDecelRawPerCycle": 2000, "enableDelayCycles": 5, "quickStopOption": 2, "watchdogMs": 100, "velocityScale": 1.0, "ignoreQuickStop": False, "serials": ["SIM-0001", "SIM-0002"],
             "initialErrorCode": None, "initialPositionRaw": 0, "corruptReadback": None, "events": []}
 DEFAULT_TX = ["6041:00", "6064:00", "606C:00"]
 
@@ -68,7 +69,7 @@ class SimBus:
         self.corrupt_readback = cfg["corruptReadback"]
         self.events = sorted(cfg["events"], key=lambda e: e["atCycle"])
         self.al_state, self.al_status = "INIT", 0
-        self.cycle_ms, self.cycle, self.lost, self.logic, self.power, self.silent_ms = None, 0, 0, True, True, 0.0
+        self.cycle_ms, self.cycle, self.lost, self.logic, self.power, self.silent_ms = None, 0, 0, True, cfg["motorPower"], 0.0
 
     # ---- mailbox ----
     def _load_map(self, s, idx, objs):
