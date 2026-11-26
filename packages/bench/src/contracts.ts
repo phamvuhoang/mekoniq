@@ -3,6 +3,7 @@ import {readFileSync} from 'node:fs';
 import Ajv,{type ErrorObject} from 'ajv';
 import componentSchema from '../../contracts/schemas/engineering-component.schema.json';
 import driveIoSchema from '../../contracts/schemas/drive-io-v1.schema.json';
+import irsimWorkerSchema from '../../contracts/schemas/irsim-worker-v1.schema.json';
 import {hashJson} from '../../lab-runtime/src/v2/hash';
 import type {DriveCommandV1,DriveFeedbackV1} from '../../lab-runtime/src/v2/control/drive-io';
 
@@ -60,7 +61,7 @@ export type Problem={code:string;path:string;detail:string};
 const problem=(code:string,path:string,detail:string):Problem=>({code,path,detail});
 const load=(f:string):object=>JSON.parse(readFileSync(new URL(`../../../robotics/bench/schemas/${f}`,import.meta.url),'utf8')) as object;
 const ajv=new Ajv({allErrors:true,strict:true});
-ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(driveIoSchema,'drive-io-v1.schema.json');
+ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(driveIoSchema,'drive-io-v1.schema.json');ajv.addSchema(irsimWorkerSchema);
 for(const f of ['kit','session','policy','tick','wire','record'])ajv.addSchema(load(`bench-${f}-v1.schema.json`));
 
 /** SHA-256 of the RFC 8785 canonical JSON without the document's own `digest`. */
@@ -122,6 +123,8 @@ export const validateBenchPolicy=(doc:unknown):{ok:true;policy:BenchPolicy}|{ok:
 export const validateBenchRecord=(doc:unknown):{ok:true;record:BenchRecordV1}|{ok:false;problems:Problem[]}=>{const p=check<BenchRecordV1>('record.v1',doc,recordRules);return p.length?{ok:false,problems:p}:{ok:true,record:doc as BenchRecordV1};};
 export const validateBenchTick=(doc:unknown):Problem[]=>check('tick.v1',doc);
 export const validateBenchCycle=(doc:unknown):Problem[]=>check('tick.v1#/definitions/BenchCycleRow',doc);
+/** A bench lidar scan against the repo's own LidarScanV1 (irsim-worker-v1). */
+export const validateLidarScan=(doc:unknown):Problem[]=>{const v=ajv.getSchema('mekoniq.irsim-worker.v1#/definitions/LidarScanV1')!;return v(doc)?[]:schemaProblems(v.errors);};
 export const validateBenchWire=(kind:'request'|'response',doc:unknown):Problem[]=>check(`wire.v1#/definitions/${kind==='request'?'BenchRequest':'BenchResponse'}`,doc);
 
 /** Empty means the declared session may start torque cases on this kit. The declarations are the operator's word; software cannot check them. */

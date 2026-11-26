@@ -25,6 +25,16 @@ export interface BenchWorker{
 }
 /** ACK deadlines of contracts §3; `silence` gets its own `ms` on top. */
 export const BENCH_DEADLINES_MS:Record<BenchOp,number>={describe:5000,open:10000,scan:30000,configure:30000,start:15000,step:200,silence:5000,imuConfigure:5000,stop:5000};
+const isNum=(x:unknown):x is number=>typeof x==='number'&&Number.isFinite(x),vec=(x:unknown)=>Array.isArray(x)&&x.length===3&&x.every(isNum),MAX_FRAMES_PER_STEP=2000;
+/** The sensors role's step result (K06): decoded LD19 frames and IMU samples with the bytes each decoder dropped. Structural, hand-checked like the Python side. */
+function sensorStepProblem(res:unknown):{path:string;detail:string}|undefined{
+ const r=res as {lidar?:{frames?:unknown;droppedBytes?:unknown};imu?:{samples?:unknown;droppedBytes?:unknown}},f=r?.lidar?.frames,s=r?.imu?.samples;
+ const lf=(x:unknown)=>{const y=x as {speedDegS?:unknown;startDeg?:unknown;endDeg?:unknown;sensorMs?:unknown;points?:unknown};
+  return !!y&&isNum(y.speedDegS)&&isNum(y.startDeg)&&isNum(y.endDeg)&&isNum(y.sensorMs)&&Array.isArray(y.points)&&y.points.length===12&&y.points.every(p=>Array.isArray(p)&&p.length===2&&isNum(p[0])&&isNum(p[1]));};
+ if(!Array.isArray(f)||f.length>MAX_FRAMES_PER_STEP||!f.every(lf))return {path:'/lidar/frames',detail:'not a list of LD19 frames'};
+ if(!Array.isArray(s)||s.length>MAX_FRAMES_PER_STEP||!s.every(x=>vec((x as {accelMps2?:unknown})?.accelMps2)&&vec((x as {gyroRadS?:unknown}).gyroRadS)&&vec((x as {rpyRad?:unknown}).rpyRad)))return {path:'/imu/samples',detail:'not a list of IMU samples'};
+ return [r.lidar?.droppedBytes,r.imu?.droppedBytes].every(d=>Number.isSafeInteger(d)&&(d as number)>=0)?undefined:{path:'/droppedBytes',detail:'not a count'};
+}
 const ROOT=fileURLToPath(new URL('../../../robotics/bench',import.meta.url)),MAX_LINE_BYTES=1<<20;
 
 export async function spawnBenchWorker(o:{role:'bus'|'sensors';python:string;kitPath:string;bus:'sim'|'soem';readOnly:boolean;sessionId:string}):Promise<BenchWorker>{
@@ -59,6 +69,7 @@ export async function spawnBenchWorker(o:{role:'bus'|'sensors';python:string;kit
    // the rows a step returns are data only after they pass the same schemas the evidence uses
    const res=r.result as {feedback?:unknown;vendor?:unknown;cycles?:unknown};
    const problem=r.tick!==cur.expectedTick+1?{path:'/tick',detail:`a step at ${cur.expectedTick} answered at ${r.tick}`}
+    :o.role==='sensors'?sensorStepProblem(r.result)
     :validateBenchTick({schemaVersion:1,tick:cur.expectedTick,tMonoNs:0,latenessNs:0,armed:false,driveCommands:[],feedback:res.feedback,vendor:res.vendor})[0]
     ??(Array.isArray(res.cycles)?res.cycles.flatMap(c=>validateBenchCycle(c))[0]:{path:'/cycles',detail:'missing'});
    if(problem)return fail('WORKER_PROTOCOL',`step result: ${problem.path} ${problem.detail}`);

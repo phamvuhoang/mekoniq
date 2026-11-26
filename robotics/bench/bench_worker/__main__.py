@@ -6,10 +6,11 @@ package; pass the package root (the directory that holds `bench_worker/`, i.e. r
     <python> -I -B -c "import runpy, sys; sys.path.insert(0, sys.argv.pop(1)); runpy.run_module('bench_worker', run_name='__main__', alter_sys=True)" \
         <abs path>/robotics/bench --role bus --kit <abs path to kit.json> --bus sim --session-id <id> [--read-only]
 
-Role `bus` answers every op but imuConfigure; role `sensors` (K06) gets its own branch below and never imports bus*. A malformed line, a request of another session or
-an internal error answers once, stops the drives and exits 1; stdin closing is a stop. The last stderr line is {"event":"stopped","controlwords":[...]}."""
+Role `bus` answers every op but imuConfigure; role `sensors` (K06) answers describe, open, step, imuConfigure, stop and never imports bus*. A malformed line, a request of another session or
+an internal error answers once, stops the drives and exits 1; stdin closing is a stop. The last stderr line is {"event":"stopped","controlwords":[...]} (the sensors role: {"event":"stopped"})."""
 import argparse
 import json
+import os
 import sys
 
 from . import BenchError
@@ -46,7 +47,7 @@ def serve(session, session_id):
     finally:
         if stopped is None:
             stopped = session.handle("stop", {}, session.tick)
-        sys.stderr.write(json.dumps({"event": "stopped", "controlwords": stopped["controlwords"]}) + "\n")
+        sys.stderr.write(json.dumps({"event": "stopped"} | ({"controlwords": stopped["controlwords"]} if "controlwords" in stopped else {})) + "\n")
         sys.stderr.flush()
     return code
 
@@ -59,9 +60,6 @@ def main(argv=None):
     ap.add_argument("--session-id", required=True)
     ap.add_argument("--read-only", action="store_true")
     args = ap.parse_args(argv)
-    if args.role == "sensors":
-        print("bench_worker: the sensors role is added in K06", file=sys.stderr)
-        return 2
     if args.bus == "soem":
         print("bench_worker: soem bus is added in K08", file=sys.stderr)
         return 2
@@ -70,6 +68,9 @@ def main(argv=None):
     if kit["bus"]["backend"] != args.bus:
         print(f"bench_worker: the kit's bus backend is {kit['bus']['backend']!r}, not {args.bus!r}", file=sys.stderr)
         return 2
+    if args.role == "sensors":
+        from .sensor_session import SensorSession
+        return serve(SensorSession(kit, os.path.dirname(os.path.abspath(args.kit)), read_only=args.read_only), args.session_id)
     from .bus_sim import SimBus
     from .session import BenchSession
     return serve(BenchSession(kit, SimBus(kit), read_only=args.read_only), args.session_id)

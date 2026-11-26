@@ -2,7 +2,6 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'robotics' / 'bench'))
 
-import io
 import json
 import subprocess
 
@@ -494,18 +493,13 @@ def test_a_request_of_another_session_is_refused():
     assert out[0]["ok"] is False and out[0]["error"]["code"] == "BENCH_ORDER_VIOLATION"
 
 
-@pytest.mark.parametrize("args,msg", [(("--role", "sensors", "--bus", "sim"), "K06"), (("--role", "bus", "--bus", "soem"), "soem bus is added in K08")])
-def test_roles_and_buses_not_built_yet_exit_2(args, msg):
-    p = run_worker(*args, "--kit", str(FIX / "kit-sim-v1.json"), "--session-id", "t")
-    assert p.returncode == 2 and msg in p.stderr and p.stdout == ""
+@pytest.mark.parametrize("role", ["bus", "sensors"])
+def test_the_soem_bus_is_not_built_yet_exit_2(role):
+    p = run_worker("--role", role, "--bus", "soem", "--kit", str(FIX / "kit-sim-v1.json"), "--session-id", "t")
+    assert p.returncode == 2 and "soem bus is added in K08" in p.stderr and p.stdout == ""
 
 
-def test_the_bus_role_imports_no_sensor_module(monkeypatch, capsys):
-    from bench_worker.__main__ import main
-    monkeypatch.setattr(sys, "stdin", io.TextIOWrapper(io.BytesIO((req("describe") + "\n").encode())))
-    assert main(["--role", "bus", "--kit", str(FIX / "kit-sim-v1.json"), "--bus", "sim", "--session-id", "t"]) == 0
-    assert not [m for m in sys.modules if m.startswith("bench_worker.") and ("sensor" in m or "lidar" in m or "imu" in m)]
-    assert json.loads(capsys.readouterr().out.splitlines()[0])["ok"] is True
+# the role isolation, both ways, is tests/hardware/test_bench_sensors.py::test_the_two_roles_never_import_each_others_modules (a fresh process per role)
 
 
 def test_an_internal_fault_answers_worker_lost_and_still_stops(tmp_path):

@@ -19,7 +19,7 @@ const refused=(code:string,detail:string)=>Object.assign(new Error(`${code}: ${d
 const CHUNK={lines:READ_LIMITS.linesPerChunk/2,inflated:12*1024*1024};
 
 /** The rows of one stream, in order, as chunks in `dir`; returns their refs in order. */
-export async function writeStream(dir:string,stream:'ticks'|'cycles',rows:readonly unknown[]):Promise<FileRef[]>{
+export async function writeStream(dir:string,stream:'ticks'|'cycles'|'lidar'|'imu',rows:readonly unknown[]):Promise<FileRef[]>{
  const refs:FileRef[]=[];let lines:string[]=[],size=0;
  const publish=async()=>{
   if(!lines.length)return;
@@ -67,7 +67,7 @@ export async function readManifest(dir:string):Promise<FileRef[]>{
 export async function readStream(dir:string,refs:readonly FileRef[],budget={left:READ_LIMITS.totalInflated}):Promise<unknown[]>{
  const rows:unknown[]=[];
  for(const r of refs){
-  if(!/^(ticks|cycles)-\d{6}-[0-9a-f]{8}\.ndjson\.gz$/.test(r.path))throw refused('RECORD_SCHEMA_INVALID',r.path);
+  if(!/^(ticks|cycles|lidar|imu)-\d{6}-[0-9a-f]{8}\.ndjson\.gz$/.test(r.path))throw refused('RECORD_SCHEMA_INVALID',r.path);
   const b=await readRegular(join(dir,r.path),READ_LIMITS.chunkBytes);
   if(b.length!==r.bytes||sha256(b)!==r.sha256)throw refused('EVIDENCE_CHUNK_INVALID',r.path);
   let text:string;
@@ -81,16 +81,20 @@ export async function readStream(dir:string,refs:readonly FileRef[],budget={left
  return rows;
 }
 
-/** One case: ticks and cycles as chunks, everything else of the trace in case.json next to their refs. `dir` exists and is empty. */
+const SENSOR_STREAMS=['lidar','imu'] as const;
+/** One case: ticks, cycles and (K06, when the trace has them) lidar and imu as chunks, everything else of the trace in case.json next to their refs. `dir` exists and is empty. */
 export async function writeTrace(dir:string,trace:CaseTrace):Promise<void>{
- const {ticks,cycles,...rest}=trace;
- await writeDurable(dir,'case.json',JSON.stringify({...rest,ticks:await writeStream(dir,'ticks',ticks),cycles:await writeStream(dir,'cycles',cycles)},null,1));
+ const {ticks,cycles,lidar,imu,...rest}=trace,doc:Record<string,unknown>={...rest,ticks:await writeStream(dir,'ticks',ticks),cycles:await writeStream(dir,'cycles',cycles)};
+ for(const [s,rows] of [['lidar',lidar],['imu',imu]] as const)if(rows)doc[s]=await writeStream(dir,s,rows);
+ await writeDurable(dir,'case.json',JSON.stringify(doc,null,1));
 }
 export async function readTrace(dir:string):Promise<CaseTrace>{
- const c=await readJsonFile(join(dir,'case.json')) as Omit<CaseTrace,'ticks'|'cycles'>&{ticks:unknown;cycles:unknown};
- if(!c||typeof c!=='object'||Array.isArray(c)||!refList(c.ticks,READ_LIMITS.chunksPerStream)||!refList(c.cycles,READ_LIMITS.chunksPerStream)||!Array.isArray(c.prompts))throw refused('RECORD_SCHEMA_INVALID',join(dir,'case.json'));
- const {ticks,cycles,...rest}=c,budget={left:READ_LIMITS.totalInflated};
- return {...rest,ticks:await readStream(dir,ticks,budget) as CaseTrace['ticks'],cycles:await readStream(dir,cycles,budget) as CaseTrace['cycles']};
+ const c=await readJsonFile(join(dir,'case.json')) as Omit<CaseTrace,'ticks'|'cycles'|'lidar'|'imu'>&{ticks:unknown;cycles:unknown;lidar?:unknown;imu?:unknown};
+ if(!c||typeof c!=='object'||Array.isArray(c)||!refList(c.ticks,READ_LIMITS.chunksPerStream)||!refList(c.cycles,READ_LIMITS.chunksPerStream)||!Array.isArray(c.prompts)
+  ||SENSOR_STREAMS.some(s=>c[s]!==undefined&&!refList(c[s],READ_LIMITS.chunksPerStream)))throw refused('RECORD_SCHEMA_INVALID',join(dir,'case.json'));
+ const {ticks,cycles,lidar,imu,...rest}=c,budget={left:READ_LIMITS.totalInflated},out:CaseTrace={...rest,ticks:await readStream(dir,ticks as FileRef[],budget) as CaseTrace['ticks'],cycles:await readStream(dir,cycles as FileRef[],budget) as CaseTrace['cycles']};
+ for(const [s,refs] of [['lidar',lidar],['imu',imu]] as const)if(refs!==undefined)(out as unknown as Record<string,unknown>)[s]=await readStream(dir,refs as FileRef[],budget);
+ return out;
 }
 
 /** Walks `dir` without following links: regular files with their lstat size, and every other entry (symlink, FIFO, device, socket) as `others`.

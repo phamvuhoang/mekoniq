@@ -4,7 +4,7 @@
 // stages are off, and disarms the run: no later case gets torque without a new arming, and the caller stops the suite (ctx.disarmed).
 import {validateDriveCommandShape,type DriveCommandV1,type DriveFeedbackV1} from '../../lab-runtime/src/v2/control/drive-io';
 import type {Arming} from './arming';
-import {verdictOf,type CaseTrace,type CaseVerdict,type BenchCase} from './cases/index';
+import {scanRows,verdictOf,type CaseTrace,type CaseVerdict,type BenchCase,type ImuRow,type LidarFrameRow} from './cases/index';
 import type {Clock} from './clock';
 import type {BenchKitV1,BenchPolicy,BenchTickRecord,BenchCycleRow} from './contracts';
 import type {BenchOp,BenchWorker} from './worker';
@@ -12,7 +12,7 @@ import type {BenchOp,BenchWorker} from './worker';
 const TICK_NS=20_000_000n;
 export interface RunContext{
  worker:BenchWorker;kit:BenchKitV1;policy:BenchPolicy;clock:Clock;
- sensors?:BenchWorker;                 // stepped in the same tick from K06; unused here
+ sensors?:BenchWorker;                 // the sensors worker (K06), stepped in the same tick as the bus worker; its loss is an abnormal end (SENSOR_WORKER_LOST)
  arming:Arming;
  /** Ids of the cases that ended `tested` in this run; runCase adds to it. */
  passed:Set<string>;onTick?(t:BenchTickRecord):void;abort:AbortSignal;
@@ -45,11 +45,14 @@ const powerOff=(v:{statusword:number})=>(v.statusword&0x02)===0;
  * an `evaluate`d verdict and no recorded script error disarms the run; a thrown error is rethrown after the stop, every other abnormal end is a `failed` verdict.
  * A step sequence that is refused, does not end, or throws falls back to the wire `stop` (no clock, no step; a lost worker refuses it at once).
  * `meta.runner` and `meta.error` are the runner's: a script that sets either is refused before any step.
+ * With ctx.sensors every tick also steps the sensors worker (after the bus step; during the stop ticks too, but the stop never waits for it). A sensors worker that is lost
+ * or refuses a step ends the case like any abnormal end (reason SENSOR_WORKER_LOST or its code). Only a case with `needsSensors` keeps the frames in its trace.
  * The verdict is verdictOf(trace): whatever the runner decides itself is stored in trace.meta.runner, so the stored trace alone gives it back. */
 export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTrace;verdict:CaseVerdict}>{
- const trace:CaseTrace={ticks:[],cycles:[],prompts:[]},{worker,kit,policy,clock}=ctx;
+ const trace:CaseTrace={ticks:[],cycles:[],prompts:[]},{worker,kit,policy,clock,sensors}=ctx;
  const decided=(status:'not_run'|'failed',reason:string)=>{trace.meta={...trace.meta,runner:{status,reason}};return {trace,verdict:verdictOf(c,trace,kit,policy)};};
  if(c.requires.some(id=>!ctx.passed.has(id)))return decided('not_run','BENCH_ORDER_VIOLATION');
+ if(c.needsSensors&&!sensors)return decided('not_run','SENSORS_UNAVAILABLE');
  if(ctx.abort.aborted)return decided('not_run','OPERATOR_ABORT');
  const s=c.script(kit,policy);
  // ponytail: operator prompts (KCF01, KCF09) need a question io in the context; until a case has one, a case with prompts does not run
@@ -62,7 +65,8 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
  if(ctx.objects)trace.objects=ctx.objects;
  if(s.meta)trace.meta=s.meta;
  const t0=worker.tick,start=clock.nowNs(),expected=new Set<string>(s.expectedFaults??[]);
- let k=0,fb:DriveFeedbackV1[]=[],vendor:BenchTickRecord['vendor']=[],reason:string|null=null,scriptError:string|null=null;
+ let k=0,fb:DriveFeedbackV1[]=[],vendor:BenchTickRecord['vendor']=[],reason:string|null=null,scriptError:string|null=null,sensorError:string|null=null;
+ const lidar:LidarFrameRow[]=[],imu:ImuRow[]=[],dropped={lidarBytes:0,imuBytes:0};
  const disarm=()=>{armedRuns.delete(ctx);ctx.disarmed=true;};
  /** Case code (commandsAt) and the caller's onTick never throw through the loop: the first error is kept and ends the case like any abnormal end. */
  const guarded=<T>(f:()=>T):T|undefined=>{try{return f();}catch(e){scriptError??=e instanceof Error?e.message:String(e);return undefined;}};
@@ -75,7 +79,20 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   const r=ack.result as {feedback:DriveFeedbackV1[];vendor:BenchTickRecord['vendor'];cycles:BenchCycleRow[]};
   const row:BenchTickRecord={schemaVersion:1,tick:ack.tick-1,tMonoNs:Number(now),latenessNs:Number(now-due),armed:armedRuns.has(ctx),driveCommands:cmds,feedback:r.feedback,vendor:r.vendor};
   ({feedback:fb,vendor}=r);trace.ticks.push(row);trace.cycles.push(...r.cycles);guarded(()=>ctx.onTick?.(row));
+  if(sensors&&!sensorError)await stepSensors(row.tick,row.tMonoNs);
   return null;
+ };
+ /** The sensors worker's step of the same tick; the first failure is kept (sensorError) and never thrown, so the stop sequence goes on without it. */
+ const stepSensors=async(tick:number,tMonoNs:number)=>{
+  try{
+   const a=await sensors!.request('step',{commands:[]},sensors!.tick);
+   if(!a.ok){sensorError=a.error!.code;return;}
+   const r=a.result as unknown as {lidar:{frames:Omit<LidarFrameRow,'tick'|'tMonoNs'>[];droppedBytes:number};imu:{samples:Pick<ImuRow,'accelMps2'|'gyroRadS'|'rpyRad'>[];droppedBytes:number}};
+   if(!c.needsSensors)return;
+   for(const f of r.lidar.frames)lidar.push({tick,tMonoNs,...f});
+   for(const x of r.imu.samples)imu.push({tick,tMonoNs,sensorTime:null,...x});
+   dropped.lidarBytes+=r.lidar.droppedBytes;dropped.imuBytes+=r.imu.droppedBytes;
+  }catch{sensorError='SENSOR_WORKER_LOST';}
  };
  /** THE stop sequence of steps: an abnormal end (`quick`) sends one quick-stop tick first; then quickStop/enable false ticks until every power stage is off
   * (the worker holds the ramp: stopseq rule 2), at most quickStopHoldMs + 10 ticks. Returns a code when it could not finish. */
@@ -111,6 +128,7 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
    // the torque gate: a command that asks for torque (enable without quickStop) leaves only from an armed torque case
    if(cmds.some(x=>x.enable&&!x.quickStop)&&!(c.needsTorque&&armedRuns.has(ctx))){reason='BENCH_NOT_ARMED';break;}
    if((reason=await step(cmds)))break;
+   if(sensorError){reason=sensorError;break;}
    if(scriptError){reason='CASE_SCRIPT_ERROR';break;}
    if(trace.ticks.at(-1)!.latenessNs>policy.tickLatenessMaxMs*1e6){reason='HOST_TICK_LATE';break;}   // the host's fault, not the drive's
    const bad=fb.filter(f=>f.state==='fault'&&!expected.has(f.fault!));
@@ -124,6 +142,7 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   }
   if(k>0||silenceSent){const err=await stop(reason!==null);reason??=err;}
   if(scriptError)reason??='CASE_SCRIPT_ERROR';   // also an onTick throw during the stop ticks of a clean end
+  if(sensorError)reason??=sensorError;           // likewise a sensors worker lost during the stop ticks
  }catch(e){
   disarm();
   // best effort, whatever threw: the first error is the one reported. The step sequence needs the clock (or a worker request) that may be what threw; the wire
@@ -131,6 +150,7 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   try{await stop(true);}catch{await stopOp().catch(()=>{});}
   throw e;
  }
+ if(c.needsSensors){trace.lidar=[...lidar,...scanRows(lidar)];trace.imu=imu;trace.sensorDropped=dropped;}
  if(scriptError)trace.meta={...trace.meta,error:scriptError};
  if(reason){disarm();return decided('failed',reason);}
  let v:CaseVerdict;

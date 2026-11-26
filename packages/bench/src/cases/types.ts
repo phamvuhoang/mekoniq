@@ -1,11 +1,18 @@
 // Bench case types (K04). Types only: the cases are in conformance.ts, the loop that runs them is session.ts.
 import type {DriveCommandV1,DriveFault,DriveFeedbackV1} from '../../../lab-runtime/src/v2/control/drive-io';
+import type {LidarScanV1} from '../../../contracts/generated/navigation2d';
 import type {BenchCycleRow,BenchKitV1,BenchPolicy,BenchTickRecord,Measurement} from '../contracts';
 
 /** What runCase recorded: every tick sent (the stop sequence included), the worker's cycle rows, the operator's answers, the objects `scan` read
  * (axisId -> {'605A:00': value}), the script's own notes (`meta`, plus `error` when the case code threw), and the results of `silence` and of the `stop`
- * runCase sends after it. evaluate() sees nothing else. */
-export interface CaseTrace{ticks:BenchTickRecord[];cycles:BenchCycleRow[];prompts:{id:string;answer:string}[];objects?:Record<string,Record<string,number>>;meta?:Record<string,unknown>;silence?:Record<string,unknown>;stop?:Record<string,unknown>}
+ * runCase sends after it. evaluate() sees nothing else.
+ * Sensor streams (K06; only when the sensors worker was stepped): `lidar` = the decoded frames, then one scan row per turn; `imu` = the samples; `sensorDropped` = the bytes
+ * the two decoders dropped. `tick` is the bus worker's tick of the step, `tMonoNs` its host time. */
+export interface LidarFrameRow{tick:number;tMonoNs:number;sensorMs:number;speedDegS:number;startDeg:number;endDeg:number;points:[number,number][]}
+export interface LidarScanRow{tick:number;tMonoNs:number;scan:LidarScanV1}
+export interface ImuRow{tick:number;tMonoNs:number;sensorTime:number|null;accelMps2:number[];gyroRadS:number[];rpyRad:number[]}
+export interface CaseTrace{ticks:BenchTickRecord[];cycles:BenchCycleRow[];prompts:{id:string;answer:string}[];objects?:Record<string,Record<string,number>>;meta?:Record<string,unknown>;silence?:Record<string,unknown>;stop?:Record<string,unknown>;
+ lidar?:(LidarFrameRow|LidarScanRow)[];imu?:ImuRow[];sensorDropped?:{lidarBytes:number;imuBytes:number}}
 /** `observed`: what an identity case read, by checklist path (KID02: '/devices/drive-left' -> the firmware string); closuresFor copies it into the record. */
 export interface CaseVerdict{status:'tested'|'failed'|'not_run'|'unsupported_by_device';reason:string|null;measurements:Measurement[];observed?:Record<string,string>}
 export interface CaseScript{
@@ -21,6 +28,8 @@ export interface CaseScript{
 }
 export interface BenchCase{
  id:string;needsTorque:boolean;requires:string[];
+ /** The case reads the sensors worker's frames: without one in the context it is not_run SENSORS_UNAVAILABLE. */
+ needsSensors?:boolean;
  /** Objects `scan` must read for this case's evaluate (they reach it through CaseTrace.objects). */
  reads?:string[];
  script(kit:BenchKitV1,policy:BenchPolicy):CaseScript;
