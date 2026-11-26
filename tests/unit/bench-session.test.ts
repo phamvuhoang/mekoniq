@@ -140,6 +140,32 @@ describe('ending a case',()=>{
   expect(r.trace.ticks.at(-1)!.driveCommands.every(y=>!y.enable)).toBe(true);expect(r.trace.ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);
   expect(x.disarmed).toBe(true);
  },20_000);
+ it.each([['without seq',(c:ReturnType<typeof cmd>)=>c.map(({seq:_,...x})=>x)],['as null',()=>null],['as undefined',()=>undefined],['with an extra field',(c:ReturnType<typeof cmd>)=>c.map(x=>({...x,speed:1}))]])('a malformed command list from commandsAt (%s) is CASE_SCRIPT_ERROR: stop sequence, axes disabled, run disarmed',async(_,mangle)=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const base=holdCase({ticks:100,target:2});
+  const c:BenchCase={...base,script:(k,p)=>{const s=base.script(k,p);return {...s,commandsAt:(i,f)=>(i===20?mangle(s.commandsAt(i,f) as ReturnType<typeof cmd>):s.commandsAt(i,f)) as never};}};
+  const x=ctx(w,kit),r=await runCase(c,x);
+  expect(r.verdict).toEqual({status:'failed',reason:'CASE_SCRIPT_ERROR',measurements:[]});expect(String(r.trace.meta?.error)).toMatch(/commandsAt\(20\)/);
+  expect(r.trace.ticks[20]!.driveCommands.every(y=>y.quickStop)).toBe(true);expect(noTorque(r.trace.ticks.slice(20))).toBe(true);
+  expect(r.trace.ticks.at(-1)!.driveCommands.every(y=>!y.enable)).toBe(true);expect(r.trace.ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);
+  expect(x.disarmed).toBe(true);
+ },20_000);
+ it('an onTick throw during the stop ticks of a passing case still fails it CASE_SCRIPT_ERROR and disarms',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const x=ctx(w,kit,{onTick:t=>{if(t.driveCommands.every(y=>!y.enable))throw new Error('ui bug at stop');}}),r=await runCase(holdCase({ticks:20,target:2}),x);
+  expect(r.verdict).toEqual({status:'failed',reason:'CASE_SCRIPT_ERROR',measurements:[]});expect(r.trace.meta).toMatchObject({error:'ui bug at stop'});
+  expect(r.trace.ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);expect(x.disarmed).toBe(true);expect(x.passed.has('T')).toBe(false);
+ },20_000);
+ it('a refused silence still ends with the wire stop (never step after a silence request), recorded, and disarms',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const base=holdCase({ticks:30,target:2}),c:BenchCase={...base,script:(k,p)=>({...base.script(k,p),silence:{atTick:30,ms:0}})};   // ms 0: BENCH_LIMIT_EXCEEDED
+  const x=ctx(w,kit),r=await runCase(c,x);
+  expect(r.verdict).toEqual({status:'failed',reason:'BENCH_LIMIT_EXCEEDED',measurements:[]});expect(r.trace.ticks).toHaveLength(30);
+  const stop=r.trace.stop as {controlwords:number[];velocityRadS:number[]};
+  expect(stop.controlwords).toEqual([0,0]);expect(stop.velocityRadS.every(v=>Math.abs(v)<=POLICY.restSpeedRadS)).toBe(true);   // the held ramp, no coast
+  expect(x.disarmed).toBe(true);
+  await w.close();expect(JSON.parse(w.stderr.trim().split('\n').at(-1)!)).toEqual({event:'stopped',controlwords:[0,0]});
+ },20_000);
  it('any other throw inside runCase (here the clock) still stops the live worker before it is rethrown',async()=>{
   const {w,kit}=await open();await startBenchSession(w);
   const clock=fakeClock(),sleep=clock.sleepUntilNs.bind(clock),ticks:BenchTickRecord[]=[];let n=0;
@@ -151,11 +177,12 @@ describe('ending a case',()=>{
   expect(x.disarmed).toBe(true);
  },20_000);
  it('the worker killed mid-case (KSW10): runCase rejects WORKER_LOST and sends nothing more',async()=>{
-  const {w,kit}=await open();await startBenchSession(w);let sent=0;
-  const spy:BenchWorker={request:(...a)=>{sent++;return w.request(...a);},close:()=>w.close(),get tick(){return w.tick;},get pid(){return w.pid;},get stderr(){return w.stderr;}};
+  const {w,kit}=await open();await startBenchSession(w);let sent=0;const lost:string[]=[];
+  const spy:BenchWorker={request:(...a)=>{sent++;const p=w.request(...a);p.catch((e:{outcome:string})=>lost.push(e.outcome));return p;},close:()=>w.close(),get tick(){return w.tick;},get pid(){return w.pid;},get stderr(){return w.stderr;}};
   const c=ctx(spy,kit,{onTick:t=>{if(t.tick===5)process.kill(-w.pid!,'SIGKILL');}});
   await expect(runCase(holdCase({ticks:50}),c)).rejects.toMatchObject({code:'WORKER_LOST'});
-  expect(sent).toBe(7);expect(c.disarmed).toBe(true);
+  // 6 steps, the 7th lost on the wire (unknown, never resent), then the catch's best-effort stop, which the terminal client refuses without writing
+  expect(sent).toBe(8);expect(lost).toEqual(['unknown','not_sent']);expect(c.disarmed).toBe(true);
   await expect(runCase(holdCase(),c)).rejects.toMatchObject({code:'WORKER_LOST',outcome:'not_sent'});
  },20_000);
  it('stdin closed while the axes are enabled (KSW10): the worker stops and its last stderr line says controlwords 0',async()=>{

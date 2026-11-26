@@ -2,12 +2,12 @@
 // Gates before torque, each on its own: `requires` (case order), arming (an operator typed the code), and the torque gate in front of every step.
 // Any abnormal end (operator abort, a fault the script did not provoke, a late tick, a refused step) sends a quick stop, then enable false until the power
 // stages are off, and disarms the run: no later case gets torque without a new arming, and the caller stops the suite (ctx.disarmed).
-import type {DriveCommandV1,DriveFeedbackV1} from '../../lab-runtime/src/v2/control/drive-io';
+import {validateDriveCommandShape,type DriveCommandV1,type DriveFeedbackV1} from '../../lab-runtime/src/v2/control/drive-io';
 import type {Arming} from './arming';
 import type {CaseTrace,CaseVerdict,BenchCase} from './cases/types';
 import type {Clock} from './clock';
 import type {BenchKitV1,BenchPolicy,BenchTickRecord,BenchCycleRow} from './contracts';
-import {BenchWorkerError,type BenchOp,type BenchWorker} from './worker';
+import type {BenchOp,BenchWorker} from './worker';
 
 const TICK_NS=20_000_000n;
 export interface RunContext{
@@ -41,6 +41,9 @@ const verdict=(trace:CaseTrace,status:CaseVerdict['status'],reason:string|null)=
 /** CiA 402 statusword bit 1 ("switched on") clear: Switch on disabled, Ready to switch on, Fault, Not ready; no torque from this drive. */
 const powerOff=(v:{statusword:number})=>(v.statusword&0x02)===0;
 
+/** How a case ends. Every path that sent anything ends with a stop that is sent and awaited: the stop sequence of steps (`stopAxes`), or the wire `stop` op once
+ * a `silence` has been sent, also from the catch, whatever threw (a terminal worker refuses at once, so that is safe). Every end other than a clean script,
+ * an `evaluate`d verdict and no recorded script error disarms the run; a thrown error is rethrown after the stop, every other abnormal end is a `failed` verdict. */
 export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTrace;verdict:CaseVerdict}>{
  const trace:CaseTrace={ticks:[],cycles:[],prompts:[]},{worker,kit,policy,clock}=ctx;
  if(c.requires.some(id=>!ctx.passed.has(id)))return verdict(trace,'not_run','BENCH_ORDER_VIOLATION');
@@ -71,7 +74,7 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   ({feedback:fb,vendor}=r);trace.ticks.push(row);trace.cycles.push(...r.cycles);guarded(()=>ctx.onTick?.(row));
   return null;
  };
- /** THE stop sequence, the only one: an abnormal end (`quick`) sends one quick-stop tick first; then quickStop/enable false ticks until every power stage is off
+ /** THE stop sequence of steps: an abnormal end (`quick`) sends one quick-stop tick first; then quickStop/enable false ticks until every power stage is off
   * (the worker holds the ramp: stopseq rule 2), at most quickStopHoldMs + 10 ticks. Returns a code when it could not finish. */
  const stopAxes=async(quick:boolean)=>{
   const limit=Math.ceil((kit.channel.quickStopHoldMs??2000)/20)+10;
@@ -81,10 +84,20 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   }
   return vendor.every(powerOff)?null:'BENCH_STOP_INCOMPLETE';
  };
+ /** After a `silence` was sent (accepted or refused) the worker's session may be over, so steps are no longer the way: the wire `stop` holds the ramp itself. */
+ let silenceSent=false;
+ const stopOp=async()=>{const st=await worker.request('stop',{},worker.tick);if(st.ok){trace.stop=st.result;return null;}trace.stop={refused:st.error};return st.error!.code;};
+ const stop=(quick:boolean)=>silenceSent?stopOp():stopAxes(quick);
+ /** Case code must return a list of valid DriveCommandV1 (local seq included): anything else is a script error, never a request the wire refuses mid-case. */
+ const commandsAt=(i:number)=>{
+  const out=s.commandsAt(i,fb) as unknown,bad=Array.isArray(out)?out.findIndex(x=>!validateDriveCommandShape(x)):-2;
+  if(bad!==-1)throw new Error(`commandsAt(${i}) returned ${bad===-2?`${String(out)}, not a command list`:`an invalid command [${bad}]: ${JSON.stringify(validateDriveCommandShape.errors?.[0]??null)}`}`);
+  return out as DriveCommandV1[];
+ };
  try{
   for(let i=0;i<s.ticks;i++){
    if(ctx.abort.aborted){reason='OPERATOR_ABORT';break;}
-   const local=guarded(()=>s.commandsAt(i,fb));
+   const local=guarded(()=>commandsAt(i));
    if(!local){reason='CASE_SCRIPT_ERROR';break;}
    const cmds=local.map(x=>({...x,seq:t0+x.seq}));
    // the torque gate: a command that asks for torque (enable without quickStop) leaves only from an armed torque case
@@ -96,20 +109,16 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
    if(bad.length){reason=`UNEXPECTED_FAULT ${bad.map(f=>`${f.axisId}:${f.fault}`).join(',')}`;break;}
   }
   if(!reason&&s.silence){
+   // the session ends here (KCF07b; contracts §3: only stop follows), and a bus silence is an abnormal end by design: disarmed whatever the drive did
+   silenceSent=true;disarm();
    const a=await worker.request('silence',{ms:s.silence.ms},worker.tick);
-   if(a.ok){
-    // the session ends here (KCF07b; contracts §3: only stop follows). runCase sends it itself, whatever the drive did: a drive that kept running is stopped
-    // by the worker's held ramp (session.py _stop). A bus silence is an abnormal end by design, so the run is disarmed.
-    trace.silence=a.result;disarm();
-    const st=await worker.request('stop',{},worker.tick);
-    if(st.ok)trace.stop=st.result;else reason=st.error!.code;
-   }else reason=a.error!.code;
+   if(a.ok)trace.silence=a.result;else reason=a.error!.code;
   }
-  if(!trace.silence&&k>0){const err=await stopAxes(reason!==null);reason??=err;}
+  if(k>0||silenceSent){const err=await stop(reason!==null);reason??=err;}
+  if(scriptError)reason??='CASE_SCRIPT_ERROR';   // also an onTick throw during the stop ticks of a clean end
  }catch(e){
   disarm();
-  // a lost worker (BenchWorkerError) is already dead with its group: nothing more is sent. Anything else left a live worker: stop it, best effort, then rethrow.
-  if(!(e instanceof BenchWorkerError))try{await stopAxes(true);}catch{/* the first error is the one reported */}
+  try{await stop(true);}catch{/* best effort, whatever threw: the first error is the one reported */}
   throw e;
  }
  if(scriptError)trace.meta={...trace.meta,error:scriptError};
