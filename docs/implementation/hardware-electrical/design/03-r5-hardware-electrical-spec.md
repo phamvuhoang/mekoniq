@@ -202,7 +202,7 @@ Với mỗi tín hiệu chưa ghim và không thuộc chuỗi an toàn, tập �
 
 Ghép cặp bằng thuật toán đường tăng (Kuhn) trên đồ thị hai phía, với thứ tự duyệt cố định: tín hiệu theo số ứng viên tăng dần rồi theo id; ứng viên theo `cyclic` trước, rồi theo `(deviceId, pointId)`. Kết quả là một ghép cặp cực đại và tất định.
 
-Đầu ra gồm bốn danh sách: đã gán (kèm bus và kiểu lộ), **chưa gán** (kèm lý do theo từng lớp ứng viên bị loại), còn dư, và đã dành riêng. Mã lý do: `NO_CANDIDATE_DEVICE`, `DIRECTION_MISMATCH`, `ELECTRICAL_MISMATCH`, `VOLTAGE_OUT_OF_RANGE`, `OUTPUT_OVERCURRENT`, `POINT_RESERVED`, `NOT_BUS_EXPOSED`, `LATENCY_EXCEEDED`, `SAFETY_POINT_RESERVED`, `NO_FREE_POINT`.
+Đầu ra gồm bốn danh sách: đã gán (kèm bus và kiểu lộ), **chưa gán** (kèm lý do theo từng lớp ứng viên bị loại), còn dư, và đã dành riêng. Mã lý do: `NO_CANDIDATE_DEVICE`, `DIRECTION_MISMATCH`, `ELECTRICAL_MISMATCH`, `VOLTAGE_OUT_OF_RANGE`, `OUTPUT_OVERCURRENT`, `POINT_RESERVED`, `NOT_BUS_EXPOSED`, `LATENCY_EXCEEDED`, `LATENCY_UNKNOWN` (tín hiệu có giới hạn trễ, điểm chưa biết chu kỳ cập nhật), `SAFETY_POINT_RESERVED`, `NO_FREE_POINT`.
 
 Compiler là bộ **cấu hình và kiểm tra**. Nó không phải bộ điều khiển an toàn và không sinh logic chạy trên thiết bị.
 

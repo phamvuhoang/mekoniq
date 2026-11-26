@@ -70,3 +70,24 @@ test('a volatile assignment warns and a device with no spare point of that direc
  expect(allocateIo(ctx).checks.map(c=>c.ruleId)).toEqual(['IOA_ASSIGNMENT_VOLATILE','IOA_SPARE_LOW']);
 });
 test('the compatibility table covers every electrical type',()=>{expect(Object.keys(IO_COMPATIBILITY).sort()).toEqual(['analog_current','analog_voltage','dry_contact_input','isolated_transistor_output','npn_sink_output','npn_source_input','pnp_sink_input','pnp_source_output','relay_output']);});
+
+describe('a latency limit must be proven by a known period (IOA01)',()=>{
+ const acyclic=(updatePeriodMs:number|null)=>point({pointId:'IN1',busExposure:{kind:'acyclic',object:'6000:01',bit:0,precondition:null,updatePeriodMs}});
+ const bumper=(maxLatencyMs:number|null,pinned:{deviceId:string;pointId:string}|null=null)=>sig({id:'bumper-front',maxLatencyMs,pinned});
+ const assigned=(ctx:ReturnType<typeof allocContext>)=>allocateIo(ctx).allocation.assigned.map(a=>`${a.signalId}:${a.pointId}`);
+ test('auto-assign: period equal to the limit is accepted, above it is rejected, unknown is rejected, no limit needs no period',()=>{
+  expect(assigned(allocContext({points:[acyclic(40)],signals:[bumper(40)]}))).toEqual(['bumper-front:IN1']);
+  expect(reasons(allocContext({points:[acyclic(41)],signals:[bumper(40)]}))).toEqual(['LATENCY_EXCEEDED']);
+  expect(reasons(allocContext({points:[acyclic(null)],signals:[bumper(40)]}))).toEqual(['LATENCY_UNKNOWN']);
+  expect(allocateIo(allocContext({points:[acyclic(null)],signals:[bumper(40)]})).allocation.unassigned).toEqual([{signalId:'bumper-front',reasons:[{code:'LATENCY_UNKNOWN',candidates:1}]}]);
+  expect(assigned(allocContext({points:[acyclic(null)],signals:[bumper(null)]}))).toEqual(['bumper-front:IN1']);
+  expect(assigned(allocContext({cycleMs:40,signals:[bumper(40)]}))).toEqual(['bumper-front:IN1']);
+ });
+ test('pinned: a pin onto a point of unknown period is a blocking conflict naming LATENCY_UNKNOWN',()=>{
+  const r=allocateIo(allocContext({points:[acyclic(null)],signals:[bumper(40,{deviceId:'io',pointId:'IN1'})]}));
+  expect(r.allocation.assigned).toEqual([]);
+  expect(r.checks.filter(c=>c.ruleId==='IOA_PINNED_CONFLICT').map(c=>c.detail)).toEqual([expect.stringContaining('LATENCY_UNKNOWN')]);
+  expect(allocateIo(allocContext({points:[acyclic(40)],signals:[bumper(40,{deviceId:'io',pointId:'IN1'})]})).allocation.assigned.map(a=>a.pinned)).toEqual([true]);
+  expect(allocateIo(allocContext({points:[acyclic(null)],signals:[bumper(null,{deviceId:'io',pointId:'IN1'})]})).allocation.assigned.map(a=>a.pinned)).toEqual([true]);
+ });
+});

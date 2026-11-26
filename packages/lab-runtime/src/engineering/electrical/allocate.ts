@@ -12,7 +12,7 @@ export const IO_COMPATIBILITY:Readonly<Record<IoElectrical,readonly IoElectrical
  npn_source_input:['npn_sink_output','isolated_transistor_output','relay_output'],
  dry_contact_input:['pnp_source_output','npn_sink_output','isolated_transistor_output','relay_output'],
  analog_voltage:['analog_voltage'],analog_current:['analog_current']};
-export type AllocationReason='NO_CANDIDATE_DEVICE'|'DIRECTION_MISMATCH'|'ELECTRICAL_MISMATCH'|'VOLTAGE_OUT_OF_RANGE'|'OUTPUT_OVERCURRENT'|'POINT_RESERVED'|'NOT_BUS_EXPOSED'|'LATENCY_EXCEEDED'|'SAFETY_POINT_RESERVED'|'NO_FREE_POINT';
+export type AllocationReason='NO_CANDIDATE_DEVICE'|'DIRECTION_MISMATCH'|'ELECTRICAL_MISMATCH'|'VOLTAGE_OUT_OF_RANGE'|'OUTPUT_OVERCURRENT'|'POINT_RESERVED'|'NOT_BUS_EXPOSED'|'LATENCY_EXCEEDED'|'LATENCY_UNKNOWN'|'SAFETY_POINT_RESERVED'|'NO_FREE_POINT';
 /** Functions a drive-local signal needs the point's firmware to allow. A role that is not listed cannot be drive-local. */
 const LOCAL_FUNCTION:Partial<Record<SignalV1['role'],readonly string[]>>={brake_release:['brake'],bumper:['STOP'],aux_input:['STOP']};
 type Ref={deviceId:string;pointId:string};
@@ -41,7 +41,8 @@ function evaluate(signal:SignalV1,context:DesignContext):Eval[]{
     if(pt.busExposure.kind==='none')r.push('NOT_BUS_EXPOSED');
     else if(signal.maxLatencyMs!==null){
      const period=pt.busExposure.kind==='cyclic'?bus!.cycleMs:pt.busExposure.updatePeriodMs;
-     if(period!==null&&period>signal.maxLatencyMs)r.push('LATENCY_EXCEEDED');
+     if(period===null)r.push('LATENCY_UNKNOWN');                                          // no update period: nothing proves the limit
+     else if(period>signal.maxLatencyMs)r.push('LATENCY_EXCEEDED');
     }
    }
    out.push({ref:{deviceId:dev.id,pointId:pt.pointId},exposure:local?'local':pt.busExposure.kind==='cyclic'?'cyclic':'acyclic',busId:local?null:bus!.id,reasons:r});
@@ -55,7 +56,7 @@ export function candidatePoints(signal:SignalV1,context:DesignContext):Ref[]|{re
  if(!all.length)return {rejected:[{code:'NO_CANDIDATE_DEVICE',candidates:0}]};
  return {rejected:tally(all)};
 }
-const REASON_ORDER:AllocationReason[]=['NO_CANDIDATE_DEVICE','DIRECTION_MISMATCH','ELECTRICAL_MISMATCH','VOLTAGE_OUT_OF_RANGE','OUTPUT_OVERCURRENT','POINT_RESERVED','NOT_BUS_EXPOSED','LATENCY_EXCEEDED','SAFETY_POINT_RESERVED','NO_FREE_POINT'];
+const REASON_ORDER:AllocationReason[]=['NO_CANDIDATE_DEVICE','DIRECTION_MISMATCH','ELECTRICAL_MISMATCH','VOLTAGE_OUT_OF_RANGE','OUTPUT_OVERCURRENT','POINT_RESERVED','NOT_BUS_EXPOSED','LATENCY_EXCEEDED','LATENCY_UNKNOWN','SAFETY_POINT_RESERVED','NO_FREE_POINT'];
 const tally=(all:Eval[])=>REASON_ORDER.flatMap(code=>{const n=all.filter(e=>e.reasons.includes(code)).length;return n?[{code,candidates:n}]:[];});
 const chk=(ruleId:string,level:CheckResult['level'],path:string,detail:string,sources:SourceRef[]=[]):CheckResult=>({ruleId,level,path,detail,sources});
 
