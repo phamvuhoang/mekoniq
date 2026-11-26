@@ -2,6 +2,7 @@
 // it never edits that qualification, deploys a service or grants human acceptance.
 import {validateSupplement,checkDeployment} from './r4-cloud-evidence.mjs';
 import {createHash} from 'node:crypto';
+import {gunzipSync} from 'node:zlib';
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const hex=/^[a-f0-9]{64}$/;
 const safe=p=>typeof p==='string'&&/^[A-Za-z0-9_./-]+$/.test(p)&&p.split('/').every(s=>s&&s!=='.'&&s!=='..');
@@ -98,11 +99,19 @@ function checkedSupplement(read,recordBytes,validate){
 // ---- CLD06 (R5) --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Supplements an immutable R5 record after ONE deployment ordered by the user (contracts §8–§9: CLD06 follows CLD03). The R5 record itself keeps CLD06 not_run (deploy_order_pending);
 // this evidence binds to the SHA-256 of its exact qualification.json bytes, its source commit, Lab pin and schema hash. Evidence: health (commit, schema hash, electrical capability),
-// the three options compiled on Cloud Run with the full bundle digests of the Mac (the record's CLD04 evidence, which the R5 reader recompiled on the host), and one S1 emergency
-// stop run compared with the Mac's own run of the stop-v1 campaign (stop tick exact, status and served equal, end tick and distance within 5 %). Producer: scripts/record-r5-cloud.mjs.
+// the three options compiled on Cloud Run with the full bundle digests of the Mac (the record's CLD04 evidence, which the R5 reader recompiled on the host), and one emergency coast stop
+// in the middle of the first straight of MJ-TRAY01, run on the Mac (the producer's own reference, mac/) and on Cloud Run, each with its whole per-tick physics stream.
+// The comparison is fixed before any cloud run (user decision 2026-11-27, after r5-candidate-02's failed CLD06): the braking entry conditions must match (else ENTRY_CONDITION_MISMATCH,
+// a failure of the case, never a pass), then stopDistanceM, stopTimeMs and peakDecelerationMps2 within 5 % of the Mac. Producer: scripts/record-r5-cloud.mjs.
 export const R5_CLOUD={container:'inputs/container/container.json',cld04:'inputs/container/cld04.json',macStop:'inputs/stop/s1-emergency-coast/report.json',
  options:['serve-hw-a-v1','serve-hw-b-v1','serve-hw-c-v1'],states:['blocked','compiled','compiled'],stopEntry:{id:'s1',function:'emergency',trigger:{kind:'elapsed_sim_ms',value:8220}},
  scenario:'MJ-TRAY01',seed:7,driveExperimentId:'drive-hw-c-coast-v1',relativeTolerance:0.05};
+/** The CLD06 stop. appliedTick is stopStartTick(stopEntry) (tests/unit/r5-cloud-evidence.test.ts checks it). cruiseSpeedMps: cruiseOf (stop-campaign.ts: the 5-tick mean held at >= 95 % of
+ * its peak for 25 ticks) of a Mac run of MJ-TRAY01 / tray-stop-coast-v1 / seed 7 without a stop, 2026-11-27 (physics of 0d365afd): 0.4878 m/s from tick 394, straight held to tick 804;
+ * fixtures/stop-v1/survey.json has 0.487 for the brake variant. Rest is stop-metrics.ts's (restSpeedMps 0.01 for restTicks 25, within observeTicks 500). */
+export const R5_CLD06={stopEntry:{id:'s1',function:'emergency',trigger:{kind:'elapsed_sim_ms',value:12000}},appliedTick:601,cruiseSpeedMps:0.488,
+ entryTicks:25,minCruiseFraction:0.95,maxAbsOmegaRadps:0.05,maxSpeedDeltaFraction:0.02,maxYawDeltaRad:0.02,restSpeedMps:0.01,restTicks:25,observeTicks:500,
+ chainAxes:['amr-1/wheel-left','amr-1/wheel-right'],metrics:['stopDistanceM','stopTimeMs','peakDecelerationMps2'],relativeTolerance:0.05};
 const must=(ok,code)=>{if(!ok)throw Error(code);};
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 export function checkR5Candidate(q){
@@ -132,34 +141,92 @@ export function checkStopRun(r,arch,commit,tick){
   !m.driveFaultSchedule&&!m.faultSchedule,'STOP_RUN_SCOPE');
  must(o?.status==='needs_attention'&&o.served==='0'&&Number.isSafeInteger(o.tick)&&o.tick>tick&&emergencyTick(r)===tick&&Number.isFinite(r.metrics?.distanceM?.['amr-1']),'STOP_RUN_OUTCOME');
 }
-export function compareStop(mac,cloud){
- const a=mac.manifest,b=cloud.manifest,t=R5_CLOUD.relativeTolerance;
- must(a.runId!==b.runId&&same(a.scenario,b.scenario)&&a.seed===b.seed&&a.stopSchedule.hash===b.stopSchedule.hash&&['experimentId','driveModelDigest','controlProfileDigest'].every(k=>a.drive[k]===b.drive[k]),'MAC_INPUT_MISMATCH');
- must(emergencyTick(mac)===emergencyTick(cloud)&&mac.outcome.status===cloud.outcome.status&&mac.outcome.served===cloud.outcome.served,'MAC_STOP_RESULT_MISMATCH');
- const tickMac=mac.outcome.tick,tickCloud=cloud.outcome.tick,distanceMacM=mac.metrics.distanceM['amr-1'],distanceCloudM=cloud.metrics.distanceM['amr-1'];
- must(Math.abs(tickCloud-tickMac)<=t*tickMac&&Math.abs(distanceCloudM-distanceMacM)<=t*distanceMacM,'MAC_TOLERANCE_EXCEEDED');
- return {stopTick:emergencyTick(cloud),status:cloud.outcome.status,served:cloud.outcome.served,tickMac,tickCloud,distanceMacM,distanceCloudM,relativeTolerance:t};
-}
 /** `local` (the producer's loopback diagnostic only) accepts a runtime that is not bound publicly. */
 export function checkR5Health(h,pin,origin,local=false){
  must(h?.sourceCommit===pin.sourceCommit&&h.schemaHash===pin.schemaHash&&h.allowOrigin===origin&&h.protocolMajor===2&&(local||h.deployment?.bind==='public')&&h.features?.bearer===true,'HEALTH_IDENTITY_OR_ORIGIN');
  must(Array.isArray(h.capabilities)&&h.capabilities.includes('electrical_bundle_v1')&&h.backends?.some(b=>b.id==='mujoco_3d'&&['installed','reachable','enabled'].every(k=>b[k]===true)),'HEALTH_NOT_READY');
 }
-export function validateR5Supplement(q,r5Bytes,files){
+const DT=0.02,wrap=a=>((a+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI,yawOf=q=>Math.atan2(2*(q[3]*q[2]+q[0]*q[1]),1-2*(q[1]**2+q[2]**2));
+/** The per-tick physics records of one CLD06 run, from the chunks its report's physicsEvidence.manifest names, each present under `prefix`physics/ with the manifest's bytes and SHA-256. */
+export function cld06Records(report,files,side,prefix=''){
+ const m=report?.physicsEvidence?.manifest;must(m?.identity?.runId===report?.manifest?.runId&&Array.isArray(m.streams),`CLD06_EVIDENCE_MISSING:${side}:physics-manifest`);
+ const out=[];
+ for(const ref of m.streams.flatMap(x=>x.chunks??[])){const b=files.get(`${prefix}physics/${ref.path}`);must(b,`CLD06_EVIDENCE_MISSING:${side}:physics/${ref.path}`);
+  must(b.length===ref.bytes&&sha(b)===ref.sha256,`CLD06_CHUNK_HASH:${side}:${ref.path}`);for(const l of gunzipSync(b).toString('utf8').split('\n'))if(l)out.push(JSON.parse(l));}
+ return out;
+}
+/** What the stream says from the tick before the 25-tick entry window to the confirmed rest: pose (hence speed, yaw rate, yaw), torque of every chain axis on every tick, and the stop
+ * receipt on the applied tick. A missing sample is missing evidence, never a pass. Rest is the first tick from which restTicks consecutive speeds are below restSpeedMps. */
+export function cld06Trace(records,report,side){
+ const c=R5_CLD06,A=c.appliedTick,by=new Map(records.map(r=>[r.tick,r])),need=(ok,t,what)=>must(ok,`CLD06_EVIDENCE_MISSING:${side}:${t}:${what}`);
+ const pose=t=>{const p=by.get(t)?.base?.[0]?.poseMap;need(p?.positionM?.length===3&&p.positionM.every(Number.isFinite)&&p.quaternionXyzw?.length===4&&p.quaternionXyzw.every(Number.isFinite),t,'pose');return p;};
+ const kin=t=>{const a=pose(t-1),b=pose(t),yaw=yawOf(b.quaternionXyzw);return {tick:t,v:Math.hypot(b.positionM[0]-a.positionM[0],b.positionM[1]-a.positionM[1])/DT,w:wrap(yaw-yawOf(a.quaternionXyzw))/DT,yaw};};
+ const torque=t=>c.chainAxes.map(a=>{const d=by.get(t)?.drives?.find(x=>x.axisId===a);need(Number.isFinite(d?.torqueNm),t,'torque:'+a);return d.torqueNm;});
+ const entry=[];for(let t=A-c.entryTicks;t<A;t++){entry.push(kin(t));torque(t);}
+ const receipts=(by.get(A)?.stopReceipts??[]).filter(x=>x.entryId===c.stopEntry.id);
+ need(receipts.length===1&&receipts[0].function==='emergency'&&receipts[0].appliedTick===A&&receipts[0].runId===report.manifest.runId,A,'receipt');
+ const torqueAtStop=torque(A),speeds=new Map();let restTick=null;
+ for(let t=A;t<=A+c.observeTicks+c.restTicks-1&&restTick===null;t++){speeds.set(t,kin(t).v);torque(t);const s=t-c.restTicks+1;if(s>=A&&[...Array(c.restTicks).keys()].every(k=>speeds.get(s+k)<c.restSpeedMps))restTick=s;}
+ must(restTick!==null,`CLD06_NOT_AT_REST:${side}`);
+ return {entry,torqueAtStop,receipt:receipts[0],restTick};
+}
+/** One side's own expected result (the same for the Mac and for Cloud Run): the CLD06 run on the record's commit, the receipt and zero torque of each wheel on the applied tick,
+ * needs_attention with EMERGENCY_STOP there, nothing served, no cup tipped, the stop report's rest the stream's. */
+export function cld06Expected(report,trace,side,arch,commit){
+ const m=report?.manifest,o=report?.outcome,sr=report?.stopReport,A=R5_CLD06.appliedTick,e=w=>`CLD06_EXPECTED:${side}:${w}`;
+ must(m?.sourceCommit===commit&&m.scenario?.id===R5_CLOUD.scenario&&m.scenario.revision===1&&m.seed===R5_CLOUD.seed&&m.mode==='simulation'&&m.access==='simulated'&&m.backendSetId==='engineering-mujoco-3d-v1'&&
+  same(m.stopSchedule?.entries,[R5_CLD06.stopEntry])&&m.drive?.experimentId===R5_CLOUD.driveExperimentId&&m.drive.hostArch===arch&&m.calibration?.status==='not_calibrated'&&!m.driveFaultSchedule&&!m.faultSchedule,e('scope'));
+ must(sr?.receipt?.appliedTick===A&&sr.receipt.function==='emergency'&&sr.receipt.runId===m.runId&&sr.appliedTick===A,e('receipt'));
+ must(trace.torqueAtStop.every(x=>x===0)&&sr.metrics?.torqueZeroTick===A,e('torque'));
+ must(o?.status==='needs_attention'&&o.served==='0'&&emergencyTick(report)===A,e('outcome'));
+ must(sr.metrics.cupTipped===false,e('cup'));
+ must(R5_CLD06.metrics.every(k=>Number.isFinite(sr.metrics[k])&&sr.metrics[k]>0),e('metrics'));
+ must(sr.metrics.stopTimeMs===(trace.restTick-A)*20,e('rest'));
+}
+/** Both runs, fixed before the cloud run: every tick of the 25 before the stop on both sides (v >= 95 % of the cruise reference, |omega| <= 0.05 rad/s), the speeds within 2 % of the Mac's
+ * and the yaw within 0.02 rad (wrapped); then each metric |cloud - Mac| / Mac <= 5 %. Evidence is checked first and throws; the verdict is data: status, failure, the numbers. */
+export function evaluateCld06(mac,cloud,commit){
+ const c=R5_CLD06,tm=cld06Trace(mac.records,mac.report,'mac'),tc=cld06Trace(cloud.records,cloud.report,'cloud');
+ cld06Expected(mac.report,tm,'mac','arm64',commit);cld06Expected(cloud.report,tc,'cloud','x86_64',commit);
+ const mismatches=[],floor=c.minCruiseFraction*c.cruiseSpeedMps;
+ tm.entry.forEach((a,i)=>{const b=tc.entry[i];
+  for(const [side,x] of [['mac',a],['cloud',b]]){if(!(x.v>=floor))mismatches.push(`speed_below_cruise:${side}:${x.tick}`);if(!(Math.abs(x.w)<=c.maxAbsOmegaRadps))mismatches.push(`yaw_rate:${side}:${x.tick}`);}
+  if(!(Math.abs(b.v-a.v)<=c.maxSpeedDeltaFraction*a.v))mismatches.push(`speed_delta:${a.tick}`);if(!(Math.abs(wrap(b.yaw-a.yaw))<=c.maxYawDeltaRad))mismatches.push(`yaw_delta:${a.tick}`);});
+ const comparison=Object.fromEntries(c.metrics.map(k=>{const x=mac.report.stopReport.metrics[k],y=cloud.report.stopReport.metrics[k],relative=Math.abs(y-x)/x;return [k,{mac:x,cloud:y,relative,pass:relative<=c.relativeTolerance}];}));
+ const exceeded=c.metrics.filter(k=>!comparison[k].pass),failure=mismatches.length?'ENTRY_CONDITION_MISMATCH':exceeded.length?'CLD06_TOLERANCE_EXCEEDED':null;
+ const edge=t=>({tick:t.tick,v:t.v,w:t.w,yaw:t.yaw});
+ return {status:failure?'failed':'tested',failure,appliedTick:c.appliedTick,cruiseSpeedMps:c.cruiseSpeedMps,relativeTolerance:c.relativeTolerance,
+  entry:{pass:!mismatches.length,mismatches:mismatches.slice(0,50),mismatchCount:mismatches.length,mac:{first:edge(tm.entry[0]),last:edge(tm.entry.at(-1))},cloud:{first:edge(tc.entry[0]),last:edge(tc.entry.at(-1))}},
+  comparison,exceeded,diagnostics:{restTickMac:tm.restTick,restTickCloud:tc.restTick,tickMac:mac.report.outcome.tick,tickCloud:cloud.report.outcome.tick,distanceMacM:mac.report.metrics.distanceM['amr-1'],distanceCloudM:cloud.report.metrics.distanceM['amr-1']}};
+}
+/** The producer's Mac reference (mac/): bound to the record's bytes and pin, run natively on arm64 at loopback, the three Mac digests the record's CLD04 has, the whole stream. */
+export function checkMacReference(q,r5Bytes,files,cld04,prefix='mac/'){
+ const get=k=>{const b=files.get(prefix+k+'.json');must(b,'ARTIFACT_MISSING:'+prefix+k);return JSON.parse(b);},s=get('summary'),pin=q.lab.pin;
+ must(s.schema==='mekoniq-cld06-mac-reference/1'&&s.accepted===false&&s.status==='recorded'&&s.qualification?.sha256===sha(r5Bytes)&&s.qualification.candidateId===q.candidateId&&s.sourceCommit===pin.sourceCommit&&s.hostArch==='arm64','MAC_REFERENCE_BINDING');
+ checkR5Health(get('health'),pin,s.origin,true);const e=get('electrical');
+ must(e.projectDigest===cld04.project?.digest&&R5_CLOUD.options.every(o=>e.options?.[o]?.state===cld04.options[o].state&&e.options[o].digest===cld04.options[o].digest),'MAC_REFERENCE_DIGEST_MISMATCH');
+ const report=get('stop-report');must(report.schemaHash===pin.schemaHash,'MAC_REFERENCE_SCHEMA');must(same(s.cleanup,[{runId:report.manifest?.runId,archived:true}]),'MAC_REFERENCE_CLEANUP_INCOMPLETE');
+ return {report,records:cld06Records(report,files,'mac',prefix)};
+}
+/** Reads a supplement back and recomputes its verdict; throws on any binding or missing evidence. A complete failed run reads back too (its recorded verdict must be the recomputed one). */
+export function readR5Supplement(q,r5Bytes,files){
  const bytes=k=>{const b=files.get(k+'.json');must(b,'ARTIFACT_MISSING:'+k);return b;},get=k=>JSON.parse(bytes(k));
- const {cld04,native,mac}=checkR5CandidateInputs(q,bytes('container-record'),bytes('cld04'),bytes('mac-stop-report')),pin=q.lab.pin,d=get('deployment'),s=get('summary');
+ const {cld04,native}=checkR5CandidateInputs(q,bytes('container-record'),bytes('cld04'),bytes('mac-stop-report')),pin=q.lab.pin,d=get('deployment'),s=get('summary');
  must(d.schema==='mekoniq-cloud-run-deployment/2'&&d.accepted===false&&d.qualification?.sha256===sha(r5Bytes)&&d.qualification.candidateId===q.candidateId&&d.sourceCommit===pin.sourceCommit&&
   d.labCommit===q.lab.commit&&d.schemaHash===pin.schemaHash&&d.artifactSha256===pin.artifactSha256,'CANDIDATE_BINDING');
  checkDeployment(d,get('service'),get('revision'),get('promotion'),native);
- must(s.schema==='mekoniq-cloud-run-r5-smoke/1'&&s.accepted===false&&s.mode==='qualification'&&s.status==='tested'&&s.expectedCommit===pin.sourceCommit&&s.service===d.url&&s.origin===d.origin&&
-  ['health','electrical','stop'].every(k=>s.cases?.[k]==='tested'),'CLD06_NOT_TESTED');
+ must(s.schema==='mekoniq-cloud-run-r5-smoke/2'&&s.accepted===false&&s.mode==='qualification'&&s.expectedCommit===pin.sourceCommit&&s.service===d.url&&s.origin===d.origin&&
+  ['health','electrical','stop'].every(k=>s.cases?.[k]==='tested'),'CLD06_NOT_RUN');
  checkR5Health(get('health'),pin,d.origin);
  const e=get('electrical');
  must(e.projectDigest===cld04.project?.digest&&R5_CLOUD.options.every(o=>e.options?.[o]?.state===cld04.options[o].state&&e.options[o].digest===cld04.options[o].digest),'CLOUD_DIGEST_MISMATCH');
- const cloud=get('stop-report');
- must(cloud.schemaHash===pin.schemaHash,'REPORT_SCHEMA_MISMATCH');
- checkStopRun(cloud,'x86_64',pin.sourceCommit,cld04.stop.scheduledTick);
- must(same(compareStop(mac,cloud),s.macComparison),'MAC_COMPARISON_MISMATCH');
- must(same(s.cleanup,[{runId:cloud.manifest.runId,archived:true}]),'SMOKE_CLEANUP_INCOMPLETE');
+ const report=get('stop-report');must(report.schemaHash===pin.schemaHash,'REPORT_SCHEMA_MISMATCH');
+ must(same(s.cleanup,[{runId:report.manifest?.runId,archived:true}]),'SMOKE_CLEANUP_INCOMPLETE');
+ const mac=checkMacReference(q,r5Bytes,files,cld04);must(mac.report.manifest.runId!==report.manifest.runId,'MAC_REFERENCE_IS_CLOUD');
+ const verdict=evaluateCld06(mac,{report,records:cld06Records(report,files,'cloud')},pin.sourceCommit);
+ must(same(verdict,s.cld06),'CLD06_VERDICT_MISMATCH');
+ return verdict;
 }
+export function validateR5Supplement(q,r5Bytes,files){const v=readR5Supplement(q,r5Bytes,files);must(v.status==='tested',v.failure+(v.exceeded.length?':'+v.exceeded.join(','):''));}
 export const checkCloudRunR5Evidence=(read,r5Bytes)=>checkedSupplement(read,r5Bytes,validateR5Supplement);
+export const readR5SupplementVerdict=(read,r5Bytes)=>{let v=null;const issues=checkedSupplement(read,r5Bytes,(q,b,f)=>{v=readR5Supplement(q,b,f);});return {issues,verdict:v};};

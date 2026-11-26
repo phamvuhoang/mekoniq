@@ -834,6 +834,13 @@ class FixedStepRun implements ScenarioRun {
   }
   return {manifest,manifestSha256:sha256(Buffer.from(JSON.stringify(manifest))),complete:read.complete,issues:read.issues,metrics:physicsMetrics(read,this.physics.admission,{...navigation,policy:this.scene.policy.parameters})};
  }
+ /** One sealed chunk of the durable physics stream (GET /lab/v2/runs/:id/physics/<path>), exactly the bytes the manifest names; null when the run has no physics or the manifest does not name it. */
+ async physicsChunk(path:string):Promise<Buffer|null>{
+  if(!this.physics||this.closed)return null;
+  const ref=(this.physicsRec?.manifest()??await readPhysicsManifest(join(this.dir,'physics')).catch(()=>null))?.streams.flatMap(s=>s.chunks).find(c=>c.path===path);if(!ref)return null;
+  const bytes=await readFile(join(this.dir,'physics',ref.path));
+  if(bytes.length!==ref.bytes||createHash('sha256').update(bytes).digest('hex')!==ref.sha256)throw Error('PHYSICS_CHUNK_HASH');return bytes;
+ }
  async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;try{await this.physicsRec?.flush().catch(()=>{});await this.rec.flush().catch(()=>{});await w?.close('RUN_CLOSED');}finally{this.releaseSlot();await this.rec.close().catch(()=>{});await this.source.close();}}}
 }
 
