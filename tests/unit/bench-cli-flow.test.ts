@@ -285,6 +285,15 @@ describe('run',()=>{
    expect(()=>{(list[0] as {evaluate:unknown}).evaluate=()=>({status:'tested'});}).toThrow(TypeError);   // the cases themselves too
   }
  });
+ it('every case\'s requires and reads are frozen with it; the measurement cases keep their whole first-motion gate',()=>{
+  for(const c of BENCH_CASES){
+   const req=c.requires as string[],reads=c.reads as string[]|undefined;
+   expect(()=>{req.push('X');},c.id).toThrow(TypeError);
+   expect(()=>{req.length=0;},c.id).toThrow(TypeError);
+   if(reads)expect(()=>{reads.push('X');},c.id).toThrow(TypeError);
+  }
+  for(const c of MEASURE_CASES)expect(c.requires,c.id).toEqual(['KCF02','KCF04','KCF01']);   // one array is shared by all four: still whole after the attempts
+ });
  it('production passes no registry: the scripts call the flow without one, and nothing under scripts or packages/bench mutates BENCH_CASES',()=>{
   const read=(f:string)=>readFileSync(join(ROOT,f),'utf8'),bench=read('scripts/bench.mjs');
   expect([...bench.matchAll(/flow\.(run|sensors|identify|casesOf)\(([^;]*?)\);?$/gm)].map(m=>m[0])).toEqual([

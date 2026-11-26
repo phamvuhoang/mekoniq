@@ -4,7 +4,7 @@
 import type {LidarScanV1} from '../../../contracts/generated/navigation2d';
 import {hashJson} from '../../../lab-runtime/src/v2/hash';
 import {validateLidarScan,type BenchKitV1,type BenchPolicy,type Measurement} from '../contracts';
-import type {BenchCase,CaseScript,CaseTrace,CaseVerdict,ImuRow,LidarFrameRow,LidarScanRow} from './types';
+import {freezeCases,type BenchCase,type CaseScript,type CaseTrace,type CaseVerdict,type ImuRow,type LidarFrameRow,type LidarScanRow} from './types';
 
 const TICK_MS=20,CELLS=360,LD19_FRAME_LEN=47,WIT_FRAME_LEN=11,FRAMES_PER_IMU_SAMPLE=3,SCAN_CHECK_TICKS=250;   // KSN03 needs a few turns, not the soak
 /** assumed (the LD19 manual text gives no range; the research notes give 12 m and, for the STL-19P, 0.03 m): KSN02 measures them. */
@@ -110,4 +110,4 @@ const KSN05=sensorCase('KSN05',{evaluate(t,_k,p){
 }});
 
 /** KSN02, KSN06 and KSN07 are not here: they need operator prompts. */
-export const SENSOR_CASES:readonly BenchCase[]=Object.freeze([KSN01,KSN03,KSN04,KSN05].map(c=>Object.freeze(c)));   // frozen: no code can add, drop or edit a case
+export const SENSOR_CASES:readonly BenchCase[]=freezeCases([KSN01,KSN03,KSN04,KSN05]);   // frozen with its requires and reads: no code can add, drop or edit a case

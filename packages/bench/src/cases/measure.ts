@@ -8,9 +8,9 @@ import {BENCH_AMPLITUDES,benchTarget,type BenchSignal} from '../../../lab-runtim
 import type {BenchCycleRow,BenchKitV1,BenchPolicy,Measurement} from '../contracts';
 import {afterEnable,allEnabled,settleTicks} from './conformance';
 import {mean,median,std} from './sensors';
-import type {BenchCase,CaseTrace,CaseVerdict} from './types';
+import {freezeCases,type BenchCase,type CaseTrace,type CaseVerdict} from './types';
 
-const TICK_MS=20,REQUIRES=['KCF02','KCF04','KCF01'];
+const TICK_MS=20,REQUIRES=Object.freeze(['KCF02','KCF04','KCF01']);   // shared by the four measurement cases: frozen at its definition
 const tested=(ms:Measurement[]):CaseVerdict=>({status:'tested',reason:null,measurements:ms});
 const failed=(reason:string):CaseVerdict=>({status:'failed',reason,measurements:[]});
 const m=(caseId:string,id:string,value:number,unit:string,uncertaintyAbs:number,n:number):Measurement=>({id,value,unit,uncertaintyAbs,caseId,n});
@@ -177,4 +177,4 @@ const KMS05=measureCase('KMS05',{
  },
 });
 
-export const MEASURE_CASES:readonly BenchCase[]=Object.freeze([KMS01,KMS02,KMS04,KMS05].map(c=>Object.freeze(c)));   // frozen: no code can add, drop or edit a case
+export const MEASURE_CASES:readonly BenchCase[]=freezeCases([KMS01,KMS02,KMS04,KMS05]);   // frozen with its requires and reads: no code can add, drop or edit a case

@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';
 import {dirname,isAbsolute,join,relative} from 'node:path';
 import type {DescriptionSummary} from '../../../lab-runtime/src/engineering/catalog';
 import type {BenchKitV1} from '../contracts';
-import type {BenchCase,CaseTrace,CaseVerdict,ScanSlave} from './types';
+import {freezeCases,type BenchCase,type CaseTrace,type CaseVerdict,type ScanSlave} from './types';
 
 type Axis=BenchKitV1['axes'][number];
 /** Visible strings `scan` reads for KID02: software (firmware), hardware version, device name. */
@@ -94,4 +94,4 @@ const KID05=idCase('KID05',false,(a,s,d,out,_t,kit)=>{
  if(d&&!d.supportedModes.includes(mode))out.failed.push(`DESCRIPTION_MODE_MISSING ${a.axisId} ${mode}`);
 });
 
-export const IDENTITY_CASES:readonly BenchCase[]=Object.freeze([KID02,KID03,KID04,KID05].map(c=>Object.freeze(c)));   // frozen: no code can add, drop or edit a case
+export const IDENTITY_CASES:readonly BenchCase[]=freezeCases([KID02,KID03,KID04,KID05]);   // frozen with its requires and reads: no code can add, drop or edit a case

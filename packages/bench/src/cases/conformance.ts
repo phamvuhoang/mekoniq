@@ -6,7 +6,7 @@ import {diffDriveBaseV1,type DiffDriveBaseConfig} from '../../../lab-runtime/src
 import {BASE_CONTROLLER_DEFAULTS} from '../../../lab-runtime/src/v2/control/drive-run';
 import type {DriveFeedbackV1} from '../../../lab-runtime/src/v2/control/drive-io';
 import {validateBenchTick,type BenchKitV1,type BenchPolicy,type BenchTickRecord,type Measurement} from '../contracts';
-import type {BenchCase,CaseScript,CaseTrace,CaseVerdict} from './types';
+import {freezeCases,type BenchCase,type CaseScript,type CaseTrace,type CaseVerdict} from './types';
 
 const TICK_MS=20;
 export type Part={target?:number|number[];enable?:boolean;quickStop?:boolean;faultReset?:boolean;/** repeat the last seq: a stale command */stale?:boolean};
@@ -196,4 +196,4 @@ const KCF07b=torqueCase('KCF07b',{
 });
 
 /** The order of this package (spec B1 §6): KCF02 first, KCF07b last because its silence ends the session. */
-export const CONFORMANCE_CASES:readonly BenchCase[]=Object.freeze([KCF02,trackingCase(KCF03_SIGNALS),KCF05,KCF06,KCF07a,KCF08,KCF10,KCF07b].map(c=>Object.freeze(c)));   // frozen: no code can add, drop or edit a case
+export const CONFORMANCE_CASES:readonly BenchCase[]=freezeCases([KCF02,trackingCase(KCF03_SIGNALS),KCF05,KCF06,KCF07a,KCF08,KCF10,KCF07b]);   // frozen with its requires and reads: no code can add, drop or edit a case

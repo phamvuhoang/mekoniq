@@ -74,7 +74,10 @@ describe('a session on the simulated slave, end to end',()=>{
    if(sent&&!second&&/SIGTERM: stopping/.test(text)){second=true;child.kill('SIGTERM');}
   });
   child.stderr.on('data',(d:Buffer)=>{text+=String(d);});
-  const code=await new Promise<number|null>(ok=>child.once('close',ok));
+  // a bound of its own: if a line never appears, the child is killed and the test fails instead of leaving a process behind
+  let timedOut=false;const bound=setTimeout(()=>{timedOut=true;child.kill('SIGKILL');},60_000);
+  const code=await new Promise<number|null>(ok=>child.once('close',ok));clearTimeout(bound);
+  expect(timedOut,`no stop within 60 s: ${text}`).toBe(false);
   expect(code,text).toBe(1);expect(text).toMatch(/SIGTERM: stopping/);expect(text).toMatch(/stopping; wait/);expect(text).toMatch(/bus worker stopped: \{"event": ?"stopped"/);expect(text).toMatch(/OPERATOR_ABORT/);expect(text).toMatch(/conformance part written/);
   expect(readFileSync(join(out,'manifest.json'),'utf8')).toMatch(/session\.json/);
  },120_000);

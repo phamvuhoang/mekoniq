@@ -1,4 +1,4 @@
-// Bench case types (K04). Types only: the cases are in conformance.ts, the loop that runs them is session.ts.
+// Bench case types (K04), and freezeCases. The cases are in conformance.ts and its siblings, the loop that runs them is session.ts.
 import type {DriveCommandV1,DriveFault,DriveFeedbackV1} from '../../../lab-runtime/src/v2/control/drive-io';
 import type {LidarScanV1} from '../../../contracts/generated/navigation2d';
 import type {DescriptionSummary} from '../../../lab-runtime/src/engineering/catalog';
@@ -35,11 +35,13 @@ export interface CaseScript{
  meta?:Record<string,unknown>;
 }
 export interface BenchCase{
- id:string;needsTorque:boolean;requires:string[];
+ id:string;needsTorque:boolean;requires:readonly string[];
  /** The case reads the sensors worker's frames: without one in the context it is not_run SENSORS_UNAVAILABLE. */
  needsSensors?:boolean;
  /** Objects `scan` must read for this case's evaluate (they reach it through CaseTrace.objects). */
- reads?:string[];
+ reads?:readonly string[];
  script(kit:BenchKitV1,policy:BenchPolicy):CaseScript;
  evaluate(trace:CaseTrace,kit:BenchKitV1,policy:BenchPolicy):CaseVerdict;      // pure: no I/O, no clock, no randomness
 }
+/** The one way a case group is built: the list, every case and its `requires` and `reads` frozen (Object.freeze is shallow; a shared array is frozen once, for all). */
+export const freezeCases=(cases:BenchCase[]):readonly BenchCase[]=>Object.freeze(cases.map(c=>{Object.freeze(c.requires);if(c.reads)Object.freeze(c.reads);return Object.freeze(c);}));
