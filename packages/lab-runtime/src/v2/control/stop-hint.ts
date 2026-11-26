@@ -18,7 +18,7 @@ function variantOf(r:StopReportV1):Variant|null{
 }
 const identityOk=(i:StopRunIdentity|undefined):i is StopRunIdentity=>!!i&&typeof i.scenarioId==='string'&&Number.isInteger(i.seed)&&typeof i.trigger?.kind==='string'&&typeof i.trigger.value==='number'&&Object.hasOwn(TRAY_EXPERIMENTS,i.experimentId);
 /** the experiment without its drive: two experiments that agree here differ only in the drive variant */
-const withoutDrive=(id:string)=>{const {driveExperimentId:_d,comparedWith:_c,...rest}=TRAY_EXPERIMENTS[id as keyof typeof TRAY_EXPERIMENTS] as {driveExperimentId?:unknown;comparedWith?:unknown};return hashJson(rest);};
+const withoutDrive=(id:string)=>{const rest:Record<string,unknown>={...TRAY_EXPERIMENTS[id as keyof typeof TRAY_EXPERIMENTS]};delete rest.driveExperimentId;delete rest.comparedWith;return hashJson(rest);};
 const others=(r:StopReportV1)=>hashJson(r.decidingParameters.filter(p=>p.id!=='onDisable'&&p.id!=='brakeTorqueNm').map(p=>[p.id,p.value]).sort());
 function label(fn:StopReportV1['function'],v:Variant,withVariant:boolean):Hint{
  const n=v.onDisable==='brake'?fmt(v.brakeTorqueNm):'';

@@ -68,6 +68,7 @@ test('no new HEAD reader stands in for the source commit',()=>{
     'scripts/lab-algorithm.mjs':'checker identity of the checkout, recorded beside the subject commit',
     'scripts/export-arm-controller.mjs':'arm-controller package version',
     'scripts/r4-cld02.sh':'native CI container, runs on the source commit before the pin commit',
+    'scripts/r5-cld05.sh':'native CI container; refuses unless HEAD is the path-based source commit',
     'scripts/repo-identity.mjs':'standalone Lab checkout',
     'scripts/release.mjs':'platform release, no Lab pair',
     'scripts/restore-rehearsal.mjs':'platform release, no Lab pair',
