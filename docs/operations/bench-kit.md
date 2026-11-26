@@ -38,12 +38,12 @@ Theo thứ tự một người đi quanh bàn:
 - [ ] Aptomat trên nguồn chính; drive và motor nối đất.
 - [ ] Nguồn DC: nguồn động lực và nguồn logic tách nhau; nút dừng khẩn cắt nhánh động lực. Nguồn chọn theo mục cấp nguồn và mục hãm tái sinh của manual đã ghim.
 - [ ] Bộ kit 220 VAC: đấu nối do người có chuyên môn điện làm; file phiên khai `mainsQualified: true`. Thiếu thì `run` từ chối.
-- [ ] Nút dừng khẩn cắt nguồn động lực của **cả hai** drive, độc lập với máy tính. Nên để nguồn logic vẫn sống khi bấm (drive ở lại trên bus, báo trạng thái). Đã thử nút hôm nay.
+- [ ] Nút dừng khẩn cắt nguồn động lực của **cả hai** drive, độc lập với máy tính. Nên để nguồn logic vẫn sống khi bấm (drive ở lại trên bus, báo trạng thái). Nếu nút cắt cả nguồn logic thì KCF01 ghi thời gian về nghỉ là không quan sát được và dựa vào lời khai của bạn. Đã thử nút hôm nay.
 - [ ] Motor kẹp chặt xuống bàn. Trục trần, hoặc một đĩa nhẹ có vạch dấu. Không có gì vướng vào trục: dây, dụng cụ, tay áo.
 - [ ] Một người ngồi ở bàn phím, tay với tới nút dừng khẩn. Buổi enable đầu tiên có thêm một người quan sát.
 - [ ] Đọc các mục manual liệt kê trong `readManualSections` của file phiên.
 
-Phần mềm tự giữ: `identify` chạy worker chỉ đọc; `run` đòi bản nhận dạng của đúng các số serial đang nối; giới hạn mô-men và tốc độ được ghi vào drive rồi đọc lại trước OP; mã bốn chữ số cho mỗi lần chạy có enable; phím bất kỳ trong lúc chạy gửi dừng nhanh rồi tắt enable; sau lỗi, dừng nhanh, dừng khẩn hay mất worker thì bộ case dừng và không tự chạy lại.
+Phần mềm tự giữ: `identify` chạy worker chỉ đọc; `run` đòi phần nhận dạng sạch của đúng các số serial đang nối; giới hạn mô-men và tốc độ được ghi vào drive rồi đọc lại trước OP; mã bốn chữ số **một lần cho mỗi lần `run`** (xem §6); ngoài lúc đang có câu hỏi, phím bất kỳ gửi dừng nhanh rồi tắt enable (khi đang có câu hỏi, phím đi vào câu trả lời và chỉ Ctrl-C dừng); sau một case trượt, lỗi, dừng nhanh, dừng khẩn hay mất worker thì bộ case dừng và không tự chạy lại.
 
 ## 5. File phiên
 
@@ -100,20 +100,20 @@ node scripts/bench.mjs verify --record ~/bench-runs/D/record                    
 ```
 
 - `identify` (buổi 1) chạy worker chỉ đọc: quét bus, đọc định danh, serial, firmware, các object mà hồ sơ dựa vào, ánh xạ PDO lúc khởi động, 6502h; chấm KID02–KID05. Mâu thuẫn giữa thiết bị và tài liệu dừng buổi enable cho tới khi hồ sơ có revision mới.
-- `run` đọc lại file phiên, kiểm lời khai, đòi phần nhận dạng **sạch** (KID02–KID05 đều `tested`, không thì `BENCH_IDENTITY_NOT_CLEAN` kèm danh sách, không worker nào chạy), quét bus và so serial từng vị trí với phần nhận dạng, rồi mới cấu hình và sang OP. Mỗi case có mô-men hỏi mã bốn chữ số trên màn hình: gõ đúng mã đó. Câu hỏi giữa case (ví dụ độ lệch vạch dấu) trả lời ở cùng bàn phím.
+- `run` đọc lại file phiên, kiểm lời khai, đòi phần nhận dạng **sạch** (KID02–KID05 đều `tested`, không thì `BENCH_IDENTITY_NOT_CLEAN` kèm danh sách, không worker nào chạy), quét bus và so serial từng vị trí với phần nhận dạng, rồi mới cấu hình và sang OP. Trước case có mô-men đầu tiên, nó hỏi mã bốn chữ số trên màn hình: gõ đúng mã đó. **Mã chỉ hỏi một lần cho mỗi lần `run`**, và chỉ hỏi lại sau một lần dừng (mà lần dừng đó đã kết thúc bộ). Sau khi mã được nhận, các case của bộ nối tiếp nhau **không có lúc dừng chờ nào**: trục có thể chuyển động lại ngay sau case trước. Giữ tay ở nút dừng khẩn suốt cả lần chạy. Với `policy-v1.json`, kịch bản các case tuân thủ dài tối đa 31 983 nhịp 20 ms (khoảng 10 phút 40 giây, trong đó KCF10 chạy bền 30 100 nhịp); các case đo thêm tối đa 9 884 nhịp (khoảng 3 phút 20 giây). Đó là cận trên của nhịp có kịch bản, chưa tính chuỗi dừng và lúc chờ câu trả lời; thời gian thật thay đổi. Câu hỏi giữa case (ví dụ độ lệch vạch dấu) trả lời ở cùng bàn phím; trong lúc chờ, trục được giữ ở lệnh cuối hoặc đã tắt, tùy câu hỏi.
 - **Thứ tự chuyển động đầu tiên là cố định: KCF02 → KCF04 → KCF01**, cả ba đạt trước mọi case khác trong cùng buổi. Buổi đo là một buổi mới (drive đã tắt nguồn, thiết lập tạm đã ghi lại), nên `--suite measure` chạy lại ba case này trước các case đo; chúng nằm trong phần `measure`. Khi một case có mặt ở nhiều phần, bản ghi lấy trạng thái tệ nhất (`failed` > `not_run` > `unsupported_by_device` > `tested`). KCF02 enable khi đứng yên (không có chuyển động nào trước khi biết drive vào và ra enable đúng); KCF04 kiểm đơn vị và chiều quay ở tốc độ bò (một hệ số đơn vị sai thì mọi tốc độ sau đó sai); KCF01 thử nút dừng khẩn ở tốc độ thấp khi đơn vị đã đúng. Phần mềm giữ thứ tự này bằng `requires` của từng case; không có cờ bỏ qua.
 - `sensors`: worker cảm biến chỉ đọc; worker bus cũng được cấu hình (worker chỉ đọc không cho `step`) nhưng không có cấp phép, nên không lệnh enable nào ra bus. Chỉ chấp nhận trên slave giả (xem §3). Một case cảm biến trượt không dừng bộ (không có mô-men).
 - Trong `run`, **một case trượt là bộ dừng**, dù lý do do bộ chạy hay do phép chấm của case: như §7. `not_run` và `unsupported_by_device` không dừng bộ; `requires` của case sau tự quyết.
-- `measure` ghi bộ dữ liệu hiệu chuẩn vào `<out>/calibration/` khi có ít nhất một trial của KMS01 `tested`. Nhãn do phần mềm suy ra: `synthetic` khi worker chạy slave giả, `measured` chỉ khi bus thật và phiên có lời chứng.
+- `measure` ghi bộ dữ liệu hiệu chuẩn vào `<out>/calibration/` khi có ít nhất một trial của KMS01 `tested`. Nhãn do phần mềm suy ra từ worker đã chạy: `synthetic` trên slave giả, `measured` trên bus thật (lời chứng lấy từ file phiên). Xuất bộ dữ liệu mà lỗi thì exit 1 với mã lỗi, không có gì dưới `calibration/`.
 - `record-bench` không chạy lại bộ test nào: nó tính lại verdict của từng case từ trace đã lưu, rồi đọc lại bản ghi vừa viết; có issue thì xóa output.
-- JSON cấp trên của bản ghi vào `docs/implementation/evidence/bench/<candidate>/`; trace thô ở `evidence-archive/`, ngoài Git.
+- Bản ghi được ghép **ngoài repository** (`record-bench` từ chối `--out` trong repo). Sau đó JSON cấp trên của nó được chép tay vào `docs/implementation/evidence/bench/<candidate>/`; trace thô ở `evidence-archive/`, ngoài Git.
 
 ## 7. Khi bộ case dừng
 
-Sau một case trượt, một lỗi, dừng nhanh, phím bấm, dừng khẩn hay mất worker, `run` dừng ngay: không case nào sau đó bắt đầu, chúng ghi `not_run SUITE_STOPPED_AFTER_<lý do>`, phần vẫn được ghi, exit 1. Công cụ không tự cấp phép lại. Nó in case dừng và lệnh chạy tiếp:
+Sau một case trượt, một lỗi, dừng nhanh, phím bấm, dừng khẩn hay mất worker, `run` dừng ngay: không case nào sau đó bắt đầu, chúng ghi `not_run SUITE_STOPPED_AFTER_<id case đã dừng>` (lý do của case đó ghi bên cạnh trong trace), phần vẫn được ghi, exit 1. Tín hiệu SIGINT/SIGTERM thứ hai trong lúc đang dừng bị bỏ qua (in "stopping; wait"): chờ worker dừng xong. Công cụ không tự cấp phép lại. Nó in case dừng và lệnh chạy tiếp:
 
 1. Tìm nguyên nhân trên bàn trước (đọc lý do, xem drive, xem dây).
-2. Chạy tiếp trong cùng phần: `run … --out <cùng thư mục> --from <case đã dừng>`. Các case trước đó phải `tested` trong phần đã lưu, không thì `FROM_EARLIER_NOT_TESTED`. Kết quả cũ được giữ, case từ `--from` trở đi chạy lại và gõ mã cấp phép mới.
+2. Chạy tiếp trong cùng phần: `run … --out <cùng thư mục> --from <case đã dừng>`. Các case trước đó phải `tested` trong phần đã lưu, không thì `FROM_EARLIER_NOT_TESTED`. Phần đã lưu, phần nhận dạng và bus lúc này phải cùng các số serial ở từng vị trí, không thì `BENCH_IDENTITY_CHANGED` và phần đã lưu giữ nguyên. Kết quả cũ được giữ, case từ `--from` trở đi chạy lại và gõ mã cấp phép mới.
 
 ## 8. Chuyển động bất ngờ, mùi khét, tiếng lạ, nút dừng khẩn không cắt mô-men
 
@@ -121,7 +121,7 @@ Dừng tất cả: bấm nút dừng khẩn, ngắt aptomat nếu nút không c�
 
 ## 9. Mã từ chối
 
-Exit 2: dùng sai lệnh hoặc từ chối trước khi worker chạy. Exit 1: một case không `tested`, hoặc từ chối dựa trên bằng chứng.
+Exit 0: mọi case `tested`. Exit 1: bị từ chối hoặc thất bại lúc chạy, kể cả các từ chối của `run` trước khi worker chạy (lời khai, nhận dạng, `--from`) và worker không đóng được. Exit 2: dùng sai lệnh (tùy chọn; file kit, policy, phiên hoặc file câu trả lời test không đọc được hay sai; `--bus`; `--out`).
 
 | Mã | Ý nghĩa | Việc phải làm |
 |---|---|---|
@@ -132,13 +132,18 @@ Exit 2: dùng sai lệnh hoặc từ chối trước khi worker chạy. Exit 1: 
 | `OUT_EXISTS` | Thư mục kết quả đã có | Chọn thư mục mới, hoặc `--from` để chạy tiếp |
 | `OUTPUT_MUST_BE_OUTSIDE_REPOSITORIES` | `--out` nằm trong một repository | Ghi ra ngoài, ví dụ `~/bench-runs` |
 | `SESSION_ESTOP_REQUIRED`, `SESSION_CLAMP_REQUIRED`, `SESSION_POWER_OWNER_REQUIRED`, `SESSION_MAINS_QUALIFICATION_REQUIRED` | Lời khai không cho phép mô-men | Làm cho điều đó đúng trên bàn, rồi mới sửa file phiên |
-| `BENCH_IDENTITY_CHANGED` | Serial trên bus khác phần nhận dạng, phần nhận dạng của kit khác hoặc bị sửa, hoặc định danh slave khác hồ sơ | Kiểm dây và thứ tự slave; thiết bị đã đổi thì chạy `identify` lại |
+| `BENCH_IDENTITY_CHANGED` | Một trong các phép so sau lệch: manifest của phần nhận dạng không khớp file của nó; digest kit của phần nhận dạng khác kit này; serial từng vị trí trên bus lúc quét khác phần nhận dạng; với `--from`, serial của phần đã lưu khác phần nhận dạng; worker: lúc `configure`, mã hãng, mã sản phẩm hoặc revision ở một vị trí khác `expect` của kit | Kiểm dây và thứ tự slave; thiết bị đã đổi thì chạy `identify` lại và dùng thư mục mới |
+| `BENCH_KIT_CHANGED` | Worker đọc ra một kit khác kit mà CLI đã kiểm (file bị sửa giữa chừng) | Không sửa file kit khi đang chạy; chạy lại |
+| `BENCH_TEST_ANSWERS_INVALID` (exit 2) | File của `BENCH_TEST_ANSWERS` không đọc được hoặc không phải object JSON | Chỉ dùng trong test; bỏ biến này |
+| `CASE_UNKNOWN` | Phần đã lưu (`--from`) có một case mà công cụ không biết | Không sửa tay phần kết quả; chạy vào thư mục mới |
+| `WORKER_CLOSE_FAILED` | Worker không đóng được; phần vẫn được ghi trước | Kiểm còn tiến trình `bench_worker` không; xem drive |
+| `calibration dataset export FAILED: <mã>` (`measure`) | Xuất bộ dữ liệu hiệu chuẩn lỗi (`SYNTHETIC_CANNOT_BE_MEASURED`, `CYCLE_CLOCK_MISMATCH`, `TRIAL_SHORT`, `VELOCITY_NOT_MAPPED`, `BACKEND_MISMATCH`, `CONFIG_DIGEST_MISMATCH`…) | Báo lỗi; phần đo vẫn dùng được, không có bộ dữ liệu |
 | `BENCH_IDENTITY_NOT_CLEAN` | Một trong KID02–KID05 của phần nhận dạng không `tested` (danh sách kèm lý do) | Sửa hồ sơ bằng revision mới (hoặc tìm vì sao không đọc được), chạy `identify` lại |
 | `FROM_EARLIER_NOT_TESTED` | `--from` mà các case trước chưa `tested` trong phần đã lưu | Chạy tiếp từ case đầu tiên chưa đạt |
 | `PART_MANIFEST_MISMATCH`, `KIT_DIGEST_MISMATCH`, `POLICY_DIGEST_MISMATCH` | Phần đã lưu bị sửa, hoặc của kit hay policy khác | Không sửa tay phần kết quả; chạy vào thư mục mới |
 | `BENCH_NOT_ARMED` | Không gõ đúng mã (ba lần), hoặc stdin không phải terminal | Chạy ở terminal của máy bàn thử, gõ mã hiện trên màn hình |
 | `BENCH_PROMPT_UNAVAILABLE`, `PROMPT_TIMEOUT` | Case cần câu trả lời mà không có terminal, hoặc 60 s không trả lời | Chạy ở terminal; trả lời trong lúc trục được giữ |
-| `OPERATOR_ABORT` | Bạn bấm phím hoặc Ctrl-C, hoặc tiến trình nhận SIGINT, SIGTERM, SIGHUP (phần vẫn được ghi) | Xem §7 |
+| `OPERATOR_ABORT` | Bạn bấm phím (ngoài lúc đang có câu hỏi) hoặc Ctrl-C, hoặc tiến trình nhận SIGINT, SIGTERM, SIGHUP (phần vẫn được ghi) | Xem §7 |
 | `UNEXPECTED_FAULT` | Drive báo lỗi ngoài kịch bản | Đọc mã lỗi của drive và manual; xem §7 |
 | `HOST_TICK_LATE` | Nhịp 20 ms trễ quá `tickLatenessMaxMs`: lỗi của máy chủ | Sửa máy (quyền ưu tiên, kernel, C-state); không nới policy |
 | `BENCH_STOP_INCOMPLETE` | Chuỗi dừng không đưa mọi tầng công suất về tắt | Bấm nút dừng khẩn; kiểm drive trước khi làm gì khác |
@@ -152,7 +157,7 @@ Exit 2: dùng sai lệnh hoặc từ chối trước khi worker chạy. Exit 1: 
 | `BENCH_NOT_OPERATIONAL`, `BENCH_SYNC_LOST` | Drive không vào OP, hoặc mất đồng bộ | Kiểm chu kỳ và kiểu đồng bộ theo ESI; không nới ngưỡng của drive |
 | `BENCH_PORT_UNAVAILABLE` | Không mở được cổng nối tiếp của cảm biến | Kiểm cáp, nhóm `dialout`, `doctor` |
 | `SENSORS_UNAVAILABLE` | Case cảm biến chạy không có worker cảm biến | Dùng `sensors` |
-| `SUITE_STOPPED_AFTER_<lý do>` | Case không chạy vì bộ đã dừng ở case trước | Xem §7 |
+| `SUITE_STOPPED_AFTER_<id case>` | Case không chạy vì bộ đã dừng ở case đó (lý do ghi trong trace, `stoppedBy`) | Xem §7 |
 | `SOURCE_DIRTY` (`record-bench`) | Cây source có thay đổi chưa commit | Commit hoặc bỏ thay đổi; bản ghi gắn với một commit |
 | `SESSION_DECLARATION_MISSING`, `SERIAL_SET_MISMATCH`, `VERDICT_NOT_REPRODUCED`, `RECORD_READBACK_FAILED` (`record-bench`) | Phần thiếu lời khai, các phần không cùng bộ serial, kit hay policy, verdict không tính lại được, bản ghi đọc lại có issue | Không ghép các phần đó; chạy lại buổi thiếu |
 | `CHECKSUM_MISMATCH`, `FILE_MISSING`, `FILE_UNEXPECTED` (`verify`) | File của bản ghi bị sửa, thiếu hoặc thừa | Bản ghi không dùng được; lấy lại từ archive |
