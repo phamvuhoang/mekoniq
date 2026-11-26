@@ -107,7 +107,7 @@
           "properties": {
             "code": {
               "type": "string",
-              "pattern": "^(BENCH|WORKER)_[A-Z0-9_]+$"
+              "pattern": "^(BENCH|WORKER|DRIVE)_[A-Z0-9_]+$"
             },
             "detail": {
               "type": "string"

@@ -218,16 +218,17 @@ def test_the_ac_kit_on_sm_sync_does_not_reach_op():
 
 
 # ---- worker faults override the drive state ---------------------------------------------------------------------------------------------------------------------
-def test_command_timeout_is_latched_by_the_worker_and_cleared_only_by_a_reset_edge():
+def test_command_timeout_trips_on_the_5th_tick_without_a_fresh_seq_as_drive_group_does_and_clears_only_on_a_reset_edge():
     r = Rig()
     r.until(lambda x: states(x) == ["enabled"] * 2, target=1.0, faultReset=True)
-    for k in range(1, 6):   # the last new seq was tick 1 of 6; DriveGroup trips on the 5th tick without one (watchdogTicks 5), and so does the worker
+    # The contract is DriveGroup's: watchdogTicks 5 trips on the 5th tick without a new seq, not the 6th. Do not "fix" this to 6.
+    for k in range(1, 6):
         res = r.step(target=1.0, fresh=False, faultReset=True)
         if k < 5:
             assert states(res) == ["enabled"] * 2, k
     assert states(res) == ["fault"] * 2 and [f["fault"] for f in res["feedback"]] == ["COMMAND_TIMEOUT"] * 2
     assert res["vendor"][0]["statusword"] & 0x4F != 0x08   # the slave itself is not in Fault
-    assert controlwords(res)[:2] == [0x0002, 0x0000]
+    assert controlwords(res)[0] == 0x0002   # the quick-stop sequence starts in the tripping cycle (its full history: test_the_quick_stop_ramp_is_held_*)
     for _ in range(5):   # faultReset held at 1 with new seqs: no edge, no clear, nothing toward enable
         res = r.step(target=1.0, faultReset=True)
         assert states(res) == ["fault"] * 2 and not set(controlwords(res)) & ADVANCING
@@ -250,7 +251,7 @@ def test_overspeed_is_latched_by_the_worker(route):
     r.bus.force_velocity(1, None)
     res = r.step(target=1.0)   # enable still asked, the latch holds: nothing toward enable on the faulted axis
     assert res["feedback"][0]["state"] == "fault" and not set(controlwords(res)) & ADVANCING
-    for _ in range(10):
+    for _ in range(60):   # the quick-stop ramp from 26 rad/s runs about 55 ticks before the cause (speed) is gone
         res = r.step(enable=False)
     assert res["feedback"][0]["fault"] == "OVERSPEED"
     res = r.step(enable=False, faultReset=True)
@@ -305,7 +306,7 @@ def test_enable_delay_cycles_delays_operation_enabled():
 
 
 # ---- quick stop -------------------------------------------------------------------------------------------------------------------------------------------------------
-@pytest.mark.parametrize("option,after", [(2, "disabled"), (6, "quick_stop")])
+@pytest.mark.parametrize("option,after", [(2, "disabled"), (6, "disabled")])   # 6: Quick stop active until rest, then the worker disables voltage (controller ruling, K03 concern round)
 def test_quick_stop_follows_605a_and_never_enables_while_commanded(option, after):
     r = Rig(kit(quickStopOption=option))
     r.enable()
@@ -337,7 +338,7 @@ def test_the_last_gate_blocks_enabling_words_on_its_own(monkeypatch, why):
     monkeypatch.setattr(session_module, "next_controlword", lambda *a: 0x000F)   # a broken table: the gate alone must hold
     if why == "latched":
         r.s.latched = ["COMMAND_TIMEOUT"] * 2
-        monkeypatch.setattr(session_module, "QUICK_STOP_CW", 0x000F)
+        monkeypatch.setattr(session_module, "quick_stop_word", lambda *a, **k: 0x000F)
     if why == "read_only":
         r.s.read_only = True
     if why == "silenced":
@@ -477,3 +478,109 @@ def test_an_internal_fault_answers_worker_lost_and_still_stops(tmp_path):
     out = [json.loads(x) for x in p.stdout.splitlines()]
     assert out[-1]["ok"] is False and out[-1]["error"]["code"] == "WORKER_LOST" and p.returncode == 1
     assert json.loads(p.stderr.strip().splitlines()[-1]) == {"event": "stopped", "controlwords": [0, 0]}
+
+
+# ---- the quick-stop ramp is never cut short (K03 concern round, change 2) --------------------------------------------------------------------------------------------
+REST = 0.05 * RAW   # channel.quickStopRestRadS default, in raw units
+
+
+def record(rig):
+    """Every exchange of the rig as (controlword, statusword, velocityRaw) of slave 1."""
+    rec, orig = [], rig.bus.exchange
+
+    def ex(outs):
+        ins = orig(outs)
+        rec.append((outs[0]["controlword"], ins[0]["statusword"], ins[0]["velocityRaw"]))
+        return ins
+    rig.bus.exchange = ex
+    return rec
+
+
+def at_speed(rig):
+    rig.enable()
+    for _ in range(30):
+        res = rig.step(target=5.0)
+    assert res["feedback"][0]["velocityRadS"] == pytest.approx(5.0, abs=0.01)
+
+
+def trigger(rig, how):
+    if how == "quickStop":
+        for _ in range(40):
+            rig.step(target=5.0, quickStop=True)
+    elif how == "watchdog":
+        for _ in range(45):
+            rig.step(target=5.0, fresh=False)
+    else:
+        rig.do("stop")
+
+
+def assert_held(rec, cpt=5):
+    cws = [c for c, _, _ in rec]
+    first = cws.index(0x0002)
+    j = cws.index(0x0000, first)
+    assert j - first >= 10 and set(cws[first:j]) == {0x0002}                     # 0x0002 ... 0x0002, several ticks of it
+    left = rec[j - 1][1] & 0x6F != 0x0007                                          # (a) the drive left Quick stop active by itself
+    rested = all(abs(v) < REST for _, _, v in rec[j - cpt:j])                      # (b) below the rest threshold for a whole tick
+    assert left or rested, rec[j - cpt - 1:j + 1]
+
+
+@pytest.mark.parametrize("option", [2, 6])
+@pytest.mark.parametrize("how", ["quickStop", "watchdog", "stop"])
+def test_the_quick_stop_ramp_is_held_until_rest_or_until_the_drive_leaves(option, how):
+    r = Rig(kit(quickStopOption=option))
+    at_speed(r)
+    rec = record(r)
+    trigger(r, how)
+    assert_held(rec)
+    assert not any(s.coasted_from_quick_stop for s in r.bus.slaves)
+    if how != "stop":
+        assert r.do("stop")["controlwords"] == [0, 0]
+
+
+@pytest.mark.parametrize("how", ["quickStop", "stop"])
+def test_quick_stop_hold_ms_is_live_and_ends_the_hold_by_time(how):
+    k = kit(quickStopOption=6)
+    k["channel"]["quickStopHoldMs"] = 40
+    r = Rig(k)
+    at_speed(r)
+    rec = record(r)
+    trigger(r, how)
+    cws = [c for c, _, _ in rec]
+    first = cws.index(0x0002)
+    assert cws.index(0x0000, first) - first == 10                                  # 40 ms = 10 cycles of 4 ms, then disable voltage while still moving
+    assert r.bus.slaves[0].coasted_from_quick_stop
+
+
+def test_stop_with_the_default_hold_stays_inside_its_ack_deadline():
+    r = Rig(kit(quickStopOption=6, quickStopDecelRawPerCycle=1))   # a drive that barely decelerates: only the hold time ends the stop
+    at_speed(r)
+    rec = record(r)
+    t0 = __import__("time").monotonic()
+    assert r.do("stop")["controlwords"] == [0, 0]
+    assert __import__("time").monotonic() - t0 < 1.0
+    assert len(rec) * 4 <= 2000 + 2 * 4                                           # the default hold of 2000 ms bounds the bus time too, far inside the 5 s ACK
+
+
+# ---- the fault map travels in the kit (change 3) and the working-counter threshold (change 4) ------------------------------------------------------------------------
+@pytest.mark.parametrize("raw,fault", [(0x7500, "COMMAND_TIMEOUT"), (0x2222, "EXTERNAL_TRIP"), (0x1234, "EXTERNAL_TRIP")])
+def test_the_kit_fault_map_names_drive_errors_and_keeps_the_raw_code(raw, fault):
+    k = kit()
+    k["axes"][0]["faultMap"] = {"0x7500": "COMMAND_TIMEOUT", "0x2222": "OTHER"}
+    r = Rig(k)
+    r.enable()
+    r.bus.inject_error(1, raw)
+    res = r.until(lambda x: x["feedback"][0]["state"] == "fault", n=5)
+    assert res["feedback"][0]["fault"] == fault and res["vendor"][0]["errorCode"] == raw
+
+
+@pytest.mark.parametrize("knob,lost,expect", [(2, 3, "FEEDBACK_LOSS"), (None, 3, None)])
+def test_wkc_error_cycles_to_loss_is_a_kit_knob(knob, lost, expect):
+    k = kit(events=[{"atCycle": 40, "do": "wkc_loss", "cycles": lost}])
+    if knob:
+        k["channel"]["wkcErrorCyclesToLoss"] = knob
+    r = Rig(k)
+    r.enable()
+    faults = set()
+    for _ in range(12):
+        faults |= {f["fault"] for f in r.step()["feedback"]}
+    assert (expect in faults) if expect else faults == {None}

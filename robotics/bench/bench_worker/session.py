@@ -9,13 +9,13 @@ import time
 
 from . import BenchError
 from .channel import CommandChannel
-from .cia402 import ADVANCING, DISABLED, ENABLED, ENABLE_OPERATION, FAULT, QUICK_STOP_CW, neutral_fault, neutral_state, next_controlword
+from .cia402 import ADVANCING, DISABLED, ENABLED, ENABLE_OPERATION, FAULT, QUICK_STOP, neutral_fault, neutral_state, next_controlword
+from .stopseq import quick_stop_word
 from .units import Unwrap32, position_from_raw, torque_from_raw, velocity_from_raw, velocity_to_raw
 
 MAX_SPEED_RADS, MAX_TORQUE_PERMILLE = 30, 300      # the hard ceiling of B1 (spec B1 §6): changing it is a reviewed code change, never a flag
 OVERSPEED_FACTOR = 1.2                             # the virtual drive's factor (spec B1 §5.2)
-WKC_ERROR_CYCLES_TO_LOSS = 5                       # policy-v1 `wkcErrorCyclesToLoss`; ponytail: a constant until the TS side passes the policy at configure
-STOP_MAX_CYCLES = 250
+CHANNEL_DEFAULTS = {"quickStopRestRadS": 0.05, "quickStopHoldMs": 2000, "wkcErrorCyclesToLoss": 5}   # kit `channel` knobs: tuning for real hardware, not code
 MODE_CODE = {"csv": 9, "pv": 3}
 MAPPING = ("1C12", "1C13")                         # plus 1600-17FF and 1A00-1BFF
 WRITE_OPS = ("configure", "start", "silence", "imuConfigure")
@@ -39,14 +39,17 @@ class BenchSession:
         b, lim, ch = kit["bus"], kit["limits"], kit["channel"]
         self.cycle_ms, self.cpt = b["cycleMs"], 20 // b["cycleMs"]
         self.max_speed = lim["maxSpeedRadS"]
+        knobs = CHANNEL_DEFAULTS | {k: ch[k] for k in CHANNEL_DEFAULTS if k in ch}
+        self.rest_rads, self.hold_ms, self.wkc_to_loss = knobs["quickStopRestRadS"], knobs["quickStopHoldMs"], knobs["wkcErrorCyclesToLoss"]
         self.channels = [CommandChannel(accel_rad_s2=lim["maxAccelRadS2"], max_speed_rad_s=min(self.max_speed, MAX_SPEED_RADS), cycles_per_tick=self.cpt,
                                         cycle_s=self.cycle_ms / 1000, watchdog_ticks=ch["watchdogTicks"], interpolation=ch["interpolation"]) for _ in self.axes]
         self.phase, self.tick, self.cycle_no, self.identity_ok, self.allowed = "new", 0, 0, False, set()
         self.sw, self.cw, self.latched, self.wkc_bad = [0] * self.n, [0] * self.n, [None] * self.n, [0] * self.n
+        self.rest, self.qs_ms = [0] * self.n, [0] * self.n   # cycles in a row below quickStopRestRadS; ms since the quick-stop sequence began
         self.unwrap = [Unwrap32() for _ in self.axes]
         self.last = [None] * self.n                          # the last input of each axis that came with a good working counter
         self.accepted = [{"enable": False, "quickStop": False, "faultReset": False} for _ in self.axes]
-        self.fault_map = {}                                  # ponytail: the device profile's faultMap arrives with the profile (K04+); empty maps every code to EXTERNAL_TRIP
+        self.fault_maps = [a.get("faultMap", {}) for a in self.axes]
 
     # ---- the op gates ----
     def handle(self, op: str, payload: dict, expected_tick: int) -> dict:
@@ -194,9 +197,12 @@ class BenchSession:
                 state, cmd = neutral_state(self.sw[i]), self.accepted[i]
                 if expired and state not in (DISABLED, FAULT):
                     self._latch(i, "COMMAND_TIMEOUT")
-                if self.latched[i]:
-                    cw = QUICK_STOP_CW if state == ENABLED else 0x0000
+                if (self.latched[i] or cmd["quickStop"]) and state in (ENABLED, QUICK_STOP):
+                    cw = self._quick_stop_word(i)
+                elif self.latched[i]:
+                    cw = 0x0000
                 else:
+                    self.qs_ms[i] = 0
                     cw = next_controlword(self.sw[i], cmd["enable"] and not expired, cmd["quickStop"], edges[i] and k == 0)
                 cw = self._gate(i, cw, expired)
                 if state != ENABLED or cw != ENABLE_OPERATION:
@@ -208,6 +214,11 @@ class BenchSession:
         return {"feedback": [self._feedback(i, self.tick - 1) for i in range(self.n)],
                 "vendor": [{"axisId": a["axisId"], "statusword": self.sw[i], "errorCode": self.last[i] and self.last[i]["errorCode"]} for i, a in enumerate(self.axes)],
                 "cycles": rows, "timing": {"cycleMs": self.cycle_ms, "exchanges": len(rows), "startMonoNs": t0, "endMonoNs": time.monotonic_ns()}}
+
+    def _quick_stop_word(self, i):
+        cw = quick_stop_word(self.sw[i], self.rest[i], self.qs_ms[i], rest_cycles_needed=self.cpt, hold_ms=self.hold_ms)
+        self.qs_ms[i] += self.cycle_ms
+        return cw
 
     def _cause_cleared(self, i):
         v = self.last[i] and velocity_from_raw(self.last[i]["velocityRaw"] or 0, self.axes[i]["units"])
@@ -225,12 +236,13 @@ class BenchSession:
                 self.wkc_bad[i] = 0
                 self.sw[i], self.last[i] = inp["statusword"], inp
                 self.unwrap[i].update(inp["positionRaw"])
-                v = inp["velocityRaw"]
-                if v is not None and abs(velocity_from_raw(v, self.axes[i]["units"])) > OVERSPEED_FACTOR * self.max_speed:
+                v = None if inp["velocityRaw"] is None else abs(velocity_from_raw(inp["velocityRaw"], self.axes[i]["units"]))
+                self.rest[i] = self.rest[i] + 1 if v is not None and v < self.rest_rads else 0   # an unknown velocity is never "at rest"
+                if v is not None and v > OVERSPEED_FACTOR * self.max_speed:
                     self._latch(i, "OVERSPEED")
             else:
-                self.wkc_bad[i] += 1
-                if self.wkc_bad[i] >= WKC_ERROR_CYCLES_TO_LOSS:
+                self.wkc_bad[i], self.rest[i] = self.wkc_bad[i] + 1, 0
+                if self.wkc_bad[i] >= self.wkc_to_loss:
                     self._latch(i, "FEEDBACK_LOSS")
             axes.append((i, {"axisId": self.axes[i]["axisId"], "controlword": outputs[i]["controlword"], "statusword": inp["statusword"], "targetRaw": outputs[i]["targetRaw"],
                              "positionRaw": inp["positionRaw"], "velocityRaw": inp["velocityRaw"], "torqueRaw": inp["torqueRaw"]}))
@@ -240,7 +252,7 @@ class BenchSession:
     def _feedback(self, i, tick):
         a, last = self.axes[i], self.last[i]
         state = FAULT if self.latched[i] else neutral_state(self.sw[i])
-        fault = self.latched[i] or (neutral_fault(last["errorCode"] or 0 if last else 0, self.fault_map) if state == FAULT else None)
+        fault = self.latched[i] or (neutral_fault(last["errorCode"] or 0 if last else 0, self.fault_maps[i]) if state == FAULT else None)
         u = a["units"]
         pos = position_from_raw(self.unwrap[i].total, u) if self.unwrap[i].total is not None else None
         vel = velocity_from_raw(last["velocityRaw"], u) if last and last["velocityRaw"] is not None else None
@@ -263,11 +275,13 @@ class BenchSession:
         return r | {"axes": axes}
 
     def _stop(self, payload):
-        """Quick stop what is enabled, then disable voltage everywhere; the last controlword of every axis is 0x0000. Idempotent."""
+        """Quick stop what is enabled and hold the ramp (stopseq), then disable voltage everywhere; the last controlword of every axis is 0x0000. The hold time
+        bounds it (schema: quickStopHoldMs <= 4000, inside the 5 s ACK). Idempotent."""
         try:
             if self.phase in ("started", "silenced"):
-                for _ in range(STOP_MAX_CYCLES):
-                    outs = [{"controlword": QUICK_STOP_CW if neutral_state(self.sw[i]) == ENABLED and self.phase == "started" else 0x0000, "targetRaw": 0} for i in range(self.n)]
+                for _ in range(int(self.hold_ms // self.cycle_ms) + 2):
+                    moving = [self.phase == "started" and neutral_state(self.sw[i]) in (ENABLED, QUICK_STOP) for i in range(self.n)]
+                    outs = [{"controlword": self._quick_stop_word(i) if moving[i] else 0x0000, "targetRaw": 0} for i in range(self.n)]
                     self._exchange(outs)
                     if not any(o["controlword"] for o in outs):
                         break

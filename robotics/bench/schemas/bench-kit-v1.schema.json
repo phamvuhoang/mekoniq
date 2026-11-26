@@ -324,6 +324,22 @@
                 "source"
               ]
             }
+          },
+          "faultMap": {
+            "type": "object",
+            "propertyNames": {
+              "pattern": "^0x[0-9A-F]{4}$"
+            },
+            "additionalProperties": {
+              "enum": [
+                "COMMAND_TIMEOUT",
+                "FEEDBACK_LOSS",
+                "FOLLOWING_ERROR",
+                "OVERSPEED",
+                "EXTERNAL_TRIP",
+                "OTHER"
+              ]
+            }
           }
         },
         "required": [
@@ -375,6 +391,19 @@
           ]
         },
         "watchdogTicks": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "quickStopRestRadS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "quickStopHoldMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4000
+        },
+        "wkcErrorCyclesToLoss": {
           "type": "integer",
           "minimum": 1
         }

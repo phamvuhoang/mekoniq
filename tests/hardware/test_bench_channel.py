@@ -58,7 +58,8 @@ def test_a_backwards_seq_is_refused():
     assert e.value.code == "DRIVE_COMMAND_SEQ_INVALID"
 
 
-def test_the_watchdog_expires_once_watchdog_ticks_of_cycles_have_run_since_the_last_new_seq():
+def test_the_watchdog_expires_on_the_5th_tick_without_a_new_seq_as_drive_group_does():
+    # The contract is DriveGroup's (test_the_channel_matches_drive_group): watchdogTicks 5 expires in the 5th tick without a new seq, not the 6th. Do not "fix" it.
     ch = channel()
     ch.accept(cmd(1, 1.0))
     flags = []

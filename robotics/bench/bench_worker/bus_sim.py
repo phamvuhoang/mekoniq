@@ -6,6 +6,8 @@ It is configured only through the kit's `simSlave` object (ruling R4); every kno
     requiresDc          the slaves refuse SAFE-OP -> OP unless bus.sync is 'dc_sync0' (BENCH_NOT_OPERATIONAL)
     enableDelayCycles   5     cycles of 'enable operation' in Switched on before Operation enabled
     quickStopOption     2     605Ah: 1-3 leave Quick stop active for Switch on disabled once at rest; 5-8 stay in Quick stop active
+    quickStopDecelRawPerCycle 2000  the quick-stop ramp (5 rad/s = 104 304 raw takes 52 cycles, about 10 ticks); 0x0000 received while still moving in Quick stop
+                              active makes the slave coast (slow decay) and sets `slaves[i].coasted_from_quick_stop`
     watchdogMs          100   slave-side watchdog: this long without a frame -> AL SAFE-OP (0x001B) and Fault 0x8130; null = never trips
     velocityScale       1.0   the slave tracks targetRaw x scale (0.8 = 20 % low)
     ignoreQuickStop     false the slave ignores the quick stop command in Operation enabled
@@ -28,7 +30,8 @@ TAU_MS = 20.0                      # assumed: first-order velocity response of t
 REST_RAW = 20                      # assumed: below this |velocity| (raw/s) a quick stop is complete
 WATCHDOG_ERROR, UNDERVOLTAGE = 0x8130, 0x3220
 BITS = {"6040:00": 16, "6041:00": 16, "6060:00": 8, "6061:00": 8, "6072:00": 16, "6077:00": 16, "603F:00": 16, "60B8:00": 16}
-DEFAULTS = {"enableDelayCycles": 5, "quickStopOption": 2, "watchdogMs": 100, "velocityScale": 1.0, "ignoreQuickStop": False, "serials": ["SIM-0001", "SIM-0002"],
+COAST_TAU_MS = 500.0               # assumed: a coasting rotor, power stage off
+DEFAULTS = {"quickStopDecelRawPerCycle": 2000, "enableDelayCycles": 5, "quickStopOption": 2, "watchdogMs": 100, "velocityScale": 1.0, "ignoreQuickStop": False, "serials": ["SIM-0001", "SIM-0002"],
             "initialErrorCode": None, "initialPositionRaw": 0, "corruptReadback": None, "events": []}
 DEFAULT_TX = ["6041:00", "6064:00", "606C:00"]
 
@@ -45,6 +48,7 @@ class _Slave:
         self.pending = None
         self.pos, self.vel, self.target = float(cfg["initialPositionRaw"]), 0.0, 0
         self.forced = None
+        self.coasting = self.coasted_from_quick_stop = False
         self.last_cw, self.enable_count = 0, 0
         self.od = {}
 
@@ -146,6 +150,8 @@ class SimBus:
             if rising_reset:
                 st, s.error = "SOD", 0
         elif not cw & 0x02:                                  # disable voltage
+            if st == "QSA" and abs(s.vel) >= REST_RAW:
+                s.coasting = s.coasted_from_quick_stop = True   # the ramp was cut: torque off while moving
             st = "SOD"
         elif not cw & 0x04:                                  # quick stop
             if st == "OE" and not self.cfg["ignoreQuickStop"]:
@@ -172,8 +178,14 @@ class SimBus:
         s.state, s.last_cw = st, cw
 
     def _move(self, s, ms):
-        want = s.target * self.cfg["velocityScale"] if s.state == "OE" else 0.0
-        s.vel += (want - s.vel) * min(1.0, ms / TAU_MS)
+        if s.state == "QSA":
+            step = self.cfg["quickStopDecelRawPerCycle"] * ms / self.cycle_ms
+            s.vel -= max(-step, min(step, s.vel))
+        else:
+            want = s.target * self.cfg["velocityScale"] if s.state == "OE" else 0.0
+            tau = COAST_TAU_MS if s.coasting and s.state != "OE" else TAU_MS
+            s.vel += (want - s.vel) * min(1.0, ms / tau)
+        s.coasting = s.coasting and abs(s.vel) >= REST_RAW
         if s.forced is not None:
             s.vel = float(s.forced)
         s.pos += s.vel * ms / 1000

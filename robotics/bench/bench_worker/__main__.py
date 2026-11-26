@@ -1,4 +1,10 @@
-"""python -I -B -m bench_worker --role bus|sensors --kit FILE --bus sim|soem --session-id ID [--read-only]
+"""bench_worker --role bus|sensors --kit FILE --bus sim|soem --session-id ID [--read-only]
+
+Launch recipe (copy it as is): `-I` drops the working directory from sys.path (safe-path mode, Python >= 3.11), so `python -I -m bench_worker` cannot find the
+package; pass the package root (the directory that holds `bench_worker/`, i.e. robotics/bench) as an argument to a fixed bootstrap:
+
+    <python> -I -B -c "import runpy, sys; sys.path.insert(0, sys.argv.pop(1)); runpy.run_module('bench_worker', run_name='__main__', alter_sys=True)" \
+        <abs path>/robotics/bench --role bus --kit <abs path to kit.json> --bus sim --session-id <id> [--read-only]
 
 Role `bus` answers every op but imuConfigure; role `sensors` (K06) gets its own branch below and never imports bus*. A malformed line, a request of another session or
 an internal error answers once, stops the drives and exits 1; stdin closing is a stop. The last stderr line is {"event":"stopped","controlwords":[...]}."""

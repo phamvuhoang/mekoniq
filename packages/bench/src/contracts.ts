@@ -16,9 +16,10 @@ export interface BenchKitV1{
  simSlave?:{defaultRxPdo:string[];requiresDc:boolean;[knob:string]:unknown};
  axes:{axisId:string;slavePosition:number;profile:DocRef;expect:{vendorId:string;productCode:string;revision:string|null};pdo:{rx:string[];tx:string[]};
   units:{positionCountsPerRev:Scalar;velocityRawPerRadS:Scalar;ratedTorqueNm:Scalar|null;polarity:1|-1;gearRatio:number};
-  sdoWrites:{object:string;value:number;bytes:1|2|4;why:string;source:SourceRef}[]}[];
+  sdoWrites:{object:string;value:number;bytes:1|2|4;why:string;source:SourceRef}[];
+  faultMap?:Record<string,NonNullable<DriveFeedbackV1['fault']>|'OTHER'>}[];   // 603Fh '0x7500' -> neutral fault; OTHER and unmapped codes become EXTERNAL_TRIP
  limits:{maxSpeedRadS:number;maxAccelRadS2:number;maxTorquePermille:number;source:SourceRef};
- channel:{interpolation:'hold'|'linear';watchdogTicks:number};
+ channel:{interpolation:'hold'|'linear';watchdogTicks:number;quickStopRestRadS?:number;quickStopHoldMs?:number;wkcErrorCyclesToLoss?:number};   // worker defaults 0.05, 2000, 5
  sensors:{lidar:{driver:'ld19';port:string;baud:number;profile:DocRef}|null;imu:{driver:'wit';port:string;baud:number;rateHz:number;algorithm:'6axis'|'9axis';profile:DocRef}|null};
 }
 export interface BenchSessionV1{
