@@ -8,7 +8,9 @@ import {verifyR4Directory} from '../../scripts/r4-readback.mjs';
 import {verifyR5Directory} from '../../scripts/r5-readback.mjs';
 // @ts-expect-error plain ESM script without types
 import {GATES_R4,CLOSING_GATES_R4} from '../../scripts/sim-extension-r4.mjs';
-import {GATES_R5,CLOSING_GATES_R5} from '../../scripts/sim-extension-r5.mjs';
+import {GATES_R5,CLOSING_GATES_R5,checkR5Closing} from '../../scripts/sim-extension-r5.mjs';
+// @ts-expect-error plain ESM script without types
+import {checkCloudRunR5Evidence} from '../../scripts/cloud-run-qualification.mjs';
 // Acceptance guard for the simulation-extension qualification: Release 1 (plan 01 W09), Release 1.1 (Webots arm, X08) and Release R2a (MuJoCo arm, web runtime, twin UI, Q01); the record names its release. It reads one recorded candidate directory (LAB_SIMEXT_EVIDENCE_DIR, written by
 // scripts/record-sim-extension.mjs) and refuses anything that is not a complete, consistent, webots_3d record whose case and gate statuses are exactly what the stored evidence
 // supports. Without a candidate directory it FAILS (missing evidence is never a pass). It never sets a gate to accepted: a reviewer does that in the record.
@@ -126,4 +128,11 @@ test('the performance measurement is recorded and says it is a measurement, not 
  const perf=JSON.parse(read('performance.json')!.toString('utf8')) as Manifest;
  expect(perf.documentType).toBe('webots-performance-measurement');expect(perf.note).toMatch(/not a gate/);
  expect(perf.steadyState.perTickMs.p50).toBeGreaterThan(0);expect(perf.steadyState.perTickMs.p95).toBeGreaterThanOrEqual(perf.steadyState.perTickMs.p50);expect(perf.steadyState.realtimeFactor).toBeGreaterThan(0);
+});
+test('R5 closing decision (LAB_R5_CLOSING=1): the decided scope "R5 không có I/O ảo" closes only with eight gates tested, no failed case, a reason for every exception, and CLD06 from a valid supplement',()=>{
+ const m=manifest();if(m.release!=='r5'||process.env.LAB_R5_CLOSING!=='1')return; // reading a partial candidate is the tests above; closing is asked for explicitly
+ const cloud=process.env.LAB_CLOUD_EVIDENCE_DIR?resolve(process.env.LAB_CLOUD_EVIDENCE_DIR):null;
+ const cloudSupplementIssues=cloud?checkCloudRunR5Evidence((p:string)=>{const f=join(cloud,p);return existsSync(f)?readFileSync(f):null;},read('qualification.json')):null;
+ const verdict=checkR5Closing(m,{cut:['G-VIO1'],cloudSupplementIssues});
+ expect(verdict.issues).toEqual([]);expect(verdict).toMatchObject({closed:true,releaseName:'R5 không có I/O ảo'});
 });

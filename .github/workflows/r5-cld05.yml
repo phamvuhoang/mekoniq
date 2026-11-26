@@ -1,0 +1,46 @@
+name: R5 CLD05 native x86-64
+# Push the R5 source commit (not a Lab pin commit) to the branch r5/cld05. The artifact is imported on the Mac with
+#   node scripts/record-r5-container.mjs --out <fresh dir> --cld05-dir <downloaded r5-cld05-* directory>
+on:
+  push:
+    branches: [r5/cld05]
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - name: Record hosted run identity
+        run: |
+          mkdir "$RUNNER_TEMP/r5-cld05"
+          printf 'sha=%s\nrunner=%s\narch=%s\nurl=%s/%s/actions/runs/%s/attempts/%s\n' \
+            "$GITHUB_SHA" "$RUNNER_NAME" "$RUNNER_ARCH" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" > "$RUNNER_TEMP/r5-cld05/run.txt"
+      - uses: actions/checkout@v4
+        with:
+          # the source commit is path-based (scripts/repo-identity.mjs): it needs the history
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - name: Build the amd64 image, run the tool-root tests and the R5 container test in it
+        run: |
+          set -o pipefail
+          scripts/r5-cld05.sh 2>&1 | tee "$RUNNER_TEMP/r5-cld05/job.log"
+      - name: Checksum all available evidence
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/r5-cld05"
+          find . -type f ! -name SHA256SUMS -print0 | LC_ALL=C sort -z | xargs -0 sha256sum > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r5-cld05-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/r5-cld05/
+          if-no-files-found: error

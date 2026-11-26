@@ -35,7 +35,7 @@ export const CASES_R5={
  DGN03:{suites:['web-unit']},DGN04:{notRun:'not_built: an alarm jumps to its tick, but the twin does not mark the entity with an outline and icon; there is no end-to-end run of the jump'},
  WEB11:{suites:['web-unit','e2e-samples']},WEB12:{suites:['e2e-samples']},WEB13:{suites:['web-unit','e2e-samples']},
  REG06:{input:'r4Record'},
- CLD04:{input:'containerRecord'},CLD05:{notRun:'native_linux_x86_64_host_required: Python tests of the tool roots run on a pushed branch'},CLD06:{notRun:'deploy_order_pending'}
+ CLD04:{input:'containerRecord'},CLD05:{input:'containerRecord'},CLD06:{notRun:'deploy_order_pending'}
 };
 export const GATES_R5={
  'G-DEV1':['DEV01','DEV02','DEV03','DEV04','DEV05','DEV06'],'G-ELE1':['IOA01','IOA02','IOA03','IOA04','IOA05','NET01','NET02','NET03','ERC01','ERC02','ERC03','ERC04','SAF01','SAF02'],
@@ -70,6 +70,33 @@ export function tableR5(){
 }
 export const qualifyR5Structure=input=>qualify(input,tableR5());
 export function checkR5Structure(m,read){try{return checkQualification(m,read,tableR5());}catch(e){return ['R5_STRUCTURE_INVALID:'+e.message];}}
+/** Gates the user may cut from R5 and the cases each cut leaves not_run (contracts §9: without E14, "R5 không có I/O ảo"). */
+export const CUTTABLE_R5={'G-VIO1':{cases:['VIO01','VIO02','VIO03','VIO04'],releaseName:'R5 không có I/O ảo'}};
+/**
+ * The closing decision, apart from reading a record (checkR5Structure / verifyR5Directory accept a partial candidate whose not_run cases say why). Closing needs every gate of the
+ * decided scope `tested`, no failed case, every exception with a reason, and only these not_run cases: the cut gates' own cases, and CLD06 when — and only when — a CLD06
+ * supplement was checked (checkCloudRunR5Evidence against this record's exact bytes) and returned no issue. G-CLOUD3 then closes on CLD04 + CLD05 tested plus that supplement.
+ * Call it on a record that verifyR5Directory already read back without an issue.
+ */
+export function checkR5Closing(m,{cut=[],cloudSupplementIssues=null}={}){
+ const issues=[],bad=cut.filter(g=>!CUTTABLE_R5[g]);if(bad.length)return {closed:false,releaseName:null,issues:bad.map(g=>'CUT_NOT_ALLOWED:'+g)};
+ const allowed=new Set(cut.flatMap(g=>CUTTABLE_R5[g].cases)),cloud=Array.isArray(cloudSupplementIssues)&&cloudSupplementIssues.length===0;if(cloud)allowed.add('CLD06');
+ if(m?.release!=='r5'||m.accepted!==false)issues.push('NOT_AN_R5_CANDIDATE');
+ if(!equalKeys(m?.cases,CASES_R5)||!equalKeys(m?.gates,GATES_R5))return {closed:false,releaseName:null,issues:[...issues,'TABLE_MISMATCH']};
+ for(const [id,c] of Object.entries(m.cases)){
+  if(c.status==='failed')issues.push('CASE_FAILED:'+id);
+  else if(c.status!=='tested'){if(!allowed.has(id))issues.push('CASE_NOT_TESTED:'+id);if(!/\S/.test(c.reason??''))issues.push('EXCEPTION_WITHOUT_REASON:'+id);}
+ }
+ if(Array.isArray(cloudSupplementIssues)&&cloudSupplementIssues.length)issues.push(...cloudSupplementIssues.map(x=>'CLD06_SUPPLEMENT:'+x));
+ for(const g of CLOSING_GATES_R5){
+  if(cut.includes(g)){if(m.gates[g].status==='tested')issues.push('CUT_GATE_TESTED:'+g);continue;}
+  const closes=m.gates[g].status==='tested'||g==='G-CLOUD3'&&cloud&&GATES_R5[g].every(id=>id==='CLD06'||m.cases[id].status==='tested');
+  if(!closes)issues.push('GATE_NOT_TESTED:'+g);
+ }
+ for(const g of Object.keys(EXTERNAL_GATES_R5))if(m.externalGates?.[g]?.status!=='blocked_external'||m.externalGates[g].accepted!==false)issues.push('EXTERNAL_GATE:'+g);
+ const u=[...new Set(issues)];
+ return {closed:u.length===0,releaseName:u.length?null:cut.length?cut.map(g=>CUTTABLE_R5[g].releaseName).join(', '):'R5',issues:u};
+}
 export function validateR5Selectors(table,roots){
  for(const suite of table.suites)for(const file of suite.files??[])if(!statSync(join(roots[suite.repo],file),{throwIfNoEntry:false})?.isFile())throw Error('R5_SELECTOR_MISSING:'+suite.id+':'+file);
  for(const suite of table.suites)if(suite.command&&!statSync(join(roots[suite.repo],suite.command[0]),{throwIfNoEntry:false})?.isFile())throw Error('R5_SELECTOR_MISSING:'+suite.id+':'+suite.command[0]);

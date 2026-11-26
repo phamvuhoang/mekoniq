@@ -9,3 +9,5 @@ export function tableR5():{documentType:string;campaign:boolean;cases:Record<str
 export function qualifyR5Structure(input:unknown):unknown;
 export function checkR5Structure(m:unknown,read:unknown):string[];
 export function validateR5Selectors(table:{suites:SuiteR5[]},roots:Record<string,string>):void;
+export const CUTTABLE_R5:Record<string,{cases:string[];releaseName:string}>;
+export function checkR5Closing(m:unknown,options?:{cut?:string[];cloudSupplementIssues?:string[]|null}):{closed:boolean;releaseName:string|null;issues:string[]};

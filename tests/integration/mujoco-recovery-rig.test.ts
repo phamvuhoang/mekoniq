@@ -2,7 +2,7 @@
 // the cup is untouched on its stand, so the failure is known and recoverable. See the V13 ledger for why a pushed cup (R4-D33) cannot provide it in this cell.
 import {existsSync} from 'node:fs';
 import {mkdir,mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
-import {execFileSync} from 'node:child_process';
+import {sourceCommit as repoSourceCommit,sourceDirty as repoSourceDirty} from '../../scripts/repo-identity.mjs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {afterEach,describe,expect,test} from 'vitest';
@@ -20,10 +20,10 @@ const root=resolve('robotics/simulation-mujoco'),dirs:string[]=[],retained=proce
 // Opt-in raw diagnostics are written directly outside Git so an interrupted run
 // also survives. Every execution gets a fresh directory; no evidence is replaced.
 afterEach(async()=>{for(const d of dirs.splice(0))if(!retained)await rm(d,{recursive:true,force:true});});
-const sourceCommit=()=>execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+const sourceCommit=()=>repoSourceCommit('.');
 async function directory(label:string){
  if(retained)await mkdir(retained,{recursive:true});const dir=await mkdtemp(join(retained??tmpdir(),`rec-rig-${label}-`));dirs.push(dir);
- await writeFile(join(dir,'integration-context.json'),JSON.stringify({accepted:false,qualification:false,label,sourceCommit:sourceCommit(),dirty:execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim()!==''}));return dir;
+ await writeFile(join(dir,'integration-context.json'),JSON.stringify({accepted:false,qualification:false,label,sourceCommit:sourceCommit(),dirty:repoSourceDirty('.')!==''}));return dir;
 }
 async function retainedRun(dir:string){
  const report=JSON.parse(await readFile(join(dir,'report.json'),'utf8')) as RunReport,checkpoint=JSON.parse(await readFile(join(dir,'run/run.json'),'utf8'));

@@ -1,6 +1,6 @@
 // CL01 supplements an immutable R2a qualification. This checks stored evidence only;
 // it never edits that qualification, deploys a service or grants human acceptance.
-import {validateSupplement} from './r4-cloud-evidence.mjs';
+import {validateSupplement,checkDeployment} from './r4-cloud-evidence.mjs';
 import {createHash} from 'node:crypto';
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const hex=/^[a-f0-9]{64}$/;
@@ -76,9 +76,11 @@ export function checkCloudRunEvidence(read,r2aBytes){
 
 /** CLD03 supplements an immutable R4 record after ONE deployment ordered by the user. Stored evidence only: it never deploys, edits the record or accepts anything.
  * The producer records checksums, public runtime receipts, deployment readbacks and candidate artifacts. */
-export function checkCloudRunR4Evidence(read,r4Bytes){
+export const checkCloudRunR4Evidence=(read,r4Bytes)=>checkedSupplement(read,r4Bytes,validateSupplement);
+/** checksums.json lists every file with its SHA-256; each is read and hashed before `validate(record, recordBytes, files)` sees it. */
+function checkedSupplement(read,recordBytes,validate){
  const errors=[];let checks,q;
- try{checks=JSON.parse(read('checksums.json'));q=JSON.parse(r4Bytes);}catch{return ['RECORD_INVALID'];}
+ try{checks=JSON.parse(read('checksums.json'));q=JSON.parse(recordBytes);}catch{return ['RECORD_INVALID'];}
  if(!checks||checks.algorithm!=='sha256'||!checks.files||typeof checks.files!=='object'||Array.isArray(checks.files)||!q)return ['RECORD_INVALID'];
  const files=new Map();
  for(const [path,digest] of Object.entries(checks.files)){
@@ -90,5 +92,74 @@ export function checkCloudRunR4Evidence(read,r4Bytes){
   files.set(path,bytes);
  }
  if(errors.length)return errors;
- try{validateSupplement(q,r4Bytes,files);return [];}catch(error){return [error.message];}
+ try{validate(q,recordBytes,files);return [];}catch(error){return [error.message];}
 }
+
+// ---- CLD06 (R5) --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Supplements an immutable R5 record after ONE deployment ordered by the user (contracts §8–§9: CLD06 follows CLD03). The R5 record itself keeps CLD06 not_run (deploy_order_pending);
+// this evidence binds to the SHA-256 of its exact qualification.json bytes, its source commit, Lab pin and schema hash. Evidence: health (commit, schema hash, electrical capability),
+// the three options compiled on Cloud Run with the full bundle digests of the Mac (the record's CLD04 evidence, which the R5 reader recompiled on the host), and one S1 emergency
+// stop run compared with the Mac's own run of the stop-v1 campaign (stop tick exact, status and served equal, end tick and distance within 5 %). Producer: scripts/record-r5-cloud.mjs.
+export const R5_CLOUD={container:'inputs/container/container.json',cld04:'inputs/container/cld04.json',macStop:'inputs/stop/s1-emergency-coast/report.json',
+ options:['serve-hw-a-v1','serve-hw-b-v1','serve-hw-c-v1'],states:['blocked','compiled','compiled'],stopEntry:{id:'s1',function:'emergency',trigger:{kind:'elapsed_sim_ms',value:8220}},
+ scenario:'MJ-TRAY01',seed:7,driveExperimentId:'drive-hw-c-coast-v1',relativeTolerance:0.05};
+const must=(ok,code)=>{if(!ok)throw Error(code);};
+const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+export function checkR5Candidate(q){
+ must(q?.release==='r5'&&q.accepted===false&&q.acceptedBy===null&&q.identity?.identityStable===true&&/^[a-f0-9]{40}$/.test(q.identity.before?.sourceCommit)&&/^[a-f0-9]{40}$/.test(q.lab?.commit)&&
+  q.lab.pin?.sourceCommit===q.identity.before.sourceCommit&&hex.test(q.lab.pin.schemaHash)&&hex.test(q.lab.pin.artifactSha256),'CANDIDATE_IDENTITY');
+ must(q.cases?.CLD04?.status==='tested'&&q.cases?.CLD05?.status==='tested'&&q.cases?.CLD06?.status==='not_run'&&/deploy_order_pending/.test(q.cases.CLD06.reason??'')&&
+  Object.values(q.gates??{}).every(g=>g.accepted===false),'R5_RECORD_NOT_SUPPLEMENTABLE');
+}
+/** The Mac side, from the record's own bytes: the container record (CLD04 digests, CLD05 native image) and the Mac's S1 emergency coast run of stop-v1. */
+export function checkR5CandidateInputs(q,containerBytes,cld04Bytes,macBytes){
+ checkR5Candidate(q);
+ const art=f=>q.artifacts?.find(a=>a.file===f)?.sha256,container=JSON.parse(containerBytes),cld04=JSON.parse(cld04Bytes),mac=JSON.parse(macBytes),pin=q.lab.pin;
+ must(q.inputs?.containerRecord?.file===R5_CLOUD.container&&q.inputs.containerRecord.sha256===sha(containerBytes)&&art(R5_CLOUD.cld04)===sha(cld04Bytes)&&
+  container.cld04?.evidence?.sha256===sha(cld04Bytes)&&art(R5_CLOUD.macStop)===sha(macBytes),'CANDIDATE_INPUT_HASH');
+ const native=container.cld05;
+ must(container.sourceCommit===pin.sourceCommit&&native?.status==='tested'&&native.platform==='linux/amd64'&&native.sourceCommit===pin.sourceCommit&&/^sha256:[0-9a-f]{64}$/.test(native.imageId),'NATIVE_IMAGE_INVALID');
+ must(cld04.sourceCommit===pin.sourceCommit&&cld04.schemaHash===pin.schemaHash&&same(R5_CLOUD.options.map(o=>cld04.options?.[o]?.state),R5_CLOUD.states)&&R5_CLOUD.options.every(o=>hex.test(cld04.options[o].digest))&&
+  same(cld04.stop?.entry,R5_CLOUD.stopEntry)&&Number.isSafeInteger(cld04.stop.scheduledTick)&&cld04.stop.tick===cld04.stop.scheduledTick,'MAC_DIGESTS_INVALID');
+ checkStopRun(mac,'arm64',pin.sourceCommit,cld04.stop.scheduledTick);
+ return {container,cld04,native,mac};
+}
+const emergencyTick=r=>r?.attention?.find(a=>a.reason==='EMERGENCY_STOP')?.tick;
+export function checkStopRun(r,arch,commit,tick){
+ const m=r?.manifest,o=r?.outcome;
+ must(m?.sourceCommit===commit&&m.scenario?.id===R5_CLOUD.scenario&&m.scenario.revision===1&&m.seed===R5_CLOUD.seed&&m.mode==='simulation'&&m.access==='simulated'&&m.backendSetId==='engineering-mujoco-3d-v1'&&
+  same(m.stopSchedule?.entries,[R5_CLOUD.stopEntry])&&hex.test(m.stopSchedule.hash)&&m.drive?.experimentId===R5_CLOUD.driveExperimentId&&m.drive.hostArch===arch&&m.calibration?.status==='not_calibrated'&&
+  !m.driveFaultSchedule&&!m.faultSchedule,'STOP_RUN_SCOPE');
+ must(o?.status==='needs_attention'&&o.served==='0'&&Number.isSafeInteger(o.tick)&&o.tick>tick&&emergencyTick(r)===tick&&Number.isFinite(r.metrics?.distanceM?.['amr-1']),'STOP_RUN_OUTCOME');
+}
+export function compareStop(mac,cloud){
+ const a=mac.manifest,b=cloud.manifest,t=R5_CLOUD.relativeTolerance;
+ must(a.runId!==b.runId&&same(a.scenario,b.scenario)&&a.seed===b.seed&&a.stopSchedule.hash===b.stopSchedule.hash&&['experimentId','driveModelDigest','controlProfileDigest'].every(k=>a.drive[k]===b.drive[k]),'MAC_INPUT_MISMATCH');
+ must(emergencyTick(mac)===emergencyTick(cloud)&&mac.outcome.status===cloud.outcome.status&&mac.outcome.served===cloud.outcome.served,'MAC_STOP_RESULT_MISMATCH');
+ const tickMac=mac.outcome.tick,tickCloud=cloud.outcome.tick,distanceMacM=mac.metrics.distanceM['amr-1'],distanceCloudM=cloud.metrics.distanceM['amr-1'];
+ must(Math.abs(tickCloud-tickMac)<=t*tickMac&&Math.abs(distanceCloudM-distanceMacM)<=t*distanceMacM,'MAC_TOLERANCE_EXCEEDED');
+ return {stopTick:emergencyTick(cloud),status:cloud.outcome.status,served:cloud.outcome.served,tickMac,tickCloud,distanceMacM,distanceCloudM,relativeTolerance:t};
+}
+/** `local` (the producer's loopback diagnostic only) accepts a runtime that is not bound publicly. */
+export function checkR5Health(h,pin,origin,local=false){
+ must(h?.sourceCommit===pin.sourceCommit&&h.schemaHash===pin.schemaHash&&h.allowOrigin===origin&&h.protocolMajor===2&&(local||h.deployment?.bind==='public')&&h.features?.bearer===true,'HEALTH_IDENTITY_OR_ORIGIN');
+ must(Array.isArray(h.capabilities)&&h.capabilities.includes('electrical_bundle_v1')&&h.backends?.some(b=>b.id==='mujoco_3d'&&['installed','reachable','enabled'].every(k=>b[k]===true)),'HEALTH_NOT_READY');
+}
+export function validateR5Supplement(q,r5Bytes,files){
+ const bytes=k=>{const b=files.get(k+'.json');must(b,'ARTIFACT_MISSING:'+k);return b;},get=k=>JSON.parse(bytes(k));
+ const {cld04,native,mac}=checkR5CandidateInputs(q,bytes('container-record'),bytes('cld04'),bytes('mac-stop-report')),pin=q.lab.pin,d=get('deployment'),s=get('summary');
+ must(d.schema==='mekoniq-cloud-run-deployment/2'&&d.accepted===false&&d.qualification?.sha256===sha(r5Bytes)&&d.qualification.candidateId===q.candidateId&&d.sourceCommit===pin.sourceCommit&&
+  d.labCommit===q.lab.commit&&d.schemaHash===pin.schemaHash&&d.artifactSha256===pin.artifactSha256,'CANDIDATE_BINDING');
+ checkDeployment(d,get('service'),get('revision'),get('promotion'),native);
+ must(s.schema==='mekoniq-cloud-run-r5-smoke/1'&&s.accepted===false&&s.mode==='qualification'&&s.status==='tested'&&s.expectedCommit===pin.sourceCommit&&s.service===d.url&&s.origin===d.origin&&
+  ['health','electrical','stop'].every(k=>s.cases?.[k]==='tested'),'CLD06_NOT_TESTED');
+ checkR5Health(get('health'),pin,d.origin);
+ const e=get('electrical');
+ must(e.projectDigest===cld04.project?.digest&&R5_CLOUD.options.every(o=>e.options?.[o]?.state===cld04.options[o].state&&e.options[o].digest===cld04.options[o].digest),'CLOUD_DIGEST_MISMATCH');
+ const cloud=get('stop-report');
+ must(cloud.schemaHash===pin.schemaHash,'REPORT_SCHEMA_MISMATCH');
+ checkStopRun(cloud,'x86_64',pin.sourceCommit,cld04.stop.scheduledTick);
+ must(same(compareStop(mac,cloud),s.macComparison),'MAC_COMPARISON_MISMATCH');
+ must(same(s.cleanup,[{runId:cloud.manifest.runId,archived:true}]),'SMOKE_CLEANUP_INCOMPLETE');
+}
+export const checkCloudRunR5Evidence=(read,r5Bytes)=>checkedSupplement(read,r5Bytes,validateR5Supplement);

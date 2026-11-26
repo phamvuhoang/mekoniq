@@ -1,4 +1,5 @@
 import {afterEach,expect,test} from 'vitest';
+import {sourceCommit as repoSourceCommit,sourceDirty as repoSourceDirty} from '../../scripts/repo-identity.mjs';
 import {mkdtemp,readFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
@@ -66,7 +67,7 @@ test('actual 19-run campaign round-trips, and missing/skip/seed/profile/corrupt/
  const out=join(await temp(),'campaign');
  // Optional fresh output from this build's CLI recording avoids a second native campaign; mutation tests always use a private temporary copy.
  if(process.env.PAYLOAD_CAMPAIGN_EVIDENCE)await cp(process.env.PAYLOAD_CAMPAIGN_EVIDENCE,out,{recursive:true,errorOnExist:true});
- const {execFileSync}=await import('node:child_process');const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),dirty=execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim();
+ const head=repoSourceCommit('.'),dirty=repoSourceDirty('.');
  const inventory=async()=>Promise.all((await readdir(out,{recursive:true})).sort().map(async p=>{const info=await lstat(join(out,p));return info.isFile()?[p,info.size,createHash('sha256').update(await readFile(join(out,p))).digest('hex')]:[p,'directory'];}));
  const before=process.env.PAYLOAD_CAMPAIGN_EVIDENCE?await inventory():null;
  const verdict=process.env.PAYLOAD_CAMPAIGN_EVIDENCE?await verifyPayloadCampaign(out):await runPayloadCampaign({root:resolve('.'),out,sourceCommit:head+(dirty?'-dirty':'')});

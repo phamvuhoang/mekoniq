@@ -13,8 +13,8 @@ import {sourceCommit,sourceDirty} from './repo-identity.mjs';
 
 const source=fileURLToPath(new URL('../',import.meta.url)),fixture='robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/project.json';
 const uuid=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
-const secrets=new Set();
-function safeBytes(bytes){
+export const secrets=new Set();
+export function safeBytes(bytes){
  const str=String(bytes);
  must(![...secrets].some(v=>v&&str.includes(v))&&!/"(?:sessionToken|reclaimToken|csrfToken|accessKey|authorization|password|privateKey)"\s*:/i.test(str),'CREDENTIAL_IN_EVIDENCE');
  return bytes;
@@ -24,7 +24,7 @@ function external(cmd,args){
  try{return execFileSync(cmd,args,{cwd:source,env,encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:45000,maxBuffer:16*1024*1024}).trim();}
  catch{throw Error(cmd.toUpperCase()+'_READBACK_FAILED');}
 }
-function endpointCheck(endpoint,origin,local){
+export function endpointCheck(endpoint,origin,local){
  const u=new URL(endpoint),o=new URL(origin);
  must(endpoint===u.origin&&origin===o.origin&&(local?u.protocol==='http:'&&u.hostname==='127.0.0.1'&&u.port&&!['1880','1884'].includes(u.port)&&
   o.protocol==='http:'&&['127.0.0.1','localhost'].includes(o.hostname):u.protocol==='https:'&&u.hostname.endsWith('.run.app')&&o.protocol==='https:'),'INVALID_ENDPOINT_OR_ORIGIN');
@@ -37,7 +37,7 @@ function metadata(v){
 }
 function spec(v){return {serviceAccountName:v?.serviceAccountName,timeoutSeconds:v?.timeoutSeconds,containerConcurrency:v?.containerConcurrency,
  containers:v?.containers?.map(c=>({image:c.image,resources:{limits:{cpu:c.resources?.limits?.cpu,memory:c.resources?.limits?.memory}},env:c.env}))};}
-function deploymentReadback(base,native){
+export function deploymentReadback(base,native){
  const describe=(type,name)=>JSON.parse(external('gcloud',['run',type,'describe',name,'--project='+project,'--region='+region,'--format=json']));
  const svc=describe('services',service),ready=svc.status?.latestReadyRevisionName;
  must(typeof ready==='string'&&/^mekoniq-lab-runtime-[a-z0-9-]+$/.test(ready),'SERVICE_REVISION_INVALID');
@@ -121,7 +121,7 @@ async function smoke({endpoint,origin,pin,local,mac,store,summary}){
   store('actions',actions);store('readiness',readiness);
  }
 }
-function failure(e){
+export function failure(e){
  // HTTP errors do not include remote bodies, redirects, headers or supplied credentials.
  const m=e?.message??'';return /^[A-Z][A-Z0-9_]*(?:_\/[a-zA-Z0-9/-]+)?$/.test(m)?m:'RECORDER_OPERATION_FAILED';
 }

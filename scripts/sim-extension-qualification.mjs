@@ -1,6 +1,7 @@
 import {checkR3Structure} from './sim-extension-r3.mjs';
 export {tableR3} from './sim-extension-r3.mjs';
 import {checkR2bStructure} from './sim-extension-r2b.mjs';
+import {checkR5Structure} from './sim-extension-r5.mjs';
 export {CASES_R2B,GATES_R2B,SUITES_R2B,tableR2b} from './sim-extension-r2b.mjs';
 // sim-extension-qualification/1 (W09 Release 1; X08 Release 1.1 adds the `r1.1` table below): the one mapping from the verification cases of spec 2026-11-10-simulation-extension-design.md §6.3 to the evidence that
 // tests them, shared by scripts/record-sim-extension.mjs (which writes qualification.json) and tests/acceptance/sim-extension.acceptance.test.ts (which refuses it).
@@ -301,5 +302,6 @@ export function preflight({release,suites},probes){
 export const qualifyR2a=(input)=>qualifyWith(input,tableR2a(input.blocked?.gates??[],input.blocked?.reason));
 
 export const qualify=(input)=>qualifyWith(input,TABLE);
-/** The table follows the record's own release; a record that names none of them is checked as R1 and fails on its content. */
-export const checkQualification=(m,read)=>m?.release==='r3'?[...checkR3Structure(m),'R3_ARTIFACT_READBACK_REQUIRED']:m?.release==='r2b'?[...checkR2bStructure(m,read),'R2B_ARTIFACT_READBACK_REQUIRED']:m?.release==='r2a'?check(m,read,tableR2a(m.blocked?.gates??[],m.blocked?.reason)):m?.release==='r1.1'?check(m,read,TABLE_R11):check(m,read,TABLE);
+/** The table follows the record's own release; a record that names none of them is checked as R1 and fails on its content. R3, R2b and R5 add a marker: their stored artifacts must also be
+ * read back (verifyR3Directory / verifyR2bDirectory / verifyR5Directory, asynchronous), so this synchronous structural check alone never passes them. */
+export const checkQualification=(m,read)=>m?.release==='r5'?[...checkR5Structure(m,read),'R5_ARTIFACT_READBACK_REQUIRED']:m?.release==='r3'?[...checkR3Structure(m),'R3_ARTIFACT_READBACK_REQUIRED']:m?.release==='r2b'?[...checkR2bStructure(m,read),'R2B_ARTIFACT_READBACK_REQUIRED']:m?.release==='r2a'?check(m,read,tableR2a(m.blocked?.gates??[],m.blocked?.reason)):m?.release==='r1.1'?check(m,read,TABLE_R11):check(m,read,TABLE);
