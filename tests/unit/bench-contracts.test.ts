@@ -87,8 +87,14 @@ describe('bench record',()=>{
  it('hardwareValidated:true is refused',()=>{expect(codesOf({...record,hardwareValidated:true})).toEqual(['SCHEMA_INVALID']);});
  it('controlAuthority:true is refused',()=>{expect(codesOf({...record,controlAuthority:true})).toEqual(['SCHEMA_INVALID']);});
  it('a gate with accepted:true is refused',()=>{expect(validateBenchRecord({...record,gates:{'G-KID1':{status:'tested',accepted:true}}}).ok).toBe(false);});
+ it('a record from the simulated bus must be labelled protocol_double',()=>{
+  const r=validateBenchRecord({...record,worker:{...record.worker,busBackend:'sim'}});
+  expect(r.ok).toBe(false);if(!r.ok)expect(r.problems.map(p=>[p.code,p.path])).toEqual([['RECORD_SIM_NOT_DOUBLE','/host/testLevel']]);});
+ it('a record from the real bus cannot be labelled protocol_double',()=>{
+  const r=validateBenchRecord({...record,host:{...record.host,testLevel:'protocol_double'},gates:{'G-KID1':{status:'blocked_external',accepted:false}}});
+  expect(r.ok).toBe(false);if(!r.ok)expect(r.problems.map(p=>[p.code,p.path])).toEqual([['RECORD_HARDWARE_MARKED_DOUBLE','/host/testLevel']]);});
  it('a protocol_double record cannot grant a hardware gate',()=>{
-  const sim={...record,host:{...record.host,testLevel:'protocol_double' as const}};
+  const sim={...record,host:{...record.host,testLevel:'protocol_double' as const},worker:{...record.worker,busBackend:'sim' as const}};
   expect(codesOf(sim)).toEqual(['RECORD_DOUBLE_GRANTS_HARDWARE_GATE']);
   expect(validateBenchRecord({...sim,gates:{'G-KSW1':{status:'tested',accepted:false},'G-KID1':{status:'blocked_external',accepted:false}}}).ok).toBe(true);});
 });

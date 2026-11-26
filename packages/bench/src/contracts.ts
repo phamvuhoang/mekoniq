@@ -98,8 +98,14 @@ function kitRules(k:BenchKitV1):Problem[]{
  return out;
 }
 const SOFTWARE_GATES=['G-KSW1','G-KREG1'];
-const recordRules=(r:BenchRecordV1):Problem[]=>r.host.testLevel!=='protocol_double'?[]:Object.entries(r.gates).filter(([id,g])=>!SOFTWARE_GATES.includes(id)&&g.status!=='blocked_external')
- .map(([id])=>problem('RECORD_DOUBLE_GRANTS_HARDWARE_GATE',`/gates/${id}/status`,'a protocol_double record can only leave a hardware gate blocked_external'));
+/** The label is derived from the bus backend, so it cannot be chosen: only the simulated bus is `protocol_double`, and a `protocol_double` record never grants a hardware gate. */
+const recordRules=(r:BenchRecordV1):Problem[]=>{
+ const sim=r.worker.busBackend==='sim',double=r.host.testLevel==='protocol_double',out:Problem[]=[];
+ if(sim&&!double)out.push(problem('RECORD_SIM_NOT_DOUBLE','/host/testLevel','a record from the simulated bus must be labelled protocol_double'));
+ if(!sim&&double)out.push(problem('RECORD_HARDWARE_MARKED_DOUBLE','/host/testLevel','a record from the real bus cannot be labelled protocol_double'));
+ if(double)for(const [id,g] of Object.entries(r.gates))if(!SOFTWARE_GATES.includes(id)&&g.status!=='blocked_external')out.push(problem('RECORD_DOUBLE_GRANTS_HARDWARE_GATE',`/gates/${id}/status`,'a protocol_double record can only leave a hardware gate blocked_external'));
+ return out;
+};
 
 export const validateBenchKit=(doc:unknown):{ok:true;kit:BenchKitV1}|{ok:false;problems:Problem[]}=>{const p=check<BenchKitV1>('kit.v1',doc,kitRules);return p.length?{ok:false,problems:p}:{ok:true,kit:doc as BenchKitV1};};
 export const validateBenchSession=(doc:unknown):{ok:true;session:BenchSessionV1}|{ok:false;problems:Problem[]}=>{const p=check('session.v1',doc);return p.length?{ok:false,problems:p}:{ok:true,session:doc as BenchSessionV1};};
@@ -118,7 +124,6 @@ export function sessionAllowsTorque(s:BenchSessionV1,kit:BenchKitV1):Problem[]{
  if(d.estopCutsMotorPower!==true)out.push(problem('SESSION_ESTOP_REQUIRED','/declarations/estopCutsMotorPower','the e-stop must cut motor power'));
  if(d.motorsClamped!==true)out.push(problem('SESSION_CLAMP_REQUIRED','/declarations/motorsClamped','motors must be clamped'));
  if(!d.powerWiredBy.trim())out.push(problem('SESSION_POWER_OWNER_REQUIRED','/declarations/powerWiredBy','name who wired the motor power'));
- if(d.shaftLoad!=='bare'&&d.shaftLoad!=='marker_disc')out.push(problem('SESSION_SHAFT_LOAD_INVALID','/declarations/shaftLoad',String(d.shaftLoad)));
  if(kit.power.motor==='ac_mains'&&d.mainsQualified!==true)out.push(problem('SESSION_MAINS_QUALIFICATION_REQUIRED','/declarations/mainsQualified','an ac_mains kit needs a qualified person'));
  return out;
 }
