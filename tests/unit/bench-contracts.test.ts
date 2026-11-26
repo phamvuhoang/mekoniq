@@ -46,6 +46,7 @@ describe('bench session',()=>{
  const codesOf=(s:BenchSessionV1,k=dc)=>sessionAllowsTorque(s,k).map(p=>p.code);
  it('a complete session on a DC kit is allowed',()=>{expect(validateBenchSession(session).ok).toBe(true);expect(codesOf(session)).toEqual([]);});
  it('estopCutsMotorPower false',()=>{expect(codesOf(edit({estopCutsMotorPower:false}))).toEqual(['SESSION_ESTOP_REQUIRED']);});
+ it('estopTestedToday false',()=>{expect(codesOf(edit({estopTestedToday:false}))).toEqual(['SESSION_ESTOP_NOT_TESTED']);});
  it('motorsClamped false',()=>{expect(codesOf(edit({motorsClamped:false}))).toEqual(['SESSION_CLAMP_REQUIRED']);});
  it('powerWiredBy empty',()=>{expect(codesOf(edit({powerWiredBy:''}))).toEqual(['SESSION_POWER_OWNER_REQUIRED']);});
  it('an AC kit needs mainsQualified true',()=>{expect(codesOf(session,ac)).toEqual(['SESSION_MAINS_QUALIFICATION_REQUIRED']);expect(codesOf(edit({mainsQualified:false}),ac)).toEqual(['SESSION_MAINS_QUALIFICATION_REQUIRED']);expect(codesOf(edit({mainsQualified:true}),ac)).toEqual([]);});

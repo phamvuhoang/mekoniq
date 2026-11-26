@@ -6,7 +6,7 @@
 //   node scripts/bench.mjs sensors  --kit FILE --policy FILE --session FILE --out DIR [--case CASE] [--bus sim]
 //   node scripts/bench.mjs verify   --record DIR
 // Exit 0: every case tested (doctor: every check ok; verify: no issue). 1: refused or failed at run time, including the refusals of `run` before any worker (session
-// declarations, identity, --from) and a worker that would not close. 2: usage (options, unreadable or invalid kit/policy/session files, --bus, --out, the test answers file).
+// declarations, identity, --from) and a worker that would not close. 2: usage (options, a relative BENCH_PYTHON, unreadable or invalid kit/policy/session files, --bus, --out, the test answers file).
 // No flag skips arming, a prompt, the identity check, a limit or the case order. The only test hooks are BENCH_TEST_ARMING=1 and BENCH_TEST_ANSWERS=<file>,
 // honoured only with a kit on the simulated slave. On a terminal any key outside a question stops the run (quick stop, then enable off); while a question (the arming
 // code, an operator prompt) is open, keys go into the answer and only Ctrl-C stops. SIGINT, SIGTERM and SIGHUP stop too; a repeat while stopping is ignored.
@@ -14,7 +14,7 @@ import {spawnSync} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
 import {existsSync,readFileSync,realpathSync} from 'node:fs';
 import {networkInterfaces,release,version} from 'node:os';
-import {basename,dirname,join,resolve} from 'node:path';
+import {basename,dirname,isAbsolute,join,resolve} from 'node:path';
 import {createInterface} from 'node:readline/promises';
 import {fileURLToPath} from 'node:url';
 import {tsImport} from 'tsx/esm/api';
@@ -31,6 +31,8 @@ for(let i=0;i<args.length;i+=2){
  o[k]=args[i+1];
 }
 for(const [k,required] of Object.entries(allowed))if(required&&o[k]===undefined)usage('MISSING_OPTION',`--${k}`);
+// the worker runs with cwd robotics/bench: a relative interpreter path would pass doctor's python check here and fail there
+if(process.env.BENCH_PYTHON!==undefined&&!isAbsolute(PY))usage('BENCH_PYTHON_NOT_ABSOLUTE',`BENCH_PYTHON=${PY}; give the absolute path of the interpreter`);
 const ts=(p)=>tsImport(join(root,'packages/bench/src',p),import.meta.url);
 const {spawnBenchWorker}=await ts('worker.ts'),{validateBenchKit,validateBenchPolicy,validateBenchSession}=await ts('contracts.ts');
 const readJson=(f)=>{try{return JSON.parse(readFileSync(f,'utf8'));}catch(e){return {unreadable:e.message};}};

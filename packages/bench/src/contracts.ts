@@ -132,6 +132,7 @@ export const validateBenchWire=(kind:'request'|'response',doc:unknown):Problem[]
 export function sessionAllowsTorque(s:BenchSessionV1,kit:BenchKitV1):Problem[]{
  const d=s.declarations,out:Problem[]=[];
  if(d.estopCutsMotorPower!==true)out.push(problem('SESSION_ESTOP_REQUIRED','/declarations/estopCutsMotorPower','the e-stop must cut motor power'));
+ if(d.estopTestedToday!==true)out.push(problem('SESSION_ESTOP_NOT_TESTED','/declarations/estopTestedToday','press the e-stop once today and see the motor power go off'));
  if(d.motorsClamped!==true)out.push(problem('SESSION_CLAMP_REQUIRED','/declarations/motorsClamped','motors must be clamped'));
  if(!d.powerWiredBy.trim())out.push(problem('SESSION_POWER_OWNER_REQUIRED','/declarations/powerWiredBy','name who wired the motor power'));
  if(d.shaftLoad!=='bare'&&d.shaftLoad!=='marker_disc')out.push(problem('SESSION_SHAFT_LOAD_INVALID','/declarations/shaftLoad',String(d.shaftLoad))); // fail closed even if the caller skipped validateBenchSession

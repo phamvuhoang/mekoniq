@@ -1,9 +1,12 @@
 // The session flow of scripts/bench.mjs (K07b; spec B1 §1, §6; BK-D09, BK-D11): everything between parsing the arguments and printing, here so that each flow
 // rule is tested with injected workers and a fakeClock. It adds no way around a gate below it: arming is ttyArming, prompts are the terminal's, order is runCase's
-// `requires`. The only exceptions are the two test hooks (testHook), honoured only on the simulated slave. Every session writes its part, whatever happens.
+// `requires`. The only exceptions are the two test hooks (testHook), honoured only on the simulated slave. The results are held in memory and the part is written when
+// the suite ends: after refusals, aborts, worker loss and handled exceptions too. A CLI process killed outright (kill -9) leaves no part for that session.
+// ponytail: one write at the end; write each case durably when it ends before the first hardware session
 import {existsSync,readFileSync,realpathSync} from 'node:fs';
 import {mkdir,readdir,rename,rm,writeFile} from 'node:fs/promises';
 import {dirname,join,resolve} from 'node:path';
+import {hashJson} from '../../lab-runtime/src/v2/hash';
 import {ttyArming,type Arming} from './arming';
 import {exportCalibration} from './calibration-export';
 import {BENCH_CASES,CONFORMANCE_CASES,IDENTITY_CASES,MEASURE_CASES,SENSOR_CASES,identityScan,simDescriptions,verdictOf,type BenchCase,type CaseTrace,type CaseVerdict,
@@ -201,7 +204,7 @@ export async function identityNotClean(dir:string,l:{kit:BenchKitV1;policy:Bench
  * close, the part. A continuation (--from) refused before its first case leaves the stored part as it was. */
 async function caseSession(kind:Suite,l:Loaded,o:{out:string;cases:BenchCase[];stored:CaseResult[];serials?:string;replace:boolean;registry:Registry},io:FlowIo):Promise<number>{
  const torque=kind!=='sensors',ctx:RunContext={worker:undefined as unknown as BenchWorker,kit:l.kit,policy:l.policy,clock:io.clock,arming:torque?io.arming:{arm:async()=>false},
-  prompter:io.prompter,abort:io.abort,passed:new Set(o.stored.filter(r=>r.verdict.status==='tested').map(r=>r.caseId))};
+  prompter:io.prompter,abort:io.abort,torqueCases:o.cases.filter(c=>c.needsTorque).length,passed:new Set(o.stored.filter(r=>r.verdict.status==='tested').map(r=>r.caseId))};
  let bus:BenchWorker|undefined,sensors:BenchWorker|undefined,describe:Record<string,unknown>={},scan:Record<string,unknown>={slaves:[]},refusal:{code:string;detail:string}|null=null;
  let results:CaseResult[]=[],stoppedAfter:CaseResult|null=null;
  try{
@@ -230,7 +233,7 @@ async function caseSession(kind:Suite,l:Loaded,o:{out:string;cases:BenchCase[];s
  protocolDouble(l,io.log);
  return all.every(r=>r.verdict.status==='tested')&&!closing.length&&!calibration?0:1;
 }
-/** `run` (BK-D09, D11, D12; spec B1 §7.2): the declarations must allow torque, the identity must be clean; --from needs every earlier case of the suite tested in the stored part; then caseSession. */
+/** `run` (BK-D09, D11, D12; spec B1 §7.2): the declarations must allow torque, the identity must be clean; --from needs the stored part's session to be this session and every earlier case of the suite tested in it; then caseSession. */
 export async function run(l:Loaded,o:{identity:string;suite:string;out:string;from?:string;only?:string},io:FlowIo,cases:Registry=BENCH_CASES):Promise<number>{
  if(o.suite!=='conformance'&&o.suite!=='measure')throw refused('INVALID_OPTION',`--suite ${o.suite} (conformance or measure)`);
  if(!o.from&&existsSync(o.out))throw refused('OUT_EXISTS',o.out);
@@ -242,6 +245,9 @@ export async function run(l:Loaded,o:{identity:string;suite:string;out:string;fr
  const unclean=await identityNotClean(o.identity,l);
  if(unclean.length){io.log(`REFUSED BENCH_IDENTITY_NOT_CLEAN: ${unclean.join('; ')}. Correct the profile (a new revision) and identify again.`);return 1;}
  const stored=o.from?await storedPart(o.out,l,o.suite,cases):{results:[],serials:id.serials};
+ // a new session (another day, operator or shaft load) is a new part: the stored cases ran under the session the part holds, and the part is rewritten with this one
+ if(o.from&&hashJson(await readJsonFile(join(o.out,'session.json')).catch(()=>null))!==hashJson(l.session)){
+  io.log(`REFUSED BENCH_SESSION_CHANGED: ${o.out}/session.json is not this --session file; --from continues only the session that ran the stored cases. Run a new part.`);return 1;}
  if(stored.serials!==id.serials){io.log(`REFUSED BENCH_IDENTITY_CHANGED: serials in the stored part ${stored.serials}; in the identity part ${id.serials}. Run a new part.`);return 1;}
  const all=suiteOf(o.suite,cases),earlier=o.from?all.slice(0,all.indexOf(list[0]!)):[];
  const missing=earlier.filter(c=>stored.results.find(r=>r.caseId===c.id)?.verdict.status!=='tested');

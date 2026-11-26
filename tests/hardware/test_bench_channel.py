@@ -1,4 +1,5 @@
 import sys
+sys.dont_write_bytecode = True  # first: nothing imported from robotics/ may leave a __pycache__ under a portable tool root (Lab launcher, recorders)
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'robotics' / 'bench'))
 
@@ -12,6 +13,13 @@ from bench_worker.channel import CommandChannel
 MUJOCO = Path(__file__).resolve().parents[2] / 'robotics' / 'simulation-mujoco'
 sys.path.insert(0, str(MUJOCO))
 from mujoco_worker.drive_model import DriveGroup  # noqa: E402  (pure module: no mujoco import)
+
+
+def test_bench_tests_never_write_bytecode():
+    # the flag holds here, and every bench test file sets it before anything else (it would hold under -B anyway, so the source is checked too)
+    assert sys.dont_write_bytecode is True
+    for f in sorted(Path(__file__).parent.glob('test_bench_*.py')):
+        assert f.read_text().startswith('import sys\nsys.dont_write_bytecode = True'), f.name
 
 
 def channel(**over):

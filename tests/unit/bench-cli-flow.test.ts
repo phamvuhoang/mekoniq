@@ -252,6 +252,25 @@ describe('run',()=>{
   expect(s.KCF05).toEqual({status:'not_run',reason:'SUITE_STOPPED_AFTER_KCF03'});
   expect(await clean(out)).toEqual([]);expect(readdirSync(dir).filter(f=>/\.(new|old)-/.test(f))).toEqual([]);
  },180_000);
+ it('--from with another session (operator, shaft load or start time) is BENCH_SESSION_CHANGED: nothing spawned, the stored part byte-identical',async()=>{
+  const identity=await identityOf(),out=fresh('conformance'),first=rig();
+  expect(await run(first.l,{identity,suite:'conformance',out,only:'KCF02'},first.io)).toBe(0);
+  const snap=()=>(readdirSync(out,{recursive:true}) as string[]).sort().map(f=>{const p=join(out,f);try{return `${f}:${readFileSync(p,'base64')}`;}catch{return f;}}).join('\n'),before=snap();
+  for(const session of [{...SESSION,operator:'Operator B'},{...SESSION,declarations:{...SESSION.declarations,shaftLoad:'marker_disc' as const}},{...SESSION,startedAt:'2026-11-28T09:00:00Z'}]){
+   const r=rig(KIT,{session});
+   expect(await run(r.l,{identity,suite:'conformance',out,from:'KCF03'},r.io)).toBe(1);
+   expect(r.calls).toEqual([]);expect(r.lines.join('\n')).toMatch(/REFUSED BENCH_SESSION_CHANGED/);
+   expect(snap()).toBe(before);
+  }
+ },180_000);
+ it('the arming question says the code arms the whole run and how many torque cases follow without a pause',async()=>{
+  const identity=await identityOf(),r=rig(KIT,{abortAt:3}),out=fresh('conformance'),asked:string[]=[];
+  const io={...r.io,arming:{arm:async(p:string)=>{asked.push(p);return true;}}};
+  expect(await run(r.l,{identity,suite:'conformance',out},io)).toBe(1);
+  const n=CONFORMANCE_CASES.filter(c=>c.needsTorque).length;
+  expect(asked).toHaveLength(1);expect(n).toBeGreaterThan(1);
+  expect(asked[0]).toMatch(/arms the whole run/);expect(asked[0]).toContain(`${n} torque cases follow without a pause`);expect(asked[0]).toMatch(/emergency stop/);
+ },120_000);
  it('measure re-runs KCF02 first; without KCF04 and KCF01 the measurement cases stay not_run, and no calibration dataset is written',async()=>{
   const identity=await identityOf(),r=rig(),out=fresh('measure');
   expect(await run(r.l,{identity,suite:'measure',out},r.io)).toBe(1);

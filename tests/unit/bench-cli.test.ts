@@ -133,4 +133,10 @@ describe('doctor',()=>{
   if(process.platform!=='linux')for(const id of ['nic','cap_net_raw','ftdi_latency','kernel'])expect(checks.find(c=>c.id===id)).toMatchObject({ok:false,detail:'linux only'});
   expect(checks.find(c=>c.id==='serial_ports')).toMatchObject({ok:false,detail:expect.stringMatching(/ttyBENCH-none/)});
  },120_000);
+ it('a relative BENCH_PYTHON is a usage error before any check: the worker runs with another cwd, where that path does not exist',()=>{
+  for(const args of [['doctor'],['run',...common(),'--identity',identity,'--suite','conformance','--case','KCF02','--out',fresh('conformance')]]){
+   const r=cli('bench',args,{BENCH_PYTHON:'.venv-bench/bin/python'});
+   expect(r.status,r.out).toBe(2);expect(r.out).toMatch(/REFUSED BENCH_PYTHON_NOT_ABSOLUTE/);expect(r.out).not.toMatch(/^\{/m);
+  }
+ },60_000);
 });

@@ -30,6 +30,8 @@ export interface RunContext{
  scan?:CaseTrace['scan'];descriptions?:Record<string,DescriptionSummary>;
  /** Set, never cleared, when a case ended abnormally: the run is no longer armed and the suite must stop (BK-D11). */
  disarmed?:boolean;
+ /** How many torque cases this run holds (the suite runner knows it): the arming question says that many follow without a pause. Text only. */
+ torqueCases?:number;
 }
 /** The runs an operator armed. Private on purpose: no field of the context can say "armed", so no caller can skip the code. */
 const armedRuns=new WeakSet<RunContext>();
@@ -78,7 +80,8 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   ||prompts.some(q=>!Number.isSafeInteger(q.atTick)||q.atTick<0||q.atTick>s.ticks||(q.atTick<s.ticks)!==(q.motion==='running')||s.silence&&q.atTick===s.ticks)
   ||new Set(prompts.map(q=>q.id)).size!==prompts.length)return decided('not_run','BENCH_SCRIPT_INVALID');
  if(c.needsTorque&&!armedRuns.has(ctx)){
-  if(!await ctx.arming.arm(`${c.id}: torque on ${kit.axes.map(a=>a.axisId).join(', ')}`))return decided('not_run','BENCH_NOT_ARMED');
+  const n=ctx.torqueCases,follow=n===undefined?'':n===1?': 1 torque case':`: ${n} torque cases follow without a pause`;
+  if(!await ctx.arming.arm(`${c.id}: torque on ${kit.axes.map(a=>a.axisId).join(', ')}. This code arms the whole run${follow}. Keep a hand on the emergency stop.`))return decided('not_run','BENCH_NOT_ARMED');
   armedRuns.add(ctx);
  }
  if(ctx.objects)trace.objects=ctx.objects;
