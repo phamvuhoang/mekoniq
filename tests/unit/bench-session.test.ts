@@ -7,7 +7,7 @@ import {sealBench,type BenchKitV1,type BenchPolicy,type BenchTickRecord} from '.
 import {fakeClock} from '../../packages/bench/src/clock';
 import {ttyArming,type Arming} from '../../packages/bench/src/arming';
 import {BENCH_DEADLINES_MS,BenchWorkerError,spawnBenchWorker,type BenchOp,type BenchWorker} from '../../packages/bench/src/worker';
-import {PROMPT_HOLD_MAX_TICKS,runCase,startBenchSession,type Prompter,type RunContext} from '../../packages/bench/src/session';
+import {PROMPT_HOLD_MAX_TICKS,runCase,startBenchSession,type RunContext} from '../../packages/bench/src/session';
 import {verdictOf,type BenchCase} from '../../packages/bench/src/cases/index';
 
 const PY=process.env.BENCH_PYTHON??'python3';
@@ -298,8 +298,11 @@ const later=()=>{
  return p;
 };
 /** A torque case with one prompt at `atTick`; evaluate is tested only when the stored answer is '12.5'. */
-const promptCase=(o:{atTick?:number;ticks?:number;prompts?:{id:string;atTick:number;text:string}[]}={}):BenchCase=>holdCase({ticks:o.ticks??20,
- script:()=>({ticks:o.ticks??20,prompts:o.prompts??[{id:'mark',atTick:o.atTick??10,text:'Mark offset (deg)?'}],commandsAt:k=>cmd(k+1,{target:1})}),
+type P={id:string;atTick:number;text:string;motion?:'running'};
+/** A prompt before the last tick is a mid-motion question (motion: 'running'); one at atTick = ticks is post-motion (the default). */
+const promptCase=(o:{atTick?:number;ticks?:number;prompts?:P[];silence?:boolean}={}):BenchCase=>holdCase({ticks:o.ticks??20,
+ script:()=>({ticks:o.ticks??20,prompts:o.prompts??[{id:'mark',atTick:o.atTick??10,text:'Mark offset (deg)?',...(o.atTick??10)<(o.ticks??20)?{motion:'running' as const}:{}}],
+  ...o.silence?{silence:{atTick:o.ticks??20,ms:100}}:{},commandsAt:k=>cmd(k+1,{target:1})}),
  evaluate:t=>t.prompts[0]?.answer==='12.5'?{status:'tested',reason:null,measurements:[]}:{status:'failed',reason:'ANSWER',measurements:[]}});
 
 describe('operator prompts (P1)',()=>{
@@ -323,19 +326,46 @@ describe('operator prompts (P1)',()=>{
   expect(verdictOf(promptCase(),JSON.parse(JSON.stringify(r.trace)),kit,POLICY)).toEqual(r.verdict);
   expect(x.disarmed).toBeFalsy();
  },20_000);
- it('a prompt at atTick = ticks is asked after the last scripted tick; at 0 it is asked before anything is sent',async()=>{
+ it('a post-motion prompt (atTick = ticks) is asked only after the stop sequence: every power stage off, and every held tick asks for nothing',async()=>{
   const {w,kit}=await open();await startBenchSession(w);
-  const p:Prompter={ask:async()=>'12.5'};
-  const end=await runCase(promptCase({atTick:20}),ctx(w,kit,{prompter:p}));
-  expect(end.verdict.status).toBe('tested');
+  const ticks:BenchTickRecord[]=[];let at=-1,held=0;
+  const mk=later(),x=ctx(w,kit,{prompter:{ask:q=>{at=ticks.length;return mk.ask(q);}},onTick:t=>{ticks.push(t);if(at>=0&&++held===8)mk.answer('12.5');}});
+  const r=await runCase(promptCase({atTick:20}),x);
+  expect(r.verdict.status).toBe('tested');expect(r.trace.prompts).toEqual([{id:'mark',answer:'12.5'}]);
+  expect(at).toBeGreaterThan(20);   // the scripted ticks, then the stop sequence, then the question
+  expect(ticks[at-1]!.vendor.every(v=>(v.statusword&0x02)===0)).toBe(true);expect(ticks[at-1]!.driveCommands.every(c=>!c.enable)).toBe(true);
+  const hold=ticks.slice(at,at+8);
+  expect(hold).toHaveLength(8);
+  expect(hold.every(t=>t.driveCommands.every(c=>!c.enable&&!c.quickStop&&c.target===0)&&t.vendor.every(v=>(v.statusword&0x02)===0)&&t.feedback.every(f=>f.state==='disabled'))).toBe(true);
+  const seqs=ticks.slice(at-1,at+8).map(t=>t.driveCommands[0]!.seq);expect(seqs.every((q,i)=>i===0||q>seqs[i-1]!)).toBe(true);   // fresh seqs: the channel watchdog never trips
+  expect(x.disarmed).toBeFalsy();
+ },20_000);
+ it('a post-motion prompt whose stop sequence does not finish is never asked: the case ends BENCH_STOP_INCOMPLETE on the wire stop',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  let n=0;   // after the 20 scripted ticks every step reports a power stage that never switches off
+  const spy:BenchWorker={request:async(op,payload,t)=>{
+   const a=await w.request(op,payload,t);if(op!=='step'||++n<=20)return a;
+   const r=a.result as {vendor:{statusword:number}[]};r.vendor=r.vendor.map(v=>({...v,statusword:v.statusword|0x02}));return a;
+  },close:()=>w.close(),get tick(){return w.tick;},get pid(){return w.pid;},get stderr(){return w.stderr;}};
+  const p=later(),x=ctx(spy,kit,{prompter:p}),r=await runCase(promptCase({atTick:20}),x);
+  expect(p.asked).toEqual([]);expect(r.verdict).toEqual({status:'failed',reason:'BENCH_STOP_INCOMPLETE',measurements:[]});
+  expect((r.trace.stop as {controlwords:number[]}).controlwords).toEqual([0,0]);expect(x.disarmed).toBe(true);
+ },30_000);
+ it('a mid-motion prompt at 0 is asked before anything is sent',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
   const t0=w.tick,ticks:BenchTickRecord[]=[];let first=-1;
   const start=await runCase(promptCase({atTick:0}),ctx(w,kit,{prompter:{ask:async()=>{first=ticks.length;return '12.5';}},onTick:t=>ticks.push(t)}));
   expect(start.verdict.status).toBe('tested');expect(first).toBe(0);expect(ticks[0]!.tick).toBe(t0);
  },20_000);
- it.each([['atTick above ticks',[{id:'a',atTick:21,text:'?'}]],['a negative atTick',[{id:'a',atTick:-1,text:'?'}]],['two prompts with one id',[{id:'a',atTick:1,text:'?'},{id:'a',atTick:2,text:'?'}]]])(
+ it.each([['atTick above ticks',[{id:'a',atTick:21,text:'?'}]],['a negative atTick',[{id:'a',atTick:-1,text:'?'}]],['two prompts with one id',[{id:'a',atTick:1,text:'?',motion:'running'},{id:'a',atTick:2,text:'?',motion:'running'}]],
+  ['a mid-motion prompt without motion running',[{id:'a',atTick:5,text:'?'}]],['a post-motion prompt marked running',[{id:'a',atTick:20,text:'?',motion:'running'}]]] as [string,P[]][])(
   'a script with %s is not_run BENCH_SCRIPT_INVALID before any step',async(_,prompts)=>{
   const {w,kit}=await open();await startBenchSession(w);
   expect((await runCase(promptCase({prompts}),ctx(w,kit,{prompter:{ask:async()=>'12.5'}}))).verdict).toEqual({status:'not_run',reason:'BENCH_SCRIPT_INVALID',measurements:[]});expect(w.tick).toBe(0);
+ },20_000);
+ it('a post-motion prompt in a script that ends with a silence is not_run BENCH_SCRIPT_INVALID (after a silence only the wire stop follows)',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  expect((await runCase(promptCase({atTick:20,silence:true}),ctx(w,kit,{prompter:{ask:async()=>'12.5'}}))).verdict).toEqual({status:'not_run',reason:'BENCH_SCRIPT_INVALID',measurements:[]});expect(w.tick).toBe(0);
  },20_000);
  it('an abort while the question is open ends the case OPERATOR_ABORT: quick stop, enable false, disarmed',async()=>{
   const {w,kit}=await open();await startBenchSession(w);

@@ -20,8 +20,8 @@ let n=0;
 const workers:BenchWorker[]=[];
 afterEach(async()=>{await Promise.all(workers.splice(0).map(w=>w.close()));});
 afterAll(()=>rmSync(dir,{recursive:true,force:true}));
-async function ctxOf(sim:Record<string,unknown>={},extra:Partial<RunContext>={}):Promise<RunContext>{
- const {digest:_,...k}=structuredClone(KIT);void _;Object.assign(k.simSlave!,sim);
+async function ctxOf(sim:Record<string,unknown>={},extra:Partial<RunContext>={},edit:(k:Omit<BenchKitV1,'digest'>)=>void=()=>{}):Promise<RunContext>{
+ const {digest:_,...k}=structuredClone(KIT);void _;Object.assign(k.simSlave!,sim);edit(k);
  const kit=sealBench<BenchKitV1>(k),kitPath=join(dir,`kit-${++n}.json`);writeFileSync(kitPath,JSON.stringify(kit));
  const w=await spawnBenchWorker({role:'bus',python:PY,kitPath,bus:'sim',readOnly:false,sessionId:'m',deadlinesMs:{step:5000}});workers.push(w);
  await startBenchSession(w);
@@ -54,23 +54,39 @@ describe('KMS01 tracking lag (an upper bound, unloaded rotor)',()=>{
   expect(trials.map(t=>[t.condition,t.split])).toEqual([['step-2','tune'],['step-2','validation'],['step-5','tune'],['step-5','validation']]);
   expect(trials.every(t=>t.signal.kind==='step'&&t.ticks<=500)).toBe(true);
   for(const a of AXES){
-   const x=m(r,`trackingLagUpperBoundMs:${a}`);
+   const x=m(r,`trackingLagUpperBoundUnloadedMs:${a}`);
    expect(x).toMatchObject({unit:'ms',caseId:'KMS01',n:4});
    expect(x.value).toBeGreaterThan(4);expect(x.value).toBeLessThan(60);expect(x.uncertaintyAbs).toBeGreaterThanOrEqual(KIT.bus.cycleMs);
   }
-  expect(r.verdict.measurements.every(x=>!/latency/i.test(x.id))).toBe(true);
+  // a property of this kit on an unloaded rotor, never "the latency of the drive" or of the robot
+  expect(r.verdict.measurements.every(x=>!/latency/i.test(x.id)&&/UpperBound/.test(x.id)&&/Unloaded/.test(x.id))).toBe(true);
  },60_000);
  it('the definition: a velocity that is the bus-written target three cycles later gives exactly three cycles at every level, in every trial',async()=>{
   const r=await run('KMS01'),t=structuredClone(r.trace),cpt=20/KIT.bus.cycleMs;
   for(let j=t.cycles.length-1;j>=0;j--)for(const [i,ax] of t.cycles[j]!.axes.entries())ax.velocityRaw=j>=3?t.cycles[j-3]!.axes[i]!.targetRaw:0;
   const v=byId('KMS01').evaluate(t,r.ctx.kit,POLICY);
   expect(v.status).toBe('tested');expect(t.cycles.length).toBe(t.ticks.length*cpt);
-  for(const a of AXES){const x=v.measurements.find(y=>y.id===`trackingLagUpperBoundMs:${a}`)!;expect(x.value).toBeCloseTo(3*KIT.bus.cycleMs,9);expect(x.uncertaintyAbs).toBe(KIT.bus.cycleMs);}
+  for(const a of AXES){const x=v.measurements.find(y=>y.id===`trackingLagUpperBoundUnloadedMs:${a}`)!;expect(x.value).toBeCloseTo(3*KIT.bus.cycleMs,9);expect(x.uncertaintyAbs).toBe(KIT.bus.cycleMs);}
   // a velocity that never reaches a level fails the case; a slave without 606Ch mapped cannot measure it
   const stuck=structuredClone(r.trace);for(const c of stuck.cycles)c.axes[1]!.velocityRaw=Math.round(c.axes[1]!.targetRaw*0.6);
   expect(byId('KMS01').evaluate(stuck,r.ctx.kit,POLICY)).toMatchObject({status:'failed',reason:expect.stringMatching(/^LAG_LEVEL_NOT_REACHED amr-1\/wheel-right trial 0 level 0.75/)});
   const none=structuredClone(r.trace);for(const c of none.cycles)c.axes[0]!.velocityRaw=null;
   expect(byId('KMS01').evaluate(none,r.ctx.kit,POLICY)).toMatchObject({status:'failed',reason:'VELOCITY_NOT_MAPPED amr-1/wheel-left'});
+ },60_000);
+});
+
+/** The kit on a real bus (re-sealed: soem, no simSlave): KMS01 must then time the cycle rows by their own tMonoNs. */
+const soem=()=>{const {digest:_,simSlave:__,...k}=structuredClone(KIT);void _;void __;return sealBench<BenchKitV1>({...k,bus:{...k.bus,backend:'soem',interface:'enp3s0'}} as Omit<BenchKitV1,'digest'>);};
+describe('KMS01 time base on a real bus (fails closed)',()=>{
+ it('cycle rows whose tMonoNs spacing is not cycleMs (a step-mode burst) are CYCLE_CLOCK_MISMATCH; rows one cycle apart give the cycle-counter result',async()=>{
+  const r=await run('KMS01'),real=soem();
+  expect(byId('KMS01').evaluate(r.trace,real,POLICY)).toMatchObject({status:'failed',reason:expect.stringMatching(/^CYCLE_CLOCK_MISMATCH/)});
+  const clocked=structuredClone(r.trace);for(const c of clocked.cycles)c.tMonoNs=1e12+c.cycle*KIT.bus.cycleMs*1e6+(c.cycle%3)*200_000;   // 0.2 ms jitter, inside 20 %
+  const v=byId('KMS01').evaluate(clocked,real,POLICY),sim=r.verdict.measurements;
+  expect(v.status).toBe('tested');
+  for(const a of AXES){const x=v.measurements.find(y=>y.id===`trackingLagUpperBoundUnloadedMs:${a}`)!,y=sim.find(z=>z.id===x.id)!;expect(Math.abs(x.value-y.value)).toBeLessThan(1);}
+  const slow=structuredClone(r.trace);for(const c of slow.cycles)c.tMonoNs=1e12+c.cycle*KIT.bus.cycleMs*1.3e6;   // 30 % slow: the bus does not run at cycleMs
+  expect(byId('KMS01').evaluate(slow,real,POLICY)).toMatchObject({status:'failed',reason:expect.stringMatching(/^CYCLE_CLOCK_MISMATCH/)});
  },60_000);
 });
 
@@ -110,6 +126,45 @@ describe('KMS04 counts per revolution',()=>{
   const ticks:BenchTickRecord[]=[],r=await run('KMS04',{},{onTick:t=>ticks.push(t),prompter:operator(ticks,-7)});
   expect(r.verdict).toMatchObject({status:'failed',reason:expect.stringMatching(/^MARK_OFFSET amr-1\/wheel-left/)});
   expect((await run('KMS04')).verdict).toEqual({status:'not_run',reason:'BENCH_PROMPT_UNAVAILABLE',measurements:[]});
+ },60_000);
+});
+
+describe('KMS04 with a drive that enables late or never (fix round 1, F1)',()=>{
+ /** Answers `answer(q)` only after `after` ticks with the question open, recording the index of the first tick sent while it was open. */
+ const slowOperator=(ticks:BenchTickRecord[],answer:(q:{id:string})=>string,after=6)=>{
+  const o={at:-1,ask:(q:{id:string;text:string})=>{const at=ticks.length;if(o.at<0)o.at=at;return new Promise<string>(ok=>{const t=setInterval(()=>{if(ticks.length>=at+after){clearInterval(t);ok(answer(q));}},1);});}};
+  return o;
+ };
+ const heldOff=(ticks:BenchTickRecord[],at:number)=>{
+  expect(at).toBeGreaterThan(0);
+  expect(ticks[at-1]!.vendor.every(v=>(v.statusword&0x02)===0)).toBe(true);   // the power stages were off before the question
+  const held=ticks.slice(at);expect(held.length).toBeGreaterThanOrEqual(6);
+  expect(held.every(t=>t.driveCommands.every(c=>!c.enable&&c.target===0)&&t.vendor.every(v=>(v.statusword&0x02)===0))).toBe(true);
+ };
+ it('a drive that enables late: the creep starts only once enabled, and every tick sent while the question is open asks for nothing, power stages off',async()=>{
+  const ticks:BenchTickRecord[]=[];let first=-1;
+  const op=slowOperator(ticks,q=>{const i=AXES.indexOf(q.id.split(':')[1]!),e=ticks.findIndex(t=>t.feedback.every(f=>f.state==='enabled'));first=e;
+   return String((ticks[op.at-1]!.feedback[i]!.positionRad!-ticks[e]!.feedback[i]!.positionRad!)*180/Math.PI-360);});
+  const r=await run('KMS04',{enableDelayCycles:200},{onTick:t=>ticks.push(t),prompter:op});
+  expect(r.verdict.status).toBe('tested');expect(first).toBeGreaterThan(30);
+  expect(ticks.slice(0,first+1).every(t=>t.driveCommands.every(c=>c.target===0))).toBe(true);   // no creep before every axis reported enabled
+  heldOff(ticks,op.at);
+ },60_000);
+ it('a drive slower than policy.enableTimeoutTicks (the worker\'s own enable timeout set longer): no creep, no enable asked after the timeout, nothing held while the question is open',async()=>{
+  const ticks:BenchTickRecord[]=[],op=slowOperator(ticks,()=>'0');
+  const ctx=await ctxOf({enableDelayCycles:800},{onTick:t=>ticks.push(t),prompter:op},k=>{k.channel.enableTimeoutTicks=300;});   // enabled near tick 160 if still asked
+  const r=await runCase(byId('KMS04'),ctx);
+  expect(r.verdict).toEqual({status:'failed',reason:'ENABLE_TIMEOUT',measurements:[]});
+  expect(ticks.slice(POLICY.enableTimeoutTicks).every(t=>t.driveCommands.every(c=>!c.enable))).toBe(true);expect(ticks.every(t=>t.driveCommands.every(c=>c.target===0))).toBe(true);
+  heldOff(ticks,op.at);
+ },60_000);
+ it('a drive that never enables: KMS04 stops asking for enable after policy.enableTimeoutTicks, never creeps, fails ENABLE_TIMEOUT, and holds nothing while it asks',async()=>{
+  const ticks:BenchTickRecord[]=[],policy={...POLICY,enableTimeoutTicks:50},op=slowOperator(ticks,()=>'0');
+  const ctx=await ctxOf({enableDelayCycles:1_000_000},{onTick:t=>ticks.push(t),prompter:op,policy});
+  const r=await runCase(byId('KMS04'),ctx);
+  expect(r.verdict).toEqual({status:'failed',reason:'ENABLE_TIMEOUT',measurements:[]});
+  expect(ticks.slice(50).every(t=>t.driveCommands.every(c=>!c.enable))).toBe(true);expect(ticks.every(t=>t.driveCommands.every(c=>c.target===0))).toBe(true);
+  heldOff(ticks,op.at);
  },60_000);
 });
 

@@ -8,7 +8,7 @@ import type {BenchCase,CaseTrace,CaseVerdict} from './types';
 export type * from './types';
 export {CONFORMANCE_CASES,trackingCase} from './conformance';
 export {IDENTITY_CASES,IDENTITY_STRINGS,identityScan,reliedObjects,simDescriptions} from './identity';
-export {MEASURE_CASES,lagTrialsOf,trialRows,type LagTrial} from './measure';
+export {MEASURE_CASES,cycleClock,lagTrialsOf,trialRows,type LagTrial} from './measure';
 export {LIDAR_RANGE_M,SENSOR_CASES,scanRows,toLidarScan,type Ld19Frame} from './sensors';
 export const BENCH_CASES:readonly BenchCase[]=[...IDENTITY_CASES,...CONFORMANCE_CASES,...MEASURE_CASES,...SENSOR_CASES];
 export const benchCase=(id:string):BenchCase|undefined=>BENCH_CASES.find(c=>c.id===id);

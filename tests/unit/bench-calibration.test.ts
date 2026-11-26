@@ -41,7 +41,10 @@ function importer(x:{sidecar:unknown;files:{name:string;csv:string}[]}){
  const r=spawnSync(low[0]!,[...low.slice(1),...cmd],{cwd:ROOT,encoding:'utf8',timeout:120_000});
  return {status:r.status,stdout:r.stdout,stderr:r.stderr,dataset:r.status===0?JSON.parse(readFileSync(join(d,'dataset.json'),'utf8')) as {trials:{trialId:string;split:string;timesNs:number[];channels:Record<string,number[]>}[];sourceKind:string;clockMapping:unknown}:null};
 }
-const part=(kit=KIT)=>({results:[{caseId:'KMS01',trace}],session:SESSION,kit,policy:POLICY});
+const part=(kit=KIT,backend:'sim'|'soem'=kit.bus.backend,t=trace)=>({results:[{caseId:'KMS01',trace:t}],session:SESSION,kit,policy:POLICY,backend});
+const soemKit=()=>{const {digest:_,simSlave:__,...k}=structuredClone(KIT);void _;void __;return sealBench<BenchKitV1>({...k,bus:{...k.bus,backend:'soem',interface:'enp3s0'}} as Omit<BenchKitV1,'digest'>);};
+/** The sim trace with cycle rows one cycle apart in host time (0.2 ms jitter): what a cyclic bus thread on hardware records. */
+const clocked=()=>{const t=structuredClone(trace);for(const c of t.cycles)c.tMonoNs=1e12+c.cycle*KIT.bus.cycleMs*1e6+(c.cycle%3)*200_000;return t;};
 
 describe('exportCalibration (KSW09)',()=>{
  it('one CSV per trial and axis, time_ns,command,encoder in rad/s from the sample before the signal, splits alternating in trial order; the real importer takes it',()=>{
@@ -68,10 +71,23 @@ describe('exportCalibration (KSW09)',()=>{
  it('data from the simulated bus can never be exported as measured: SYNTHETIC_CANNOT_BE_MEASURED',()=>{
   expect(()=>exportCalibration(part(),{sourceKind:'measured',configDigest:DIGEST})).toThrow(expect.objectContaining({code:'SYNTHETIC_CANNOT_BE_MEASURED'}));
  });
+ it('measured data is bound to the kit that ran: the digest must be the kit\'s, and a part recorded on the simulated bus is never measured',()=>{
+  const real=soemKit();
+  expect(()=>exportCalibration(part(KIT),{sourceKind:'synthetic',configDigest:real.digest})).toThrow(expect.objectContaining({code:'CONFIG_DIGEST_MISMATCH'}));
+  // the trace came from the simulated slave: a soem kit argument does not make it measured
+  expect(()=>exportCalibration(part(real,'sim',clocked()),{sourceKind:'measured',configDigest:real.digest})).toThrow(expect.objectContaining({code:'SYNTHETIC_CANNOT_BE_MEASURED'}));
+  expect(()=>exportCalibration(part(KIT,'soem'),{sourceKind:'synthetic',configDigest:DIGEST})).toThrow(expect.objectContaining({code:'BACKEND_MISMATCH'}));
+ });
+ it('on a real bus the CSV clock is the cycle rows\' own tMonoNs: a step-mode burst is CYCLE_CLOCK_MISMATCH',()=>{
+  const real=soemKit();
+  expect(()=>exportCalibration(part(real,'soem'),{sourceKind:'measured',configDigest:real.digest})).toThrow(expect.objectContaining({code:'CYCLE_CLOCK_MISMATCH'}));
+  const t=clocked(),x=exportCalibration(part(real,'soem',t),{sourceKind:'measured',configDigest:real.digest});
+  const first=lagTrialsOf(t,real,POLICY)![0]!,rows=t.cycles.slice(first.from*5-1,(first.from+first.ticks)*5);
+  expect(x.files[0]!.csv.split('\n').slice(1,4).map(l=>Number(l.split(',')[0]))).toEqual(rows.slice(0,3).map(r=>r.tMonoNs-rows[0]!.tMonoNs));
+ });
  it('a measured export (a real bus) carries the attestation of the session and no generator; the importer refuses a measured sidecar without attestation',()=>{
-  const {digest:_,simSlave:__,...k}=structuredClone(KIT);void _;void __;
-  const real=sealBench<BenchKitV1>({...k,bus:{...k.bus,backend:'soem',interface:'enp3s0'}} as Omit<BenchKitV1,'digest'>);
-  const x=exportCalibration(part(real),{sourceKind:'measured',configDigest:real.digest});
+  const real=soemKit();
+  const x=exportCalibration(part(real,'soem',clocked()),{sourceKind:'measured',configDigest:real.digest});
   expect(x.sidecar.generator).toBeUndefined();
   expect(x.sidecar.attestation).toEqual({operator:'Lan',instrument:`${real.id}/marker-1`,recordedAt:'2026-11-27T09:00:00Z'});
   expect(importer(x).status).toBe(0);

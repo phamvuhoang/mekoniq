@@ -1,8 +1,9 @@
 // Measurement cases (KMS, contracts §6.2; spec B1 §7.4), first part (K07a): KMS01, KMS02, KMS04, KMS05. KMS03 (the drive's own watchdog) and KMS06 (unloaded coast) come later.
 // Torque cases after KCF02, KCF04 and KCF01; trials are registered bench signals (bench-signals.ts: steps of 2 and 5 rad/s, at most BENCH_MAX_TICKS ticks). Every number the
 // policy holds comes from it. evaluate() is a pure function of (trace, kit, policy): readback re-runs it on the stored trace.
-// Bus time is the cycle counter x cycleMs, not the cycle rows' tMonoNs: in step mode a tick's exchanges run back to back, so their host times are one burst.
-// ponytail: cycle-counter time assumes one exchange every cycleMs; true for the bus clock on hardware (K08's cyclic thread with DC); compare it with tMonoNs there.
+// Bus time (cycleClock): on the simulated bus the cycle counter x cycleMs, because in step mode a tick's exchanges run back to back and their tMonoNs are one burst
+// (ponytail: the sim's only clock; it says nothing about a real bus). On a real bus the rows' own tMonoNs, refused (CYCLE_CLOCK_MISMATCH) unless their median spacing
+// is within 20 % of cycleMs and they strictly increase: a time base that is not the bus's fails closed.
 import {BENCH_AMPLITUDES,benchTarget,type BenchSignal} from '../../../lab-runtime/src/v2/control/bench-signals';
 import type {BenchCycleRow,BenchKitV1,BenchPolicy,Measurement} from '../contracts';
 import {afterEnable,allEnabled,settleTicks} from './conformance';
@@ -20,7 +21,12 @@ const cpt=(kit:BenchKitV1)=>TICK_MS/kit.bus.cycleMs;
 const aligned=(t:CaseTrace,kit:BenchKitV1)=>t.cycles.length===t.ticks.length*cpt(kit);
 /** afterEnable's j = 0: the tick after the first one whose feedback shows every axis enabled; -1 if none did. */
 const enabledAt=(t:CaseTrace)=>{const e=t.ticks.findIndex(x=>allEnabled(x.feedback));return e<0?-1:e+1;};
-const timeMs=(r:BenchCycleRow,kit:BenchKitV1)=>r.cycle*kit.bus.cycleMs;
+/** The time of each row in ns (see the header), or null when a real bus's rows do not tick at cycleMs. */
+export function cycleClock(rows:BenchCycleRow[],kit:BenchKitV1):number[]|null{
+ if(kit.bus.backend==='sim')return rows.map(r=>r.cycle*kit.bus.cycleMs*1e6);
+ const t=rows.map(r=>r.tMonoNs),d=t.slice(1).map((x,j)=>x-t[j]!);
+ return d.length&&d.every(x=>x>0)&&Math.abs(median(d)-kit.bus.cycleMs*1e6)<=0.2*kit.bus.cycleMs*1e6?t:null;
+}
 
 // ---- KMS01: tracking lag --------------------------------------------------------------------------------------------------------------------------------------------
 const LAG_PRE=5;   // rest ticks of a trial before its step, so the dataset (calibration export) starts at rest
@@ -39,16 +45,16 @@ export function lagTrialsOf(t:CaseTrace,_kit:BenchKitV1,p:BenchPolicy):LagTrial[
 /** The cycle rows of a trial, with the row just before its first tick. */
 export const trialRows=(t:CaseTrace,kit:BenchKitV1,x:LagTrial)=>t.cycles.slice(x.from*cpt(kit)-1,(x.from+x.ticks)*cpt(kit));
 /** When a series first crosses `level` x `amp` (a fraction of amp, so the sign does not matter), linearly between the two rows around it; null if it never does. */
-function cross(rows:BenchCycleRow[],kit:BenchKitV1,v:(r:BenchCycleRow)=>number,amp:number,level:number):number|null{
+function cross(rows:BenchCycleRow[],ns:number[],v:(r:BenchCycleRow)=>number,amp:number,level:number):number|null{
  for(let j=1;j<rows.length;j++){
   const a=v(rows[j-1]!)/amp,b=v(rows[j]!)/amp;
-  if(a<level&&b>=level){const t0=timeMs(rows[j-1]!,kit);return t0+(level-a)/(b-a)*(timeMs(rows[j]!,kit)-t0);}
+  if(a<level&&b>=level)return (ns[j-1]!+(level-a)/(b-a)*(ns[j]!-ns[j-1]!))/1e6;
  }
  return null;
 }
 /** Per axis: for each trial, the mean over policy.lagLevels of (velocityRaw crosses the level) - (the bus-written targetRaw crosses it); the median over the trials, uncertainty
- * max(one bus cycle, standard deviation). An upper bound of the command plus feedback delay that includes the velocity loop of an unloaded rotor (spec B1 §7.4), never the
- * drive's latency alone: the id says so. */
+ * max(one bus cycle, standard deviation). An upper bound of the command plus feedback delay of this kit that includes the velocity loop of an unloaded rotor (spec B1 §7.4):
+ * never the drive's latency alone, never a property of the loaded robot. The id says both (UpperBound, Unloaded). */
 const KMS01=measureCase('KMS01',{
  script(kit,p){
   const L=lagLayout(p),trials=p.lagTrials*L.block,total=trials+settleTicks(p);
@@ -62,15 +68,16 @@ const KMS01=measureCase('KMS01',{
    const lags:number[]=[];
    for(const x of trials){
     if(x.from+x.ticks>t.ticks.length)return failed(`TRIAL_SHORT ${x.trialId}`);
-    const rows=trialRows(t,kit,x),ax=(r:BenchCycleRow)=>r.axes[i]!,amp=ax(rows.at(-1)!).targetRaw;
+    const rows=trialRows(t,kit,x),ax=(r:BenchCycleRow)=>r.axes[i]!,amp=ax(rows.at(-1)!).targetRaw,ns=cycleClock(rows,kit);
+    if(!ns)return failed(`CYCLE_CLOCK_MISMATCH ${x.trialId}: the cycle rows' tMonoNs do not tick at ${kit.bus.cycleMs} ms`);
     if(rows.some(r=>ax(r).velocityRaw===null))return failed(`VELOCITY_NOT_MAPPED ${a.axisId}`);
     if(!amp)return failed(`STEP_NOT_WRITTEN ${a.axisId} trial ${x.n}`);
-    const d=p.lagLevels.map(l=>{const tt=cross(rows,kit,r=>ax(r).targetRaw,amp,l),tv=cross(rows,kit,r=>ax(r).velocityRaw!,amp,l);return tt===null||tv===null?null:tv-tt;});
+    const d=p.lagLevels.map(l=>{const tt=cross(rows,ns,r=>ax(r).targetRaw,amp,l),tv=cross(rows,ns,r=>ax(r).velocityRaw!,amp,l);return tt===null||tv===null?null:tv-tt;});
     const miss=d.indexOf(null);
     if(miss>=0)return failed(`LAG_LEVEL_NOT_REACHED ${a.axisId} trial ${x.n} level ${p.lagLevels[miss]}`);
     lags.push(mean(d as number[]));
    }
-   ms.push(m('KMS01',`trackingLagUpperBoundMs:${a.axisId}`,median(lags),'ms',Math.max(kit.bus.cycleMs,spread(lags)),lags.length));
+   ms.push(m('KMS01',`trackingLagUpperBoundUnloadedMs:${a.axisId}`,median(lags),'ms',Math.max(kit.bus.cycleMs,spread(lags)),lags.length));
   }
   return tested(ms);
  },
@@ -109,7 +116,8 @@ const KMS02=measureCase('KMS02',{
 });
 
 // ---- KMS04: counts per revolution -----------------------------------------------------------------------------------------------------------------------------------
-/** At creepSpeedRadS each axis turns until its positionRad has advanced revolutionCheck.revolutions x 2 pi, stops at 0, is disabled, and the operator then reads its mark. */
+/** At creepSpeedRadS each axis turns until its positionRad has advanced revolutionCheck.revolutions x 2 pi, stops at 0, is disabled, and the operator then reads its mark
+ * (a post-motion question: the runner asks it after the stop sequence). Enable is asked for at most policy.enableTimeoutTicks; an axis creeps only while it reports enabled. */
 const KMS04=measureCase('KMS04',{
  script(kit,p){
   const goal=p.revolutionCheck.revolutions*2*Math.PI,S=settleTicks(p),move=Math.ceil(goal/p.creepSpeedRadS/(TICK_MS/1000))+S,ticks=p.enableTimeoutTicks+move+2*S;
@@ -117,16 +125,16 @@ const KMS04=measureCase('KMS04',{
   return {ticks,prompts:kit.axes.map(a=>({id:`markOffsetDeg:${a.axisId}`,atTick:ticks,
    text:`${a.axisId} turned ${p.revolutionCheck.revolutions} revolution(s) by its encoder and is disabled. How many degrees is its mark past the start position, in the direction it turned (negative if short)?`})),
    commandsAt(k,fb){
-    if(on<0&&allEnabled(fb)){on=k;p0=fb.map(f=>f.positionRad??NaN);}
+    if(on<0&&k<=p.enableTimeoutTicks&&allEnabled(fb)){on=k;p0=fb.map(f=>f.positionRad??NaN);}   // an enable that comes after the timeout is never used
     if(on>=0)fb.forEach((f,i)=>{reached[i]||=!((f.positionRad??NaN)-p0[i]!<goal);});   // an unknown position stops the axis
-    const j=on<0?-1:k-on;
-    return kit.axes.map((a,i)=>({axisId:a.axisId,seq:k+1,mode:'csv' as const,target:j>=0&&j<move&&!reached[i]?p.creepSpeedRadS:0,enable:j<move+S,quickStop:false,faultReset:false}));
+    const j=on<0?-1:k-on,enable=on<0?k<p.enableTimeoutTicks:j<move+S;
+    return kit.axes.map((a,i)=>({axisId:a.axisId,seq:k+1,mode:'csv' as const,target:enable&&j>=0&&j<move&&!reached[i]&&fb[i]?.state==='enabled'?p.creepSpeedRadS:0,enable,quickStop:false,faultReset:false}));
    }};
  },
  /** The mark offset the encoder predicts is (travel - revolutions x 360) degrees; the operator's reading agrees within toleranceDeg, or the counts per revolution are wrong. */
  evaluate(t,kit,p){
   const e=t.ticks.findIndex(x=>allEnabled(x.feedback)),last=t.ticks.at(-1),N=p.revolutionCheck.revolutions,tol=p.revolutionCheck.toleranceDeg,ms:Measurement[]=[];
-  if(e<0||!last)return failed('ENABLE_TIMEOUT');
+  if(e<0||e>=p.enableTimeoutTicks||!last)return failed('ENABLE_TIMEOUT');
   for(const [i,a] of kit.axes.entries()){
    const p0=t.ticks[e]!.feedback[i]!.positionRad,p1=last.feedback[i]!.positionRad;
    if(p0===null||p1===null)return failed(`POSITION_UNKNOWN ${a.axisId}`);

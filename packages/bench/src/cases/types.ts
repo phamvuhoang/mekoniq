@@ -26,7 +26,9 @@ export interface CaseScript{
  /** The commands of tick k from the feedback of tick k-1 ([] at k = 0). `seq` is local to the case: 1 + the tick that first sent it, so at most k + 1 and never
   * decreasing; runCase adds the worker's tick at the start of the case. A repeated seq is a stale command (the worker's channel watchdog counts it). */
  commandsAt(tick:number,feedback:DriveFeedbackV1[]):DriveCommandV1[];
- prompts?:{id:string;atTick:number;text:string}[];
+ /** `motion: 'running'` marks a mid-motion question (atTick < ticks: the axes keep their last commands while it is open); without it the question is post-motion
+  * (atTick = ticks: asked after the stop sequence, the axes held disabled). Any other pairing is BENCH_SCRIPT_INVALID. */
+ prompts?:{id:string;atTick:number;text:string;motion?:'running'}[];
  silence?:{atTick:number;ms:number};          // at most once, and the last thing of the script
  /** Faults the script provokes on purpose; any other fault feedback ends the case (quick stop, then enable false) and disarms the run (BK-D11). */
  expectedFaults?:DriveFault[];

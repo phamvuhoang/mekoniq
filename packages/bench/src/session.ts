@@ -59,9 +59,12 @@ const powerOff=(v:{statusword:number})=>(v.statusword&0x02)===0;
  * With ctx.sensors every tick also steps the sensors worker: both requests are sent together and both awaited (during the stop ticks too, but a failed sensors step never
  * stops the stop). A sensors worker that is lost or refuses a step ends the case like any abnormal end (reason SENSOR_WORKER_LOST or its code). Only a case with `needsSensors`
  * keeps the frames in its trace; turning them into scans runs after the stop, guarded like case code.
- * A prompt at atTick i (0..ticks) is asked before tick i: while it is open the runner re-sends the last accepted commands on fresh seqs every tick (nothing new, and the
- * channel watchdog does not trip; before any command was sent it only waits), with every per-tick check of a scripted tick; the answer goes to trace.prompts. An abort
- * while waiting is OPERATOR_ABORT, a prompter that throws or answers a non-string is CASE_SCRIPT_ERROR, no answer within PROMPT_HOLD_MAX_TICKS is PROMPT_TIMEOUT.
+ * Prompts come in two kinds, explicit in the script. A mid-motion prompt (`motion: 'running'`, atTick i < ticks) is asked before tick i: while it is open the runner
+ * re-sends the last accepted commands on fresh seqs every tick (nothing new; before any command was sent it only waits). A post-motion prompt (atTick = ticks, the
+ * default) is asked only after the normal stop sequence has ended with every power stage off; while it is open the runner sends enable false, target 0 on fresh seqs.
+ * A stop sequence that does not finish means the question is never asked. Either way every held tick gets every per-tick check of a scripted tick, the channel
+ * watchdog does not trip, and the answer goes to trace.prompts. An abort while waiting is OPERATOR_ABORT, a prompter that throws or answers a non-string is
+ * CASE_SCRIPT_ERROR, no answer within PROMPT_HOLD_MAX_TICKS is PROMPT_TIMEOUT. A prompt of the wrong kind for its tick, or a post-motion prompt with a silence, is BENCH_SCRIPT_INVALID.
  * The verdict is verdictOf(trace): whatever the runner decides itself is stored in trace.meta.runner, so the stored trace alone gives it back. */
 export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTrace;verdict:CaseVerdict}>{
  const trace:CaseTrace={ticks:[],cycles:[],prompts:[]},{worker,kit,policy,clock,sensors}=ctx;
@@ -72,7 +75,8 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
  const s=c.script(kit,policy),prompts=s.prompts??[];
  if(prompts.length&&!ctx.prompter)return decided('not_run','BENCH_PROMPT_UNAVAILABLE');
  if(s.silence&&s.silence.atTick!==s.ticks||s.meta&&(Object.hasOwn(s.meta,'runner')||Object.hasOwn(s.meta,'error'))   // silence after the last tick only; runner and error are reserved
-  ||prompts.some(q=>!Number.isSafeInteger(q.atTick)||q.atTick<0||q.atTick>s.ticks)||new Set(prompts.map(q=>q.id)).size!==prompts.length)return decided('not_run','BENCH_SCRIPT_INVALID');
+  ||prompts.some(q=>!Number.isSafeInteger(q.atTick)||q.atTick<0||q.atTick>s.ticks||(q.atTick<s.ticks)!==(q.motion==='running')||s.silence&&q.atTick===s.ticks)
+  ||new Set(prompts.map(q=>q.id)).size!==prompts.length)return decided('not_run','BENCH_SCRIPT_INVALID');
  if(c.needsTorque&&!armedRuns.has(ctx)){
   if(!await ctx.arming.arm(`${c.id}: torque on ${kit.axes.map(a=>a.axisId).join(', ')}`))return decided('not_run','BENCH_NOT_ARMED');
   armedRuns.add(ctx);
@@ -169,10 +173,9 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   return out as DriveCommandV1[];
  };
  try{
-  for(let i=0;i<=s.ticks;i++){
+  for(let i=0;i<s.ticks;i++){
    if(ctx.abort.aborted){reason='OPERATOR_ABORT';break;}
    if(prompts.length&&(reason=await ask(i)))break;
-   if(i===s.ticks)break;
    const local=guarded(()=>commandsAt(i));
    if(!local){reason='CASE_SCRIPT_ERROR';break;}
    const cmds=local.map(x=>({...x,seq:offset+x.seq}));
@@ -189,6 +192,11 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
    if(a.ok)trace.silence=a.result;else reason=a.error!.code;
   }
   if(stepped||silenceSent){const err=await stop(reason!==null);reason??=err;}
+  if(!reason&&prompts.some(q=>q.atTick===s.ticks)){
+   // post-motion: asked only now, with every power stage off (stopAxes ended clean); held on the stop command, never on what the script sent last
+   if(stepped&&!vendor.every(powerOff))reason='BENCH_STOP_INCOMPLETE';
+   else{last=stepped?kit.axes.map(a=>({axisId:a.axisId,seq:worker.tick,mode:'csv' as const,target:0,enable:false,quickStop:false,faultReset:false})):null;reason=await ask(s.ticks);if(reason&&stepped)await stop(true);}   // an end while asking stops once more (quick, then the wire stop if refused)
+  }
   if(c.needsSensors){trace.lidar=lidar;trace.imu=imu;trace.sensorDropped=dropped;guarded(()=>{trace.lidar=[...lidar,...scanRows(lidar)];});}
   if(scriptError)reason??='CASE_SCRIPT_ERROR';   // also an onTick throw during the stop ticks of a clean end
   if(sensorError)reason??=sensorError;           // likewise a sensors worker lost during the stop ticks
