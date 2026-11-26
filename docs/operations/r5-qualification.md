@@ -9,6 +9,15 @@ R5 đóng R5.0–R5.5 (hồ sơ thiết bị, phần Điện, tài liệu và g�
 - **Quyết định phạm vi (người dùng, 26/11):** giữ cắt E14. R5 được công bố là **"R5 không có I/O ảo"** khi tám gate còn lại đạt; G-VIO1 và VIO01–04 giữ `not_run`.
 - **Việc còn lại để đóng:** deploy Cloud Run image của `0d365afd` (người dùng đã cho phép), ghi CLD06 dưới `evidence/cloud-run/` (guard `cloud-run` và `LAB_R5_CLOSING=1 … sim-extension` gắn vào byte của record R5), rồi push `main`. Không ký acceptance.
 
+## CLD06 (từ 27/11, sau lần thất bại của candidate 02)
+
+Ca cố định trước khi chạy cloud (`R5_CLD06` trong `scripts/cloud-run-qualification.mjs`): MJ-TRAY01, `tray-stop-coast-v1`, seed 7, dừng khẩn thả trôi ở `elapsed_sim_ms` 12 000 (tick 601 = `stopStartTick`), giữa đoạn thẳng đầu tiên. Vận tốc chạy đều tham chiếu 0.488 m/s (`cruiseOf` của run Mac không dừng cùng model: 0.4878 m/s từ tick 394, đoạn thẳng tới tick 804).
+- Điều kiện đầu vào, từng tick trong 25 tick trước lệnh, cả hai bản: v ≥ 95 % tham chiếu, |ω| ≤ 0.05 rad/s; |v_cloud − v_Mac| ≤ 2 % v_Mac; |Δyaw| ≤ 0.02 rad (đã xử lý vòng góc). Không đạt → `ENTRY_CONDITION_MISMATCH`, CLD06 chưa đạt.
+- Kết quả mong đợi mỗi bản: receipt dừng ở 601, torque từng bánh 0 ở 601, `needs_attention`, served 0, cốc không đổ. So `stopDistanceM`, `stopTimeMs`, `peakDecelerationMps2`: |cloud − Mac| / Mac ≤ 5 % từng metric (`CLD06_TOLERANCE_EXCEEDED` nếu vượt). Quãng đường cả run và tick kết thúc chỉ để chẩn đoán.
+- Stream vật lý từng tick của cả hai bản (route `GET /lab/v2/runs/:id/physics/<chunk>`) được tải, ghi và đọc lại từ đĩa trước khi archive run; thiếu mẫu (pose, torque từng bánh, receipt) từ tick 575 tới lúc xác nhận đứng yên → `CLD06_EVIDENCE_MISSING`.
+- Thứ tự: (1) `pnpm lab:mujoco -- --mujoco-mobile` trên Mac ở tuple của candidate, rồi `MEKONIQ_LAB_ACCESS_KEY=<mã ghép một lần> node scripts/record-r5-cloud.mjs reference --candidate <R5> --endpoint http://127.0.0.1:4176 --origin http://127.0.0.1:4175 --out <ref>` từ cây sạch ở commit candidate; (2) deploy theo lệnh; (3) `execute … --mac-reference <ref> --release-approved --out <dir>`; kết quả thất bại vẫn được ghi đầy đủ và đọc lại.
+- Chạy thử cục bộ 27/11 (source `eb75e3f3`, ngoài Git: `robot/evidence-archive/r5-cld06-trial-eb75e3f3/`): Mac qua HTTP trùng bit với run trong tiến trình (0.8138 m, 3 280 ms, 0.172 m/s², đứng yên tick 765); container Linux arm64 qua cùng route: đầu vào đạt, lệch 0.63 % / 0.61 % / 3.2 %.
+
 ## Chạy chuỗi ghi
 
 Chuỗi là `Lab regression → IR-SIM → r1 → r1.1 → r2a → r2b → r4 → r5` ở **một tuple**, mỗi bước exit 0, dưới `caffeinate -dims`, màn hình mở khóa (xem [r4-qualification.md](r4-qualification.md)). Bước `owned-source-ci` dừng stack Supabase `mekoniq-w00-w04` (người dùng đã đồng ý cho candidate 01 và 02). Driver hiện tại: `robot/evidence-archive/r5-handover-2026-11-26/run-final-chain-v7.sh OUT SRC LAB` (bước 29 dưới umask 022; guard 27 và 31 phải exit 0, không có `|| true`); watcher `watch-chain.py <status.ndjson>` chỉ exit 0 khi sự kiện `finished` cuối là `["0","1"]`. Re-pin bằng `repin.sh` (pipefail, thư mục tạm riêng, từ chối nếu pin chạm ngoài `apps/lab`).
