@@ -5,9 +5,11 @@
 //   node scripts/bench.mjs run      --kit FILE --policy FILE --session FILE --identity DIR --suite conformance|measure --out DIR [--from CASE] [--case CASE] [--bus sim]
 //   node scripts/bench.mjs sensors  --kit FILE --policy FILE --session FILE --out DIR [--case CASE] [--bus sim]
 //   node scripts/bench.mjs verify   --record DIR
-// Exit 0: every case tested (doctor: every check ok; verify: no issue). 1: a case not tested, or a refusal on the evidence. 2: bad usage, or a refusal before any worker.
+// Exit 0: every case tested (doctor: every check ok; verify: no issue). 1: refused or failed at run time, including the refusals of `run` before any worker (session
+// declarations, identity, --from) and a worker that would not close. 2: usage (options, unreadable or invalid kit/policy/session files, --bus, --out, the test answers file).
 // No flag skips arming, a prompt, the identity check, a limit or the case order. The only test hooks are BENCH_TEST_ARMING=1 and BENCH_TEST_ANSWERS=<file>,
-// honoured only with a kit on the simulated slave. On a terminal any key during a case stops it (quick stop, then enable off); Ctrl-C too, also while a question is open.
+// honoured only with a kit on the simulated slave. On a terminal any key outside a question stops the run (quick stop, then enable off); while a question (the arming
+// code, an operator prompt) is open, keys go into the answer and only Ctrl-C stops. SIGINT, SIGTERM and SIGHUP stop too; a repeat while stopping is ignored.
 import {spawnSync} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
 import {existsSync,readFileSync,realpathSync} from 'node:fs';
@@ -82,13 +84,16 @@ for(const line of flow.describeSession(s.session))log(line);
 // the terminal: one readline for the arming code and the prompts; outside a question any key aborts (the runner then stops the axes and disarms)
 const tty=process.stdin.isTTY===true,ac=new globalThis.AbortController();let rl,asking=false;
 const stop=(why)=>{if(!ac.signal.aborted){ac.abort();log(`\n${why}: stopping (quick stop, then enable off); the suite will not continue`);}};
-for(const sig of ['SIGINT','SIGTERM','SIGHUP'])process.once(sig,()=>stop(sig));   // a signal is an abort too: the case stops, the part is still written
+// a signal is an abort too: the case stops, the part is still written. The handler stays: a repeat never cuts the stop sequence (only the worker deadlines bound it)
+let waitSaid=false;
+for(const sig of ['SIGINT','SIGTERM','SIGHUP'])process.on(sig,()=>{if(!ac.signal.aborted)stop(sig);else if(!waitSaid){waitSaid=true;log('stopping; wait');}});
 if(tty){rl=createInterface({input:process.stdin,output:process.stdout,terminal:true});rl.on('SIGINT',()=>stop('Ctrl-C'));process.stdin.on('keypress',()=>{if(!asking)stop('key pressed');});}
 // an aborted arming question answers '' (a wrong code: not armed); an aborted prompt never answers, so the runner's hold ends it OPERATOR_ABORT
 const question=async(q,hang)=>{asking=true;try{return await rl.question(q,{signal:ac.signal});}catch{return hang?new Promise(()=>{}):'';}finally{asking=false;}};
+let prompter;try{prompter=flow.prompterFor(k.kit,process.env,{isTTY:tty,question:(q)=>question(q,true)},log);}catch(e){rl?.close();usage(e.code??'BENCH_TEST_ANSWERS_INVALID',e.message);}
 const io={spawn:(role,readOnly)=>spawnBenchWorker({role,python:PY,kitPath,bus,readOnly,sessionId:randomUUID()}),clock:(await ts('clock.ts')).systemClock,
- arming:flow.armingFor(k.kit,process.env,{isTTY:tty,question:(q)=>question(q,false)},log),prompter:flow.prompterFor(k.kit,process.env,{isTTY:tty,question:(q)=>question(q,true)},log),abort:ac.signal,log};
-if(!tty&&command!=='identify')log('stdin is not a terminal: no arming, no prompts; torque cases and prompt cases will be not_run.');
+ arming:flow.armingFor(k.kit,process.env,{isTTY:tty,question:(q)=>question(q,false)},log),prompter,abort:ac.signal,log};
+if(!tty&&command!=='identify'&&flow.testHook('BENCH_TEST_ARMING',k.kit,process.env,()=>{})!=='1')log('stdin is not a terminal: no arming, no prompts; torque cases and prompt cases will be not_run.');
 let code;
 try{
  code=command==='identify'?await flow.identify(l,out,io)

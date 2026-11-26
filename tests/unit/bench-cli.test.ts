@@ -47,7 +47,7 @@ describe('a session on the simulated slave, end to end',()=>{
   const run=cli('bench',['run',...common(),'--identity',identity,'--suite','conformance','--case','KCF02','--out',conformance],{BENCH_TEST_ARMING:'1'});
   expect(run.status,run.out).toBe(0);
   expect(run.out).toMatch(/KCF02 tested/);expect(run.out).toMatch(/simulated slave \(protocol_double\).*proves nothing about a drive/);
-  expect(run.out).toMatch(/cannot check/);
+  expect(run.out).toMatch(/cannot check/);expect(run.out).not.toMatch(/no arming/);   // the sim hook is set: no misleading "not armed" line
   const out=fresh('record'),rec=cli('record-bench',['--identity',identity,'--conformance',conformance,'--out',out,'--candidate-id','t-1']);
   if(sourceDirty(ROOT)){expect(rec.status).toBe(1);expect(rec.out).toMatch(/SOURCE_DIRTY/);return;}   // only a clean source tree can be recorded
   expect(rec.status,rec.out).toBe(0);
@@ -61,12 +61,15 @@ describe('a session on the simulated slave, end to end',()=>{
   const bad=cli('bench',['verify','--record',out]);
   expect(bad.status).toBe(1);expect(bad.out).toMatch(/SIZE_MISMATCH identity\/session.json/);expect(bad.out).toMatch(/SESSION_DECLARATION_MISSING identity\/session.json/);
  },300_000);
- it('SIGTERM during a suite is an abort: exit 1, and the part is still written with the abort recorded',async()=>{
+ it('two SIGTERMs during a suite: an abort, the second ignored while stopping; exit 1, the part written, the worker stopped',async()=>{
   const out=fresh('conformance'),env={...Object.fromEntries(Object.entries(process.env).filter(([k])=>!k.startsWith('BENCH_TEST_'))),BENCH_TEST_ARMING:'1'} as unknown as NodeJS.ProcessEnv;
   const child=spawn(process.execPath,['scripts/bench.mjs','run',...common(),'--identity',identity,'--suite','conformance','--out',out],{cwd:ROOT,env,stdio:['pipe','pipe','pipe']});
-  let text='',sent=false;child.stdout.on('data',(d:Buffer)=>{text+=String(d);if(!sent&&/KCF0\d \.\.\./.test(text)){sent=true;child.kill('SIGTERM');}});   // once: a second signal killschild.stderr.on('data',(d:Buffer)=>{text+=String(d);});
+  let text='',sent=false;
+  // two signals back to back: the second must not cut the stop sequence
+  child.stdout.on('data',(d:Buffer)=>{text+=String(d);if(!sent&&/KCF0\d \.\.\./.test(text)){sent=true;child.kill('SIGTERM');child.kill('SIGTERM');}});
+  child.stderr.on('data',(d:Buffer)=>{text+=String(d);});
   const code=await new Promise<number|null>(ok=>child.once('close',ok));
-  expect(code,text).toBe(1);expect(text).toMatch(/SIGTERM: stopping/);expect(text).toMatch(/OPERATOR_ABORT/);expect(text).toMatch(/conformance part written/);
+  expect(code,text).toBe(1);expect(text).toMatch(/SIGTERM: stopping/);expect(text).toMatch(/stopping; wait/);expect(text).toMatch(/bus worker stopped: \{"event": ?"stopped"/);expect(text).toMatch(/OPERATOR_ABORT/);expect(text).toMatch(/conformance part written/);
   expect(readFileSync(join(out,'manifest.json'),'utf8')).toMatch(/session\.json/);
  },120_000);
  it('stdin not a terminal and no test hook: the torque case is not_run BENCH_NOT_ARMED, exit 1',()=>{
@@ -85,6 +88,8 @@ describe('refusals of bench.mjs',()=>{
   expect(r.status).toBe(2);expect(r.out).toMatch(/the soem bus arrives with the first hardware session/);
   r=cli('bench',['identify',...common(),'--out',join(ROOT,'.bench-out')]);expect(r.status).toBe(2);expect(r.out).toMatch(/OUTPUT_MUST_BE_OUTSIDE_REPOSITORIES/);
   r=cli('bench',['identify',...common(),'--out',identity]);expect(r.status).toBe(2);expect(r.out).toMatch(/OUT_EXISTS/);
+  const bad=f('bad-answers.json','x');writeFileSync(bad,'{not json');
+  r=cli('bench',[...base,'--identity',identity,'--case','KCF02'],{BENCH_TEST_ANSWERS:bad});expect(r.status).toBe(2);expect(r.out).toMatch(/BENCH_TEST_ANSWERS_INVALID/);expect(r.out).not.toMatch(/\n\s+at /);
  },120_000);
  it('run with the identity part of other serials: exit 1 BENCH_IDENTITY_CHANGED',()=>{
   const d=fresh('kit');mkdirSync(d);cpSync(join(FIXTURES,'sim-esi.summary.json'),join(d,'sim-esi.summary.json'));

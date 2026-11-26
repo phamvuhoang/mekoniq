@@ -50,7 +50,8 @@ export interface BenchRecordV1{
  cases:Record<string,{status:'tested'|'failed'|'not_run'|'unsupported_by_device';reason:string|null;session:string|null;artifacts:string[]}>;
  gates:Record<string,{status:'tested'|'failed'|'not_run'|'blocked_external';accepted:false}>;
  closures:{ruleId:string;path:string;result:'confirmed'|'contradicted'|'not_measured';caseId:string|null;observed:string|null}[];
- measurements:Measurement[];externalGates:{'G-SAFE1':{status:'blocked_external';accepted:false}};
+ /** Each measurement carries the part it came from: a case in several parts (the first-motion cases) gives one per occurrence. */
+ measurements:(Measurement&{part:'identity'|'conformance'|'measure'|'sensors'|'compare'})[];externalGates:{'G-SAFE1':{status:'blocked_external';accepted:false}};
  artifacts:{path:string;sha256:string;bytes:number}[];
 }
 

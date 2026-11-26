@@ -580,9 +580,19 @@
           "n": {
             "type": "integer",
             "minimum": 1
+          },
+          "part": {
+            "enum": [
+              "identity",
+              "conformance",
+              "measure",
+              "sensors",
+              "compare"
+            ]
           }
         },
         "required": [
+          "part",
           "id",
           "value",
           "unit",

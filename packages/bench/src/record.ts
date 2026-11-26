@@ -112,7 +112,7 @@ async function derive(root:string):Promise<{fields:Derived|null;issues:Issue[]}>
    }
    // each occurrence recomputed from its own traces; the worst one (the first of equals) gives status, reason and session, the artifacts cover every occurrence
    const artifacts=(await listFiles(cd)).map(f=>`${kind}/cases/${id}/${f}`),had=cases[id];
-   measurements.push(...v.measurements);
+   measurements.push(...v.measurements.map(m=>({...m,part:kind})));
    if(had&&RANK[had.status]>=RANK[v.status]){had.artifacts.push(...artifacts);continue;}
    verdicts.set(id,v);cases[id]={status:v.status,reason:v.reason,session:kind,artifacts:[...had?.artifacts??[],...artifacts]};
   }

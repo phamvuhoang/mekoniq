@@ -66,7 +66,7 @@ describe('a record from the simulated slave',()=>{
   expect(record.cases.KCF02).toMatchObject({status:'tested',session:'conformance'});expect(record.cases.KCF03).toMatchObject({status:'failed'});
   expect(record.cases.KID01).toMatchObject({status:'not_run',session:null,artifacts:[]});
   expect(record.devices.map(d=>d.serial)).toEqual(['SIM-0001','SIM-0002']);
-  expect(record.measurements.map(m=>m.id)).toEqual(['enableDelayMs']);
+  expect(record.measurements.map(m=>m.id)).toEqual(['enableDelayMs']);expect(record.measurements.map(m=>m.part)).toEqual(['conformance']);
   expect(JSON.parse(readFileSync(join(out,'identity/identity.json'),'utf8')).slaves.map((s:{axisId:string})=>s.axisId)).toEqual(KIT.axes.map(a=>a.axisId));
  });
  it('a stored trace round-trips: evaluate on the reloaded trace gives the live verdict',async()=>{
@@ -182,7 +182,9 @@ describe('a case in several parts (a measurement session re-runs KCF02)',()=>{
  it('tested in both parts: tested',async()=>{
   const measure=await part('measure',[benchCase('KCF02')!]),d=fresh('record');
   const r=await assembleBenchRecord({identity:identity.d,conformance:conformance.d,measure:measure.d},d,{candidateId:'t-3',sourceCommit:'abc1234'});
-  expect(r.cases.KCF02).toMatchObject({status:'tested',reason:null});expect(r.cases.KCF02!.artifacts.filter(a=>a.includes('/cases/KCF02/')).length).toBeGreaterThan(2);
+  expect(r.cases.KCF02).toMatchObject({status:'tested',reason:null});
+  expect(r.measurements.filter(m=>m.id==='enableDelayMs').map(m=>m.part).sort()).toEqual(['conformance','measure']);   // one per occurrence, tagged with its part
+  expect(r.cases.KCF02!.artifacts.filter(a=>a.includes('/cases/KCF02/')).length).toBeGreaterThan(2);
   expect(await verifyBenchRecord(d)).toEqual({ok:true,issues:[]});
  },60_000);
 });

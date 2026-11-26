@@ -1,4 +1,6 @@
-import {readFileSync} from 'node:fs';
+import {readdirSync,readFileSync} from 'node:fs';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import Ajv from 'ajv';
 import {describe,expect,it} from 'vitest';
 import driveIo from '../../packages/contracts/schemas/drive-io-v1.schema.json';
@@ -111,4 +113,12 @@ describe('bench record',()=>{
   expect(of({...record,worker:{...record.worker,lockSha256:null}})).toEqual([['RECORD_HARDWARE_IDENTITY_MISSING','/worker/lockSha256']]);
   expect(of({...record,host:{...record.host,testLevel:'protocol_double',nicDriver:null,nicMacSha256:null,pysoem:null},worker:{...record.worker,busBackend:'sim',lockSha256:null},gates:{}})).toEqual([]);
  });
+});
+
+// Three times in this project a statement was swallowed by a trailing line comment. Crude on purpose: a line comment marker followed later on the same line by an
+// expect call or an event handler (dot on, open parenthesis) fails, wherever the marker is; a URL in such a line is rewritten rather than excused.
+it('no bench test hides a statement after a // comment on the same line',()=>{
+ const d=fileURLToPath(new URL('.',import.meta.url)),bad:string[]=[];
+ for(const f of readdirSync(d).filter(x=>/^bench-.*\.test\.ts$/.test(x)))readFileSync(join(d,f),'utf8').split('\n').forEach((l,i)=>{if(/\/\/.*(expect\(|\.on\()/.test(l))bad.push(`${f}:${i+1}`);});
+ expect(bad).toEqual([]);
 });

@@ -9,10 +9,10 @@ import {sealBench,type BenchKitV1,type BenchPolicy,type BenchSessionV1} from '..
 import {fakeClock} from '../../packages/bench/src/clock';
 import {BenchWorkerError,spawnBenchWorker,type BenchWorker} from '../../packages/bench/src/worker';
 import {runCase,startBenchSession} from '../../packages/bench/src/session';
-import {CONFORMANCE_CASES,MEASURE_CASES,SENSOR_CASES} from '../../packages/bench/src/cases/index';
+import {BENCH_CASES,CONFORMANCE_CASES,MEASURE_CASES,SENSOR_CASES,type BenchCase,type ScanSlave} from '../../packages/bench/src/cases/index';
 import {checkManifest,readJsonFile,readManifest,readTrace} from '../../packages/bench/src/evidence';
 import {sessionExtra,writeBenchPart} from '../../packages/bench/src/record';
-import {armingFor,calibrationKind,caseSession,casesOf,describeSession,identify,identityProblem,outProblem,prompterFor,run,sensors,writeCalibration,type Loaded,type Spawn}
+import {armingFor,calibrationKind,casesOf,describeSession,identify,identityPart,outProblem,prompterFor,run,sensors,writeCalibration,type Loaded,type Spawn}
  from '../../packages/bench/src/cli-flow';
 
 const PY=process.env.BENCH_PYTHON??'python3',ROOT=fileURLToPath(new URL('../..',import.meta.url));
@@ -33,25 +33,31 @@ afterEach(async()=>{await Promise.all(workers.splice(0).map(w=>w.close()));});
 afterAll(()=>rmSync(dir,{recursive:true,force:true}));
 
 /** A kit file (beside a copy of fixtures/bytes), the spawn the CLI would use, and what the flow did: spawned roles, ops sent, printed lines.
- * `workerKit` makes the worker run another kit than the one the CLI loaded (serials changed on the bench); `lostAt` / `abortAt` act on the n-th bus step. */
-function rig(kit=KIT,o:{workerKit?:BenchKitV1;lostAt?:number;abortAt?:number;session?:BenchSessionV1;arm?:boolean;spawnFails?:boolean;summary?:(s:{objects:{index:string}[]})=>void}={}){
+ * `serials` makes the worker's scan report other drives (as on real hardware, where the serials are not in the kit: same kit digest); `kitDigest` makes its describe
+ * report another kit; `closeFails` makes close() reject after the worker stopped; `lostAt` / `abortAt` act on the n-th bus step. */
+function rig(kit=KIT,o:{serials?:string[];kitDigest?:string;closeFails?:boolean;lostAt?:number;abortAt?:number;session?:BenchSessionV1;arm?:boolean;spawnFails?:boolean;
+ summary?:(s:{objects:{index:string}[]})=>void}={}){
  const d=fresh('rig');mkdirSync(d);cpSync(join(FIXTURES,'bytes'),join(d,'bytes'),{recursive:true});
- const kitPath=join(d,'kit.json'),workerPath=o.workerKit?join(d,'worker-kit.json'):kitPath;
- writeFileSync(kitPath,JSON.stringify(kit));if(o.workerKit)writeFileSync(workerPath,JSON.stringify(o.workerKit));
+ const kitPath=join(d,'kit.json'),workerPath=kitPath;
+ writeFileSync(kitPath,JSON.stringify(kit));
  const summary=fixture<{objects:{index:string}[]}>('sim-esi.summary.json');o.summary?.(summary);writeFileSync(join(d,'sim-esi.summary.json'),JSON.stringify(summary));
  const calls:{role:string;readOnly:boolean}[]=[],ops:string[]=[],lines:string[]=[],ac=new AbortController();let steps=0;
  const spawn:Spawn=async(role,readOnly)=>{
   calls.push({role,readOnly});
   if(o.spawnFails)throw new BenchWorkerError('WORKER_LOST','not_sent','test: python is missing');
   const w=await spawnBenchWorker({role,python:PY,kitPath:workerPath,bus:'sim',readOnly,sessionId:'flow',deadlinesMs:{step:5000}});workers.push(w);
-  return {get tick(){return w.tick;},get pid(){return w.pid;},get stderr(){return w.stderr;},close:()=>{ops.push(`${role}:close`);return w.close();},
+  return {get tick(){return w.tick;},get pid(){return w.pid;},get stderr(){return w.stderr;},close:async()=>{ops.push(`${role}:close`);await w.close();if(o.closeFails)throw new Error('test: close failed');},
    request(op,payload,t){
     ops.push(`${role}:${op}`);
     if(op==='step'&&role==='bus'){
      if(++steps===o.abortAt)ac.abort();
      if(o.lostAt!==undefined&&steps>=o.lostAt)return Promise.reject(new BenchWorkerError('WORKER_LOST','unknown','test: the worker is gone'));
     }
-    return w.request(op,payload,t);
+    return w.request(op,payload,t).then(a=>{
+     if(a.ok&&op==='scan'&&o.serials)a.result={...a.result,slaves:(a.result!.slaves as ScanSlave[]).map((x,i)=>({...x,serial:o.serials![i]!}))};
+     if(a.ok&&op==='describe'&&o.kitDigest)a.result={...a.result,kitDigest:o.kitDigest};
+     return a;
+    });
    }};
  };
  const l:Loaded={kit,kitPath,policy:POLICY,session:o.session??SESSION};
@@ -82,6 +88,8 @@ describe('the two test hooks are honoured only on the simulated slave',()=>{
   expect(prompterFor(SOEM,{BENCH_TEST_ANSWERS:f},{isTTY:false,question:async()=>''},x=>{lines.push(x);})).toBeUndefined();
   expect(lines).toEqual([expect.stringMatching(/^BENCH_TEST_ANSWERS is ignored/)]);
   expect(prompterFor(KIT,{},{isTTY:false,question:async()=>''},()=>{})).toBeUndefined();
+  const bad=join(dir,'bad-answers.json');writeFileSync(bad,'{not json');
+  expect(()=>prompterFor(KIT,{BENCH_TEST_ANSWERS:bad},{isTTY:false,question:async()=>''},()=>{})).toThrow(expect.objectContaining({code:'BENCH_TEST_ANSWERS_INVALID'}) as Error);
   expect(await prompterFor(KIT,{},{isTTY:true,question:async q=>`typed after ${q.trim()}`},()=>{})!.ask({id:'p',text:'Mark?'})).toBe('typed after Mark?\n>');
  });
  it('cli-flow reads the environment only inside testHook',()=>{
@@ -145,18 +153,51 @@ describe('run',()=>{
  });
  it('needs the identity of these very serials, of this kit, intact: otherwise BENCH_IDENTITY_CHANGED and nothing is enabled',async()=>{
   const identity=await identityOf();
-  const swapped=reseal(KIT,k=>{Object.assign(k.simSlave!,{serials:['SIM-0002','SIM-0001']});});
-  const r=rig(KIT,{workerKit:swapped}),out=fresh('conformance');
+  const r=rig(KIT,{serials:['SIM-0002','SIM-0001']}),out=fresh('conformance');
   expect(await run(r.l,{identity,suite:'conformance',out},r.io)).toBe(1);
   expect(r.lines.join('\n')).toMatch(/BENCH_IDENTITY_CHANGED.*serials on the bus now 1:SIM-0002, 2:SIM-0001; in the identity part 1:SIM-0001, 2:SIM-0002/);
   expect(r.ops).toEqual(['bus:describe','bus:open','bus:scan','bus:close']);
   expect(Object.values(await statuses(out)).every(s=>(s as {reason:string}).reason==='BENCH_IDENTITY_CHANGED')).toBe(true);
   expect(await clean(out)).toEqual([]);
-  // another kit's identity part, and a tampered one
-  expect(await identityProblem(await identityOf(reseal(KIT,k=>{Object.assign(k.simSlave!,{velocityScale:0.9});})),KIT,[{position:1,serial:'SIM-0001'},{position:2,serial:'SIM-0002'}])).toMatch(/kit digest/);
+  // another kit's identity part, and a tampered one: refused before any worker (G2), the manifest checked before its verdicts are read
+  expect(await identityPart(await identityOf(reseal(KIT,k=>{Object.assign(k.simSlave!,{velocityScale:0.9});})),KIT)).toMatchObject({problem:expect.stringMatching(/kit digest/) as string});
   appendFileSync(join(identity,'identity.json'),' ');
-  expect(await identityProblem(identity,KIT,[{position:1,serial:'SIM-0001'},{position:2,serial:'SIM-0002'}])).toMatch(/manifest/);
+  expect(await identityPart(identity,KIT)).toMatchObject({problem:expect.stringMatching(/manifest/) as string});
+  const t=rig();
+  expect(await run(t.l,{identity,suite:'conformance',out:fresh('conformance')},t.io)).toBe(1);
+  expect(t.calls).toEqual([]);expect(t.lines.join('\n')).toMatch(/REFUSED BENCH_IDENTITY_CHANGED: the identity part does not match its manifest/);
  },120_000);
+ it('the worker must have loaded the kit the CLI validated: another digest in describe is BENCH_KIT_CHANGED before any scan',async()=>{
+  const identity=await identityOf(),r=rig(KIT,{kitDigest:'f'.repeat(64)}),out=fresh('conformance');
+  expect(await run(r.l,{identity,suite:'conformance',out,only:'KCF02'},r.io)).toBe(1);
+  expect(r.ops).toEqual(['bus:describe','bus:close']);expect(r.lines.join('\n')).toMatch(/BENCH_KIT_CHANGED/);
+  expect(await statuses(out)).toEqual({KCF02:{status:'not_run',reason:'BENCH_KIT_CHANGED'}});
+  const i=rig(KIT,{kitDigest:'f'.repeat(64)}),io=fresh('identity');
+  expect(await identify(i.l,io,i.io)).toBe(1);expect(i.ops).toEqual(['bus:describe','bus:close']);
+  expect((await statuses(io)).KID02).toEqual({status:'failed',reason:'BENCH_KIT_CHANGED'});
+ },120_000);
+ it('a worker whose close() rejects: the part is still written, then the close failure is reported, exit 1',async()=>{
+  const identity=await identityOf(),r=rig(KIT,{closeFails:true}),out=fresh('conformance');
+  expect(await run(r.l,{identity,suite:'conformance',out,only:'KCF02'},r.io)).toBe(1);
+  expect(await statuses(out)).toEqual({KCF02:'evaluated'});expect(await clean(out)).toEqual([]);
+  expect(r.lines.join('\n')).toMatch(/WORKER_CLOSE_FAILED.*test: close failed/);
+ },120_000);
+ it('--from with other drives on the bus (same kit digest, as on hardware) is BENCH_IDENTITY_CHANGED; the stored part is left untouched',async()=>{
+  const identityA=await identityOf(),out=fresh('conformance'),first=rig();
+  expect(await run(first.l,{identity:identityA,suite:'conformance',out,only:'KCF02'},first.io)).toBe(0);
+  const before=readFileSync(join(out,'manifest.json'),'utf8'),other=['SIM-0003','SIM-0004'];
+  const b=rig(KIT,{serials:other}),identityB=fresh('identity');expect(await identify(b.l,identityB,b.io)).toBe(0);   // a clean identity of the other drives, same kit digest
+  const r=rig(KIT,{serials:other});
+  expect(await run(r.l,{identity:identityB,suite:'conformance',out,from:'KCF03'},r.io)).toBe(1);
+  expect(r.calls).toEqual([]);
+  expect(r.lines.join('\n')).toMatch(/BENCH_IDENTITY_CHANGED.*stored part 1:SIM-0001, 2:SIM-0002.*identity part 1:SIM-0003, 2:SIM-0004/);
+  expect(readFileSync(join(out,'manifest.json'),'utf8')).toBe(before);
+  // the stored part and the identity agree but the bus now shows other drives: refused after the scan, before configure, and still not rewritten
+  const s=rig(KIT,{serials:other});
+  expect(await run(s.l,{identity:identityA,suite:'conformance',out,from:'KCF03'},s.io)).toBe(1);
+  expect(s.ops).toEqual(['bus:describe','bus:open','bus:scan','bus:close']);expect(s.lines.join('\n')).toMatch(/BENCH_IDENTITY_CHANGED/);
+  expect(readFileSync(join(out,'manifest.json'),'utf8')).toBe(before);
+ },180_000);
  it('one case, armed: configure, start, KCF02 tested, the part intact with the session copied in',async()=>{
   const identity=await identityOf(),r=rig(),out=fresh('conformance');
   expect(await run(r.l,{identity,suite:'conformance',out,only:'KCF02'},r.io)).toBe(0);
@@ -176,7 +217,7 @@ describe('run',()=>{
   expect(await run(r.l,{identity,suite:'conformance',out},r.io)).toBe(1);
   const s=await statuses(out);
   expect(s.KCF02).toEqual({status:'failed',reason:'OPERATOR_ABORT'});
-  for(const c of CONFORMANCE_CASES.slice(1))expect(s[c.id]).toEqual({status:'not_run',reason:'SUITE_STOPPED_AFTER_OPERATOR_ABORT'});
+  for(const c of CONFORMANCE_CASES.slice(1))expect(s[c.id]).toEqual({status:'not_run',reason:'SUITE_STOPPED_AFTER_KCF02'});
   expect(r.ops).not.toContain('bus:silence');
   expect(r.lines.join('\n')).toMatch(/--from KCF02/);
  },120_000);
@@ -184,7 +225,7 @@ describe('run',()=>{
   const identity=await identityOf(),r=rig(KIT,{lostAt:4}),out=fresh('conformance');
   expect(await run(r.l,{identity,suite:'conformance',out},r.io)).toBe(1);
   const s=await statuses(out);
-  expect(s.KCF02).toEqual({status:'failed',reason:'WORKER_LOST'});expect(s.KCF03).toEqual({status:'not_run',reason:'SUITE_STOPPED_AFTER_WORKER_LOST'});
+  expect(s.KCF02).toEqual({status:'failed',reason:'WORKER_LOST'});expect(s.KCF03).toEqual({status:'not_run',reason:'SUITE_STOPPED_AFTER_KCF02'});
   expect(await clean(out)).toEqual([]);expect(r.ops.at(-1)).toBe('bus:close');
   // no worker at all: still a part, every case not_run with the code
   const none=rig(KIT,{spawnFails:true}),out2=fresh('conformance');
@@ -203,7 +244,7 @@ describe('run',()=>{
   expect(await run(next.l,{identity,suite:'conformance',out,from:'KCF03'},next.io)).toBe(1);
   const s=await statuses(out);
   expect(s.KCF02).toBe('evaluated');expect(s.KCF03).toEqual({status:'failed',reason:'OPERATOR_ABORT'});   // not BENCH_ORDER_VIOLATION: KCF02 counted as passed
-  expect(s.KCF05).toEqual({status:'not_run',reason:'SUITE_STOPPED_AFTER_OPERATOR_ABORT'});
+  expect(s.KCF05).toEqual({status:'not_run',reason:'SUITE_STOPPED_AFTER_KCF03'});
   expect(await clean(out)).toEqual([]);expect(readdirSync(dir).filter(f=>/\.(new|old)-/.test(f))).toEqual([]);
  },180_000);
  it('measure re-runs KCF02 first; without KCF04 and KCF01 the measurement cases stay not_run, and no calibration dataset is written',async()=>{
@@ -214,14 +255,20 @@ describe('run',()=>{
   for(const c of MEASURE_CASES)expect(s[c.id]).toEqual({status:'not_run',reason:'BENCH_ORDER_VIOLATION'});
   expect(r.lines.join('\n')).toMatch(/no calibration dataset: no KMS01 trial was tested/);expect(existsSync(join(out,'calibration'))).toBe(false);
  },120_000);
- it('measure with the prerequisites passed (injected): the trials run and the dataset is synthetic on the simulated backend',async()=>{
-  const r=rig(),out=fresh('measure');
-  expect(await caseSession('measure',r.l,{out,cases:casesOf('measure',{}),stored:[],replace:false,seedPassed:['KCF04','KCF01']},r.io)).toBe(1);   // KMS04 asks the operator: no prompter, not_run
+ it('measure once KCF04 and KCF01 are registered (test-local stand-ins, picked up by id): the trials run and the dataset is synthetic',async()=>{
+  // stand-ins with real (empty) traces and a real verdict, registered only for this test; the suite and the part writer find them by id like the real ones later
+  const stand=(id:string,requires:string[]):BenchCase=>({id,needsTorque:true,requires,script:()=>({ticks:0,commandsAt:()=>[]}),evaluate:()=>({status:'tested',reason:null,measurements:[]})});
+  const extra=[stand('KCF04',['KCF02']),stand('KCF01',['KCF02','KCF04'])];(BENCH_CASES as BenchCase[]).push(...extra);
+  try{
+  expect(casesOf('measure',{}).map(c=>c.id)).toEqual(['KCF02','KCF04','KCF01',...MEASURE_CASES.map(c=>c.id)]);
+  const identity=await identityOf(),r=rig(),out=fresh('measure');
+  expect(await run(r.l,{identity,suite:'measure',out},r.io)).toBe(1);   // KMS04 asks the operator: no prompter, not_run
   const s=await statuses(out);
   expect(s.KCF02).toBe('evaluated');expect(s.KMS01).toBe('evaluated');expect(s.KMS04).toEqual({status:'not_run',reason:'BENCH_PROMPT_UNAVAILABLE'});
   const sidecar=JSON.parse(readFileSync(join(out,'calibration/sidecar.json'),'utf8')) as {sourceKind:string;generator?:string};
   expect(sidecar.sourceKind).toBe('synthetic');expect(sidecar.generator).toMatch(/simulated slave/);
   expect(await clean(out)).toEqual([]);
+  }finally{for(const c of extra)(BENCH_CASES as BenchCase[]).splice((BENCH_CASES as BenchCase[]).indexOf(c),1);}
  },180_000);
  it('a failed torque case stops the suite like a disarmed one, even when evaluate failed it',async()=>{
   const slow=reseal(KIT,k=>{Object.assign(k.simSlave!,{velocityScale:0.8});});   // KCF02 passes, KCF03 fails on trackingToleranceRadS (evaluate, not the runner)
@@ -229,7 +276,10 @@ describe('run',()=>{
   expect(await run(r.l,{identity,suite:'conformance',out},r.io)).toBe(1);
   const s=await statuses(out),k3=await readTrace(join(out,'cases/KCF03'));
   expect(s.KCF02).toBe('evaluated');expect(s.KCF03).toBe('evaluated');expect(k3.meta?.runner).toBeUndefined();
-  for(const c of CONFORMANCE_CASES.slice(2))expect((s[c.id] as {reason:string}).reason).toMatch(/^SUITE_STOPPED_AFTER_trackingToleranceRadS exceeded/);
+  for(const c of CONFORMANCE_CASES.slice(2)){
+   expect(s[c.id]).toEqual({status:'not_run',reason:'SUITE_STOPPED_AFTER_KCF03'});   // a code without spaces; the free-text reason is beside it
+   expect((await readTrace(join(out,'cases',c.id))).meta?.stoppedBy).toEqual({caseId:'KCF03',reason:expect.stringMatching(/^trackingToleranceRadS exceeded/) as string});
+  }
   expect(r.lines.join('\n')).toMatch(/--from KCF03/);
  },180_000);
  it('torque needs a clean identity: a KID case failed or not_run refuses the run before any worker, listing them',async()=>{
@@ -246,20 +296,21 @@ describe('run',()=>{
 
 describe('the calibration dataset of a measure part',()=>{
  it('sourceKind follows the stored worker backend: synthetic with a generator on sim, measured only on soem with an attestation',async()=>{
-  expect(calibrationKind('sim',SESSION)).toBe('synthetic');expect(calibrationKind('soem',SESSION)).toBe('measured');
-  expect(calibrationKind('soem',{...SESSION,operator:' '})).toBeNull();expect(calibrationKind(undefined,SESSION)).toBeNull();
+  expect(calibrationKind('sim')).toBe('synthetic');expect(calibrationKind('soem')).toBe('measured');expect(calibrationKind(undefined)).toBeNull();
   const w=await spawnBenchWorker({role:'bus',python:PY,kitPath:join(FIXTURES,'kit-sim-v1.json'),bus:'sim',readOnly:false,sessionId:'c',deadlinesMs:{step:5000}});workers.push(w);
   const describe=(await w.request('describe',{},0)).result!,{scan}=await startBenchSession(w);
   const ctx={worker:w,kit:KIT,policy:POLICY,clock:fakeClock(),arming:{arm:async()=>true},passed:new Set(['KCF02','KCF04','KCF01']),abort:new AbortController().signal};
   const results=[{caseId:'KMS01',...await runCase(MEASURE_CASES[0]!,ctx)}],data={session:SESSION,kit:KIT,policy:POLICY,results};
   expect(results[0]!.verdict.status).toBe('tested');
   const part=fresh('measure');await writeBenchPart(part,'measure',{...data,extra:{...sessionExtra(describe,scan),describe}});
-  expect(await writeCalibration(part,data)).toMatch(/calibration dataset \(synthetic\)/);
+  expect(await writeCalibration(part,data)).toEqual({line:expect.stringMatching(/calibration dataset \(synthetic\)/) as string});
   const sidecar=JSON.parse(readFileSync(join(part,'calibration/sidecar.json'),'utf8')) as {sourceKind:string;generator?:string;attestation?:unknown;configDigest:string};
   expect(sidecar).toMatchObject({sourceKind:'synthetic',configDigest:KIT.digest});expect(sidecar.generator).toMatch(/simulated slave/);expect(sidecar.attestation).toBeUndefined();
   // the stored backend, not the kit, decides: a part that says soem on a sim kit gets no dataset
   const soem=fresh('measure');await writeBenchPart(soem,'measure',{...data,extra:{...sessionExtra(describe,scan),describe:{...describe,backend:'soem'}}});
-  expect(await writeCalibration(soem,data)).toMatch(/no calibration dataset: SYNTHETIC_CANNOT_BE_MEASURED/);expect(existsSync(join(soem,'calibration'))).toBe(false);
+  // an export that throws is a failure with its code (the session exits 1), and nothing is left under calibration/
+  expect(await writeCalibration(soem,data)).toEqual({line:expect.stringMatching(/calibration dataset export FAILED: SYNTHETIC_CANNOT_BE_MEASURED/) as string,error:'SYNTHETIC_CANNOT_BE_MEASURED'});
+  expect(existsSync(join(soem,'calibration'))).toBe(false);
  },120_000);
 });
 
