@@ -1,6 +1,6 @@
 // R5 structural table (contracts §8): 48 cases and the nine closing gates of R5, each case naming the suites that must be green. Same immutable qualification core as R4 (`qualify`).
 // What this table does NOT do: it does not record anything. A record needs the full chain (Lab regression → IR-SIM → r1 → r1.1 → r2a → r2b → r4 → r5, hours, and the owned-CI step stops the
-// local Supabase stack), which runs only on the user's consent. Cases whose feature R5 did not build (virtual I/O, mouse picking, the twin alarm marker) say so here and stay `not_run`.
+// local Supabase stack), which runs only on the user's consent. Cases whose feature R5 did not build (virtual I/O, cut with E14) say so here and stay `not_run`.
 // G-BENCH1 and G-SAFE1 are outside R5 and `blocked_external` in every record; nothing here is `accepted`.
 import {statSync} from 'node:fs';
 import {join} from 'node:path';
@@ -9,7 +9,7 @@ import {checkPlaywrightResult,checkPlaywrightProcess} from './r4-playwright.mjs'
 import {checkR2bExecutedFiles} from './sim-extension-r2b.mjs';
 const V=(id,files,repo='source')=>({id,repo,kind:'vitest',files});
 // one spec per launcher (its pairing code is one-use); alternate ports so a developer's running Lab on 4175/4176 is never touched
-const E=(id,spec,provider)=>({id,repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs','--same-origin','--provider',provider,'--ui-port','42455','--runtime-port','42456',spec]});
+const E=(id,spec,provider,...extra)=>({id,repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs','--same-origin','--provider',provider,...extra,'--ui-port','42455','--runtime-port','42456',spec]});
 export const SUITES_R5=[
  V('dev-unit',['tests/unit/electrical-profiles.test.ts','tests/contracts/electrical-contracts.test.ts','tests/unit/electrical-description.test.ts','tests/unit/electrical-catalog.test.ts','tests/unit/electrical-design.test.ts','tests/unit/electrical-fixture.test.ts','tests/unit/electrical-drive-derivation.test.ts']),
  V('ioa-unit',['tests/unit/electrical-allocate.test.ts','tests/unit/electrical-compile.test.ts']),
@@ -20,6 +20,8 @@ export const SUITES_R5=[
  V('stp-engine',['tests/integration/mujoco-stop.test.ts']),
  V('web-unit',['tests/unit/electrical-view.test.ts','tests/unit/diagnostics.test.ts','tests/unit/samples.test.ts','tests/unit/twin-shell.test.ts'],'lab'),
  E('e2e-electrical','webots-electrical.spec.ts','webots'),
+ // engineering mobile runs with drive evidence and the drive-fault studio exist only on the MuJoCo mobile launcher
+ E('e2e-diagnostics','mujoco-diagnostics.spec.ts','mujoco','--mujoco-mobile'),
  {id:'e2e-samples',repo:'lab',kind:'playwright',command:['node_modules/@playwright/test/cli.js','test','tests/e2e/samples-offline.spec.ts','--reporter=json']},
 ];
 const cases=(ids,suites,extra={})=>Object.fromEntries(ids.map(id=>[id,{suites,...extra}]));
@@ -31,8 +33,8 @@ export const CASES_R5={
  ...cases(['DOC01','DOC02','DOC04'],['doc-unit']),DOC03:{suites:['doc-unit'],input:'hardwarePackage'},...cases(['TCO01','TCO02'],['tco-unit']),
  ...cases(['STP01','STP02','STP05','STP07'],['stp-unit']),...cases(['STP03','STP04'],['stp-unit','stp-engine']),STP06:{suites:['stp-unit','stp-engine'],input:'stopCampaign'},
  VIO01:{notRun:'vio_cut: R5 has no virtual I/O (E14 cut; the plan allows it)'},VIO02:{notRun:'vio_cut: R5 has no virtual I/O (E14 cut)'},VIO03:{notRun:'vio_cut: R5 has no virtual I/O (E14 cut)'},VIO04:{notRun:'vio_cut: R5 has no virtual I/O (E14 cut)'},
- DGN01:{suites:['web-unit','e2e-electrical']},DGN02:{notRun:'not_built: an axis is chosen from a keyboard-operable list; picking a wheel or joint in the 2D/3D twin is not implemented'},
- DGN03:{suites:['web-unit']},DGN04:{notRun:'not_built: an alarm jumps to its tick, but the twin does not mark the entity with an outline and icon; there is no end-to-end run of the jump'},
+ DGN01:{suites:['web-unit','e2e-electrical']},DGN02:{suites:['web-unit','e2e-diagnostics']},
+ DGN03:{suites:['web-unit','e2e-samples']},DGN04:{suites:['web-unit','e2e-diagnostics']},
  WEB11:{suites:['web-unit','e2e-samples']},WEB12:{suites:['e2e-samples']},WEB13:{suites:['web-unit','e2e-samples']},
  REG06:{input:'r4Record'},
  CLD04:{input:'containerRecord'},CLD05:{input:'containerRecord'},CLD06:{notRun:'deploy_order_pending'}
