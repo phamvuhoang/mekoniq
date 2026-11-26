@@ -14,7 +14,8 @@ import {cellArtifacts} from '../simulation3d/cell-campaign';
 import {blockingReadIssues} from '../simulation3d/tray-verdict';
 import {readCampaignJournal,verifyCampaignOutcome} from './campaign-source-evidence';
 import {readJson} from './cil-campaign';
-import {stopStartTick} from './stop-functions';
+import {stopStartTick,type StopFunctionId} from './stop-functions';
+import {TRAY_EXPERIMENTS} from '../simulation3d/tray-experiments';
 import {buildStopReport,validateStopReport,stopReportDigest} from './stop-report';
 import {bodySpeeds} from './stop-metrics';
 import type {FaultScheduleEntry} from '../fault-schedule';
@@ -75,6 +76,31 @@ export async function stopReportOfCase(dir:string,spec:StopCase):Promise<StopRep
  return buildStopReport({runId:cp.runId,entry:spec.entry,intents,receipts,records:evidence,policy,chainAxes:chain,wheelRadiusM:wheel,attention:report.attention.map(a=>({tick:a.tick,reason:a.reason})),served:report.outcome.served,status:report.outcome.status,servedAfterStop:report.outcome.served!=='0'&&appliedAfter!==undefined,decidingParameters:decidingFrom(physics,drive)});
 }
 
+type InvariantId=StopReportV1['invariants'][number]['id'];
+/** The invariants each function must pass (contracts 6); the others are not_applicable for it. */
+export const MANDATORY_INVARIANTS:Readonly<Record<StopFunctionId,readonly InvariantId[]>>={normal:['RECEIPT_MATCHES_INTENT','NO_FALSE_SERVE'],protective:['NO_MOTION_ACCEPTED_AFTER_STOP','NO_AUTO_RESTART','RECEIPT_MATCHES_INTENT','NO_FALSE_SERVE'],
+ emergency:['TORQUE_ZERO_AT_EMERGENCY','NO_MOTION_ACCEPTED_AFTER_STOP','NO_AUTO_RESTART','RECEIPT_MATCHES_INTENT','NO_FALSE_SERVE']};
+interface FaultReceipt{entryId:string;faultId:string;targetId:string;phase:'start'|'end';appliedTick:number}
+/** What a read-back case must show beyond its identity: every mandatory invariant `pass`; the experiment, drive model and fault schedule that ran are the case's and its bundle's;
+ * for S4, a command loss started on every chain axis on or before the stop tick and not ended by it (from the durable fault receipts). Pure; codes without the case id. */
+export function stopCaseIssues(spec:StopCase,run:{report:StopReportV1;records:readonly PhysicsTickRecord[];chainAxes:readonly string[];experiment:{id:string;driveExperimentId?:string|undefined};driveModelDigest:string;
+ manifest:{driveFaultSchedule?:{entries:FaultScheduleEntry[]}|undefined;drive?:{experimentId?:string;driveModelDigest:string}|undefined}}):string[]{
+ const out:string[]=[],must=MANDATORY_INVARIANTS[spec.entry.function];
+ for(const i of run.report.invariants)if(must.includes(i.id)?i.result!=='pass':i.result==='violated')out.push(`STOP_ORACLE:${i.id}:${i.result}`);
+ const drive=TRAY_EXPERIMENTS[spec.experimentId]?.driveExperimentId;
+ if(run.experiment.id!==spec.experimentId||run.experiment.driveExperimentId!==drive||run.manifest.drive?.experimentId!==drive)out.push('STOP_EXPERIMENT_NOT_THE_BUNDLE');
+ if(run.manifest.drive?.driveModelDigest!==run.driveModelDigest)out.push('STOP_DRIVE_MODEL_NOT_THE_BUNDLE');
+ if(hashJson(run.manifest.driveFaultSchedule?.entries??[])!==hashJson(spec.faults??[]))out.push('STOP_FAULTS_NOT_THE_CASES');
+ if(spec.group==='S4'){
+  const at=run.report.appliedTick,fr=run.records.flatMap(r=>((r as {faultReceipts?:FaultReceipt[]}).faultReceipts??[])).filter(f=>f.faultId==='command-loss');
+  for(const a of run.chainAxes){
+   const open=at!==null&&fr.some(s=>s.targetId===a&&s.phase==='start'&&s.appliedTick<=at&&!fr.some(e=>e.entryId===s.entryId&&e.targetId===a&&e.phase==='end'&&e.appliedTick<=at));
+   if(!open)out.push(`STOP_S4_NO_COMMAND_LOSS:${a}`);
+  }
+ }
+ return out;
+}
+
 export async function runStopCampaign(o:{root:string;out:string;sourceCommit:string;python?:string;caseId?:string;signal?:AbortSignal}):Promise<StopCampaignVerdict>{
  o.signal?.throwIfAborted();
  if(!/^[a-f0-9]{40}$/.test(o.sourceCommit))throw Error('STOP_SOURCE_COMMIT_REQUIRED');
@@ -91,7 +117,7 @@ export async function runStopCampaign(o:{root:string;out:string;sourceCommit:str
  const verdict=await verifyStopCampaign(o.out,o.caseId);await writeFile(join(o.out,'summary.json'),json({accepted:false,...verdict}));return verdict;
 }
 
-/** Every case from its own files: identity, inventory, the journal's outcome, the durable records, and the stop report rebuilt from them. An invariant that is `violated` is an issue; distances and slips never are. */
+/** Every case from its own files: identity, inventory, the journal's outcome, the durable records, the stop report rebuilt from them and `stopCaseIssues`. A mandatory invariant that is not `pass` is an issue; distances and slips never are. */
 export async function verifyStopCampaign(out:string,onlyCase?:string):Promise<StopCampaignVerdict>{
  const v:StopCampaignVerdict={expectedRuns:0,completedCases:0,missingArtifacts:[],issues:[],reports:[]};let source:string;
  try{const c=await readJson(out,'campaign.json');if(c.accepted!==false||c.execution!=='actual_mujoco'||c.calibration!=='not_calibrated'||hashJson(c.campaign)!==hashJson(table)||!/^[a-f0-9]{40}$/.test(c.sourceCommit)||!['arm64','x86_64'].includes(c.hostArch))throw Error();source=c.sourceCommit;}
@@ -104,9 +130,9 @@ export async function verifyStopCampaign(out:string,onlyCase?:string):Promise<St
    const rec=await readJson(dir,'case.json');
    check(rec.schemaVersion===1&&rec.engineVersion==='3.17.0'&&rec.accepted===false&&rec.execution==='actual_mujoco'&&rec.sourceCommit===source&&hashJson(rec.case)===hashJson(spec)&&rec.error===null,'STOP_CASE_IDENTITY');
    check(hashJson(await cellArtifacts(dir))===hashJson(rec.artifacts),'STOP_ARTIFACT_INVENTORY');
-   const report=await readJson(dir,'report.json') as RunReport,{cp,records,read,manifest}=await readTrayRun(dir);
+   const report=await readJson(dir,'report.json') as RunReport,{cp,records,read,manifest,scene}=await readTrayRun(dir);
    const blocked=blockingReadIssues(read,manifest as never,records.length,cp.tick);check(!blocked.length,'STOP_PHYSICS_EVIDENCE:'+blocked.join(','));
-   const mf=(cp as unknown as {manifest:{seed:number;sourceCommit:string;scenario:{id:string};stopSchedule?:{entries:StopScheduleEntryV1[]}}}).manifest;
+   const mf=(cp as unknown as {manifest:{seed:number;sourceCommit:string;scenario:{id:string};stopSchedule?:{entries:StopScheduleEntryV1[]};driveFaultSchedule?:{entries:FaultScheduleEntry[]};drive?:{experimentId?:string;driveModelDigest:string}}}).manifest;
    check(mf.seed===spec.seed&&mf.sourceCommit===source&&mf.scenario.id===TRAY_SCENARIO&&cp.tick===report.outcome.tick,'STOP_RUN_IDENTITY');
    check(hashJson(mf.stopSchedule?.entries)===hashJson([spec.entry]),'STOP_SCHEDULE_NOT_THE_CASES');
    check(!runs.has(cp.runId),'STOP_DUPLICATE_EXECUTION');runs.add(cp.runId);
@@ -114,8 +140,8 @@ export async function verifyStopCampaign(out:string,onlyCase?:string):Promise<St
    const stored=await readJson(dir,'stop-report.json') as StopReportV1,rebuilt=await stopReportOfCase(dir,spec);
    check(validateStopReport(stored).ok&&stopReportDigest(stored)===stored.digest,'STOP_REPORT_INVALID');check(hashJson(stored)===hashJson(rebuilt),'STOP_REPORT_NOT_FROM_STREAM');
    check(stored.verdict==='fired','STOP_NOT_FIRED');
-   for(const i of stored.invariants)if(i.result==='violated')v.issues.push(`STOP_ORACLE:${spec.id}:${i.id}`);
-   if(spec.group==='S4'){const t=stored.invariants.find(i=>i.id==='TORQUE_ZERO_AT_EMERGENCY');check(t?.result==='pass','STOP_S4_TORQUE_NOT_ZERO');}
+   const bundleDoc=async(p:string)=>JSON.parse(await readFile(join(dir,'bundle',p),'utf8')),eng=scene.engine as unknown as {driveModelRef:{path:string}},driveDoc=await bundleDoc(eng.driveModelRef.path) as {digest:string;axes:{axisId:string}[]};
+   v.issues.push(...stopCaseIssues(spec,{report:stored,records,chainAxes:driveDoc.axes.map(a=>a.axisId),experiment:await bundleDoc('tray-experiment.json'),driveModelDigest:driveDoc.digest,manifest:mf}).map(i=>`${spec.id}:${i}`));
    // a receipt names the run and boot that issued it; those identify the execution, so the comparison leaves them out and compares everything the plant did
    recordHash.set(spec.id,hashJson(records.map(r=>({...r,...(r as {stopReceipts?:unknown[]}).stopReceipts?{stopReceipts:(r as {stopReceipts:{runId?:unknown;bootId?:unknown}[]}).stopReceipts.map(({runId:_r,bootId:_b,...x})=>x)}:{}}))));
    v.reports.push({caseId:spec.id,report:stored});v.completedCases++;

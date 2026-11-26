@@ -7,7 +7,7 @@ const entry=(fn:StopScheduleEntryV1['function']):StopScheduleEntryV1=>({id:'s1',
 const receipt=(fn:StopScheduleEntryV1['function'],tick=100):StopReceiptV1=>({entryId:'s1',function:fn,appliedBy:fn==='emergency'?'worker':'controller',appliedTick:tick,runId:'run-1',bootId:'b',sceneDigest:'a'.repeat(64),requestDigest:'b'.repeat(64)});
 const SRC={kind:'assumed' as const,documentId:'serve-payload-v1/assumptions.json',revision:'1',locator:'drive, contact, solver',contentSha256:'e'.repeat(64)};
 const base=(fn:StopScheduleEntryV1['function'],over:Partial<StopReportInput>={}):StopReportInput=>({runId:'run-1',entry:entry(fn),intents:[{tick:100,intents:[{entryId:'s1',function:fn,appliedBy:fn==='emergency'?'worker':'controller',targetTick:100}]}],receipts:[receipt(fn)],
- records:records({ticks:400,speed:decel,torque:t=>t<100?3:0,state:t=>t<100?'enabled':fn==='normal'?'enabled':fn==='protective'?'disabled':'fault'}),policy:POLICY,chainAxes:AXES,wheelRadiusM:0.1,
+ records:records({ticks:700,speed:decel,torque:t=>t<100?3:0,state:t=>t<100?'enabled':fn==='normal'?'enabled':fn==='protective'?'disabled':'fault'}),policy:POLICY,chainAxes:AXES,wheelRadiusM:0.1,
  attention:fn==='normal'?[{tick:100,reason:'NORMAL_STOP'}]:[{tick:100,reason:fn==='protective'?'PROTECTIVE_STOP':'EMERGENCY_STOP'}],served:'0',status:'needs_attention',servedAfterStop:false,
  decidingParameters:[{id:'rollingResistance',value:0.0001,source:SRC},{id:'casterFriction',value:0.6,source:SRC},{id:'brakeTorqueNm',value:6,source:SRC}],...over});
 const result=(r:ReturnType<typeof buildStopReport>,id:string)=>r.invariants.find(i=>i.id===id)!.result;
@@ -52,6 +52,35 @@ describe('a stop that fired',()=>{
  test('the oracle has no threshold on distance or slip: a long stop and a big slip are results, never failures',()=>{
   const r=buildStopReport(base('emergency',{records:records({ticks:700,speed:t=>t<=100?0.8:0.3,cups:()=>({slipM:0.3}),torque:t=>t<100?3:0,state:t=>t<100?'enabled':'fault'})}));
   expect(r.invariants.every(i=>i.result!=='violated')).toBe(true);expect(r.metrics.stopDistanceM).toEqual({unavailable:'NOT_AT_REST'});
+ });
+});
+
+describe('the drive invariants need every chain axis on every tick of the observation window (applied tick to applied tick + observeTicks)',()=>{
+ const em=(r:ReturnType<typeof records>)=>buildStopReport(base('emergency',{records:r}));
+ const full=()=>records({ticks:700,speed:decel,torque:t=>t<100?3:0,state:t=>t<100?'enabled':'fault'});
+ const drop=(r:ReturnType<typeof records>,keep:(t:number,axis:string)=>boolean)=>{for(const x of r)if(x.drives)(x as {drives:unknown[]}).drives=x.drives.filter(d=>keep(x.tick,d.axisId));return r;};
+ const DRIVE=['TORQUE_ZERO_AT_EMERGENCY','NO_MOTION_ACCEPTED_AFTER_STOP','NO_AUTO_RESTART'];
+ test('one axis missing from the applied tick on: not evidenced, never pass (and the metric agrees)',()=>{
+  const r=em(drop(full(),(t,a)=>t<100||a!==AXES[1]));
+  for(const id of DRIVE)expect(result(r,id),id).toBe('not_evidenced');expect(r.invariants[0]!.detail).toContain(AXES[1]);
+  expect(r.metrics.torqueZeroTick).toEqual({unavailable:'TOO_FEW_SAMPLES'});
+ });
+ test('the applied tick missing from the stream: not evidenced',()=>{
+  const r=em(full().filter(x=>x.tick!==100));for(const id of DRIVE)expect(result(r,id),id).toBe('not_evidenced');expect(r.invariants[0]!.detail).toContain('100');
+ });
+ test('a stream that ends before the observation window closes: not evidenced',()=>{
+  const r=em(records({ticks:400,speed:decel,torque:t=>t<100?3:0,state:t=>t<100?'enabled':'fault'}));for(const id of DRIVE)expect(result(r,id),id).toBe('not_evidenced');
+ });
+ test('evidence of a violation wins over missing samples',()=>{
+  const r=em(drop(records({ticks:700,speed:decel,torque:t=>t===150?0.5:0,state:t=>t>=300&&t<310?'enabled':'fault'}),(t,a)=>t<200||a!==AXES[1]));
+  for(const id of DRIVE)expect(result(r,id),id).toBe('violated');
+ });
+ test('a drive that leaves its stop for a few ticks and trips again is still an automatic restart',()=>{
+  expect(result(em(records({ticks:700,speed:decel,state:t=>t>=300&&t<310?'enabled':'fault'})),'NO_AUTO_RESTART')).toBe('violated');
+ });
+ test('a protective stop with an axis missing: motion and restart not evidenced',()=>{
+  const r=buildStopReport(base('protective',{records:drop(records({ticks:700,speed:decel,state:t=>t<100?'enabled':'disabled'}),(t,a)=>t<100||a!==AXES[0])}));
+  expect(result(r,'NO_MOTION_ACCEPTED_AFTER_STOP')).toBe('not_evidenced');expect(result(r,'NO_AUTO_RESTART')).toBe('not_evidenced');
  });
 });
 
