@@ -2,15 +2,16 @@
 
 R5 đóng R5.0–R5.5 (hồ sơ thiết bị, phần Điện, tài liệu và gói ứng viên, dừng khẩn và chẩn đoán, UI). Bảng case và gate nằm ở [`scripts/sim-extension-r5.mjs`](../../scripts/sim-extension-r5.mjs) (48 case, chín gate đóng R5, hai gate ngoài `G-BENCH1` và `G-SAFE1` luôn `blocked_external`). Mọi record `accepted:false`; chấp nhận chỉ là sidecar do người viết.
 
-## Trạng thái ngày 2026-11-25
+## Trạng thái ngày 2026-11-26
 
-- **Có:** bảng case/gate và test cấu trúc của nó; `scripts/record-r5-container.mjs` (CLD04, dựng CLD05 amd64, CLD06 `not_run`); campaign `stop-v1` ghi trên engine thật (16/16, `verify` exit 0) ở `robot/evidence-archive/r5-stop-v1-fa260332/`.
-- **Chưa có:** recorder `record-sim-extension-r5.mjs`, reader `r5-readback.mjs`, nhánh `release==='r5'` trong `checkQualification` và guard acceptance. Chúng chỉ có ý nghĩa khi chạy cả chuỗi ghi; chuỗi đó chưa chạy (xem dưới), nên chưa có `qualification.json` r5 nào và **không gate nào của R5 được ghi `tested` trong một record**. Các suite chạy xanh trên máy này (xem status) là bằng chứng cục bộ, không phải record.
-- **Cắt khỏi phạm vi:** E14 (I/O ảo `vio-v1`): VIO01–04 `not_run`, lý do `vio_cut`. Chọn thực thể bằng chuột trong twin 2D/3D (DGN02) và viền/biểu tượng cảnh báo trong twin (DGN04) chưa làm: `not_run`.
+- **Record đầu tiên: `r5-candidate-01`** ở source `6da4ca94` / Lab `78c9c38` (identity ổn định, `accepted:false`): 40/48 case `tested`, 8 `not_run`, 0 `failed`. `tested`: G-DEV1, G-ELE1, G-DOC1, G-STP1, G-WEB3, G-REG6. `not_run`: G-VIO1 (VIO01–04, E14 cắt), G-DGN1 (DGN02/04), G-CLOUD3 (CLD05/06). G-BENCH1, G-SAFE1 `blocked_external`. JSON cấp trên và `index.json`: [`evidence/hardware-electrical/r5-candidate-01-6da4ca94-lab-78c9c38-2026-11-26/`](../implementation/evidence/hardware-electrical/r5-candidate-01-6da4ca94-lab-78c9c38-2026-11-26/README.md); archive thô `robot/evidence-archive/r5-chain-6da4ca94/` (ngoài Git).
+- **Guard:** trong chuỗi, guard 27 (R4) và 31 (R5) đạt 11/12 vì test đọc toàn bộ artifact chạm timeout 300 s; reader trực tiếp trả `problems: []`. Sau khi ghi, commit `test:` `f4c72c29` nâng riêng timeout đó lên 1 200 s; guard chạy lại: R4 12/12 exit 0 (322 s), R5 12/12 exit 0 (339 s); SHA-256 hai `qualification.json` không đổi.
+- **Quyết định phạm vi (người dùng, 26/11):** giữ cắt E14. R5 được công bố là **"R5 không có I/O ảo"** khi tám gate còn lại đạt; G-VIO1 và VIO01–04 giữ `not_run`.
+- **Giới hạn của candidate 01** (sửa ở candidate kế tiếp): oracle dừng, allocator khi chưa biết chu kỳ, verifier gói, Diagnostics trước mẫu đầu, nhãn brake/coast của câu gợi ý, phép so CLD04 và verifier S4. Chi tiết trong README của bản ghi.
 
-## Vì sao chưa chạy chuỗi ghi
+## Chạy chuỗi ghi
 
-Chuỗi là `Lab regression → IR-SIM → r1 → r1.1 → r2a → r2b → r4 → r5` ở **một tuple**, mỗi bước exit 0, dưới `caffeinate -dims`, màn hình mở khóa (xem [r4-qualification.md](r4-qualification.md) và `docs/2026-11-20-codebase-merge/rehearsal-2026-11-25.md`). Bước `owned-source-ci` dừng stack Supabase `mekoniq-w00-w04` và cần sự đồng ý của người dùng cho lần chạy này; cả chuỗi mất nhiều giờ. Chưa có lệnh, nên không chạy.
+Chuỗi là `Lab regression → IR-SIM → r1 → r1.1 → r2a → r2b → r4 → r5` ở **một tuple**, mỗi bước exit 0, dưới `caffeinate -dims`, màn hình mở khóa (xem [r4-qualification.md](r4-qualification.md)). Bước `owned-source-ci` dừng stack Supabase `mekoniq-w00-w04` (người dùng đã đồng ý cho candidate 01 và 02). Driver hiện tại: `robot/evidence-archive/r5-handover-2026-11-26/run-final-chain-v7.sh OUT SRC LAB` (bước 29 dưới umask 022; guard 27 và 31 phải exit 0, không có `|| true`); watcher `watch-chain.py <status.ndjson>` chỉ exit 0 khi sự kiện `finished` cuối là `["0","1"]`. Re-pin bằng `repin.sh` (pipefail, thư mục tạm riêng, từ chối nếu pin chạm ngoài `apps/lab`).
 
 ## CLD04 / CLD05
 
