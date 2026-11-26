@@ -59,7 +59,7 @@ describe('a session on the simulated slave, end to end',()=>{
   expect(v.status,v.out).toBe(0);
   writeFileSync(join(out,'identity/session.json'),'{}');
   const bad=cli('bench',['verify','--record',out]);
-  expect(bad.status).toBe(1);expect(bad.out).toMatch(/CHECKSUM_MISMATCH identity\/session.json/);
+  expect(bad.status).toBe(1);expect(bad.out).toMatch(/SIZE_MISMATCH identity\/session.json/);expect(bad.out).toMatch(/SESSION_DECLARATION_MISSING identity\/session.json/);
  },300_000);
  it('stdin not a terminal and no test hook: the torque case is not_run BENCH_NOT_ARMED, exit 1',()=>{
   const out=fresh('conformance'),r=cli('bench',['run',...common(),'--identity',identity,'--suite','conformance','--case','KCF02','--out',out]);
