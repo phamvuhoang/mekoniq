@@ -66,7 +66,13 @@ describe('a session on the simulated slave, end to end',()=>{
   const child=spawn(process.execPath,['scripts/bench.mjs','run',...common(),'--identity',identity,'--suite','conformance','--out',out],{cwd:ROOT,env,stdio:['pipe','pipe','pipe']});
   let text='',sent=false;
   // two signals back to back: the second must not cut the stop sequence
-  child.stdout.on('data',(d:Buffer)=>{text+=String(d);if(!sent&&/KCF0\d \.\.\./.test(text)){sent=true;child.kill('SIGTERM');child.kill('SIGTERM');}});
+  // the second only once the first one's effect is visible, so the two are never merged into one
+  let second=false;
+  child.stdout.on('data',(d:Buffer)=>{
+   text+=String(d);
+   if(!sent&&/KCF0\d \.\.\./.test(text)){sent=true;child.kill('SIGTERM');}
+   if(sent&&!second&&/SIGTERM: stopping/.test(text)){second=true;child.kill('SIGTERM');}
+  });
   child.stderr.on('data',(d:Buffer)=>{text+=String(d);});
   const code=await new Promise<number|null>(ok=>child.once('close',ok));
   expect(code,text).toBe(1);expect(text).toMatch(/SIGTERM: stopping/);expect(text).toMatch(/stopping; wait/);expect(text).toMatch(/bus worker stopped: \{"event": ?"stopped"/);expect(text).toMatch(/OPERATOR_ABORT/);expect(text).toMatch(/conformance part written/);
@@ -89,7 +95,7 @@ describe('refusals of bench.mjs',()=>{
   r=cli('bench',['identify',...common(),'--out',join(ROOT,'.bench-out')]);expect(r.status).toBe(2);expect(r.out).toMatch(/OUTPUT_MUST_BE_OUTSIDE_REPOSITORIES/);
   r=cli('bench',['identify',...common(),'--out',identity]);expect(r.status).toBe(2);expect(r.out).toMatch(/OUT_EXISTS/);
   const bad=f('bad-answers.json','x');writeFileSync(bad,'{not json');
-  r=cli('bench',[...base,'--identity',identity,'--case','KCF02'],{BENCH_TEST_ANSWERS:bad});expect(r.status).toBe(2);expect(r.out).toMatch(/BENCH_TEST_ANSWERS_INVALID/);expect(r.out).not.toMatch(/\n\s+at /);
+  r=cli('bench',[...base,'--identity',identity,'--case','KCF02'],{BENCH_TEST_ANSWERS:bad});expect(r.status).toBe(2);expect(r.out).toMatch(/BENCH_TEST_ANSWERS_INVALID/);expect(r.out.match(/BENCH_TEST_ANSWERS_INVALID/g)).toHaveLength(1);expect(r.out).not.toMatch(/\n\s+at /);
  },120_000);
  it('run with the identity part of other serials: exit 1 BENCH_IDENTITY_CHANGED',()=>{
   const d=fresh('kit');mkdirSync(d);cpSync(join(FIXTURES,'sim-esi.summary.json'),join(d,'sim-esi.summary.json'));

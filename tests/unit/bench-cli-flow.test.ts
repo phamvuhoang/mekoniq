@@ -11,7 +11,7 @@ import {BenchWorkerError,spawnBenchWorker,type BenchWorker} from '../../packages
 import {runCase,startBenchSession} from '../../packages/bench/src/session';
 import {BENCH_CASES,CONFORMANCE_CASES,MEASURE_CASES,SENSOR_CASES,type BenchCase,type ScanSlave} from '../../packages/bench/src/cases/index';
 import {checkManifest,readJsonFile,readManifest,readTrace} from '../../packages/bench/src/evidence';
-import {sessionExtra,writeBenchPart} from '../../packages/bench/src/record';
+import {assembleBenchRecord,sessionExtra,writeBenchPart} from '../../packages/bench/src/record';
 import {armingFor,calibrationKind,casesOf,describeSession,identify,identityPart,outProblem,prompterFor,run,sensors,writeCalibration,type Loaded,type Spawn}
  from '../../packages/bench/src/cli-flow';
 
@@ -232,6 +232,11 @@ describe('run',()=>{
   expect(await run(none.l,{identity,suite:'conformance',out:out2},none.io)).toBe(1);
   expect(Object.values(await statuses(out2)).every(x=>(x as {reason:string}).reason==='WORKER_LOST')).toBe(true);expect(await clean(out2)).toEqual([]);
  },120_000);
+ it('--from into an --out that does not exist is a usage error: there is nothing to continue',async()=>{
+  const identity=await identityOf(),r=rig();
+  await expect(run(r.l,{identity,suite:'conformance',out:fresh('none'),from:'KCF02'},r.io)).rejects.toThrow(/OUT_MISSING/);
+  expect(r.calls).toEqual([]);
+ },60_000);
  it('--from keeps the stored results and extends them; earlier cases must be tested in the stored part; without --from an existing part is not replaced',async()=>{
   const identity=await identityOf(),out=fresh('conformance'),first=rig();
   expect(await run(first.l,{identity,suite:'conformance',out,only:'KCF02'},first.io)).toBe(0);
@@ -255,21 +260,42 @@ describe('run',()=>{
   for(const c of MEASURE_CASES)expect(s[c.id]).toEqual({status:'not_run',reason:'BENCH_ORDER_VIOLATION'});
   expect(r.lines.join('\n')).toMatch(/no calibration dataset: no KMS01 trial was tested/);expect(existsSync(join(out,'calibration'))).toBe(false);
  },120_000);
- it('measure once KCF04 and KCF01 are registered (test-local stand-ins, picked up by id): the trials run and the dataset is synthetic',async()=>{
-  // stand-ins with real (empty) traces and a real verdict, registered only for this test; the suite and the part writer find them by id like the real ones later
+ it('measure with KCF04 and KCF01 resolved from a registry passed explicitly (test stand-ins): the trials run and the dataset is synthetic; the record refuses them',async()=>{
+  // stand-ins with real (empty) traces and a real verdict, in a registry this test passes explicitly; the production registry is frozen and never sees them
   const stand=(id:string,requires:string[]):BenchCase=>({id,needsTorque:true,requires,script:()=>({ticks:0,commandsAt:()=>[]}),evaluate:()=>({status:'tested',reason:null,measurements:[]})});
-  const extra=[stand('KCF04',['KCF02']),stand('KCF01',['KCF02','KCF04'])];(BENCH_CASES as BenchCase[]).push(...extra);
-  try{
-  expect(casesOf('measure',{}).map(c=>c.id)).toEqual(['KCF02','KCF04','KCF01',...MEASURE_CASES.map(c=>c.id)]);
+  const cases=[...BENCH_CASES,stand('KCF04',['KCF02']),stand('KCF01',['KCF02','KCF04'])];
+  expect(casesOf('measure',{},cases).map(c=>c.id)).toEqual(['KCF02','KCF04','KCF01',...MEASURE_CASES.map(c=>c.id)]);
+  expect(casesOf('measure',{}).map(c=>c.id)).toEqual(['KCF02',...MEASURE_CASES.map(c=>c.id)]);   // the default is the production registry
   const identity=await identityOf(),r=rig(),out=fresh('measure');
-  expect(await run(r.l,{identity,suite:'measure',out},r.io)).toBe(1);   // KMS04 asks the operator: no prompter, not_run
+  expect(await run(r.l,{identity,suite:'measure',out},r.io,cases)).toBe(1);   // KMS04 asks the operator: no prompter, not_run
   const s=await statuses(out);
   expect(s.KCF02).toBe('evaluated');expect(s.KMS01).toBe('evaluated');expect(s.KMS04).toEqual({status:'not_run',reason:'BENCH_PROMPT_UNAVAILABLE'});
   const sidecar=JSON.parse(readFileSync(join(out,'calibration/sidecar.json'),'utf8')) as {sourceKind:string;generator?:string};
   expect(sidecar.sourceKind).toBe('synthetic');expect(sidecar.generator).toMatch(/simulated slave/);
   expect(await clean(out)).toEqual([]);
-  }finally{for(const c of extra)(BENCH_CASES as BenchCase[]).splice((BENCH_CASES as BenchCase[]).indexOf(c),1);}
+  // a part holding stand-ins is for this test only: the record resolves ids against the production registry and refuses the unknown ones
+  await expect(assembleBenchRecord({identity,measure:out},fresh('record'),{candidateId:'t',sourceCommit:'abc1234'})).rejects.toThrow(/CASE_UNKNOWN/);
  },180_000);
+ it('the production case registry and its groups are frozen: no push, splice or assignment',()=>{
+  for(const list of [BENCH_CASES,CONFORMANCE_CASES,MEASURE_CASES,SENSOR_CASES]){
+   expect(Object.isFrozen(list)).toBe(true);
+   expect(()=>{(list as BenchCase[]).push(list[0]!);}).toThrow(TypeError);
+   expect(()=>{(list as BenchCase[]).splice(0,1);}).toThrow(TypeError);
+   expect(()=>{(list as BenchCase[])[0]=list[1]!;}).toThrow(TypeError);
+   expect(()=>{(list[0] as {evaluate:unknown}).evaluate=()=>({status:'tested'});}).toThrow(TypeError);   // the cases themselves too
+  }
+ });
+ it('production passes no registry: the scripts call the flow without one, and nothing under scripts or packages/bench mutates BENCH_CASES',()=>{
+  const read=(f:string)=>readFileSync(join(ROOT,f),'utf8'),bench=read('scripts/bench.mjs');
+  expect([...bench.matchAll(/flow\.(run|sensors|identify|casesOf)\(([^;]*?)\);?$/gm)].map(m=>m[0])).toEqual([
+   "flow.identify(l,out,io)","flow.run(l,{identity:resolve(o.identity),suite:o.suite,out,from:o.from,only:o.case},io)","flow.sensors(l,{out,only:o.case},io);"]);
+  const files=['scripts/bench.mjs','scripts/record-bench.mjs',...readdirSync(join(ROOT,'packages/bench/src'),{recursive:true}).map(String).filter(f=>f.endsWith('.ts')).map(f=>`packages/bench/src/${f}`)];
+  for(const f of files){
+   const src=read(f);
+   expect(src,f).not.toMatch(/BENCH_CASES\s*(\.\s*(push|splice|pop|shift|unshift|sort|reverse|fill|copyWithin)\b|\[[^\]]*\]\s*=[^=])|as\s+BenchCase\[\]/);
+   if(f!=='packages/bench/src/cli-flow.ts')expect(src,f).not.toMatch(/\b(run|sensors|casesOf)\([^)]*\bcases\b/);
+  }
+ });
  it('a failed torque case stops the suite like a disarmed one, even when evaluate failed it',async()=>{
   const slow=reseal(KIT,k=>{Object.assign(k.simSlave!,{velocityScale:0.8});});   // KCF02 passes, KCF03 fails on trackingToleranceRadS (evaluate, not the runner)
   const identity=await identityOf(slow),r=rig(slow),out=fresh('conformance');
@@ -295,7 +321,7 @@ describe('run',()=>{
 });
 
 describe('the calibration dataset of a measure part',()=>{
- it('sourceKind follows the stored worker backend: synthetic with a generator on sim, measured only on soem with an attestation',async()=>{
+ it('sourceKind follows the stored worker backend: synthetic with a generator on sim, measured only on soem (exportCalibration refuses measured from the simulated bus)',async()=>{
   expect(calibrationKind('sim')).toBe('synthetic');expect(calibrationKind('soem')).toBe('measured');expect(calibrationKind(undefined)).toBeNull();
   const w=await spawnBenchWorker({role:'bus',python:PY,kitPath:join(FIXTURES,'kit-sim-v1.json'),bus:'sim',readOnly:false,sessionId:'c',deadlinesMs:{step:5000}});workers.push(w);
   const describe=(await w.request('describe',{},0)).result!,{scan}=await startBenchSession(w);

@@ -94,4 +94,4 @@ const KID05=idCase('KID05',false,(a,s,d,out,_t,kit)=>{
  if(d&&!d.supportedModes.includes(mode))out.failed.push(`DESCRIPTION_MODE_MISSING ${a.axisId} ${mode}`);
 });
 
-export const IDENTITY_CASES:BenchCase[]=[KID02,KID03,KID04,KID05];
+export const IDENTITY_CASES:readonly BenchCase[]=Object.freeze([KID02,KID03,KID04,KID05].map(c=>Object.freeze(c)));   // frozen: no code can add, drop or edit a case

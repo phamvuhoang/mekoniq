@@ -6,7 +6,7 @@ import {mkdir,readdir,rename,rm,writeFile} from 'node:fs/promises';
 import {dirname,join,resolve} from 'node:path';
 import {ttyArming,type Arming} from './arming';
 import {exportCalibration} from './calibration-export';
-import {CONFORMANCE_CASES,IDENTITY_CASES,MEASURE_CASES,SENSOR_CASES,benchCase,identityScan,simDescriptions,verdictOf,type BenchCase,type CaseTrace,type CaseVerdict,
+import {BENCH_CASES,CONFORMANCE_CASES,IDENTITY_CASES,MEASURE_CASES,SENSOR_CASES,identityScan,simDescriptions,verdictOf,type BenchCase,type CaseTrace,type CaseVerdict,
  type ScanSlave} from './cases/index';
 import type {Clock} from './clock';
 import {sessionAllowsTorque,type BenchKitV1,type BenchPolicy,type BenchSessionV1} from './contracts';
@@ -22,10 +22,12 @@ export interface FlowIo{spawn:Spawn;clock:Clock;arming:Arming;prompter?:Prompter
 export interface CaseResult{caseId:string;trace:CaseTrace;verdict:CaseVerdict}
 type Tty={isTTY:boolean;question(q:string):Promise<string>};
 /** spec B1 §6: the first-motion cases pass in the SAME session before any other torque case, so a measurement session re-runs every one that is registered
- * (looked up by id when the suite is built, so KCF04 and KCF01 join when they are registered). */
+ * (looked up by id in the registry, so KCF04 and KCF01 join when they are registered). */
 export const FIRST_MOTION=['KCF02','KCF04','KCF01'];
 type Suite='conformance'|'measure'|'sensors';
-const suiteOf=(s:Suite):readonly BenchCase[]=>s==='measure'?[...FIRST_MOTION.flatMap(id=>benchCase(id)??[]),...MEASURE_CASES]:s==='conformance'?CONFORMANCE_CASES:SENSOR_CASES;
+/** `cases` is the registry ids resolve against: the frozen production one unless a test passes its own list (bench.mjs passes none; a test pins it). */
+type Registry=readonly BenchCase[];
+const suiteOf=(s:Suite,cases:Registry):readonly BenchCase[]=>s==='measure'?[...FIRST_MOTION.flatMap(id=>cases.find(c=>c.id===id)??[]),...MEASURE_CASES]:s==='conformance'?CONFORMANCE_CASES:SENSOR_CASES;
 const refused=(code:string,detail:string)=>Object.assign(new Error(`${code}: ${detail}`),{code});
 const msg=(e:unknown)=>e instanceof Error?e.message:String(e);
 const codeOf=(e:unknown)=>{const c=(e as {code?:unknown}|null)?.code;return typeof c==='string'&&c?c:'CASE_EXCEPTION';};
@@ -68,8 +70,8 @@ export function describeSession(s:BenchSessionV1):string[]{
   'These are your declarations. The software cannot check any of them.'];
 }
 /** The cases of one run: the suite in its registered order, from `from` on, or `only`. */
-export function casesOf(suite:Suite,o:{from?:string;only?:string}):BenchCase[]{
- const all=suiteOf(suite),id=o.from??o.only;
+export function casesOf(suite:Suite,o:{from?:string;only?:string},cases:Registry=BENCH_CASES):BenchCase[]{
+ const all=suiteOf(suite,cases),id=o.from??o.only;
  if(o.from&&o.only)throw refused('INVALID_OPTION','--from and --case together');
  if(id===undefined)return [...all];
  const i=all.findIndex(c=>c.id===id);
@@ -110,14 +112,14 @@ export async function identityPart(dir:string,kit:BenchKitV1):Promise<{problem:s
 }
 /** The results stored in an existing part (for --from), each verdict recomputed from its reloaded trace, and the serials it ran on; the part must be intact and of
  * this kit and policy. */
-async function storedPart(dir:string,l:Loaded,kind:PartKind):Promise<{results:CaseResult[];serials:string}>{
+async function storedPart(dir:string,l:Loaded,kind:PartKind,cases:Registry):Promise<{results:CaseResult[];serials:string}>{
  const issues=await checkManifest(dir,await readManifest(dir));
  if(issues.length||!existsSync(join(dir,`${kind}.json`)))throw refused('PART_MANIFEST_MISMATCH',`${dir} is not an intact ${kind} part`);
  for(const [file,digest,code] of [['bench-kit.json',l.kit.digest,'KIT_DIGEST_MISMATCH'],['policy.json',l.policy.digest,'POLICY_DIGEST_MISMATCH']] as const)
   if((await readJsonFile(join(dir,file)) as {digest?:unknown}).digest!==digest)throw refused(code,`${dir}/${file}`);
  const x=await readJsonFile(join(dir,`${kind}.json`)) as {slaves?:unknown};
  return {serials:serialsOf(Array.isArray(x.slaves)?x.slaves as ScanSlave[]:[]),results:await Promise.all((await readdir(join(dir,'cases'))).map(async id=>{
-  const c=benchCase(id);if(!c)throw refused('CASE_UNKNOWN',id);
+  const c=cases.find(x=>x.id===id);if(!c)throw refused('CASE_UNKNOWN',id);
   const trace=await readTrace(join(dir,'cases',id));return {caseId:id,trace,verdict:verdictOf(c,trace,l.kit,l.policy)};
  }))};
 }
@@ -140,10 +142,10 @@ export async function writeCalibration(dir:string,data:{session:BenchSessionV1;k
 }
 /** writeBenchPart (then, for measure, the calibration dataset and the manifest again). With --from the stored part is replaced only once the new one is complete.
  * Returns the calibration error, if any. */
-async function writePart(dir:string,kind:PartKind,data:Parameters<typeof writeBenchPart>[2]&{results:CaseResult[]},replace:boolean,log:Log):Promise<string|undefined>{
+async function writePart(dir:string,kind:PartKind,data:Parameters<typeof writeBenchPart>[2]&{results:CaseResult[]},replace:boolean,log:Log,cases:Registry=BENCH_CASES):Promise<string|undefined>{
  if(existsSync(dir)&&!replace)throw refused('OUT_EXISTS',dir);
  const target=replace&&existsSync(dir)?`${dir}.new-${process.pid}`:dir;
- await writeBenchPart(target,kind,data);
+ await writeBenchPart(target,kind,data,cases);
  let error:string|undefined;
  if(kind==='measure'){const c=await writeCalibration(target,data);log(c.line);error=c.error;await writeManifest(target);}
  if(target!==dir){const old=`${dir}.old-${process.pid}`;await rename(dir,old);await rename(target,dir);await rm(old,{recursive:true,force:true});}
@@ -197,7 +199,7 @@ export async function identityNotClean(dir:string,l:{kit:BenchKitV1;policy:Bench
 }
 /** One case session (run, sensors): spawn, describe (the kit the worker loaded), scan, the serials (run: those of the identity part), configure and start, the suite,
  * close, the part. A continuation (--from) refused before its first case leaves the stored part as it was. */
-async function caseSession(kind:Suite,l:Loaded,o:{out:string;cases:BenchCase[];stored:CaseResult[];serials?:string;replace:boolean},io:FlowIo):Promise<number>{
+async function caseSession(kind:Suite,l:Loaded,o:{out:string;cases:BenchCase[];stored:CaseResult[];serials?:string;replace:boolean;registry:Registry},io:FlowIo):Promise<number>{
  const torque=kind!=='sensors',ctx:RunContext={worker:undefined as unknown as BenchWorker,kit:l.kit,policy:l.policy,clock:io.clock,arming:torque?io.arming:{arm:async()=>false},
   prompter:io.prompter,abort:io.abort,passed:new Set(o.stored.filter(r=>r.verdict.status==='tested').map(r=>r.caseId))};
  let bus:BenchWorker|undefined,sensors:BenchWorker|undefined,describe:Record<string,unknown>={},scan:Record<string,unknown>={slaves:[]},refusal:{code:string;detail:string}|null=null;
@@ -220,7 +222,7 @@ async function caseSession(kind:Suite,l:Loaded,o:{out:string;cases:BenchCase[];s
  if(o.replace&&refusal&&!results.length){for(const c of closing)io.log(c);io.log(`Nothing ran; the stored part ${o.out} is left as it was.`);return 1;}
  for(const c of o.cases)if(!results.some(r=>r.caseId===c.id))results.push(decided(c,l,'not_run',refusal?.code??'NOT_STARTED',refusal?.detail));
  const all=[...o.stored.filter(r=>!o.cases.some(c=>c.id===r.caseId)),...results];
- const calibration=await writePart(o.out,kind,{...l,results:all,extra:{...sessionExtra(describe,scan),describe}},o.replace,io.log);
+ const calibration=await writePart(o.out,kind,{...l,results:all,extra:{...sessionExtra(describe,scan),describe}},o.replace,io.log,o.registry);
  for(const c of closing)io.log(c);
  io.log(`${all.filter(r=>r.verdict.status==='tested').length} of ${all.length} cases tested: ${all.map(show).join('; ')}`);
  if(stoppedAfter)io.log(`The suite stopped after ${stoppedAfter.caseId} (${stoppedAfter.verdict.reason}). Nothing was re-armed. Find the cause first; then continue in the same part with `
@@ -229,21 +231,22 @@ async function caseSession(kind:Suite,l:Loaded,o:{out:string;cases:BenchCase[];s
  return all.every(r=>r.verdict.status==='tested')&&!closing.length&&!calibration?0:1;
 }
 /** `run` (BK-D09, D11, D12; spec B1 §7.2): the declarations must allow torque, the identity must be clean; --from needs every earlier case of the suite tested in the stored part; then caseSession. */
-export async function run(l:Loaded,o:{identity:string;suite:string;out:string;from?:string;only?:string},io:FlowIo):Promise<number>{
+export async function run(l:Loaded,o:{identity:string;suite:string;out:string;from?:string;only?:string},io:FlowIo,cases:Registry=BENCH_CASES):Promise<number>{
  if(o.suite!=='conformance'&&o.suite!=='measure')throw refused('INVALID_OPTION',`--suite ${o.suite} (conformance or measure)`);
  if(!o.from&&existsSync(o.out))throw refused('OUT_EXISTS',o.out);
- const cases=casesOf(o.suite,o),problems=sessionAllowsTorque(l.session,l.kit);
+ if(o.from&&!existsSync(o.out))throw refused('OUT_MISSING',`--from needs the part to continue; ${o.out} does not exist`);
+ const list=casesOf(o.suite,o,cases),problems=sessionAllowsTorque(l.session,l.kit);
  if(problems.length){for(const p of problems)io.log(`REFUSED ${p.code} ${p.path}: ${p.detail}`);return 1;}
  const id=await identityPart(o.identity,l.kit);   // the manifest before anything is read from the part
  if('problem' in id){io.log(`REFUSED BENCH_IDENTITY_CHANGED: ${id.problem}`);return 1;}
  const unclean=await identityNotClean(o.identity,l);
  if(unclean.length){io.log(`REFUSED BENCH_IDENTITY_NOT_CLEAN: ${unclean.join('; ')}. Correct the profile (a new revision) and identify again.`);return 1;}
- const stored=o.from&&existsSync(o.out)?await storedPart(o.out,l,o.suite):{results:[],serials:id.serials};
+ const stored=o.from?await storedPart(o.out,l,o.suite,cases):{results:[],serials:id.serials};
  if(stored.serials!==id.serials){io.log(`REFUSED BENCH_IDENTITY_CHANGED: serials in the stored part ${stored.serials}; in the identity part ${id.serials}. Run a new part.`);return 1;}
- const all=suiteOf(o.suite),earlier=o.from?all.slice(0,all.indexOf(cases[0]!)):[];
+ const all=suiteOf(o.suite,cases),earlier=o.from?all.slice(0,all.indexOf(list[0]!)):[];
  const missing=earlier.filter(c=>stored.results.find(r=>r.caseId===c.id)?.verdict.status!=='tested');
  if(missing.length){io.log(`REFUSED FROM_EARLIER_NOT_TESTED: ${missing.map(c=>c.id).join(', ')} not tested in ${o.out}`);return 1;}
- return caseSession(o.suite,l,{out:o.out,cases,stored:stored.results,serials:id.serials,replace:!!o.from},io);
+ return caseSession(o.suite,l,{out:o.out,cases:list,stored:stored.results,serials:id.serials,replace:!!o.from,registry:cases},io);
 }
 /** `sensors`: the sensors worker read-only, an arming that always refuses (the torque gate of runCase lets no enable leave), the sensor cases. */
-export const sensors=(l:Loaded,o:{out:string;only?:string},io:FlowIo)=>caseSession('sensors',l,{out:o.out,cases:casesOf('sensors',o),stored:[],replace:false},io);
+export const sensors=(l:Loaded,o:{out:string;only?:string},io:FlowIo,cases:Registry=BENCH_CASES)=>caseSession('sensors',l,{out:o.out,cases:casesOf('sensors',o,cases),stored:[],replace:false,registry:cases},io);

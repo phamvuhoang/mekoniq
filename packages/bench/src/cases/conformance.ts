@@ -196,4 +196,4 @@ const KCF07b=torqueCase('KCF07b',{
 });
 
 /** The order of this package (spec B1 §6): KCF02 first, KCF07b last because its silence ends the session. */
-export const CONFORMANCE_CASES:BenchCase[]=[KCF02,trackingCase(KCF03_SIGNALS),KCF05,KCF06,KCF07a,KCF08,KCF10,KCF07b];
+export const CONFORMANCE_CASES:readonly BenchCase[]=Object.freeze([KCF02,trackingCase(KCF03_SIGNALS),KCF05,KCF06,KCF07a,KCF08,KCF10,KCF07b].map(c=>Object.freeze(c)));   // frozen: no code can add, drop or edit a case

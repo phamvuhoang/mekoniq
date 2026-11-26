@@ -10,7 +10,7 @@ import {join} from 'node:path';
 import {READ_LIMITS,writeDurable} from '../../lab-runtime/src/v2/navigation2d/evidence';
 import {hashJson} from '../../lab-runtime/src/v2/hash';
 import {GATES_BENCH,HARDWARE_GATES_BENCH,gateStatus} from '../../../scripts/bench-qualification.mjs';
-import {benchCase,verdictOf,type CaseTrace,type CaseVerdict} from './cases/index';
+import {BENCH_CASES,benchCase,verdictOf,type BenchCase,type CaseTrace,type CaseVerdict} from './cases/index';
 import {closuresFor} from './closures';
 import {sessionAllowsTorque,validateBenchKit,validateBenchPolicy,validateBenchRecord,validateBenchSession,type BenchKitV1,type BenchPolicy,type BenchRecordV1,type BenchSessionV1,
  type HostIdentity,type WorkerIdentity} from './contracts';
@@ -51,16 +51,17 @@ export function sessionExtra(describe:Record<string,unknown>,scan:Record<string,
 }
 
 /** One session's directory: session.json, bench-kit.json, policy.json, `<kind>.json` (extra), cases/<id>/{case.json, ticks-*, cycles-*}, then its own manifest.json.
- * Each stored trace is read back and must give the verdict the session saw (an impure evaluate is caught here). */
+ * Each stored trace is read back and must give the verdict the session saw (an impure evaluate is caught here). Case ids resolve against `cases`, the production
+ * registry unless a test passes its own list; a part written with stand-ins is for that test only (readback and assembly know the production registry alone). */
 export async function writeBenchPart(dir:string,kind:PartKind,data:{session:BenchSessionV1;kit:BenchKitV1;policy:BenchPolicy;
- results:{caseId:string;trace:CaseTrace;verdict:CaseVerdict}[];extra?:Record<string,unknown>}):Promise<void>{
+ results:{caseId:string;trace:CaseTrace;verdict:CaseVerdict}[];extra?:Record<string,unknown>},cases:readonly BenchCase[]=BENCH_CASES):Promise<void>{
  await mkdir(dir,{recursive:true,mode:0o700});
  if((await readdir(dir)).length)throw refused('PART_DIRECTORY_NOT_EMPTY',dir);
  if(new Set(data.results.map(r=>r.caseId)).size!==data.results.length)throw refused('CASE_DUPLICATE',kind);
  await writeDurable(dir,'session.json',json(data.session));await writeDurable(dir,'bench-kit.json',json(data.kit));await writeDurable(dir,'policy.json',json(data.policy));
  if(data.extra)await writeDurable(dir,`${kind}.json`,json(data.extra));
  for(const r of data.results){
-  const c=benchCase(r.caseId),d=join(dir,'cases',r.caseId);
+  const c=cases.find(x=>x.id===r.caseId),d=join(dir,'cases',r.caseId);
   if(!c)throw refused('CASE_UNKNOWN',r.caseId);
   await mkdir(d,{recursive:true});await writeTrace(d,r.trace);
   if(!same(verdictOf(c,await readTrace(d),data.kit,data.policy),r.verdict))throw refused('VERDICT_NOT_REPRODUCED',r.caseId);
@@ -107,7 +108,7 @@ async function derive(root:string):Promise<{fields:Derived|null;issues:Issue[]}>
    let v:CaseVerdict;
    try{const c=benchCase(id);if(!c)throw refused('CASE_UNKNOWN',id);v=verdictOf(c,await readTrace(cd),kit,policy);}
    catch(e){   // spec §7: not recomputable is failed
-    const c=codeOf(e);if(c==='RECORD_SCHEMA_INVALID'||c==='SIZE_MISMATCH')add(c,`${kind}/cases/${id}`);
+    const c=codeOf(e);if(c==='RECORD_SCHEMA_INVALID'||c==='SIZE_MISMATCH'||c==='CASE_UNKNOWN')add(c,`${kind}/cases/${id}`);   // an id outside the production registry never assembles or verifies
     v={status:'failed',reason:`VERDICT_NOT_REPRODUCIBLE ${e instanceof Error?e.message:String(e)}`.slice(0,500),measurements:[]};
    }
    // each occurrence recomputed from its own traces; the worst one (the first of equals) gives status, reason and session, the artifacts cover every occurrence

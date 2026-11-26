@@ -110,4 +110,4 @@ const KSN05=sensorCase('KSN05',{evaluate(t,_k,p){
 }});
 
 /** KSN02, KSN06 and KSN07 are not here: they need operator prompts. */
-export const SENSOR_CASES:BenchCase[]=[KSN01,KSN03,KSN04,KSN05];
+export const SENSOR_CASES:readonly BenchCase[]=Object.freeze([KSN01,KSN03,KSN04,KSN05].map(c=>Object.freeze(c)));   // frozen: no code can add, drop or edit a case

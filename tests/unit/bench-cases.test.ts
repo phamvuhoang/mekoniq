@@ -121,7 +121,7 @@ describe('conformance cases on the simulated slave',()=>{
   expect(r.trace.ticks.filter(t=>t.driveCommands[0]!.target===2)).toHaveLength(SOAK.soakMinutes*60*50);
  },30_000);
  it('the whole package suite runs in order on one worker and every case is tested',async()=>{
-  const ctx=await ctxOf(CONFORMANCE_CASES,{},SOAK);ctx.passed.clear();
+  const ctx=await ctxOf([...CONFORMANCE_CASES],{},SOAK);ctx.passed.clear();
   const out:[string,string,string|null][]=[];
   for(const c of CONFORMANCE_CASES){const r=await runCase(c,ctx);out.push([c.id,r.verdict.status,r.verdict.reason]);}
   expect(out).toEqual(CONFORMANCE_CASES.map(c=>[c.id,'tested',null]));expect(ctx.disarmed).toBe(true);   // only by the silence of KCF07b, the last case

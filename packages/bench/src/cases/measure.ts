@@ -177,4 +177,4 @@ const KMS05=measureCase('KMS05',{
  },
 });
 
-export const MEASURE_CASES:BenchCase[]=[KMS01,KMS02,KMS04,KMS05];
+export const MEASURE_CASES:readonly BenchCase[]=Object.freeze([KMS01,KMS02,KMS04,KMS05].map(c=>Object.freeze(c)));   // frozen: no code can add, drop or edit a case

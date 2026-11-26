@@ -10,7 +10,8 @@ export {CONFORMANCE_CASES,trackingCase} from './conformance';
 export {IDENTITY_CASES,IDENTITY_STRINGS,identityScan,reliedObjects,simDescriptions} from './identity';
 export {MEASURE_CASES,cycleClock,lagTrialsOf,trialRows,type LagTrial} from './measure';
 export {LIDAR_RANGE_M,SENSOR_CASES,scanRows,toLidarScan,type Ld19Frame} from './sensors';
-export const BENCH_CASES:readonly BenchCase[]=[...IDENTITY_CASES,...CONFORMANCE_CASES,...MEASURE_CASES,...SENSOR_CASES];
+/** The production registry, frozen (as are its groups and every case): a test that needs a stand-in passes its own list to the flow, never edits this one. */
+export const BENCH_CASES:readonly BenchCase[]=Object.freeze([...IDENTITY_CASES,...CONFORMANCE_CASES,...MEASURE_CASES,...SENSOR_CASES]);
 export const benchCase=(id:string):BenchCase|undefined=>BENCH_CASES.find(c=>c.id===id);
 /** THE verdict of a case, a pure function of what is stored: the runner's own decision when it made one (`trace.meta.runner`, only ever not_run or failed),
  * otherwise the case's evaluate. runCase returns exactly this and the record reader recomputes it, so a stored `tested` can only come from evaluate. */

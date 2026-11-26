@@ -90,7 +90,8 @@ for(const sig of ['SIGINT','SIGTERM','SIGHUP'])process.on(sig,()=>{if(!ac.signal
 if(tty){rl=createInterface({input:process.stdin,output:process.stdout,terminal:true});rl.on('SIGINT',()=>stop('Ctrl-C'));process.stdin.on('keypress',()=>{if(!asking)stop('key pressed');});}
 // an aborted arming question answers '' (a wrong code: not armed); an aborted prompt never answers, so the runner's hold ends it OPERATOR_ABORT
 const question=async(q,hang)=>{asking=true;try{return await rl.question(q,{signal:ac.signal});}catch{return hang?new Promise(()=>{}):'';}finally{asking=false;}};
-let prompter;try{prompter=flow.prompterFor(k.kit,process.env,{isTTY:tty,question:(q)=>question(q,true)},log);}catch(e){rl?.close();usage(e.code??'BENCH_TEST_ANSWERS_INVALID',e.message);}
+let prompter;try{prompter=flow.prompterFor(k.kit,process.env,{isTTY:tty,question:(q)=>question(q,true)},log);}
+catch(e){rl?.close();usage(e.code??'BENCH_TEST_ANSWERS_INVALID',String(e.message).replace(/^[A-Z_]+: /,''));}   // the code once
 const io={spawn:(role,readOnly)=>spawnBenchWorker({role,python:PY,kitPath,bus,readOnly,sessionId:randomUUID()}),clock:(await ts('clock.ts')).systemClock,
  arming:flow.armingFor(k.kit,process.env,{isTTY:tty,question:(q)=>question(q,false)},log),prompter,abort:ac.signal,log};
 if(!tty&&command!=='identify'&&flow.testHook('BENCH_TEST_ARMING',k.kit,process.env,()=>{})!=='1')log('stdin is not a terminal: no arming, no prompts; torque cases and prompt cases will be not_run.');
@@ -99,6 +100,6 @@ try{
  code=command==='identify'?await flow.identify(l,out,io)
   :command==='run'?await flow.run(l,{identity:resolve(o.identity),suite:o.suite,out,from:o.from,only:o.case},io)
   :await flow.sensors(l,{out,only:o.case},io);
-}catch(e){console.error(`REFUSED ${e?.message??e}`);code=e?.code==='INVALID_OPTION'?2:1;}
+}catch(e){console.error(`REFUSED ${e?.message??e}`);code=['INVALID_OPTION','OUT_MISSING'].includes(e?.code)?2:1;}
 rl?.close();
 process.exit(code);
