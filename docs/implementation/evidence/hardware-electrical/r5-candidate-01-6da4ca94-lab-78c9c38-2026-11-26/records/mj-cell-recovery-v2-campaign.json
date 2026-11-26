@@ -1,0 +1,105 @@
+{
+  "campaign": {
+    "schemaVersion": 1,
+    "id": "mj-cell-recovery-v2",
+    "accepted": false,
+    "calibration": "not_calibrated",
+    "scenarioId": "MJ-CELL-BV01",
+    "backendSetId": "engineering-mujoco-cell-v1",
+    "fixtureId": "coffee-delivery-cell-v1",
+    "nominalSeeds": [
+      7,
+      42,
+      99
+    ],
+    "maxTicks": 12000,
+    "tickMs": 20,
+    "physicsSubsteps": 10,
+    "physicsTimestepMs": 2,
+    "nativeDeadlineSecondsPerCase": 6000,
+    "oracles": {
+      "servedAfterRecipientConfirmations": 2,
+      "dockTicks": 10,
+      "dockXyM": 0.01,
+      "dockYawRad": 0.02,
+      "receiptTicks": 25,
+      "relativeSpeedMps": 0.01,
+      "maxNominalCupTranslationPerTickM": 0.02,
+      "unexpectedNativeContacts": 0,
+      "worldSweep": "world-full-capsule-v1",
+      "legacyArmEvidenceLimit": 4096
+    },
+    "faults": [
+      {
+        "id": "dock-drift",
+        "seed": 7,
+        "presetId": "world-dock-drift-v1",
+        "cupId": "cup-1",
+        "trigger": "closed-gripper-before-release",
+        "expectedCode": "DOCK_OUT_OF_TOLERANCE",
+        "lastSourceOwner": "arm",
+        "served": 0
+      },
+      {
+        "id": "cup-fall",
+        "seed": 7,
+        "presetId": "world-cup-fall-v1",
+        "cupId": "cup-1",
+        "trigger": "supported-transport-after0.5m",
+        "expectedCode": "LOAD_FELL",
+        "lastSourceOwner": "robot",
+        "physicalStatus": "lost",
+        "served": 0
+      },
+      {
+        "id": "cancel-held",
+        "seed": 7,
+        "trigger": "Source-confirmed-arm-custody-and-native-held",
+        "expectedCode": "CELL_CANCELLED",
+        "lastSourceOwner": "arm",
+        "served": 0
+      },
+      {
+        "id": "worker-loss",
+        "seed": 7,
+        "trigger": "Source-confirmed-arm-custody",
+        "expectedCode": "WORLD_UNKNOWN",
+        "lastSourceOwner": "arm",
+        "physicalStatus": "unknown",
+        "served": 0
+      },
+      {
+        "id": "lost-ack",
+        "seed": 7,
+        "trigger": "actual-next-native-step-after-arm-custody",
+        "expectedCode": "WORLD_UNKNOWN",
+        "lastSourceOwner": "arm",
+        "physicalStatus": "unknown",
+        "served": 0
+      }
+    ],
+    "limitations": [
+      "software simulation only",
+      "modeled logical observers share one engine",
+      "registered disturbances are not natural slip",
+      "native Linux/ROS/LinuxCNC/hardware gates remain open",
+      "one-tick Source disturbance response latency is observed and reported"
+    ],
+    "belief": {
+      "graspMode": "belief_estimated",
+      "perceptionProfileId": "perception-nominal-v1",
+      "recoveryPolicyId": "pick-recovery-v1",
+      "graspProgramId": "cup-pick-two-stage-v1"
+    },
+    "pulse": "world-cup-nudge-v2",
+    "pulseSeeds": [
+      7,
+      42,
+      99
+    ]
+  },
+  "sourceCommit": "6da4ca945f8989e8b24362c87f6cb7e42b61df3d",
+  "accepted": false,
+  "execution": "actual_mujoco",
+  "calibration": "not_calibrated"
+}

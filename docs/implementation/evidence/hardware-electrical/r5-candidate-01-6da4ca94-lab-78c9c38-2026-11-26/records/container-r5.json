@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "accepted": false,
+  "sourceCommit": "6da4ca945f8989e8b24362c87f6cb7e42b61df3d",
+  "cld04": {
+    "status": "tested",
+    "platform": "linux/arm64",
+    "imageTag": "mekoniq-lab-runtime:r5-6da4ca94",
+    "sourceCommit": "6da4ca945f8989e8b24362c87f6cb7e42b61df3d",
+    "evidence": {
+      "file": "cld04.json",
+      "sha256": "1daf0e40d68c9475e000bd1aa76825e2523e71e5d0b8b68023dab5b5b68171d0"
+    },
+    "testLog": {
+      "file": "cld04-test.json",
+      "sha256": "3788c2e19e1c9825eddbc52eb8be606cc6c7da40402b9b308a39105cf5223aa7"
+    }
+  },
+  "options": {
+    "serve-hw-a-v1": {
+      "state": "blocked",
+      "body": "957237fba6eaab85281f55e838c99c1090bd1b71bcdbe2b2e219afa49798aae9"
+    },
+    "serve-hw-b-v1": {
+      "state": "compiled",
+      "body": "419d3a739d0d17f169c45a9f0a6f8b2aa108a844ed5de6cc1bc103fe0eb76061"
+    },
+    "serve-hw-c-v1": {
+      "state": "compiled",
+      "body": "c104ced2c6cc4744866aa2214dd6de181f449c30e53450f0e0f5d2b72d4fd903"
+    }
+  },
+  "cld05": {
+    "status": "not_run",
+    "reason": "native_linux_x86_64_host_required (Python tests of the tool roots on GitHub Actions after a pushed branch); amd64 build skipped"
+  },
+  "cld06": {
+    "status": "not_run",
+    "reason": "deploy_order_pending"
+  }
+}
