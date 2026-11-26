@@ -32,7 +32,7 @@ afterAll(()=>rmSync(dir,{recursive:true,force:true}));
 async function rig(extra:Record<string,unknown>={},o:{sensors?:boolean;sensorsPython?:string}={}){
  const kit=sim(extra),d=join(dir,`rig-${++n}`),kitPath=join(d,'kit.json');
  cpSync(join(FIXTURES,'bytes'),join(d,'bytes'),{recursive:true});writeFileSync(kitPath,JSON.stringify(kit));
- const spawn=async(role:'bus'|'sensors')=>{const w=await spawnBenchWorker({role,python:role==='sensors'?o.sensorsPython??PY:PY,kitPath,bus:'sim',readOnly:false,sessionId:`s${n}`});workers.push(w);return w;};
+ const spawn=async(role:'bus'|'sensors')=>{const w=await spawnBenchWorker({role,python:role==='sensors'?o.sensorsPython??PY:PY,kitPath,bus:'sim',readOnly:false,sessionId:`s${n}`,deadlinesMs:{step:5000}});workers.push(w);return w;};
  const bus=await spawn('bus'),sensors=o.sensors===false?undefined:await spawn('sensors');
  const describe=(await bus.request('describe',{},0)).result!,{scan}=await startBenchSession(bus);
  if(sensors){const a=await sensors.request('open',{},0);if(!a.ok)throw new Error(a.error!.code);}

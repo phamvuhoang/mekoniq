@@ -37,7 +37,12 @@ function sensorStepProblem(res:unknown):{path:string;detail:string}|undefined{
 }
 const ROOT=fileURLToPath(new URL('../../../robotics/bench',import.meta.url)),MAX_LINE_BYTES=1<<20;
 
-export async function spawnBenchWorker(o:{role:'bus'|'sensors';python:string;kitPath:string;bus:'sim'|'soem';readOnly:boolean;sessionId:string}):Promise<BenchWorker>{
+/** `deadlinesMs` overrides BENCH_DEADLINES_MS for this worker only and is for tests (a loaded host must not fail a test whose subject is not the deadline); there is no
+ * environment variable or other ambient way to change a deadline, and production callers never pass it. */
+export async function spawnBenchWorker(o:{role:'bus'|'sensors';python:string;kitPath:string;bus:'sim'|'soem';readOnly:boolean;sessionId:string;deadlinesMs?:Partial<Record<BenchOp,number>>}):Promise<BenchWorker>{
+ const over=Object.entries(o.deadlinesMs??{});
+ if(over.some(([op,ms])=>!Object.hasOwn(BENCH_DEADLINES_MS,op)||!(typeof ms==='number'&&ms>0&&Number.isFinite(ms))))throw new BenchWorkerError('WORKER_REQUEST_INVALID','not_sent',`deadlinesMs ${JSON.stringify(o.deadlinesMs)}`);
+ const deadlines={...BENCH_DEADLINES_MS,...o.deadlinesMs};
  const kitPath=resolve(o.kitPath),kit=validateBenchKit(JSON.parse(readFileSync(kitPath,'utf8')));   // the worker does not check the digest: never start it on a kit TS refuses
  if(!kit.ok)throw new BenchWorkerError('BENCH_KIT_INVALID','not_sent',kit.problems.map(p=>`${p.code} ${p.path}`).join('; '));
  const args=isolatedPythonArgs([ROOT],['-m','bench_worker'],['--role',o.role,'--kit',kitPath,'--bus',o.bus,'--session-id',o.sessionId,...o.readOnly?['--read-only']:[]]);
@@ -99,7 +104,7 @@ export async function spawnBenchWorker(o:{role:'bus'|'sensors';python:string;kit
    if(bad)return Promise.reject(new BenchWorkerError('WORKER_REQUEST_INVALID','not_sent',`${bad.path} ${bad.detail}`));
    const line=JSON.stringify(req)+'\n';
    if(Buffer.byteLength(line)>MAX_LINE_BYTES)return Promise.reject(new BenchWorkerError('WORKER_REQUEST_INVALID','not_sent','request exceeds 1 MiB'));
-   const ms=BENCH_DEADLINES_MS[op]+(op==='silence'?Number(payload.ms)||0:0);
+   const ms=deadlines[op]+(op==='silence'?Number(payload.ms)||0:0);
    return new Promise((res,rej)=>{
     inFlight={op,requestId:req.requestId,expectedTick,resolve:res,reject:rej,timer:setTimeout(()=>fail('WORKER_TIMEOUT',`no ACK for ${op} within ${ms} ms`),ms)};
     child.stdin.write(line);
@@ -110,7 +115,7 @@ export async function spawnBenchWorker(o:{role:'bus'|'sensors';python:string;kit
     if(inFlight)fail('WORKER_LOST','closed with a request in flight');
     if(state==='ready')state='closed';
     child.stdin.end();
-    const grace=setTimeout(killGroup,BENCH_DEADLINES_MS.stop);
+    const grace=setTimeout(killGroup,deadlines.stop);
     await exited;clearTimeout(grace);killGroup();
    })();
    return closing;

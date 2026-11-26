@@ -20,7 +20,7 @@ const workers:BenchWorker[]=[];
 async function open(sim:Record<string,unknown>={}){
  const {digest:_,...k}=structuredClone(KIT);void _;Object.assign(k.simSlave!,sim);
  const kit=sealBench<BenchKitV1>(k),kitPath=join(dir,`kit-${++files}.json`);writeFileSync(kitPath,JSON.stringify(kit));
- const w=await spawnBenchWorker({role:'bus',python:PY,kitPath,bus:'sim',readOnly:false,sessionId:'c'});workers.push(w);
+ const w=await spawnBenchWorker({role:'bus',python:PY,kitPath,bus:'sim',readOnly:false,sessionId:'c',deadlinesMs:{step:5000}});workers.push(w);
  return {w,kit};
 }
 afterEach(async()=>{await Promise.all(workers.splice(0).map(w=>w.close()));});

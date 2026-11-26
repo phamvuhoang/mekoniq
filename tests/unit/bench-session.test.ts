@@ -6,8 +6,8 @@ import {afterAll,afterEach,describe,expect,it} from 'vitest';
 import {sealBench,type BenchKitV1,type BenchPolicy,type BenchTickRecord} from '../../packages/bench/src/contracts';
 import {fakeClock} from '../../packages/bench/src/clock';
 import {ttyArming,type Arming} from '../../packages/bench/src/arming';
-import {BenchWorkerError,spawnBenchWorker,type BenchWorker} from '../../packages/bench/src/worker';
-import {runCase,startBenchSession,type RunContext} from '../../packages/bench/src/session';
+import {BENCH_DEADLINES_MS,BenchWorkerError,spawnBenchWorker,type BenchOp,type BenchWorker} from '../../packages/bench/src/worker';
+import {PROMPT_HOLD_MAX_TICKS,runCase,startBenchSession,type Prompter,type RunContext} from '../../packages/bench/src/session';
 import {verdictOf,type BenchCase} from '../../packages/bench/src/cases/index';
 
 const PY=process.env.BENCH_PYTHON??'python3';
@@ -17,10 +17,11 @@ const KIT=fixture<BenchKitV1>('kit-sim-v1.json'),POLICY=fixture<BenchPolicy>('po
 let files=0;
 const workers:BenchWorker[]=[];
 /** A re-sealed copy of the DC kit with simSlave knobs, written where the worker can read it. */
-async function open(o:{sim?:Record<string,unknown>;python?:string}={}){
+/** A generous step deadline (the 200 ms contract runs in real time; a loaded host is not the subject here), except where `deadlinesMs` says otherwise. */
+async function open(o:{sim?:Record<string,unknown>;python?:string;deadlinesMs?:Partial<Record<BenchOp,number>>}={}){
  const {digest:_,...k}=structuredClone(KIT);void _;Object.assign(k.simSlave!,o.sim);
  const kit=sealBench<BenchKitV1>(k),kitPath=join(dir,`kit-${++files}.json`);writeFileSync(kitPath,JSON.stringify(kit));
- const w=await spawnBenchWorker({role:'bus',python:o.python??PY,kitPath,bus:'sim',readOnly:false,sessionId:'t'});workers.push(w);
+ const w=await spawnBenchWorker({role:'bus',python:o.python??PY,kitPath,bus:'sim',readOnly:false,sessionId:'t',deadlinesMs:o.deadlinesMs??{step:5000}});workers.push(w);
  return {w,kit};
 }
 afterEach(async()=>{await Promise.all(workers.splice(0).map(w=>w.close()));});
@@ -48,7 +49,7 @@ describe('worker wire discipline (KSW01)',()=>{
   const log=join(dir,'received.log'),pidFile=join(dir,'python.pid'),wrapper=join(dir,'tee-python.sh');
   // every line the worker receives goes through tee into the log; the python pid is written so the test can freeze only the worker
   writeFileSync(wrapper,`#!/bin/sh\ntee -a '${log}' | sh -c 'echo $$ > "$0"; exec "$@"' '${pidFile}' '${PY}' "$@"\n`);chmodSync(wrapper,0o755);
-  const {w}=await open({python:wrapper});
+  const {w}=await open({python:wrapper,deadlinesMs:{}});   // the production deadlines: the 200 ms step contract is the subject
   for(const op of ['open','scan','configure','start'] as const)expect((await w.request(op,{},0)).ok).toBe(true);
   const py=Number(readFileSync(pidFile,'utf8'));process.kill(py,'SIGSTOP');
   const t0=Date.now();
@@ -269,4 +270,122 @@ describe('a verdict is a pure function of the stored trace (verdictOf)',()=>{
   expect(verdictOf(c,{...t,meta:{runner:{status:'tested',reason:null}}},KIT,POLICY).status).toBe('failed');
   expect(verdictOf(c,{...t,meta:{runner:'x'}},KIT,POLICY).status).toBe('failed');
  });
+});
+
+describe('ACK deadlines (KSW01): injectable for tests only',()=>{
+ it('the production contract is unchanged, and an override applies to that worker alone',async()=>{
+  expect(BENCH_DEADLINES_MS).toEqual({describe:5000,open:10000,scan:30000,configure:30000,start:15000,step:200,silence:5000,imuConfigure:5000,stop:5000});
+  const pidFile=join(dir,'python-400.pid'),wrapper=join(dir,'pid-python.sh');
+  writeFileSync(wrapper,`#!/bin/sh\necho $$ > '${pidFile}'\nexec '${PY}' "$@"\n`);chmodSync(wrapper,0o755);
+  const {w}=await open({python:wrapper,deadlinesMs:{step:400}});
+  for(const op of ['open','scan','configure','start'] as const)expect((await w.request(op,{},0)).ok).toBe(true);
+  process.kill(Number(readFileSync(pidFile,'utf8')),'SIGSTOP');
+  const t0=Date.now();
+  await expect(w.request('step',{commands:cmd(1)},0)).rejects.toMatchObject({code:'WORKER_TIMEOUT',outcome:'unknown'});
+  expect(Date.now()-t0).toBeGreaterThanOrEqual(390);
+  expect(BENCH_DEADLINES_MS.step).toBe(200);   // the override did not leak into the contract
+ },20_000);
+ it('an override that is not a positive number of ms is refused before the worker starts',async()=>{
+  const kitPath=join(dir,`kit-${++files}.json`);writeFileSync(kitPath,JSON.stringify(KIT));
+  for(const bad of [{step:0},{step:-1},{step:Number.NaN},{bogus:5}] as Partial<Record<BenchOp,number>>[])
+   await expect(spawnBenchWorker({role:'bus',python:PY,kitPath,bus:'sim',readOnly:false,sessionId:'t',deadlinesMs:bad})).rejects.toMatchObject({code:'WORKER_REQUEST_INVALID',outcome:'not_sent'});
+ });
+});
+
+/** A prompter whose answer the test gives later (resolve/reject), counting the questions. */
+const later=()=>{
+ const p={asked:[] as {id:string;text:string}[],answer:(_:string)=>{},fail:(_:Error)=>{},ask:(q:{id:string;text:string})=>{p.asked.push(q);return new Promise<string>((ok,no)=>{p.answer=ok;p.fail=no;});}};
+ return p;
+};
+/** A torque case with one prompt at `atTick`; evaluate is tested only when the stored answer is '12.5'. */
+const promptCase=(o:{atTick?:number;ticks?:number;prompts?:{id:string;atTick:number;text:string}[]}={}):BenchCase=>holdCase({ticks:o.ticks??20,
+ script:()=>({ticks:o.ticks??20,prompts:o.prompts??[{id:'mark',atTick:o.atTick??10,text:'Mark offset (deg)?'}],commandsAt:k=>cmd(k+1,{target:1})}),
+ evaluate:t=>t.prompts[0]?.answer==='12.5'?{status:'tested',reason:null,measurements:[]}:{status:'failed',reason:'ANSWER',measurements:[]}});
+
+describe('operator prompts (P1)',()=>{
+ it('without a prompter a case with prompts is not_run BENCH_PROMPT_UNAVAILABLE, nothing sent',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  expect((await runCase(promptCase(),ctx(w,kit))).verdict).toEqual({status:'not_run',reason:'BENCH_PROMPT_UNAVAILABLE',measurements:[]});expect(w.tick).toBe(0);
+ },20_000);
+ it('at atTick the runner holds the last commands on fresh seqs until the answer, stores it, then continues; evaluate and readback see the answer',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const p=later();let held=0;
+  const x=ctx(w,kit,{prompter:p,onTick:()=>{if(p.asked.length&&++held===12)p.answer('12.5');}}),r=await runCase(promptCase(),x);
+  expect(p.asked).toEqual([{id:'mark',text:'Mark offset (deg)?'}]);
+  expect(r.verdict).toEqual({status:'tested',reason:null,measurements:[]});expect(r.trace.prompts).toEqual([{id:'mark',answer:'12.5'}]);
+  const t=r.trace.ticks,hold=t.slice(10,22);
+  expect(hold.every(y=>y.driveCommands.every(c=>c.target===1&&c.enable&&!c.quickStop))).toBe(true);
+  // every held tick is a new seq (no stale command, so the channel watchdog never trips), and the script's seqs go on above them
+  const seqs=t.slice(0,23).map(y=>y.driveCommands[0]!.seq);
+  expect(seqs.every((s,i)=>i===0||s===seqs[i-1]!+1)).toBe(true);
+  expect(t.slice(5,30).every(y=>y.feedback.every(f=>f.state==='enabled'&&f.fault===null))).toBe(true);
+  expect(t.filter(y=>y.driveCommands.every(c=>c.enable&&!c.quickStop))).toHaveLength(20+12);
+  expect(verdictOf(promptCase(),JSON.parse(JSON.stringify(r.trace)),kit,POLICY)).toEqual(r.verdict);
+  expect(x.disarmed).toBeFalsy();
+ },20_000);
+ it('a prompt at atTick = ticks is asked after the last scripted tick; at 0 it is asked before anything is sent',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const p:Prompter={ask:async()=>'12.5'};
+  const end=await runCase(promptCase({atTick:20}),ctx(w,kit,{prompter:p}));
+  expect(end.verdict.status).toBe('tested');
+  const t0=w.tick,ticks:BenchTickRecord[]=[];let first=-1;
+  const start=await runCase(promptCase({atTick:0}),ctx(w,kit,{prompter:{ask:async()=>{first=ticks.length;return '12.5';}},onTick:t=>ticks.push(t)}));
+  expect(start.verdict.status).toBe('tested');expect(first).toBe(0);expect(ticks[0]!.tick).toBe(t0);
+ },20_000);
+ it.each([['atTick above ticks',[{id:'a',atTick:21,text:'?'}]],['a negative atTick',[{id:'a',atTick:-1,text:'?'}]],['two prompts with one id',[{id:'a',atTick:1,text:'?'},{id:'a',atTick:2,text:'?'}]]])(
+  'a script with %s is not_run BENCH_SCRIPT_INVALID before any step',async(_,prompts)=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  expect((await runCase(promptCase({prompts}),ctx(w,kit,{prompter:{ask:async()=>'12.5'}}))).verdict).toEqual({status:'not_run',reason:'BENCH_SCRIPT_INVALID',measurements:[]});expect(w.tick).toBe(0);
+ },20_000);
+ it('an abort while the question is open ends the case OPERATOR_ABORT: quick stop, enable false, disarmed',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const p=later(),ac=new AbortController();let held=0;
+  const x=ctx(w,kit,{prompter:p,abort:ac.signal,onTick:()=>{if(p.asked.length&&++held===5)ac.abort();}}),r=await runCase(promptCase(),x);
+  expect(r.verdict).toEqual({status:'failed',reason:'OPERATOR_ABORT',measurements:[]});expect(r.trace.meta?.runner).toEqual({status:'failed',reason:'OPERATOR_ABORT'});
+  expect(r.trace.prompts).toEqual([]);expect(r.trace.ticks[15]!.driveCommands.every(c=>c.quickStop)).toBe(true);
+  expect(noTorque(r.trace.ticks.slice(15))).toBe(true);expect(r.trace.ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);expect(x.disarmed).toBe(true);
+ },20_000);
+ it.each([['throws',()=>{throw new Error('tty gone');}],['rejects',async()=>{throw new Error('tty gone');}],['answers a non-string',async()=>12.5 as unknown as string]])(
+  'a prompter that %s is CASE_SCRIPT_ERROR: the stop sequence runs, the run is disarmed',async(_,ask)=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const x=ctx(w,kit,{prompter:{ask}}),r=await runCase(promptCase(),x);
+  expect(r.verdict).toEqual({status:'failed',reason:'CASE_SCRIPT_ERROR',measurements:[]});expect(String(r.trace.meta?.error)).toMatch(/tty gone|not a string/);
+  expect(r.trace.ticks[10]!.driveCommands.every(c=>c.quickStop)).toBe(true);expect(r.trace.ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);
+  expect(x.disarmed).toBe(true);
+ },20_000);
+ it('no answer within PROMPT_HOLD_MAX_TICKS held ticks (60 s) ends the case PROMPT_TIMEOUT with the stop sequence, recorded for readback',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  expect(PROMPT_HOLD_MAX_TICKS).toBe(3000);
+  const x=ctx(w,kit,{prompter:later()}),r=await runCase(promptCase(),x);
+  expect(r.verdict).toEqual({status:'failed',reason:'PROMPT_TIMEOUT',measurements:[]});expect(r.trace.meta?.runner).toEqual({status:'failed',reason:'PROMPT_TIMEOUT'});
+  expect(r.trace.ticks[10+PROMPT_HOLD_MAX_TICKS]!.driveCommands.every(c=>c.quickStop)).toBe(true);
+  expect(r.trace.ticks.slice(10,10+PROMPT_HOLD_MAX_TICKS).every(y=>y.driveCommands.every(c=>c.enable&&!c.quickStop))).toBe(true);
+  expect(r.trace.ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);expect(x.disarmed).toBe(true);
+  expect(verdictOf(promptCase(),JSON.parse(JSON.stringify(r.trace)),kit,POLICY)).toEqual(r.verdict);
+ },60_000);
+});
+
+/** A sensors worker that answers every step at once with `frames`, recording whether it was asked before the bus ACK of the same tick had arrived. */
+const fakeSensors=(bus:{acked:number},frames:(n:number)=>unknown[]=()=>[]):BenchWorker&{overlap:boolean[]}=>{
+ let tick=0;const overlap:boolean[]=[];
+ return {overlap,get tick(){return tick;},pid:undefined,stderr:'',close:async()=>{},
+  request:async op=>{if(op==='step')overlap.push(bus.acked===tick);const n=tick++;return {requestId:'s',ok:true,tick,result:{lidar:{frames:frames(n),droppedBytes:0},imu:{samples:[],droppedBytes:0}}};}};
+};
+describe('bus and sensors stepped together (P2)',()=>{
+ it('both requests of a tick are sent before either is awaited',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const bus={acked:0},spy:BenchWorker={request:(op,payload,t)=>op==='step'?w.request(op,payload,t).then(a=>{bus.acked++;return a;}):w.request(op,payload,t),
+   close:()=>w.close(),get tick(){return w.tick;},get pid(){return w.pid;},get stderr(){return w.stderr;}};
+  // awaiting the bus step before sending the sensors step would make every overlap false
+  const sensors=fakeSensors(bus),r=await runCase(holdCase({ticks:20}),ctx(spy,kit,{sensors}));
+  expect(r.verdict.status).toBe('tested');expect(sensors.overlap.length).toBe(r.trace.ticks.length);expect(sensors.overlap.every(Boolean)).toBe(true);
+ },20_000);
+ it('a throw while turning frames into scans (after the stop) is CASE_SCRIPT_ERROR, the run disarmed, the axes already disabled',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  // two frames whose first angle goes down end a turn; points:null makes the scan conversion throw
+  const sensors=fakeSensors({acked:-1},n=>n<2?[{speedDegS:3600,startDeg:n?0:90,endDeg:99,sensorMs:0,points:null}]:[]);
+  const x=ctx(w,kit,{sensors}),r=await runCase(holdCase({ticks:20,target:2,needsSensors:true}),x);
+  expect(r.verdict).toEqual({status:'failed',reason:'CASE_SCRIPT_ERROR',measurements:[]});expect(r.trace.meta?.error).toBeTruthy();
+  expect(r.trace.ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);expect(x.disarmed).toBe(true);
+ },20_000);
 });

@@ -37,7 +37,7 @@ afterAll(()=>rmSync(dir,{recursive:true,force:true}));
 /** One session on a fresh worker: describe, scan, the cases in order; the part is written with what scan and describe returned. */
 async function part(kind:PartKind,cases:BenchCase[],kit=kitOf(SIM)){
  const kitPath=join(dir,`kit-${++n}.json`);writeFileSync(kitPath,JSON.stringify(kit));
- const w=await spawnBenchWorker({role:'bus',python:PY,kitPath,bus:'sim',readOnly:false,sessionId:'r'});workers.push(w);
+ const w=await spawnBenchWorker({role:'bus',python:PY,kitPath,bus:'sim',readOnly:false,sessionId:'r',deadlinesMs:{step:5000}});workers.push(w);
  const describe=(await w.request('describe',{},0)).result!,{scan}=await startBenchSession(w,[...new Set(cases.flatMap(c=>c.reads??[]))]);
  const ctx={worker:w,kit,policy:POLICY,clock:fakeClock(),arming:{arm:async()=>true},passed:new Set<string>(),abort:new AbortController().signal};
  const results=[];

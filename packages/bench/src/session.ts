@@ -10,10 +10,17 @@ import type {BenchKitV1,BenchPolicy,BenchTickRecord,BenchCycleRow} from './contr
 import type {BenchOp,BenchWorker} from './worker';
 
 const TICK_NS=20_000_000n;
+/** The operator's io for a script's `prompts` (spec B1 §6: the operator answers at the bench's own terminal). Tests inject scripted answers. */
+export interface Prompter{ask(p:{id:string;text:string}):Promise<string>}
+/** How long one question may stay open while the runner holds the axes: 3000 ticks of 20 ms, 60 s, whatever the policy says.
+ * ponytail: a fixed bound, the same for every prompt; make it a policy key if an operator task at the bench needs longer */
+export const PROMPT_HOLD_MAX_TICKS=3000;
 export interface RunContext{
  worker:BenchWorker;kit:BenchKitV1;policy:BenchPolicy;clock:Clock;
  sensors?:BenchWorker;                 // the sensors worker (K06), stepped in the same tick as the bus worker; its loss is an abnormal end (SENSOR_WORKER_LOST)
  arming:Arming;
+ /** Without one a case with prompts is not_run BENCH_PROMPT_UNAVAILABLE. */
+ prompter?:Prompter;
  /** Ids of the cases that ended `tested` in this run; runCase adds to it. */
  passed:Set<string>;onTick?(t:BenchTickRecord):void;abort:AbortSignal;
  /** What `scan` read (startBenchSession), copied into every trace. */
@@ -45,8 +52,12 @@ const powerOff=(v:{statusword:number})=>(v.statusword&0x02)===0;
  * an `evaluate`d verdict and no recorded script error disarms the run; a thrown error is rethrown after the stop, every other abnormal end is a `failed` verdict.
  * A step sequence that is refused, does not end, or throws falls back to the wire `stop` (no clock, no step; a lost worker refuses it at once).
  * `meta.runner` and `meta.error` are the runner's: a script that sets either is refused before any step.
- * With ctx.sensors every tick also steps the sensors worker (after the bus step; during the stop ticks too, but the stop never waits for it). A sensors worker that is lost
- * or refuses a step ends the case like any abnormal end (reason SENSOR_WORKER_LOST or its code). Only a case with `needsSensors` keeps the frames in its trace.
+ * With ctx.sensors every tick also steps the sensors worker: both requests are sent together and both awaited (during the stop ticks too, but a failed sensors step never
+ * stops the stop). A sensors worker that is lost or refuses a step ends the case like any abnormal end (reason SENSOR_WORKER_LOST or its code). Only a case with `needsSensors`
+ * keeps the frames in its trace; turning them into scans runs after the stop, guarded like case code.
+ * A prompt at atTick i (0..ticks) is asked before tick i: while it is open the runner re-sends the last accepted commands on fresh seqs every tick (nothing new, and the
+ * channel watchdog does not trip; before any command was sent it only waits), with every per-tick check of a scripted tick; the answer goes to trace.prompts. An abort
+ * while waiting is OPERATOR_ABORT, a prompter that throws or answers a non-string is CASE_SCRIPT_ERROR, no answer within PROMPT_HOLD_MAX_TICKS is PROMPT_TIMEOUT.
  * The verdict is verdictOf(trace): whatever the runner decides itself is stored in trace.meta.runner, so the stored trace alone gives it back. */
 export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTrace;verdict:CaseVerdict}>{
  const trace:CaseTrace={ticks:[],cycles:[],prompts:[]},{worker,kit,policy,clock,sensors}=ctx;
@@ -54,10 +65,10 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
  if(c.requires.some(id=>!ctx.passed.has(id)))return decided('not_run','BENCH_ORDER_VIOLATION');
  if(c.needsSensors&&!sensors)return decided('not_run','SENSORS_UNAVAILABLE');
  if(ctx.abort.aborted)return decided('not_run','OPERATOR_ABORT');
- const s=c.script(kit,policy);
- // ponytail: operator prompts (KCF01, KCF09) need a question io in the context; until a case has one, a case with prompts does not run
- if(s.prompts?.length)return decided('not_run','BENCH_PROMPT_UNAVAILABLE');
- if(s.silence&&s.silence.atTick!==s.ticks||s.meta&&(Object.hasOwn(s.meta,'runner')||Object.hasOwn(s.meta,'error')))return decided('not_run','BENCH_SCRIPT_INVALID');   // silence after the last tick only; runner and error are reserved
+ const s=c.script(kit,policy),prompts=s.prompts??[];
+ if(prompts.length&&!ctx.prompter)return decided('not_run','BENCH_PROMPT_UNAVAILABLE');
+ if(s.silence&&s.silence.atTick!==s.ticks||s.meta&&(Object.hasOwn(s.meta,'runner')||Object.hasOwn(s.meta,'error'))   // silence after the last tick only; runner and error are reserved
+  ||prompts.some(q=>!Number.isSafeInteger(q.atTick)||q.atTick<0||q.atTick>s.ticks)||new Set(prompts.map(q=>q.id)).size!==prompts.length)return decided('not_run','BENCH_SCRIPT_INVALID');
  if(c.needsTorque&&!armedRuns.has(ctx)){
   if(!await ctx.arming.arm(`${c.id}: torque on ${kit.axes.map(a=>a.axisId).join(', ')}`))return decided('not_run','BENCH_NOT_ARMED');
   armedRuns.add(ctx);
@@ -65,7 +76,8 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
  if(ctx.objects)trace.objects=ctx.objects;
  if(s.meta)trace.meta=s.meta;
  const t0=worker.tick,start=clock.nowNs(),expected=new Set<string>(s.expectedFaults??[]);
- let k=0,fb:DriveFeedbackV1[]=[],vendor:BenchTickRecord['vendor']=[],reason:string|null=null,scriptError:string|null=null,sensorError:string|null=null;
+ let k=0,stepped=false,fb:DriveFeedbackV1[]=[],vendor:BenchTickRecord['vendor']=[],reason:string|null=null,scriptError:string|null=null,sensorError:string|null=null;
+ let last:DriveCommandV1[]|null=null,offset=t0,sensing:Promise<void>|null=null;   // the last accepted commands; what is added to a script's local seq (t0 plus every held tick)
  const lidar:LidarFrameRow[]=[],imu:ImuRow[]=[],dropped={lidarBytes:0,imuBytes:0};
  const disarm=()=>{armedRuns.delete(ctx);ctx.disarmed=true;};
  /** Case code (commandsAt) and the caller's onTick never throw through the loop: the first error is kept and ends the case like any abnormal end. */
@@ -74,12 +86,43 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
  const step=async(cmds:DriveCommandV1[])=>{
   const due=start+BigInt(k++)*TICK_NS;
   await clock.sleepUntilNs(due);
-  const now=clock.nowNs(),ack=await worker.request('step',{commands:cmds},worker.tick);
+  stepped=true;
+  // both requests go out before either is awaited: a slow sensors worker never delays the bus request (a previous sensors request still open after a thrown bus step is skipped)
+  const now=clock.nowNs(),tick=worker.tick,bus=worker.request('step',{commands:cmds},tick);
+  const sense=sensors&&!sensorError&&!sensing?(sensing=stepSensors(tick,Number(now)).finally(()=>{sensing=null;})):undefined;
+  const [ack]=await Promise.all([bus,sense]);
   if(!ack.ok)return ack.error!.code;
   const r=ack.result as {feedback:DriveFeedbackV1[];vendor:BenchTickRecord['vendor'];cycles:BenchCycleRow[]};
   const row:BenchTickRecord={schemaVersion:1,tick:ack.tick-1,tMonoNs:Number(now),latenessNs:Number(now-due),armed:armedRuns.has(ctx),driveCommands:cmds,feedback:r.feedback,vendor:r.vendor};
   ({feedback:fb,vendor}=r);trace.ticks.push(row);trace.cycles.push(...r.cycles);guarded(()=>ctx.onTick?.(row));
-  if(sensors&&!sensorError)await stepSensors(row.tick,row.tMonoNs);
+  return null;
+ };
+ /** What ends the case after an accepted step, in this order. */
+ const check=()=>{
+  if(sensorError)return sensorError;
+  if(scriptError)return 'CASE_SCRIPT_ERROR';
+  if(trace.ticks.at(-1)!.latenessNs>policy.tickLatenessMaxMs*1e6)return 'HOST_TICK_LATE';   // the host's fault, not the drive's
+  const bad=fb.filter(f=>f.state==='fault'&&!expected.has(f.fault!));
+  return bad.length?`UNEXPECTED_FAULT ${bad.map(f=>`${f.axisId}:${f.fault}`).join(',')}`:null;
+ };
+ /** The prompts of tick i, in order (runCase's comment). Returns what ends the case, or null; the held ticks move `offset` so the script's seqs stay above them. */
+ const ask=async(i:number):Promise<string|null>=>{
+  for(const q of prompts.filter(x=>x.atTick===i)){
+   let done=false,answer:unknown,error:unknown;
+   try{Promise.resolve(ctx.prompter!.ask({id:q.id,text:q.text})).then(a=>{answer=a;done=true;},(e:unknown)=>{error=e;done=true;});}catch(e){error=e;done=true;}
+   await new Promise(r=>setImmediate(r));   // an answer that is already there holds nothing
+   let h=0;
+   for(;!done;h++){
+    if(h===PROMPT_HOLD_MAX_TICKS)return 'PROMPT_TIMEOUT';
+    if(ctx.abort.aborted)return 'OPERATOR_ABORT';
+    if(!last){await clock.sleepUntilNs(start+BigInt(k++)*TICK_NS);continue;}
+    const err=await step(last.map(x=>({...x,seq:x.seq+h+1})))??check();
+    if(err)return err;
+   }
+   if(error!==undefined||typeof answer!=='string'){scriptError??=error!==undefined?(error instanceof Error?error.message:String(error)):`prompt ${q.id}: the answer is not a string`;return 'CASE_SCRIPT_ERROR';}
+   if(last)last=last.map(x=>({...x,seq:x.seq+h}));
+   offset+=h;trace.prompts.push({id:q.id,answer});
+  }
   return null;
  };
  /** The sensors worker's step of the same tick; the first failure is kept (sensorError) and never thrown, so the stop sequence goes on without it. */
@@ -120,19 +163,18 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   return out as DriveCommandV1[];
  };
  try{
-  for(let i=0;i<s.ticks;i++){
+  for(let i=0;i<=s.ticks;i++){
    if(ctx.abort.aborted){reason='OPERATOR_ABORT';break;}
+   if(prompts.length&&(reason=await ask(i)))break;
+   if(i===s.ticks)break;
    const local=guarded(()=>commandsAt(i));
    if(!local){reason='CASE_SCRIPT_ERROR';break;}
-   const cmds=local.map(x=>({...x,seq:t0+x.seq}));
+   const cmds=local.map(x=>({...x,seq:offset+x.seq}));
    // the torque gate: a command that asks for torque (enable without quickStop) leaves only from an armed torque case
    if(cmds.some(x=>x.enable&&!x.quickStop)&&!(c.needsTorque&&armedRuns.has(ctx))){reason='BENCH_NOT_ARMED';break;}
    if((reason=await step(cmds)))break;
-   if(sensorError){reason=sensorError;break;}
-   if(scriptError){reason='CASE_SCRIPT_ERROR';break;}
-   if(trace.ticks.at(-1)!.latenessNs>policy.tickLatenessMaxMs*1e6){reason='HOST_TICK_LATE';break;}   // the host's fault, not the drive's
-   const bad=fb.filter(f=>f.state==='fault'&&!expected.has(f.fault!));
-   if(bad.length){reason=`UNEXPECTED_FAULT ${bad.map(f=>`${f.axisId}:${f.fault}`).join(',')}`;break;}
+   last=cmds;
+   if((reason=check()))break;
   }
   if(!reason&&s.silence){
    // the session ends here (KCF07b; contracts §3: only stop follows), and a bus silence is an abnormal end by design: disarmed whatever the drive did
@@ -140,7 +182,8 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
    const a=await worker.request('silence',{ms:s.silence.ms},worker.tick);
    if(a.ok)trace.silence=a.result;else reason=a.error!.code;
   }
-  if(k>0||silenceSent){const err=await stop(reason!==null);reason??=err;}
+  if(stepped||silenceSent){const err=await stop(reason!==null);reason??=err;}
+  if(c.needsSensors){trace.lidar=lidar;trace.imu=imu;trace.sensorDropped=dropped;guarded(()=>{trace.lidar=[...lidar,...scanRows(lidar)];});}
   if(scriptError)reason??='CASE_SCRIPT_ERROR';   // also an onTick throw during the stop ticks of a clean end
   if(sensorError)reason??=sensorError;           // likewise a sensors worker lost during the stop ticks
  }catch(e){
@@ -150,7 +193,6 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   try{await stop(true);}catch{await stopOp().catch(()=>{});}
   throw e;
  }
- if(c.needsSensors){trace.lidar=[...lidar,...scanRows(lidar)];trace.imu=imu;trace.sensorDropped=dropped;}
  if(scriptError)trace.meta={...trace.meta,error:scriptError};
  if(reason){disarm();return decided('failed',reason);}
  let v:CaseVerdict;
