@@ -221,6 +221,8 @@ def test_the_ac_kit_on_sm_sync_does_not_reach_op():
 def test_command_timeout_trips_on_the_5th_tick_without_a_fresh_seq_as_drive_group_does_and_clears_only_on_a_reset_edge():
     r = Rig()
     r.until(lambda x: states(x) == ["enabled"] * 2, target=1.0, faultReset=True)
+    for _ in range(10):   # at speed: a trip at rest would (rightly) disable at once, without the quick-stop ramp
+        r.step(target=1.0, faultReset=True)
     # The contract is DriveGroup's: watchdogTicks 5 trips on the 5th tick without a new seq, not the 6th. Do not "fix" this to 6.
     for k in range(1, 6):
         res = r.step(target=1.0, fresh=False, faultReset=True)
@@ -306,7 +308,7 @@ def test_enable_delay_cycles_delays_operation_enabled():
 
 
 # ---- quick stop -------------------------------------------------------------------------------------------------------------------------------------------------------
-@pytest.mark.parametrize("option,after", [(2, "disabled"), (6, "disabled")])   # 6: Quick stop active until rest, then the worker disables voltage (controller ruling, K03 concern round)
+@pytest.mark.parametrize("option,after", [(2, "disabled"), (6, "quick_stop")])   # what follows a commanded quick stop is the drive's own (605Ah, spec 5.1)
 def test_quick_stop_follows_605a_and_never_enables_while_commanded(option, after):
     r = Rig(kit(quickStopOption=option))
     r.enable()
@@ -504,9 +506,9 @@ def at_speed(rig):
 
 
 def trigger(rig, how):
-    if how == "quickStop":
+    if how == "disable":
         for _ in range(40):
-            rig.step(target=5.0, quickStop=True)
+            rig.step(target=5.0, enable=False)
     elif how == "watchdog":
         for _ in range(45):
             rig.step(target=5.0, fresh=False)
@@ -525,7 +527,7 @@ def assert_held(rec, cpt=5):
 
 
 @pytest.mark.parametrize("option", [2, 6])
-@pytest.mark.parametrize("how", ["quickStop", "watchdog", "stop"])
+@pytest.mark.parametrize("how", ["disable", "watchdog", "stop"])   # the three paths whose goal is to end disabled (ruling round)
 def test_the_quick_stop_ramp_is_held_until_rest_or_until_the_drive_leaves(option, how):
     r = Rig(kit(quickStopOption=option))
     at_speed(r)
@@ -537,7 +539,7 @@ def test_the_quick_stop_ramp_is_held_until_rest_or_until_the_drive_leaves(option
         assert r.do("stop")["controlwords"] == [0, 0]
 
 
-@pytest.mark.parametrize("how", ["quickStop", "stop"])
+@pytest.mark.parametrize("how", ["disable", "stop"])
 def test_quick_stop_hold_ms_is_live_and_ends_the_hold_by_time(how):
     k = kit(quickStopOption=6)
     k["channel"]["quickStopHoldMs"] = 40
@@ -584,3 +586,38 @@ def test_wkc_error_cycles_to_loss_is_a_kit_knob(knob, lost, expect):
     for _ in range(12):
         faults |= {f["fault"] for f in r.step()["feedback"]}
     assert (expect in faults) if expect else faults == {None}
+
+
+# ---- ruling round: a commanded quick stop is left to the drive; only fault, stop and disable release it at rest ------------------------------------------------------
+def test_a_commanded_quick_stop_on_605a_6_is_held_by_the_drive_and_never_released_by_the_worker():
+    r = Rig(kit(quickStopOption=6))
+    at_speed(r)
+    rec = record(r)
+    for _ in range(60):
+        res = r.step(target=5.0, quickStop=True)
+    assert states(res) == ["quick_stop"] * 2 and res["feedback"][0]["velocityRadS"] == pytest.approx(0, abs=1e-3)
+    assert {c for c, _, _ in rec} == {0x0002}
+    assert not any(s.coasted_from_quick_stop for s in r.bus.slaves)
+
+
+def test_dropping_enable_at_rest_disables_at_once():
+    r = Rig()
+    r.enable()
+    for _ in range(3):
+        r.step(target=0.0)
+    res = r.step(enable=False)
+    assert controlwords(res)[0] == 0x0000 and states(res) == ["disabled"] * 2
+
+
+@pytest.mark.parametrize("resume,after", [(True, "enabled"), (False, "quick_stop")])
+def test_leaving_a_held_quick_stop_asks_for_operation_enabled(resume, after):
+    r = Rig(kit(quickStopOption=6, quickStopResume=resume))
+    at_speed(r)
+    for _ in range(30):
+        r.step(target=5.0, quickStop=True)
+    rec = record(r)
+    for _ in range(5):
+        res = r.step(target=1.0)
+    assert states(res) == [after] * 2
+    assert 0x0000 not in {c for c, _, _ in rec}
+    assert rec[0][0] == 0x000F

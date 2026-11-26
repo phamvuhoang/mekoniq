@@ -47,6 +47,11 @@ def test_quick_stop_true_never_yields_an_enabling_controlword_for_any_statusword
             assert next_controlword(sw, enable=enable, quick_stop=True, reset_edge=edge) not in cia402.ADVANCING
 
 
+def test_releasing_a_held_quick_stop_with_enable_asks_for_operation_enabled():
+    assert next_controlword(0x0007, enable=True, quick_stop=False, reset_edge=False) == 0x000F   # CiA 402 transition 16 (605Ah 5-7)
+    assert next_controlword(0x0007, enable=False, quick_stop=False, reset_edge=False) == 0x0000
+
+
 def test_fault_without_an_edge_never_enables():
     for sw in (0x0008, 0x000F, 0x0008 | 0x0200):
         assert next_controlword(sw, enable=True, quick_stop=False, reset_edge=False) == 0x0000

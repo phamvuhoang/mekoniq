@@ -197,7 +197,7 @@ class BenchSession:
                 state, cmd = neutral_state(self.sw[i]), self.accepted[i]
                 if expired and state not in (DISABLED, FAULT):
                     self._latch(i, "COMMAND_TIMEOUT")
-                if (self.latched[i] or cmd["quickStop"]) and state in (ENABLED, QUICK_STOP):
+                if (self.latched[i] or not cmd["enable"]) and state in (ENABLED, QUICK_STOP):   # stopseq rule 2; a commanded quick stop is the table's (rule 1)
                     cw = self._quick_stop_word(i)
                 elif self.latched[i]:
                     cw = 0x0000

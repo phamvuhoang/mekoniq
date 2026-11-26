@@ -6,6 +6,7 @@ It is configured only through the kit's `simSlave` object (ruling R4); every kno
     requiresDc          the slaves refuse SAFE-OP -> OP unless bus.sync is 'dc_sync0' (BENCH_NOT_OPERATIONAL)
     enableDelayCycles   5     cycles of 'enable operation' in Switched on before Operation enabled
     quickStopOption     2     605Ah: 1-3 leave Quick stop active for Switch on disabled once at rest; 5-8 stay in Quick stop active
+    quickStopResume     true  in Quick stop active with 605Ah 5-8, 'enable operation' returns to Operation enabled (transition 16); false = the drive lacks it
     quickStopDecelRawPerCycle 2000  the quick-stop ramp (5 rad/s = 104 304 raw takes 52 cycles, about 10 ticks); 0x0000 received while still moving in Quick stop
                               active makes the slave coast (slow decay) and sets `slaves[i].coasted_from_quick_stop`
     watchdogMs          100   slave-side watchdog: this long without a frame -> AL SAFE-OP (0x001B) and Fault 0x8130; null = never trips
@@ -31,7 +32,7 @@ REST_RAW = 20                      # assumed: below this |velocity| (raw/s) a qu
 WATCHDOG_ERROR, UNDERVOLTAGE = 0x8130, 0x3220
 BITS = {"6040:00": 16, "6041:00": 16, "6060:00": 8, "6061:00": 8, "6072:00": 16, "6077:00": 16, "603F:00": 16, "60B8:00": 16}
 COAST_TAU_MS = 500.0               # assumed: a coasting rotor, power stage off
-DEFAULTS = {"quickStopDecelRawPerCycle": 2000, "enableDelayCycles": 5, "quickStopOption": 2, "watchdogMs": 100, "velocityScale": 1.0, "ignoreQuickStop": False, "serials": ["SIM-0001", "SIM-0002"],
+DEFAULTS = {"quickStopResume": True, "quickStopDecelRawPerCycle": 2000, "enableDelayCycles": 5, "quickStopOption": 2, "watchdogMs": 100, "velocityScale": 1.0, "ignoreQuickStop": False, "serials": ["SIM-0001", "SIM-0002"],
             "initialErrorCode": None, "initialPositionRaw": 0, "corruptReadback": None, "events": []}
 DEFAULT_TX = ["6041:00", "6064:00", "606C:00"]
 
@@ -159,7 +160,7 @@ class SimBus:
             elif st in ("RTSO", "SO"):
                 st = "SOD"
         elif st == "QSA":
-            if self.cfg["quickStopOption"] in (5, 6, 7, 8) and cw & 0x8F == 0x0F:
+            if self.cfg["quickStopOption"] in (5, 6, 7, 8) and self.cfg["quickStopResume"] and cw & 0x8F == 0x0F:
                 st = "OE"                                    # transition 16
         elif cw & 0x87 == 0x06:                              # shutdown
             if st in ("SOD", "SO", "OE") and self.power:
