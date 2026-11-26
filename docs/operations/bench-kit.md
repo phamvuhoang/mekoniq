@@ -135,7 +135,7 @@ Exit 2: dùng sai lệnh hoặc từ chối trước khi worker chạy. Exit 1: 
 | `PART_MANIFEST_MISMATCH`, `KIT_DIGEST_MISMATCH`, `POLICY_DIGEST_MISMATCH` | Phần đã lưu bị sửa, hoặc của kit hay policy khác | Không sửa tay phần kết quả; chạy vào thư mục mới |
 | `BENCH_NOT_ARMED` | Không gõ đúng mã (ba lần), hoặc stdin không phải terminal | Chạy ở terminal của máy bàn thử, gõ mã hiện trên màn hình |
 | `BENCH_PROMPT_UNAVAILABLE`, `PROMPT_TIMEOUT` | Case cần câu trả lời mà không có terminal, hoặc 60 s không trả lời | Chạy ở terminal; trả lời trong lúc trục được giữ |
-| `OPERATOR_ABORT` | Bạn bấm phím hoặc Ctrl-C | Xem §7 |
+| `OPERATOR_ABORT` | Bạn bấm phím hoặc Ctrl-C, hoặc tiến trình nhận SIGINT, SIGTERM, SIGHUP (phần vẫn được ghi) | Xem §7 |
 | `UNEXPECTED_FAULT` | Drive báo lỗi ngoài kịch bản | Đọc mã lỗi của drive và manual; xem §7 |
 | `HOST_TICK_LATE` | Nhịp 20 ms trễ quá `tickLatenessMaxMs`: lỗi của máy chủ | Sửa máy (quyền ưu tiên, kernel, C-state); không nới policy |
 | `BENCH_STOP_INCOMPLETE` | Chuỗi dừng không đưa mọi tầng công suất về tắt | Bấm nút dừng khẩn; kiểm drive trước khi làm gì khác |

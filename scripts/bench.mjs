@@ -82,6 +82,7 @@ for(const line of flow.describeSession(s.session))log(line);
 // the terminal: one readline for the arming code and the prompts; outside a question any key aborts (the runner then stops the axes and disarms)
 const tty=process.stdin.isTTY===true,ac=new globalThis.AbortController();let rl,asking=false;
 const stop=(why)=>{if(!ac.signal.aborted){ac.abort();log(`\n${why}: stopping (quick stop, then enable off); the suite will not continue`);}};
+for(const sig of ['SIGINT','SIGTERM','SIGHUP'])process.once(sig,()=>stop(sig));   // a signal is an abort too: the case stops, the part is still written
 if(tty){rl=createInterface({input:process.stdin,output:process.stdout,terminal:true});rl.on('SIGINT',()=>stop('Ctrl-C'));process.stdin.on('keypress',()=>{if(!asking)stop('key pressed');});}
 // an aborted arming question answers '' (a wrong code: not armed); an aborted prompt never answers, so the runner's hold ends it OPERATOR_ABORT
 const question=async(q,hang)=>{asking=true;try{return await rl.question(q,{signal:ac.signal});}catch{return hang?new Promise(()=>{}):'';}finally{asking=false;}};

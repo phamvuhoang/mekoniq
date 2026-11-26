@@ -1,6 +1,6 @@
 // K07b: scripts/bench.mjs and scripts/record-bench.mjs as child processes (stdin is a pipe, never a TTY), on the simulated slave with the real clock. Kept few and short
 // (one torque case, KCF02); every other flow rule is tested through cli-flow.ts in bench-cli-flow.test.ts. Temp directories live under os.tmpdir().
-import {spawnSync} from 'node:child_process';
+import {spawn,spawnSync} from 'node:child_process';
 import {cpSync,mkdirSync,mkdtempSync,readFileSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -61,6 +61,14 @@ describe('a session on the simulated slave, end to end',()=>{
   const bad=cli('bench',['verify','--record',out]);
   expect(bad.status).toBe(1);expect(bad.out).toMatch(/SIZE_MISMATCH identity\/session.json/);expect(bad.out).toMatch(/SESSION_DECLARATION_MISSING identity\/session.json/);
  },300_000);
+ it('SIGTERM during a suite is an abort: exit 1, and the part is still written with the abort recorded',async()=>{
+  const out=fresh('conformance'),env={...Object.fromEntries(Object.entries(process.env).filter(([k])=>!k.startsWith('BENCH_TEST_'))),BENCH_TEST_ARMING:'1'} as unknown as NodeJS.ProcessEnv;
+  const child=spawn(process.execPath,['scripts/bench.mjs','run',...common(),'--identity',identity,'--suite','conformance','--out',out],{cwd:ROOT,env,stdio:['pipe','pipe','pipe']});
+  let text='',sent=false;child.stdout.on('data',(d:Buffer)=>{text+=String(d);if(!sent&&/KCF0\d \.\.\./.test(text)){sent=true;child.kill('SIGTERM');}});   // once: a second signal killschild.stderr.on('data',(d:Buffer)=>{text+=String(d);});
+  const code=await new Promise<number|null>(ok=>child.once('close',ok));
+  expect(code,text).toBe(1);expect(text).toMatch(/SIGTERM: stopping/);expect(text).toMatch(/OPERATOR_ABORT/);expect(text).toMatch(/conformance part written/);
+  expect(readFileSync(join(out,'manifest.json'),'utf8')).toMatch(/session\.json/);
+ },120_000);
  it('stdin not a terminal and no test hook: the torque case is not_run BENCH_NOT_ARMED, exit 1',()=>{
   const out=fresh('conformance'),r=cli('bench',['run',...common(),'--identity',identity,'--suite','conformance','--case','KCF02','--out',out]);
   expect(r.status,r.out).toBe(1);expect(r.out).toMatch(/KCF02 not_run BENCH_NOT_ARMED/);
