@@ -1,6 +1,7 @@
 // Bench case types (K04). Types only: the cases are in conformance.ts, the loop that runs them is session.ts.
 import type {DriveCommandV1,DriveFault,DriveFeedbackV1} from '../../../lab-runtime/src/v2/control/drive-io';
 import type {LidarScanV1} from '../../../contracts/generated/navigation2d';
+import type {DescriptionSummary} from '../../../lab-runtime/src/engineering/catalog';
 import type {BenchCycleRow,BenchKitV1,BenchPolicy,BenchTickRecord,Measurement} from '../contracts';
 
 /** What runCase recorded: every tick sent (the stop sequence included), the worker's cycle rows, the operator's answers, the objects `scan` read
@@ -12,7 +13,12 @@ export interface LidarFrameRow{tick:number;tMonoNs:number;sensorMs:number;speedD
 export interface LidarScanRow{tick:number;tMonoNs:number;scan:LidarScanV1}
 export interface ImuRow{tick:number;tMonoNs:number;sensorTime:number|null;accelMps2:number[];gyroRadS:number[];rpyRad:number[]}
 export interface CaseTrace{ticks:BenchTickRecord[];cycles:BenchCycleRow[];prompts:{id:string;answer:string}[];objects?:Record<string,Record<string,number>>;meta?:Record<string,unknown>;silence?:Record<string,unknown>;stop?:Record<string,unknown>;
- lidar?:(LidarFrameRow|LidarScanRow)[];imu?:ImuRow[];sensorDropped?:{lidarBytes:number;imuBytes:number}}
+ lidar?:(LidarFrameRow|LidarScanRow)[];imu?:ImuRow[];sensorDropped?:{lidarBytes:number;imuBytes:number};
+ /** Identity runs (K07a): the whole `scan` result and the description summary of each axis (by axisId), what KID02–KID05 judge. */
+ scan?:{slaves:ScanSlave[]};descriptions?:Record<string,DescriptionSummary>}
+/** One slave as `scan` read it (session.py _scan), before any write: identity, the PDO maps it booted with, the requested objects and visible strings. */
+export interface ScanSlave{position:number;vendorId:string;productCode:string;revision:number|string;serial:string;name:string;axisId:string|null;identityMatches:boolean;
+ rxPdo:string[];txPdo:string[];objects:Record<string,number>;strings?:Record<string,string>}
 /** `observed`: what an identity case read, by checklist path (KID02: '/devices/drive-left' -> the firmware string); closuresFor copies it into the record. */
 export interface CaseVerdict{status:'tested'|'failed'|'not_run'|'unsupported_by_device';reason:string|null;measurements:Measurement[];observed?:Record<string,string>}
 export interface CaseScript{

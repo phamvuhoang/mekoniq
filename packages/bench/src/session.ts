@@ -4,6 +4,7 @@
 // stages are off, and disarms the run: no later case gets torque without a new arming, and the caller stops the suite (ctx.disarmed).
 import {validateDriveCommandShape,type DriveCommandV1,type DriveFeedbackV1} from '../../lab-runtime/src/v2/control/drive-io';
 import type {Arming} from './arming';
+import type {DescriptionSummary} from '../../lab-runtime/src/engineering/catalog';
 import {scanRows,verdictOf,type CaseTrace,type CaseVerdict,type BenchCase,type ImuRow,type LidarFrameRow} from './cases/index';
 import type {Clock} from './clock';
 import type {BenchKitV1,BenchPolicy,BenchTickRecord,BenchCycleRow} from './contracts';
@@ -25,22 +26,25 @@ export interface RunContext{
  passed:Set<string>;onTick?(t:BenchTickRecord):void;abort:AbortSignal;
  /** What `scan` read (startBenchSession), copied into every trace. */
  objects?:Record<string,Record<string,number>>;
+ /** Identity runs: the whole scan and each axis's description summary, copied into every trace (KID02–KID05 judge them). */
+ scan?:CaseTrace['scan'];descriptions?:Record<string,DescriptionSummary>;
  /** Set, never cleared, when a case ended abnormally: the run is no longer armed and the suite must stop (BK-D11). */
  disarmed?:boolean;
 }
 /** The runs an operator armed. Private on purpose: no field of the context can say "armed", so no caller can skip the code. */
 const armedRuns=new WeakSet<RunContext>();
 
-/** open, scan (reading `objects` on every slave), configure, start. A refusal throws {code}. Returns the objects per axis for RunContext.objects. */
-export async function startBenchSession(w:BenchWorker,objects:string[]=[]):Promise<{scan:Record<string,unknown>;objects:Record<string,Record<string,number>>}>{
+/** open, scan (reading `objects` and the visible `strings` on every slave), configure, start; `scanOnly` stops after the scan (identify: a read-only worker refuses
+ * configure). A refusal throws {code}. Returns the objects per axis for RunContext.objects. */
+export async function startBenchSession(w:BenchWorker,objects:string[]=[],o:{strings?:string[];scanOnly?:boolean}={}):Promise<{scan:Record<string,unknown>;objects:Record<string,Record<string,number>>}>{
  const call=async(op:BenchOp,payload:Record<string,unknown>={})=>{
   const a=await w.request(op,payload,w.tick);
   if(!a.ok)throw Object.assign(new Error(`${a.error!.code}: ${a.error!.detail}`),{code:a.error!.code});
   return a.result!;
  };
  await call('open');
- const scan=await call('scan',{objects});
- await call('configure');await call('start');
+ const scan=await call('scan',{objects,...o.strings?{strings:o.strings}:{}});
+ if(!o.scanOnly){await call('configure');await call('start');}
  return {scan,objects:Object.fromEntries((scan.slaves as {axisId:string;objects:Record<string,number>}[]).map(s=>[s.axisId,s.objects]))};
 }
 
@@ -74,6 +78,8 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   armedRuns.add(ctx);
  }
  if(ctx.objects)trace.objects=ctx.objects;
+ if(ctx.scan)trace.scan=ctx.scan;
+ if(ctx.descriptions)trace.descriptions=ctx.descriptions;
  if(s.meta)trace.meta=s.meta;
  const t0=worker.tick,start=clock.nowNs(),expected=new Set<string>(s.expectedFaults??[]);
  let k=0,stepped=false,fb:DriveFeedbackV1[]=[],vendor:BenchTickRecord['vendor']=[],reason:string|null=null,scriptError:string|null=null,sensorError:string|null=null;

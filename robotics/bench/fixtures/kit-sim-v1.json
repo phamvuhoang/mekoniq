@@ -28,7 +28,8 @@
       "6040:00",
       "60FF:00"
     ],
-    "requiresDc": false
+    "requiresDc": false,
+    "descriptionSummary": "sim-esi.summary.json"
   },
   "axes": [
     {
@@ -178,5 +179,5 @@
     "lidar": null,
     "imu": null
   },
-  "digest": "4c5598b872de5fd11a0790c677cf7e418bb83a34d1f8f9989b5b59d0d8cf5e23"
+  "digest": "2ecd3dcc74435b8501355366343ed207499f2d28c9aebf9f56c02650fc7647d7"
 }

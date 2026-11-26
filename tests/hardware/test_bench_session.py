@@ -176,6 +176,24 @@ def test_scan_reads_the_requested_objects_also_in_read_only(option):
     assert r.bus.writes == []
 
 
+def test_scan_reads_strings_on_request_also_in_read_only_and_writes_nothing():
+    r = Rig(read_only=True, upto="open")
+    slaves = r.do("scan", {"strings": ["100A:00", "1009:00", "1008:00"], "objects": ["6502:00"]})["slaves"]
+    assert [s["strings"] for s in slaves] == [{"100A:00": "SIM-FW 1.0.0", "1009:00": "SIM-HW 1", "1008:00": "MEKONIQ simulated CiA 402 slave"}] * 2
+    assert [s["objects"] for s in slaves] == [{"6502:00": 0x104}] * 2      # pv (bit 2) and csv (bit 8)
+    assert r.bus.writes == []
+    assert [s["strings"] for s in Rig(upto="scan").do("scan")["slaves"]] == [{}, {}]
+
+
+def test_scan_strings_and_modes_are_simslave_knobs_and_a_malformed_string_object_is_refused():
+    r = Rig(kit(strings={"100A:00": "V1.07"}, supportedModes=0x80), upto="open")
+    slaves = r.do("scan", {"strings": ["100A:00", "1009:00"], "objects": ["6502:00"]})["slaves"]
+    assert [s["strings"] for s in slaves] == [{"100A:00": "V1.07", "1009:00": ""}] * 2
+    assert [s["objects"]["6502:00"] for s in slaves] == [0x80] * 2
+    for bad in (["100a:00"], "100A:00", [1]):
+        assert code(Rig(upto="open").do, "scan", {"strings": bad}) == "BENCH_ORDER_VIOLATION"
+
+
 def test_scan_without_objects_reads_none_and_a_malformed_object_is_refused():
     assert [s["objects"] for s in Rig(upto="scan").do("scan")["slaves"]] == [{}, {}]
     assert code(Rig(upto="open").do, "scan", {"objects": ["605A"]}) == "BENCH_ORDER_VIOLATION"

@@ -18,6 +18,8 @@ It is configured only through the kit's `simSlave` object (ruling R4); every kno
     serials             ["SIM-0001", "SIM-0002"]  one slave per serial (the slave count is their number)
     initialErrorCode    null  a code: every slave boots in Fault with that 603Fh
     initialPositionRaw  0     6064h at power-on (to cross the int32 wrap)
+    strings             {"100A:00": "SIM-FW 1.0.0", "1009:00": "SIM-HW 1", "1008:00": <the name>}  visible-string objects (KID02 firmware); an object not listed reads ""
+    supportedModes      0x104 6502h (supported drive modes): pv (bit 2) and csv (bit 8)
     corruptReadback     null  an object ('6072:00', '1600:02', ...) whose SDO read returns the written value + 0x100 (a mapping entry reads back another subindex)
     events              []    [{atCycle, do, ...}] applied before exchange number atCycle (0 = the first after start):
                               inject_error {position, code} | force_velocity {position, rawVelocity|null} | wkc_loss {cycles} | cut_power {logic: bool}
@@ -37,7 +39,8 @@ WATCHDOG_ERROR, UNDERVOLTAGE = 0x8130, 0x3220
 BITS = {"6040:00": 16, "6041:00": 16, "6060:00": 8, "6061:00": 8, "6072:00": 16, "6077:00": 16, "603F:00": 16, "60B8:00": 16}
 COAST_TAU_MS = 500.0               # assumed: a coasting rotor, power stage off
 DEFAULTS = {"motorPower": True, "powerLossFaults": True, "quickStopResume": True, "quickStopDecelRawPerCycle": 2000, "enableDelayCycles": 5, "quickStopOption": 2, "watchdogMs": 100, "velocityScale": 1.0, "ignoreQuickStop": False, "serials": ["SIM-0001", "SIM-0002"],
-            "initialErrorCode": None, "initialPositionRaw": 0, "corruptReadback": None, "events": []}
+            "initialErrorCode": None, "supportedModes": 0x104,
+            "strings": {"100A:00": "SIM-FW 1.0.0", "1009:00": "SIM-HW 1", "1008:00": "MEKONIQ simulated CiA 402 slave"}, "initialPositionRaw": 0, "corruptReadback": None, "events": []}
 DEFAULT_TX = ["6041:00", "6064:00", "606C:00"]
 
 
@@ -64,6 +67,7 @@ class SimBus:
         self.slaves = [_Slave(s, cfg) for s in cfg["serials"]]
         for s in self.slaves:
             s.od["605A:00"] = cfg["quickStopOption"]   # readable by SDO (scan objects, KCF05); the behaviour reads cfg
+            s.od["6502:00"] = cfg["supportedModes"]
             self._load_map(s, "1600", cfg["defaultRxPdo"])
             self._load_map(s, "1A00", DEFAULT_TX)
         self.writes = []
@@ -86,6 +90,9 @@ class SimBus:
     def sdo_read(self, position, obj, size):
         v = self.slaves[position - 1].od.get(obj, 0)
         return v + 0x100 if obj == self.corrupt_readback else v
+
+    def sdo_read_string(self, position, obj):
+        return self.cfg["strings"].get(obj, "")
 
     def sdo_write(self, position, obj, value, size):
         self.writes.append((position, obj, value))

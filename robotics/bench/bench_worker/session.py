@@ -106,9 +106,11 @@ class BenchSession:
         return [f"{v >> 16:04X}:{v >> 8 & 0xFF:02X}" for v in (self.bus.sdo_read(pos, f"{idx}:{k:02X}", 4) for k in range(1, n + 1))]
 
     def _scan(self, payload):
-        objects = payload.get("objects", [])   # read by SDO on every slave, e.g. 605A:00 for KCF05; reading is allowed in read-only mode
-        if not isinstance(objects, list) or not all(isinstance(o, str) and re.fullmatch(r"[0-9A-F]{4}:[0-9A-F]{2}", o) for o in objects):
-            raise BenchError("BENCH_ORDER_VIOLATION", f"scan objects must be 'XXXX:XX' (upper-case hex), got {str(objects)[:200]}")
+        # read by SDO on every slave, e.g. 605A:00 for KCF05, and visible strings such as 100A:00 (firmware) for KID02; reading is allowed in read-only mode
+        objects, strings = payload.get("objects", []), payload.get("strings", [])
+        for name, objs in (("objects", objects), ("strings", strings)):
+            if not isinstance(objs, list) or not all(isinstance(o, str) and re.fullmatch(r"[0-9A-F]{4}:[0-9A-F]{2}", o) for o in objs):
+                raise BenchError("BENCH_ORDER_VIOLATION", f"scan {name} must be 'XXXX:XX' (upper-case hex), got {str(objs)[:200]}")
         slaves = self.bus.scan()
         if len(slaves) != self.n:
             raise BenchError("BENCH_SLAVE_COUNT", f"{len(slaves)} slaves on the bus, the kit has {self.n} axes")
@@ -122,7 +124,8 @@ class BenchSession:
             out.append(s | {"vendorId": _hex(s["vendorId"]), "productCode": _hex(s["productCode"]), "axisId": a and a["axisId"], "identityMatches": match,
                             "rxPdo": self._read_map(s["position"], "1600"), "txPdo": self._read_map(s["position"], "1A00"),
                             # ponytail: 4-byte reads; SoemBus (K08) sizes and signs each object from the device profile
-                            "objects": {o: self.bus.sdo_read(s["position"], o, 4) for o in objects}})
+                            "objects": {o: self.bus.sdo_read(s["position"], o, 4) for o in objects},
+                            "strings": {o: self.bus.sdo_read_string(s["position"], o) for o in strings}})
         self.identity_ok, self.phase = ok, "scanned"
         return {"slaves": out}
 

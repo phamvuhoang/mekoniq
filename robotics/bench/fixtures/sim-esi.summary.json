@@ -1,0 +1,146 @@
+{
+  "fileSha256": "1fc00709e847473b70f89d14aedeb0f7e582d61fccd8d699879f369ce35c9091",
+  "kind": "esi",
+  "objects": [
+    {
+      "access": "ro",
+      "index": "1008",
+      "name": "Manufacturer device name",
+      "pdoMappable": false,
+      "subindex": 0
+    },
+    {
+      "access": "ro",
+      "index": "1009",
+      "name": "Manufacturer hardware version",
+      "pdoMappable": false,
+      "subindex": 0
+    },
+    {
+      "access": "ro",
+      "index": "100A",
+      "name": "Manufacturer software version",
+      "pdoMappable": false,
+      "subindex": 0
+    },
+    {
+      "access": "rw",
+      "index": "1600",
+      "name": "RxPDO map 1 / number of entries",
+      "pdoMappable": false,
+      "subindex": 0
+    },
+    {
+      "access": "rw",
+      "index": "1A00",
+      "name": "TxPDO map 1 / number of entries",
+      "pdoMappable": false,
+      "subindex": 0
+    },
+    {
+      "access": "rw",
+      "index": "1C12",
+      "name": "Sync manager 2 PDO assignment / number of entries",
+      "pdoMappable": false,
+      "subindex": 0
+    },
+    {
+      "access": "rw",
+      "index": "1C13",
+      "name": "Sync manager 3 PDO assignment / number of entries",
+      "pdoMappable": false,
+      "subindex": 0
+    },
+    {
+      "access": "ro",
+      "index": "603F",
+      "name": "Error code",
+      "pdoMappable": true,
+      "subindex": 0
+    },
+    {
+      "access": "rw",
+      "index": "6040",
+      "name": "Controlword",
+      "pdoMappable": true,
+      "subindex": 0
+    },
+    {
+      "access": "ro",
+      "index": "6041",
+      "name": "Statusword",
+      "pdoMappable": true,
+      "subindex": 0
+    },
+    {
+      "access": "rw",
+      "index": "605A",
+      "name": "Quick stop option code",
+      "pdoMappable": false,
+      "subindex": 0
+    },
+    {
+      "access": "rw",
+      "index": "6060",
+      "name": "Modes of operation",
+      "pdoMappable": true,
+      "subindex": 0
+    },
+    {
+      "access": "ro",
+      "index": "6064",
+      "name": "Position actual value",
+      "pdoMappable": true,
+      "subindex": 0
+    },
+    {
+      "access": "ro",
+      "index": "606C",
+      "name": "Velocity actual value",
+      "pdoMappable": true,
+      "subindex": 0
+    },
+    {
+      "access": "rw",
+      "index": "6072",
+      "name": "Max torque",
+      "pdoMappable": true,
+      "subindex": 0
+    },
+    {
+      "access": "ro",
+      "index": "6077",
+      "name": "Torque actual value",
+      "pdoMappable": true,
+      "subindex": 0
+    },
+    {
+      "access": "rw",
+      "index": "607F",
+      "name": "Max profile velocity",
+      "pdoMappable": true,
+      "subindex": 0
+    },
+    {
+      "access": "rw",
+      "index": "60FF",
+      "name": "Target velocity",
+      "pdoMappable": true,
+      "subindex": 0
+    },
+    {
+      "access": "ro",
+      "index": "6502",
+      "name": "Supported drive modes",
+      "pdoMappable": false,
+      "subindex": 0
+    }
+  ],
+  "productCode": "0x00000001",
+  "revision": "0x00000001",
+  "supportedModes": [
+    "pv",
+    "csv"
+  ],
+  "vendorId": "0x53494D00"
+}
