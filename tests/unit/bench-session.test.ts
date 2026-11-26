@@ -8,7 +8,7 @@ import {fakeClock} from '../../packages/bench/src/clock';
 import {ttyArming,type Arming} from '../../packages/bench/src/arming';
 import {spawnBenchWorker,type BenchWorker} from '../../packages/bench/src/worker';
 import {runCase,startBenchSession,type RunContext} from '../../packages/bench/src/session';
-import type {BenchCase} from '../../packages/bench/src/cases/types';
+import {verdictOf,type BenchCase} from '../../packages/bench/src/cases/index';
 
 const PY=process.env.BENCH_PYTHON??'python3';
 const dir=mkdtempSync(join(tmpdir(),'bench-session-'));
@@ -203,4 +203,52 @@ describe('ending a case',()=>{
   expect(noTorque(ticks.slice(6))).toBe(true);expect(ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);
   expect(c.disarmed).toBe(true);
  },20_000);
+
+ it.each(['refused','incomplete'])('a stop sequence that is %s falls back to the wire stop, awaited and recorded in trace.stop',async mode=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const ac=new AbortController();let stopping=false;
+  // after the abort, every step is refused, or reports a power stage that never switches off (statusword bit 1 held)
+  const spy:BenchWorker={request:async(op,payload,t)=>{
+   if(op!=='step'||!stopping)return w.request(op,payload,t);
+   if(mode==='refused')return {requestId:'x',ok:false,tick:w.tick,error:{code:'BENCH_TEST_REFUSED',detail:'test'}};
+   const a=await w.request(op,payload,t),r=a.result as {vendor:{statusword:number}[]};r.vendor=r.vendor.map(v=>({...v,statusword:v.statusword|0x02}));return a;
+  },close:()=>w.close(),get tick(){return w.tick;},get pid(){return w.pid;},get stderr(){return w.stderr;}};
+  const x=ctx(spy,kit,{abort:ac.signal,onTick:t=>{if(t.tick===20){ac.abort();stopping=true;}}}),r=await runCase(holdCase({ticks:100,target:2}),x);
+  expect(r.verdict).toEqual({status:'failed',reason:'OPERATOR_ABORT',measurements:[]});
+  const stop=r.trace.stop as {controlwords:number[];velocityRadS:number[]};
+  expect(stop.controlwords).toEqual([0,0]);expect(x.disarmed).toBe(true);
+  await expect(w.request('describe',{},w.tick)).rejects.toMatchObject({code:'WORKER_LOST',outcome:'not_sent'});   // the wire stop ended the session
+ },30_000);
+ it('a clock that keeps throwing: the best-effort stop in the catch falls back to the wire stop, which needs no clock',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const clock=fakeClock(),sleep=clock.sleepUntilNs.bind(clock);let n=0;
+  clock.sleepUntilNs=async t=>{if(++n>=21)throw new Error('clock bug');return sleep(t);};
+  const x=ctx(w,kit,{clock});
+  await expect(runCase(holdCase({ticks:100,target:2}),x)).rejects.toThrow('clock bug');
+  expect(x.disarmed).toBe(true);
+  await expect(w.request('describe',{},w.tick)).rejects.toMatchObject({code:'WORKER_LOST',outcome:'not_sent'});   // closed by an accepted stop, not left to close()
+  await w.close();expect(JSON.parse(w.stderr.trim().split('\n').at(-1)!)).toEqual({event:'stopped',controlwords:[0,0]});
+ },20_000);
+ it('evaluate that throws: failed CASE_EVALUATE_ERROR with the message in trace.meta.error, the run disarmed, axes already stopped',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const x=ctx(w,kit),r=await runCase(holdCase({ticks:20,target:2,evaluate:()=>{throw new Error('evaluate bug');}}),x);
+  expect(r.verdict).toEqual({status:'failed',reason:'CASE_EVALUATE_ERROR',measurements:[]});expect(r.trace.meta).toMatchObject({error:'evaluate bug'});
+  expect(r.trace.ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);expect(x.disarmed).toBe(true);expect(x.passed.size).toBe(0);
+ },20_000);
+});
+
+describe('a verdict is a pure function of the stored trace (verdictOf)',()=>{
+ it('runCase returns verdictOf of its own trace; a runner decision is stored in trace.meta.runner',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const x=ctx(w,kit,{arming:no}),r=await runCase(holdCase(),x);
+  expect(r.trace.meta).toEqual({runner:{status:'not_run',reason:'BENCH_NOT_ARMED'}});
+  const t=JSON.parse(JSON.stringify(r.trace));expect(verdictOf(holdCase(),t,kit,POLICY)).toEqual(r.verdict);
+  const ok=await runCase(holdCase(),ctx(w,kit));expect(ok.trace.meta?.runner).toBeUndefined();expect(verdictOf(holdCase(),ok.trace,kit,POLICY)).toEqual(ok.verdict);
+ },20_000);
+ it('a trace that carries a runner decision never yields tested, whatever evaluate says or the decision claims',()=>{
+  const c=holdCase(),t={ticks:[],cycles:[],prompts:[]};
+  expect(verdictOf(c,{...t,meta:{runner:{status:'failed',reason:'HOST_TICK_LATE'}}},KIT,POLICY)).toEqual({status:'failed',reason:'HOST_TICK_LATE',measurements:[]});
+  expect(verdictOf(c,{...t,meta:{runner:{status:'tested',reason:null}}},KIT,POLICY).status).toBe('failed');
+  expect(verdictOf(c,{...t,meta:{runner:'x'}},KIT,POLICY).status).toBe('failed');
+ });
 });

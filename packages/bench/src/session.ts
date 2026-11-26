@@ -4,10 +4,10 @@
 // stages are off, and disarms the run: no later case gets torque without a new arming, and the caller stops the suite (ctx.disarmed).
 import {validateDriveCommandShape,type DriveCommandV1,type DriveFeedbackV1} from '../../lab-runtime/src/v2/control/drive-io';
 import type {Arming} from './arming';
-import type {CaseTrace,CaseVerdict,BenchCase} from './cases/types';
+import {verdictOf,type CaseTrace,type CaseVerdict,type BenchCase} from './cases/index';
 import type {Clock} from './clock';
 import type {BenchKitV1,BenchPolicy,BenchTickRecord,BenchCycleRow} from './contracts';
-import type {BenchOp,BenchWorker} from './worker';
+import {BenchWorkerError,type BenchOp,type BenchWorker} from './worker';
 
 const TICK_NS=20_000_000n;
 export interface RunContext{
@@ -37,23 +37,25 @@ export async function startBenchSession(w:BenchWorker,objects:string[]=[]):Promi
  return {scan,objects:Object.fromEntries((scan.slaves as {axisId:string;objects:Record<string,number>}[]).map(s=>[s.axisId,s.objects]))};
 }
 
-const verdict=(trace:CaseTrace,status:CaseVerdict['status'],reason:string|null)=>({trace,verdict:{status,reason,measurements:[]}});
 /** CiA 402 statusword bit 1 ("switched on") clear: Switch on disabled, Ready to switch on, Fault, Not ready; no torque from this drive. */
 const powerOff=(v:{statusword:number})=>(v.statusword&0x02)===0;
 
 /** How a case ends. Every path that sent anything ends with a stop that is sent and awaited: the stop sequence of steps (`stopAxes`), or the wire `stop` op once
  * a `silence` has been sent, also from the catch, whatever threw (a terminal worker refuses at once, so that is safe). Every end other than a clean script,
- * an `evaluate`d verdict and no recorded script error disarms the run; a thrown error is rethrown after the stop, every other abnormal end is a `failed` verdict. */
+ * an `evaluate`d verdict and no recorded script error disarms the run; a thrown error is rethrown after the stop, every other abnormal end is a `failed` verdict.
+ * A step sequence that is refused or does not end, or that throws something other than a worker error, falls back to the wire `stop` (no clock, no step).
+ * The verdict is verdictOf(trace): whatever the runner decides itself is stored in trace.meta.runner, so the stored trace alone gives it back. */
 export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTrace;verdict:CaseVerdict}>{
  const trace:CaseTrace={ticks:[],cycles:[],prompts:[]},{worker,kit,policy,clock}=ctx;
- if(c.requires.some(id=>!ctx.passed.has(id)))return verdict(trace,'not_run','BENCH_ORDER_VIOLATION');
- if(ctx.abort.aborted)return verdict(trace,'not_run','OPERATOR_ABORT');
+ const decided=(status:'not_run'|'failed',reason:string)=>{trace.meta={...trace.meta,runner:{status,reason}};return {trace,verdict:verdictOf(c,trace,kit,policy)};};
+ if(c.requires.some(id=>!ctx.passed.has(id)))return decided('not_run','BENCH_ORDER_VIOLATION');
+ if(ctx.abort.aborted)return decided('not_run','OPERATOR_ABORT');
  const s=c.script(kit,policy);
  // ponytail: operator prompts (KCF01, KCF09) need a question io in the context; until a case has one, a case with prompts does not run
- if(s.prompts?.length)return verdict(trace,'not_run','BENCH_PROMPT_UNAVAILABLE');
- if(s.silence&&s.silence.atTick!==s.ticks)return verdict(trace,'not_run','BENCH_SCRIPT_INVALID');   // silence is sent after the last tick, never mid-script
+ if(s.prompts?.length)return decided('not_run','BENCH_PROMPT_UNAVAILABLE');
+ if(s.silence&&s.silence.atTick!==s.ticks)return decided('not_run','BENCH_SCRIPT_INVALID');   // silence is sent after the last tick, never mid-script
  if(c.needsTorque&&!armedRuns.has(ctx)){
-  if(!await ctx.arming.arm(`${c.id}: torque on ${kit.axes.map(a=>a.axisId).join(', ')}`))return verdict(trace,'not_run','BENCH_NOT_ARMED');
+  if(!await ctx.arming.arm(`${c.id}: torque on ${kit.axes.map(a=>a.axisId).join(', ')}`))return decided('not_run','BENCH_NOT_ARMED');
   armedRuns.add(ctx);
  }
  if(ctx.objects)trace.objects=ctx.objects;
@@ -87,7 +89,12 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
  /** After a `silence` was sent (accepted or refused) the worker's session may be over, so steps are no longer the way: the wire `stop` holds the ramp itself. */
  let silenceSent=false;
  const stopOp=async()=>{const st=await worker.request('stop',{},worker.tick);if(st.ok){trace.stop=st.result;return null;}trace.stop={refused:st.error};return st.error!.code;};
- const stop=(quick:boolean)=>silenceSent?stopOp():stopAxes(quick);
+ const stop=async(quick:boolean)=>{
+  if(silenceSent)return stopOp();
+  const err=await stopAxes(quick);
+  if(err)await stopOp();   // refused or not ended: the wire stop holds the ramp itself, awaited here, never left to the caller's close()
+  return err;
+ };
  /** Case code must return a list of valid DriveCommandV1 (local seq included): anything else is a script error, never a request the wire refuses mid-case. */
  const commandsAt=(i:number)=>{
   const out=s.commandsAt(i,fb) as unknown,bad=Array.isArray(out)?out.findIndex(x=>!validateDriveCommandShape(x)):-2;
@@ -118,12 +125,15 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   if(scriptError)reason??='CASE_SCRIPT_ERROR';   // also an onTick throw during the stop ticks of a clean end
  }catch(e){
   disarm();
-  try{await stop(true);}catch{/* best effort, whatever threw: the first error is the one reported */}
+  // best effort, whatever threw: the first error is the one reported. The step sequence needs the clock that may be what threw; the wire stop needs none
+  try{await stop(true);}catch(f){if(!(f instanceof BenchWorkerError))await stopOp().catch(()=>{});}
   throw e;
  }
  if(scriptError)trace.meta={...trace.meta,error:scriptError};
- if(reason){disarm();return verdict(trace,'failed',reason);}
- const v=c.evaluate(trace,kit,policy);
+ if(reason){disarm();return decided('failed',reason);}
+ let v:CaseVerdict;
+ try{v=verdictOf(c,trace,kit,policy);}
+ catch(e){disarm();trace.meta={...trace.meta,error:e instanceof Error?e.message:String(e)};return decided('failed','CASE_EVALUATE_ERROR');}   // the axes are already stopped
  if(v.status==='tested')ctx.passed.add(c.id);
  return {trace,verdict:v};
 }
