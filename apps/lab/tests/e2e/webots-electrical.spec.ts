@@ -20,7 +20,7 @@ async function compile(page:Page,option:RegExp){
  return (await response.json()) as {digest:string;state:string};
 }
 
-// DGN01: choose an option → compile → check → wiring → export (or its stated refusal) → cost → pin; HW-A cannot export
+// DGN01: choose an option → compile → check → wiring → export (ZIP download read back by lab-hardware.mjs verify) → cost → pin; HW-A cannot export
 test('electrical section: HW-C compiles and the page equals the server bundle, HW-A is blocked and cannot export, a pin goes to the server and the page follows its answer',async({browser})=>{
  expect(token,'Run scripts/test-irsim-e2e.mjs --provider webots: it starts the launcher and supplies the one-use pairing code').toBeTruthy();
  test.setTimeout(300000);
@@ -56,20 +56,16 @@ test('electrical section: HW-C compiles and the page equals the server bundle, H
  await wire.locator('[data-action="el-wire"]').click();
  await expect(page.getByTestId('el-wires').locator(`tr[data-wire="${wireId}"]`)).toHaveAttribute('aria-selected','true');
  await expect(page.getByTestId('el-wiring').getByRole('status')).toContainText('→');
- // export. A runtime whose engineering service has no base drive model (today the Webots launcher: only the MuJoCo mobile one passes drive-v1) drafts no drive model,
- // and the package needs one: the page disables the export and says why. With a drafted drive model the package downloads as a ZIP folder whose files re-hash
- // to its manifest and that the runtime's own reader (lab-hardware.mjs verify) passes.
- const draft=(await read(page,c.digest) as unknown as {driveModelDraft:unknown}).driveModelDraft,exportButton=page.getByRole('button',{name:'Export hardware candidate package'});
- if(draft===null){await expect(exportButton).toBeDisabled();await expect(page.getByTestId('el-why')).toContainText('DRIVE_MODEL_DRAFT_MISSING');}
- else{
-  const downloaded=page.waitForEvent('download');await exportButton.click();
-  const file=await downloaded;expect(file.suggestedFilename()).toBe('serve-hw-c-v1.hardware-candidate.zip');
-  const dir=await mkdtemp(join(tmpdir(),'mekoniq-hwc-'));execFileSync('unzip',['-q',(await file.path())!,'-d',dir]);
-  const manifest=JSON.parse(await readFile(join(dir,'manifest.json'),'utf8')) as {documentType:string;hardwareValidated:boolean;bundle:{digest:string};files:{path:string;sha256:string;bytes:number}[]};
-  expect(manifest).toMatchObject({documentType:'hardware-candidate',hardwareValidated:false,bundle:{digest:c.digest}});
-  for(const f of manifest.files){const b=await readFile(join(dir,f.path));expect([f.path,b.length,createHash('sha256').update(b).digest('hex')]).toEqual([f.path,f.bytes,f.sha256]);}
-  expect(execFileSync(process.execPath,['scripts/lab-hardware.mjs','verify','--package',dir],{cwd:SOURCE_ROOT,encoding:'utf8'})).toContain('package reads back without a problem');
- }
+ // export: the HW-C package downloads as a ZIP folder; extracted, every file re-hashes to its manifest and the runtime's own reader (lab-hardware.mjs verify) passes it
+ const exportButton=page.getByRole('button',{name:'Export hardware candidate package'});await expect(exportButton).toBeEnabled();
+ expect((await read(page,c.digest) as unknown as {driveModelDraft:unknown}).driveModelDraft,'the runtime drafts the drive model the package carries').not.toBeNull();
+ const downloaded=page.waitForEvent('download');await exportButton.click();
+ const file=await downloaded;expect(file.suggestedFilename()).toBe('serve-hw-c-v1.hardware-candidate.zip');
+ const dir=await mkdtemp(join(tmpdir(),'mekoniq-hwc-'));execFileSync('unzip',['-q',(await file.path())!,'-d',dir]);
+ const manifest=JSON.parse(await readFile(join(dir,'manifest.json'),'utf8')) as {documentType:string;hardwareValidated:boolean;bundle:{digest:string};files:{path:string;sha256:string;bytes:number}[]};
+ expect(manifest).toMatchObject({documentType:'hardware-candidate',hardwareValidated:false,bundle:{digest:c.digest}});expect(manifest.files.length).toBeGreaterThan(0);
+ for(const f of manifest.files){const b=await readFile(join(dir,f.path));expect([f.path,b.length,createHash('sha256').update(b).digest('hex')]).toEqual([f.path,f.bytes,f.sha256]);}
+ expect(execFileSync(process.execPath,['scripts/lab-hardware.mjs','verify','--package',dir],{cwd:SOURCE_ROOT,encoding:'utf8'})).toContain('package reads back without a problem');   // execFileSync throws on a non-zero exit
 
  const a=await compile(page,/^HW-A/);
  await expect(page.getByTestId('el-state')).toHaveAttribute('data-state','blocked');
