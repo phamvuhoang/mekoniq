@@ -124,6 +124,7 @@ export function sessionAllowsTorque(s:BenchSessionV1,kit:BenchKitV1):Problem[]{
  if(d.estopCutsMotorPower!==true)out.push(problem('SESSION_ESTOP_REQUIRED','/declarations/estopCutsMotorPower','the e-stop must cut motor power'));
  if(d.motorsClamped!==true)out.push(problem('SESSION_CLAMP_REQUIRED','/declarations/motorsClamped','motors must be clamped'));
  if(!d.powerWiredBy.trim())out.push(problem('SESSION_POWER_OWNER_REQUIRED','/declarations/powerWiredBy','name who wired the motor power'));
+ if(d.shaftLoad!=='bare'&&d.shaftLoad!=='marker_disc')out.push(problem('SESSION_SHAFT_LOAD_INVALID','/declarations/shaftLoad',String(d.shaftLoad))); // fail closed even if the caller skipped validateBenchSession
  if(kit.power.motor==='ac_mains'&&d.mainsQualified!==true)out.push(problem('SESSION_MAINS_QUALIFICATION_REQUIRED','/declarations/mainsQualified','an ac_mains kit needs a qualified person'));
  return out;
 }

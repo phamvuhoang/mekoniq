@@ -43,6 +43,7 @@ describe('bench session',()=>{
  it('motorsClamped false',()=>{expect(codesOf(edit({motorsClamped:false}))).toEqual(['SESSION_CLAMP_REQUIRED']);});
  it('powerWiredBy empty',()=>{expect(codesOf(edit({powerWiredBy:''}))).toEqual(['SESSION_POWER_OWNER_REQUIRED']);});
  it('an AC kit needs mainsQualified true',()=>{expect(codesOf(session,ac)).toEqual(['SESSION_MAINS_QUALIFICATION_REQUIRED']);expect(codesOf(edit({mainsQualified:false}),ac)).toEqual(['SESSION_MAINS_QUALIFICATION_REQUIRED']);expect(codesOf(edit({mainsQualified:true}),ac)).toEqual([]);});
+ it('the torque gate refuses an out-of-contract shaftLoad on its own',()=>{expect(codesOf(edit({shaftLoad:'other'} as unknown as Partial<BenchSessionV1['declarations']>))).toEqual(['SESSION_SHAFT_LOAD_INVALID']);});
  it('a shaftLoad outside the two values is a schema error',()=>{expect(validateBenchSession(edit({shaftLoad:'free' as never})).ok).toBe(false);});
 });
 
