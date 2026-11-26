@@ -1,7 +1,8 @@
 import {describe,expect,test} from 'vitest';
+import {createHash} from 'node:crypto';
 import compiled from '../fixtures/electrical-bundle-hw-c.json' with {type:'json'};
 import blocked from '../fixtures/electrical-bundle-hw-a-blocked.json' with {type:'json'};
-import {costRows,electricalView,pinSignal,serveOptions,wireRows,ELECTRICAL_CAPABILITY} from '../../src/design/electrical';
+import {costRows,electricalView,packageFiles,pinSignal,serveOptions,wireRows,ELECTRICAL_CAPABILITY} from '../../src/design/electrical';
 import {wiringDiagramSvg} from '../../src/ui/wiring-diagram';
 import type {ElectricalBundleV1,TcoComparisonV1} from '../../src/shared/engineering';
 
@@ -79,5 +80,15 @@ describe('panel',()=>{
  test('a compiled bundle enables export; cost says not comparable when there are no prices',()=>{
   const html=electricalPanel({...base,optionId:'serve-hw-c-v1',bundle:C,view:view({bundle:C}),compare:{assumptionsDigest:'a'.repeat(64),options:[{designId:'serve-hw-c-v1',bundleDigest:'b'.repeat(64),comparable:false,missingPriceLineIds:['x'],parts:{} as never,total:null},{designId:'serve-hw-b-v1',bundleDigest:'c'.repeat(64),comparable:false,missingPriceLineIds:[],parts:{} as never,total:null}],dominant:null,notComparableReason:'PRICE_MISSING_FOR_DECIDING_PARTS'}});
   expect(html).not.toMatch(/data-action="el-package" disabled/);expect(html).toMatch(/chưa so được|比較不可|not comparable/);expect(html).toContain('PRICE_MISSING_FOR_DECIDING_PARTS');
+ });
+});
+describe('package download',()=>{
+ const b64=(s:string)=>Buffer.from(s).toString('base64'),sha=(s:string)=>createHash('sha256').update(s).digest('hex');
+ const pkg=(files:Record<string,string>,sums:Record<string,string>)=>({files:[...Object.entries(files),['checksums.json',JSON.stringify({algorithm:'sha256',files:sums})]].map(([path,t])=>({path:path!,bytes:Buffer.byteLength(t!),contentBase64:b64(t!)}))});
+ test('files whose bytes match checksums.json pass; one changed byte, an unlisted or a missing file is a problem',async()=>{
+  const ok=await packageFiles(pkg({'manifest.json':'{}','a.json':'1'},{'manifest.json':sha('{}'),'a.json':sha('1')}));
+  expect(ok.problems).toEqual([]);expect(ok.files.map(f=>[f.path,new TextDecoder().decode(f.bytes)])).toContainEqual(['a.json','1']);
+  expect((await packageFiles(pkg({'manifest.json':'{}','a.json':'2'},{'manifest.json':sha('{}'),'a.json':sha('1')}))).problems).toEqual(['CHECKSUM_MISMATCH a.json']);
+  expect((await packageFiles(pkg({'manifest.json':'{}','x':'1'},{'manifest.json':sha('{}'),'a.json':sha('1')}))).problems).toEqual(['FILE_UNEXPECTED x','FILE_MISSING a.json']);
  });
 });

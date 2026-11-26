@@ -1,7 +1,8 @@
 // The two shipped samples with no runtime: every request outside the page's own origin is blocked. Also the accessibility and layout sweep of the R5 panels
-// (electrical section, shipped samples) at three widths and three languages.
+// (electrical section, shipped samples, Diagnostics tab) at three widths and three languages, under reduced motion.
 import {test,expect,type Page} from '@playwright/test';
 import axe from 'axe-core';
+import {openInspector} from '../support/twin';
 declare global { interface Window { axe: typeof axe } }
 const serious=(page:Page)=>page.evaluate(async()=>{const r=await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return r.violations.filter(v=>v.impact==='serious'||v.impact==='critical').map(v=>({id:v.id,nodes:v.nodes.slice(0,3).map(n=>n.target.join(' '))}));});
 const open=async(page:Page,lang='EN')=>{
@@ -47,4 +48,13 @@ for(const width of [390,1024,1440])for(const lang of ['VI','JA','EN'])test(`R5 p
  expect(await serious(page),'hardware sample').toEqual([]);expect(await noOverflow(page),'overflow (hardware sample)').toBe(true);
  await page.locator('[data-action="el-sample"]').nth(1).click();await expect(page.getByTestId('sample-stop-table')).toBeVisible();
  expect(await serious(page),'stop sample').toEqual([]);expect(await noOverflow(page),'overflow (stop sample)').toBe(true);
+ // Diagnostics (WEB12/DGN03) with no runtime and no run: a wheel chosen by keyboard shows every value as "no data", never a 0 or a good mark; nothing moves
+ await page.goto('/#twin');await page.evaluate(()=>document.fonts.ready);await page.addScriptTag({content:axe.source});
+ await openInspector(page,'diagnostics');const list=page.locator('#twin-diag-target');await list.focus();await page.keyboard.press('ArrowDown');
+ await expect(page.getByTestId('diag-tags')).toBeVisible();
+ const quality=await page.getByTestId('diag-tags').locator('tr[data-quality]').evaluateAll(rows=>rows.map(r=>r.getAttribute('data-quality')));
+ expect(quality.length).toBeGreaterThan(0);expect(new Set(quality)).toEqual(new Set(['unavailable']));
+ await expect(page.getByTestId('diag-tags').locator('tbody')).not.toContainText(/\b0\b/);
+ expect(await serious(page),'diagnostics').toEqual([]);expect(await noOverflow(page),'overflow (diagnostics)').toBe(true);
+ expect(await page.getByTestId('diagnostics').evaluate(e=>e.getAnimations({subtree:true}).filter(a=>a.playState==='running').length),'animations under reduced motion').toBe(0);
 });

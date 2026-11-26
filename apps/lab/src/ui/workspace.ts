@@ -50,7 +50,8 @@ import {loopbackPage,mayAutoProbe,parseTarget,saveTarget,targetAddress,type Runt
 import {openReplayV2} from '../reports/replay';
 import {reportCsv,reportHtml,reportJson} from '../reports/metrics';
 import {diagnosticsPanel} from './diagnostics-panel';
-import {alarmsOf,diagnosticsFor,selectableTargets} from '../reports/diagnostics';
+import {alarmsOf,diagnosticsFor,selectableTargets,stopOf} from '../reports/diagnostics';
+import type {ElectricalBundleV1,ElectricalDesignV1} from '../shared/engineering';
 import {reportPanel,reportSummary,navigationAtCursor,replayBody,replayMarks,controllerVerificationHtml,type ReplayState} from './report-panel';
 import {tr} from '../i18n';
 import {businessSimulationNote,illustrativeNote,stateLabel} from './labels';
@@ -178,7 +179,7 @@ export class TwinWorkspace {
  private tokenDraft='';private busy=false;private playing=false;private notice='';private fault='cup-removed';private confirming:string|null=null;private confirmationKind:'reconcile'|'restoreCup'='reconcile';private reconcileTargets:string[]=[];
  /** `engineeringProjectDigest` is the digest of the engineering design the Assembly page holds now; saved engineering evidence is current only while it matches. */
  /** `engineeringInput` is the Assembly page's current design and receipt; an engineering preset runs from it only when its profile matches (re-checked against the receipt). */
- constructor(private render:()=>void,private rt:TwinRuntime=httpTwinRuntime(),private engineeringProjectDigest:()=>string|undefined=()=>undefined,private engineeringInput:()=>EngineeringPresetInput|undefined=()=>undefined){
+ constructor(private render:()=>void,private rt:TwinRuntime=httpTwinRuntime(),private engineeringProjectDigest:()=>string|undefined=()=>undefined,private engineeringInput:()=>EngineeringPresetInput|undefined=()=>undefined,/** R5: the Assembly page's compiled electrical design for an engineering project digest (the run's), or null */private electricalFor:(projectDigest:string)=>{bundle:ElectricalBundleV1;design:ElectricalDesignV1}|null=()=>null){
   // not paired, or a runtime on another origin that is reached only after a click: the runtime box is open from the start
   if(typeof location!=='undefined'&&typeof location.search==='string'){const story=new URLSearchParams(location.search).get('story');if(story==='coffee-delivery'||story==='external-impact'){this.preset={...presetById('mujoco-cell')!,worldExperimentId:story==='external-impact'?'world-cup-fall-v1':'world-nominal-v1'};this.runSpeed=1;}}
   this.ui.runtimeOpen=!rt.paired||this.target().kind!=='same_origin';
@@ -540,7 +541,7 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   void import('../viewer/twin3d').then(m=>{this.v3d=m;
    this.mounting=false;
    const now=document.getElementById('twin-stage');if(!now||this.vs.view!=='3d')return;
-   const v=m.mountTwin3d(now,id=>selectEntity(id),()=>this.fallback(),()=>this.paint(),()=>{this.storyCamera=storyCameraTransition(this.storyCamera,{type:'manual-orbit'});});
+   const v=m.mountTwin3d(now,id=>this.click('twin-pick',id),()=>this.fallback(),()=>this.paint(),()=>{this.storyCamera=storyCameraTransition(this.storyCamera,{type:'manual-orbit'});});
    if(!v)return this.fallback();
    this.viewer=v;this.paint3d(this.frame());
   },()=>{this.mounting=false;this.fallback();});
@@ -733,6 +734,8 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   // the Control tab's own actions: never the twin's run, whatever the twin is doing (replay, an opened report, a run in flight)
   if(action.startsWith('twin-ctl-'))return this.control.click(action,value);
   // following a problem to its object hands the view back to the viewport: the problems box closes
+  // an axis (a wheel or a joint, `<entity>/<axis>`) picked in the 2D or 3D twin: its robot is selected and the Diagnostics tab opens on it
+  if((action==='twin-select'||action==='twin-pick')&&value?.includes('/')){this.diagTarget=value;this.ui={...this.ui,problemsOpen:false,inspectorOpen:true,tab:'diagnostics'};saveUi(this.ui);if(value.split('/')[0]===selectedEntity())return this.rerender();return selectEntity(value.split('/')[0]!);}
   if((action==='twin-select'||action==='twin-pick')&&value){const was=this.ui.problemsOpen;this.ui={...this.ui,problemsOpen:false};if(value===selectedEntity()&&was)this.rerender();return selectEntity(value);}
   // panels and boxes are view state: they never reach the runtime
   if(action==='twin-study-tab'&&(value==='run'||value==='study')){this.studyTab=value;return this.rerender();}
@@ -881,12 +884,14 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   this.rerender();return true;
  }
  private diagTarget:string|null=null;
- /** The Diagnostics tab: targets are the report's own axes, or the project's robots' wheels before there is a report; everything shown is read from the report. */
+ /** The Diagnostics tab: targets are the report's own axes, or the project's robots' wheels before there is a report; everything shown is read from the report.
+  * The device comes from the electrical design the Assembly page compiled for the run's engineering project (the selected option first); none: said so. */
  private diagnostics():string{
   const axes=this.report?.driveEvidence?.axes.map(a=>a.axisId)??[],robots=this.preset.project.entities.filter(e=>e.kind==='amr').map(e=>e.id);
   const targets=axes.length?axes.map(id=>({id,label:id})):selectableTargets({robotIds:robots});
-  const sel=this.diagTarget&&targets.some(t=>t.id===this.diagTarget)?this.diagTarget:null,d=sel?diagnosticsFor(sel,{report:this.report,cursorTick:this.replay?.tick??null,bundle:null}):{device:null,tags:[],alarms:[]};
-  return diagnosticsPanel({targets,selected:sel,device:d.device,tags:d.tags,alarms:sel?d.alarms:alarmsOf(this.report)});
+  const project=this.report?.manifest.engineering?.projectDigest,el=project?this.electricalFor(project):null;
+  const sel=this.diagTarget&&targets.some(t=>t.id===this.diagTarget)?this.diagTarget:null,d=sel?diagnosticsFor(sel,{report:this.report,cursorTick:this.replay?.tick??null,bundle:el?.bundle??null,design:el?.design??null}):{device:null,tags:[],alarms:[]};
+  return diagnosticsPanel({targets,selected:sel,device:d.device,tags:d.tags,alarms:sel?d.alarms:alarmsOf(this.report),stop:stopOf(this.report),design:project?el?{id:el.design.id,label:el.design.option.label}:null:undefined});
  }
  change(id:string,value:string){if(id==='twin-diag-target'){this.diagTarget=value||null;return this.rerender();}if(id.startsWith('twin-ctl-'))return this.control.change(id,value);if(id==='twin-grasp-program'){
    if(this.cellSettingsLocked()||!compatibleProgram(this.health,this.preset)||value!==''&&value!==TWO_STAGE)return;

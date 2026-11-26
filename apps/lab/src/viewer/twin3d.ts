@@ -14,6 +14,7 @@ import {amrFootprint,assetOf} from '../twin/amr';
 import {footprintInMap} from '../twin/lidar';
 import {placeBody,rosQuat,yawOf} from '../twin/pose3d';
 import {ghostsAt} from '../twin/belief';
+import {alarmMarks} from '../reports/diagnostics';
 import {armFrames,type ArmJointDef} from '../twin/arm/arm-frames';
 import {armJointsView,armModelFor,displayJoints} from '../twin/arm/arm-telemetry';
 import {armChain,poseArmChain} from './arm-chain';
@@ -158,7 +159,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
  scene.add(new THREE.HemisphereLight(0xc9e8ff,0x24373b,2.6));
  // one directional light casts soft shadows; its shadow camera covers the floor (set on each rebuild)
  const sun=new THREE.DirectionalLight(0xffffff,2.5);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun,sun.target);
- const world=new THREE.Group(),overlays=new THREE.Group(),beliefs=new THREE.Group();scene.add(world,overlays,beliefs);
+ const world=new THREE.Group(),overlays=new THREE.Group(),beliefs=new THREE.Group(),alarmsG=new THREE.Group();scene.add(world,overlays,beliefs,alarmsG);
  /** Per drawn entity: its object, the height of its centre above the base origin (AMR), and the arm chain to re-pose. */
  const objs=new Map<string,{obj:THREE.Object3D;c:number;arm?:ArmDraw}>();
  let userMoved=false,key='',okeys=new Map<string,string>(),rebuilds=0,redraws=0,lf:TwinFrame|null=null,floor='',okey='',overlayBuilds=0,gone=false;
@@ -196,7 +197,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
  const cameraPose=()=>[...camera.position.toArray(),...controls.target.toArray()].map(v=>v.toFixed(6)).join(',');let atStart='';
  controls.addEventListener('start',()=>{atStart=cameraPose();});controls.addEventListener('end',()=>{if(cameraPose()!==atStart){userMoved=true;onManualOrbit();}});
  const pick=(e:PointerEvent)=>{const r=canvas.getBoundingClientRect(),ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),camera);
-  const hit=ray.intersectObjects(world.children,true).find(h=>h.object.userData.entityId);if(hit)onSelect(String(hit.object.userData.entityId));};
+  const hit=ray.intersectObjects(world.children,true).find(h=>h.object.userData.entityId);if(hit)onSelect(String(hit.object.userData.axisId??hit.object.userData.entityId));};
  let down:[number,number]=[0,0];
  canvas.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY];});
  canvas.addEventListener('pointerup',e=>{if(Math.hypot(e.clientX-down[0],e.clientY-down[1])<5)pick(e);});
@@ -207,6 +208,10 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
   if(set){a.mesh=cloneArmMeshes(set,m);a.chain=undefined;a.at.add(a.mesh.group);poseArmMeshes(a.mesh,armFrames(a.joints,a.q),a.opening);}
   else{a.chain=armChain(armFrames(a.joints,a.q),m);a.mesh=undefined;a.at.add(a.chain);}
   a.at.traverse(o=>{o.userData.entityId=a.id;if((o as THREE.Mesh).isMesh)o.castShadow=o.receiveShadow=true;});
+  // R5.4: a link moved by joint Ji picks `<arm>/Ji` (meshes: arm links 1..6, then the gripper links; chain: the sphere at frame i); the base picks the arm
+  const tag=(o:THREE.Object3D|undefined,axis:string)=>o?.traverse(x=>{x.userData.axisId=axis;});
+  if(a.mesh){const n=a.mesh.group.userData.armLinks as number;a.mesh.links.forEach((l,i)=>{if(i>=1&&i<n)tag(l,`${a.id}/J${i}`);});a.mesh.links.slice(n).forEach(l=>tag(l,`${a.id}/gripper`));}
+  else a.chain?.children.slice(1,a.joints.length+1).forEach((c,i)=>{if((c as THREE.Mesh).geometry?.type==='SphereGeometry')tag(c,`${a.id}/J${i+1}`);});
  };
  const arms=()=>[...objs.values()].flatMap(o=>o.arm?[o.arm]:[]);
  /** What the view shows of the arm and the cups, for tests and evidence: the drawing in use, its mesh links, the drive angle, each plant cup's map position. */
@@ -226,6 +231,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
  const waiting=new Set<MeshLoad>();
  const await_=(l:MeshLoad)=>{if(waiting.has(l))return;waiting.add(l);void l.done.then(()=>{waiting.delete(l);if(gone)return;
   for(const a of arms())if(l.set&&a.wantMesh&&!a.mesh)dressMeshes(a,l);
+  akey='';if(lf)drawAlarms(lf);
   fallback();status();render();onArmMesh();});};
  /** One object as its frame describes it, added to the world (an arm: its chain or meshes; anything else: its schematic shape). */
  const drawOne=({e,arm}:ReturnType<typeof drawn>[number],f:TwinFrame,vs:ViewState)=>{
@@ -263,7 +269,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
     const g=shape.geometry,geo=g.kind==='box'?new THREE.BoxGeometry(g.sizeM[0]!,g.sizeM[2]!,g.sizeM[1]!):g.kind==='cylinder'?new THREE.CylinderGeometry(g.radiusM,g.radiusM,g.lengthM,24):g.kind==='sphere'?new THREE.SphereGeometry(g.radiusM,16,12):null;
     if(!geo)continue;
     const mesh=new THREE.Mesh(geo,mat(shape.linkId.startsWith('tray-')?0x91a8ac:shape.linkId.startsWith('wheel')?0x29373c:0xd3dcd3,{wire:e.source==='unknown',emissive:on}));
-    const pl=placeBody(shape.positionM,shape.quaternionXyzw,0);mesh.position.set(...pl.position);mesh.quaternion.set(...pl.quaternion);mesh.userData.entityId=e.id;mesh.userData.linkId=shape.linkId;group.add(mesh);
+    const pl=placeBody(shape.positionM,shape.quaternionXyzw,0);mesh.position.set(...pl.position);mesh.quaternion.set(...pl.quaternion);mesh.userData.entityId=e.id;mesh.userData.linkId=shape.linkId;{const w=/^(wheel-(?:left|right))(?:\/|$)/.exec(shape.linkId);if(w)mesh.userData.axisId=`${e.id}/${w[1]}`;}group.add(mesh);
    }
    world.add(group);objs.set(e.id,{obj:group,c:0});return;
   }
@@ -275,7 +281,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
   mesh.userData.entityId=e.id;mesh.userData.plant=!!e.plant;world.add(mesh);objs.set(e.id,{obj:mesh,c:heightOf(e)-(e.pose3d?wheel:0)});
  };
  const build=(f:TwinFrame,vs:ViewState)=>{
-  free(world);objs.clear();
+  free(world);objs.clear();akey='';
   const w=f.preset.project.world,bounds=mapExtent(f),cx=(bounds.minM[0]+bounds.maxM[0])/2,cy=(bounds.minM[1]+bounds.maxM[1])/2,m=Math.max(w.width,w.height);
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(bounds.maxM[0]-bounds.minM[0],bounds.maxM[1]-bounds.minM[1]),mat(0x101e25));ground.rotation.x=-Math.PI/2;ground.position.copy(at(cx,cy));world.add(ground);
   const grid=new THREE.GridHelper(m,m,0x4a626a,0x2c424b);grid.position.copy(at(cx,cy,0.001));world.add(grid);
@@ -317,6 +323,17 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
   }
   canvas.dataset.beliefs=g.status==='data'?g.items.map(i=>i.objectId).join(' '):'';canvas.dataset.beliefState=g.status;
  };
+ /** R5.4: each entity (or its wheel/joint) with an alarm at the cursor gets an outline box and a warning icon above it, never colour alone; not picked, no animation.
+  * Rebuilt when the marks or the scene objects change; placed again on every pose. `canvas.dataset.alarmMarks` names what is marked. */
+ let akey='',alarmIcon:THREE.CanvasTexture|null=null;
+ const icon=()=>{if(alarmIcon)return alarmIcon;const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d')!;g.fillStyle='#d64545';g.strokeStyle='#ffffff';g.lineWidth=4;g.beginPath();g.moveTo(32,4);g.lineTo(61,58);g.lineTo(3,58);g.closePath();g.fill();g.stroke();g.fillStyle='#ffffff';g.font='bold 36px sans-serif';g.textAlign='center';g.fillText('!',32,52);return alarmIcon=new THREE.CanvasTexture(c);};
+ const placeAlarms=()=>{for(const c of alarmsG.children){const t=c.userData.alarmOf as THREE.Object3D;if(c instanceof THREE.BoxHelper)c.update();else{const b=new THREE.Box3().setFromObject(t);if(!b.isEmpty())c.position.set((b.min.x+b.max.x)/2,b.max.y+0.12,(b.min.z+b.max.z)/2);}}};
+ const drawAlarms=(f:TwinFrame)=>{
+  const marks=alarmMarks(f.report??null,f.view?.tick??null),k=JSON.stringify(marks);if(k===akey)return;akey=k;free(alarmsG);const shown:string[]=[];
+  for(const m of marks){const o=objs.get(m.entityId)?.obj;if(!o)continue;let target:THREE.Object3D=o;if(m.axisId)o.traverse(x=>{if(x.userData.axisId===m.axisId&&target===o)target=x;});
+   const box=new THREE.BoxHelper(target,0xd64545);box.userData.alarmOf=target;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:icon(),depthTest:false,sizeAttenuation:false}));sp.scale.set(0.045,0.045,1);sp.renderOrder=10;sp.userData.alarmOf=target;alarmsG.add(box,sp);shown.push(target===o?m.entityId:m.axisId!);}
+  put('alarmMarks',shown.join(' '));
+ };
  /** Transforms only: bodies, the arm chain, the overlays anchored to a body and the first point of its path (moved in place). */
  const pose=(p:TwinPoses)=>{
   for(const [id,b] of Object.entries(p.bodies)){
@@ -336,7 +353,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
   }
   for(const [id,c] of Object.entries(p.cups??{})){const o=objs.get(id);if(o?.obj.userData.plant){const pl=placeBody(c.positionM,c.quaternionXyzw,0);o.obj.position.set(...pl.position);o.obj.quaternion.set(...pl.quaternion);}}
   put('armPoses',JSON.stringify(p.arms));put('payloadCount',String(Object.keys(p.cups??{}).filter(id=>id.startsWith('payload:')).length));put('payloadPoses',JSON.stringify(p.cups??{}));put('bodyPoses',JSON.stringify(p.bodies));put('payloadGeometry',lf?.payloadBundle?.physicalSha256??'');
-  status();render();
+  placeAlarms();status();render();
  };
  let explicitCamera:'overview'|'cell'|'amr'|null=null;
  const home=()=>{if(!lf)return;const w=lf.preset.project.world,b=mapExtent(lf),cx=(b.minM[0]+b.maxM[0])/2,cy=(b.minM[1]+b.maxM[1])/2,m=Math.max(b.maxM[0]-b.minM[0],b.maxM[1]-b.minM[1]);camera.position.set(cx,m*0.9,-cy+m*0.8);controls.target.set(cx,0,-cy);
@@ -359,13 +376,13 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
     const changed=[...new Set([...okeys.keys(),...o.keys()])].filter(id=>okeys.get(id)!==o.get(id));okeys=o;
     if(changed.length){for(const id of changed){const x=objs.get(id);if(x){freeOne(x.obj);objs.delete(id);}}
      for(const d of drawn(f))if(changed.includes(d.e.id)){drawOne(d,f,vs);objs.get(d.e.id)?.obj.traverse(m=>{if((m as THREE.Mesh).isMesh){m.castShadow=true;m.receiveShadow=true;}});}
-     canvas.dataset.redraws=String(redraws+=changed.length);fallback();status();}
+     canvas.dataset.redraws=String(redraws+=changed.length);akey='';fallback();status();}
    }
    // the home framing on a new floor or a preset that frames something else (its arm cell)
    const w=f.preset.project.world,size=`${w.width}x${w.height} ${f.preset.view??''}`;if(size!==floor){floor=size;home();}
    // objects without a pose of their own (cups, a cylinder arm, machines) move with the frame
    for(const {e} of drawn(f)){const o=objs.get(e.id);if(o&&e.kind!=='amr'&&!o.arm&&!e.plant)o.obj.position.copy(at(e.x,e.y,heightOf(e)));}
-   drawOverlays(f,vs);drawBeliefs(f);pose(displayPoses??posesOf(f));
+   drawOverlays(f,vs);drawBeliefs(f);drawAlarms(f);pose(displayPoses??posesOf(f));
   },
   camera(mode){explicitCamera=mode;if(!lf)return;if(mode==='overview'){const original=lf;lf={...lf,preset:{...lf.preset,view:undefined}};home();lf=original;}else if(mode==='cell'){const original=lf;lf={...lf,preset:{...lf.preset,view:'arm_cell'}};home();lf=original;}else this.fit(lf.preset.project.entities.find(e=>e.kind==='amr')?.id??null);},
   fit(id){
@@ -375,6 +392,6 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
    controls.target.copy(s.center);camera.position.copy(s.center).addScaledVector(dir,d);userMoved=true;controls.update();render();
   },
   // the shared geometry stays parsed in the page cache, but its GPU buffers (and this renderer's dispose listeners on it) go with this view; a later view re-uploads it
-  dispose(){gone=true;loads.get(XARM)?.set?.group.traverse(o=>(o as THREE.Mesh).geometry?.dispose());free(world);free(overlays);free(beliefs);objs.clear();anchors.clear();heads.clear();sun.dispose();ro.disconnect();controls.dispose();renderer.dispose();canvas.remove();},
+  dispose(){gone=true;loads.get(XARM)?.set?.group.traverse(o=>(o as THREE.Mesh).geometry?.dispose());free(world);free(overlays);free(beliefs);free(alarmsG);alarmIcon?.dispose();objs.clear();anchors.clear();heads.clear();sun.dispose();ro.disconnect();controls.dispose();renderer.dispose();canvas.remove();},
  };
 }

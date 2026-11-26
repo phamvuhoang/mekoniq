@@ -15,7 +15,8 @@ import {hashJson} from '../twin/hash';
 import {electricalPanel} from './electrical-panel';
 import {samplesPanel,type SamplesState} from './samples-panel';
 import {fetchStatic,loadHardwareSample,loadStopSample,validEntry,verifySample} from '../reports/samples';
-import {electricalView,pinSignal,serveOptions} from '../design/electrical';
+import {electricalView,packageFiles,pinSignal,serveOptions} from '../design/electrical';
+import {storedZip} from '../reports/replay-save';
 import type {ElectricalBundleV1,ElectricalDesignV1,TcoComparisonV1} from '../shared/engineering';
 import {tr} from '../i18n';
 import {esc} from './icons';
@@ -45,7 +46,7 @@ export class AssemblyWorkspace {
   private samples:SamplesState={entries:null,error:'',open:null,verify:null,hardware:null,stop:null};
   private caps:string[]|null=null;private elOption='serve-hw-c-v1';private elDesigns=new Map<string,ElectricalDesignV1>();private elBundles=new Map<string,ElectricalBundleV1>();
   private elRejection:string[]|null=null;private elBusy=false;private elFilter:'all'|'blocking'|'warning'|'unverified'='all';private elWire:string|null=null;private elCompare:TcoComparisonV1|null=null;private elCompareError='';private elPackaging=false;
-  constructor(private readonly rerender:()=>void,private readonly rt:TwinRuntime=httpTwinRuntime(),private readonly download:(name:string,data:string)=>void=()=>{}) {
+  constructor(private readonly rerender:()=>void,private readonly rt:TwinRuntime=httpTwinRuntime(),private readonly download:(name:string,data:string|Blob)=>void=()=>{}) {
     // a new draft: the reference world and entities, no parts chosen yet, so every blocker is visible from the start
     const base=referenceProject();
     this.store=new EngineeringProjectStore({...base,assembly:{instances:[],connections:[]},entityBindings:base.runtimeProject.entities.map(e=>({entityId:e.id,instanceIds:[]}))});
@@ -58,6 +59,11 @@ export class AssemblyWorkspace {
   private stale():boolean {return !!this.receipt&&this.receipt.projectDigest!==hashJson(this.design());}
   /** The design and its receipt as they are now, for an engineering twin preset (the twin re-checks that the receipt is for exactly this draft). */
   engineeringInput():{project:EngineeringProject;receipt:BundleReceipt|null} {return {project:this.design(),receipt:this.receipt};}
+  /** The compiled electrical design of an engineering project (by its digest, as a run's manifest names it): the selected option first, else any compiled for it; null when none is. */
+  electricalFor(projectDigest:string):{bundle:ElectricalBundleV1;design:ElectricalDesignV1}|null {
+    for (const id of [this.elOption,...this.elBundles.keys()]) {const bundle=this.elBundles.get(id),design=this.elDesigns.get(id);if (bundle&&design&&bundle.inputs.project.digest===projectDigest) return {bundle,design};}
+    return null;
+  }
   private currentRef() {return this.receipt?.state==='compiled'&&!this.stale()?{bundleDigest:this.receipt.bundleDigest,projectDigest:this.receipt.projectDigest}:null;}
   private edit(change:(p:EngineeringProject)=>EngineeringProject):void {this.store.replaceDraft(change(this.store.getDraft()));this.rerender();}
   private saveTimer:ReturnType<typeof setTimeout>|null=null;
@@ -248,7 +254,8 @@ ${samplesPanel(this.samples)}
     const bundle=this.elBundles.get(this.elOption);
     if (!bundle||bundle.state!=='compiled'||!this.rt.packageElectrical||this.elPackaging) return;
     this.elPackaging=true;this.rerender();
-    try {const pkg=await this.rt.packageElectrical(bundle.digest);this.download(`${this.elOption}.hardware-candidate.json`,JSON.stringify(pkg,null,2));}
+    // a folder in a store-only ZIP (manifest.json, checksums.json and the files they list), re-hashed here first; read it back with lab-hardware.mjs verify --package
+    try {const pkg=await this.rt.packageElectrical(bundle.digest),{files,problems}=await packageFiles(pkg);if (problems.length) this.elRejection=['PACKAGE_CHECKSUM_MISMATCH',...problems.slice(0,10)];else this.download(`${this.elOption}.hardware-candidate.zip`,storedZip(files));}
     catch (e) {this.elRejection=[(e as {code?:string}).code??String(e)];}
     finally {this.elPackaging=false;this.rerender();}
   }

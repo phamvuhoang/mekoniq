@@ -98,7 +98,7 @@ export class LabApp {
   // the saved runtime address (Twin page runtime box; none saved: this page's own /lab/v2) and, for another origin, the bearer kept in this tab
   private runtime = httpTwinRuntime(loadTarget(location.origin));
   private assembly = new AssemblyWorkspace(() => this.render(), this.runtime, (name, data) => this.download(name, data));
-  private twin = new TwinWorkspace(() => this.render(), this.runtime, () => this.assembly.projectDigest(), () => this.assembly.engineeringInput());
+  private twin = new TwinWorkspace(() => this.render(), this.runtime, () => this.assembly.projectDigest(), () => this.assembly.engineeringInput(), (d) => this.assembly.electricalFor(d));
   constructor(host: HTMLElement) {
     this.host = host;
     this.bind();
@@ -930,7 +930,7 @@ ${p ? `<label class="field-label" for="world-object">${tr("Chọn đối tượn
     }
   }
   private download(name: string, data: unknown) {
-    const blob = new Blob(
+    const blob = data instanceof Blob ? data : new Blob(
       [typeof data === "string" ? data : JSON.stringify(data, null, 2)],
       { type: "application/json" },
     );

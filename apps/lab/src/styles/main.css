@@ -2420,6 +2420,9 @@ main:has(>.twin-shell){display:flex;flex-direction:column;min-height:0;padding:8
 .tw-entity{cursor:pointer;outline:none}
 .tw-entity:focus-visible .tw-ring,.tw-entity:focus-visible>g>*:first-child{stroke:#fff;stroke-width:3}
 .tw-ring{fill:none;stroke:var(--accent);stroke-width:3;stroke-dasharray:6 3}
+.tw-wheel{cursor:pointer;outline:none}.tw-wheel rect{fill:#29373c;stroke:#d3dcd3;stroke-width:1.5}.tw-wheel:focus-visible rect,.tw-wheel:hover rect{stroke:#fff;stroke-width:3}
+.tw-wheel.alarm rect{stroke:var(--danger);stroke-width:3;stroke-dasharray:3 2}
+.tw-alarm{pointer-events:none}.tw-alarm-ring{fill:none;stroke:var(--danger);stroke-width:3;stroke-dasharray:8 4}.tw-alarm-icon{fill:var(--danger);stroke:#fff;stroke-width:1.5}.tw-alarm-glyph{fill:#fff;font:700 11px var(--mono)}
 .tw-amr{fill:#d3dcd3;stroke:#122207;stroke-width:3}
 .tw-amr.modeled{fill:none;stroke:#d3dcd3}
 .tw-amr.unknown,.tw-cup.unknown{fill:none;stroke-dasharray:4 3}

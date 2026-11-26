@@ -1,6 +1,13 @@
 // Electrical section against the real pinned runtime (scripts/test-irsim-e2e.mjs --provider webots). The designs are for the Serve 3D project; compiling it needs the Webots
 // compiler, not a Webots run. The page shows only the server's bundle: the counts it prints must equal the bundle read straight from the runtime.
 import {test,expect,type Page} from '@playwright/test';
+import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {mkdtemp,readFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const SOURCE_ROOT=fileURLToPath(new URL('../../../../',import.meta.url));
 const token=process.env.LAB_TEST_PAIRING_TOKEN;
 const locale=(page:Page,l:'VI'|'JA'|'EN')=>page.getByRole('button',{name:l,exact:true}).click();
 const el=(page:Page)=>page.getByTestId('el-section');
@@ -13,6 +20,7 @@ async function compile(page:Page,option:RegExp){
  return (await response.json()) as {digest:string;state:string};
 }
 
+// DGN01: choose an option → compile → check → wiring → export (or its stated refusal) → cost → pin; HW-A cannot export
 test('electrical section: HW-C compiles and the page equals the server bundle, HW-A is blocked and cannot export, a pin goes to the server and the page follows its answer',async({browser})=>{
  expect(token,'Run scripts/test-irsim-e2e.mjs --provider webots: it starts the launcher and supplies the one-use pairing code').toBeTruthy();
  test.setTimeout(300000);
@@ -36,7 +44,32 @@ test('electrical section: HW-C compiles and the page equals the server bundle, H
  await expect(page.getByTestId('el-counts')).toContainText(`Unverified: ${count('unverified')}`);
  expect(count('blocking')).toBe(0);
  await expect(page.getByTestId('el-devices').locator('tbody tr')).not.toHaveCount(0);
- await expect(page.getByRole('button',{name:'Export hardware candidate package'})).toBeEnabled();
+ // checks: a level filter shows only that level, with the server's count
+ await el(page).locator('[data-action="el-filter"][data-value="unverified"]').click();
+ await expect(el(page).locator('[data-action="el-filter"][data-value="unverified"]')).toHaveAttribute('aria-pressed','true');
+ await expect(page.getByTestId('el-checks').locator('li')).toHaveCount(Math.min(200,count('unverified')));
+ if(count('unverified'))await expect(page.getByTestId('el-checks').locator('li[data-level]:not([data-level="unverified"])')).toHaveCount(0);
+ await el(page).locator('[data-action="el-filter"][data-value="all"]').click();
+ // wiring: the diagram and the wire table; choosing a wire names its two ends
+ await expect(page.getByTestId('el-wiring').locator('svg')).toBeVisible();
+ const wire=page.getByTestId('el-wires').locator('tbody tr').first(),wireId=await wire.getAttribute('data-wire');
+ await wire.locator('[data-action="el-wire"]').click();
+ await expect(page.getByTestId('el-wires').locator(`tr[data-wire="${wireId}"]`)).toHaveAttribute('aria-selected','true');
+ await expect(page.getByTestId('el-wiring').getByRole('status')).toContainText('→');
+ // export. A runtime whose engineering service has no base drive model (today the Webots launcher: only the MuJoCo mobile one passes drive-v1) drafts no drive model,
+ // and the package needs one: the page disables the export and says why. With a drafted drive model the package downloads as a ZIP folder whose files re-hash
+ // to its manifest and that the runtime's own reader (lab-hardware.mjs verify) passes.
+ const draft=(await read(page,c.digest) as unknown as {driveModelDraft:unknown}).driveModelDraft,exportButton=page.getByRole('button',{name:'Export hardware candidate package'});
+ if(draft===null){await expect(exportButton).toBeDisabled();await expect(page.getByTestId('el-why')).toContainText('DRIVE_MODEL_DRAFT_MISSING');}
+ else{
+  const downloaded=page.waitForEvent('download');await exportButton.click();
+  const file=await downloaded;expect(file.suggestedFilename()).toBe('serve-hw-c-v1.hardware-candidate.zip');
+  const dir=await mkdtemp(join(tmpdir(),'mekoniq-hwc-'));execFileSync('unzip',['-q',(await file.path())!,'-d',dir]);
+  const manifest=JSON.parse(await readFile(join(dir,'manifest.json'),'utf8')) as {documentType:string;hardwareValidated:boolean;bundle:{digest:string};files:{path:string;sha256:string;bytes:number}[]};
+  expect(manifest).toMatchObject({documentType:'hardware-candidate',hardwareValidated:false,bundle:{digest:c.digest}});
+  for(const f of manifest.files){const b=await readFile(join(dir,f.path));expect([f.path,b.length,createHash('sha256').update(b).digest('hex')]).toEqual([f.path,f.bytes,f.sha256]);}
+  expect(execFileSync(process.execPath,['scripts/lab-hardware.mjs','verify','--package',dir],{cwd:SOURCE_ROOT,encoding:'utf8'})).toContain('package reads back without a problem');
+ }
 
  const a=await compile(page,/^HW-A/);
  await expect(page.getByTestId('el-state')).toHaveAttribute('data-state','blocked');
@@ -45,6 +78,12 @@ test('electrical section: HW-C compiles and the page equals the server bundle, H
  await expect(page.getByTestId('el-checks')).toContainText('IOA_SIGNAL_UNALLOCATED');
  await expect(page.getByRole('button',{name:'Export hardware candidate package'})).toBeDisabled();
  await expect(page.getByTestId('el-why')).toContainText('blocking');
+ // cost: two options are compiled, so the server compares them; a total missing a price is "not comparable", never a 0
+ const compared=page.waitForResponse(r=>r.request().method()==='POST'&&/\/engineering\/electrical\/compare$/.test(r.url()));
+ await page.getByTestId('el-cost').getByRole('button',{name:'Compare the three options'}).click();
+ const tco=await (await compared).json() as {options:{designId:string;comparable:boolean;total:number|null}[]};
+ await expect(page.getByTestId('el-cost').locator('tbody tr')).toHaveCount(tco.options.length);
+ for(const o of tco.options)await expect(page.getByTestId('el-cost').locator('tbody tr',{hasText:o.designId})).toContainText(o.comparable?String(o.total):'not comparable');
 
  // a pin travels to the server; whatever it answers (a new bundle or a refusal code) is what the page shows
  await el(page).getByRole('radio',{name:/^HW-C/}).click();

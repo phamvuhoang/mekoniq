@@ -17,7 +17,7 @@ function workspace() {
   vi.stubGlobal('document',{getElementById:(id:string)=>id==='asm-import'?importer:null});
   const health=vi.fn(async()=>({capabilities:[]}));
   let downloaded='',renders=0;
-  const page=new AssemblyWorkspace(()=>{renders++;}, {health} as unknown as TwinRuntime,(_name,data)=>{downloaded=data;});
+  const page=new AssemblyWorkspace(()=>{renders++;}, {health} as unknown as TwinRuntime,(_name,data)=>{downloaded=data as string;});
   const exported=()=>{page.click('asm-export');return parseArchive(downloaded);};
   const imported=async(archive:EngineeringArchiveFiles)=>{
     const before=renders;
@@ -70,7 +70,7 @@ test('same-ID imports keep their archive metadata through editing, Undo, Redo, a
   expect(saved.manifest.migration).toEqual(second.manifest.migration);
   expect(saved.manifest.blobs.find(b=>b.digest===blob.digest)?.license).toBe('Apache-2.0');
   const restored=new AssemblyWorkspace(()=>{}, {health:async()=>({capabilities:[]})} as unknown as TwinRuntime,(_name,data)=>{
-    expect(parseArchive(data).manifest).toEqual(saved.manifest);
+    expect(parseArchive(data as string).manifest).toEqual(saved.manifest);
   });
   restored.mounted();
   await vi.waitFor(()=>expect(restored.projectDigest()).toBe(page.projectDigest()));

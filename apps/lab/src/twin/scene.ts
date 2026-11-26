@@ -10,6 +10,7 @@ import {cellLayout,cupLocation,jobsOf} from './coffee-cell';
 import {esc} from '../ui/icons';
 import {tr} from '../i18n';
 import {stateLabel} from '../ui/labels';
+import {alarmMarks} from '../reports/diagnostics';
 import type {Held} from './store';
 import type {NavigationSceneV1} from '../shared/navigation2d';
 import {footprintInMap,scanLayer,type ScanSample} from './lidar';
@@ -120,5 +121,16 @@ export function renderTwin(f:TwinFrame,vs:ViewState):string {
   const rot=e.kind==='amr'?` rotate(${-((v?.entities.find(r=>r.kind==='amr'&&r.id===e.id)?.pose.yawRad??0)*180/Math.PI-90)})`:'';
   return `<g id="tw-entity-${esc(e.id)}" class="tw-entity ${on?'selected':''}" data-action="twin-pick" data-value="${esc(e.id)}" data-entity="${esc(e.id)}" data-selected="${on}" data-source="${e.source}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${esc(label)}" transform="translate(${pt(e.x,e.y)})">${on?'<circle r="27" class="tw-ring"/>':''}<g transform="${rot.trim()||'rotate(0)'}">${shape}</g>${e.kind==='cup'||e.kind==='job'?'':`<text y="${e.kind==='amr'?-26:e.kind==='cup_station'?-18:30}" text-anchor="${e.kind==='cup_station'?'end':'middle'}" class="tw-name">${esc(e.name)}</text>`}<title>${esc(label)}</title></g>`;
  }).join('');
- return `<svg class="twin-plan" viewBox="${extent.minM[0]*S-30} -30 ${(extent.maxM[0]-extent.minM[0])*S+60} ${(extent.maxM[1]-extent.minM[1])*S+60}" role="group" aria-label="${esc(tr(`Mặt bằng twin ${w.width} × ${w.height} m`,`ツイン平面図 ${w.width} × ${w.height} m`,`Twin plan ${w.width} × ${w.height} m`))}"><rect class="tw-floor" x="${extent.minM[0]*S}" width="${(extent.maxM[0]-extent.minM[0])*S}" height="${(extent.maxM[1]-extent.minM[1])*S}"/>${grid}${obstacles}${points}${overlay}${marks}${ghosts}</svg>`;
+ // R5.4: each wheel the report has a drive axis for is a pick target of its own (it opens Diagnostics); an alarm raised at or before the cursor outlines its
+ // entity (and wheel) and adds an icon with its code, never colour alone. No animation: nothing to stop under reduced motion.
+ const axisIds=new Set(f.report?.driveEvidence?.axes.map(a=>a.axisId)??[]),am=alarmMarks(f.report??null,f.view?.tick??null);
+ const wheels=ents.filter(e=>e.kind==='amr'&&Number.isFinite(e.x)).map(e=>{
+  const sides=(['left','right'] as const).filter(sd=>axisIds.has(`${e.id}/wheel-${sd}`));if(!sides.length)return '';
+  const yaw=v?.entities.find(r=>r.kind==='amr'&&r.id===e.id)?.pose.yawRad??0;
+  return `<g transform="translate(${pt(e.x,e.y)}) rotate(${-(yaw*180/Math.PI-90)})">${sides.map(sd=>{const id=`${e.id}/wheel-${sd}`,alarm=am.some(m=>m.axisId===id),label=`${e.name} · ${sd==='left'?tr('bánh trái','左車輪','wheel left'):tr('bánh phải','右車輪','wheel right')}${alarm?` · ⚠ ${am.filter(m=>m.axisId===id).flatMap(m=>m.codes).join(', ')}`:''}`;
+   return `<g class="tw-wheel${alarm?' alarm':''}" data-action="twin-pick" data-value="${esc(id)}" data-axis="${esc(id)}" data-alarm="${alarm}" role="button" tabindex="0" aria-label="${esc(label)}"><rect x="${sd==='left'?-25:17}" y="-9" width="8" height="18" rx="2"/><title>${esc(label)}</title></g>`;}).join('')}</g>`;
+ }).join('');
+ const alarms=[...new Set(am.map(m=>m.entityId))].map(id=>{const e=ents.find(x=>x.id===id&&Number.isFinite(x.x));if(!e)return '';const codes=[...new Set(am.filter(m=>m.entityId===id).flatMap(m=>m.codes))].join(', '),label=`${tr('Cảnh báo','アラーム','Alarm')} ${e.name}: ${codes}`;
+  return `<g class="tw-alarm" data-alarm-entity="${esc(id)}" data-codes="${esc(codes)}" role="img" aria-label="${esc(label)}" transform="translate(${pt(e.x,e.y)})"><circle r="33" class="tw-alarm-ring"/><g transform="translate(24,-30)"><path d="M0 -9 L9 7 L-9 7 Z" class="tw-alarm-icon"/><text y="5" text-anchor="middle" class="tw-alarm-glyph" aria-hidden="true">!</text></g><title>${esc(label)}</title></g>`;}).join('');
+ return `<svg class="twin-plan" viewBox="${extent.minM[0]*S-30} -30 ${(extent.maxM[0]-extent.minM[0])*S+60} ${(extent.maxM[1]-extent.minM[1])*S+60}" role="group" aria-label="${esc(tr(`Mặt bằng twin ${w.width} × ${w.height} m`,`ツイン平面図 ${w.width} × ${w.height} m`,`Twin plan ${w.width} × ${w.height} m`))}"><rect class="tw-floor" x="${extent.minM[0]*S}" width="${(extent.maxM[0]-extent.minM[0])*S}" height="${(extent.maxM[1]-extent.minM[1])*S}"/>${grid}${obstacles}${points}${overlay}${marks}${alarms}${wheels}${ghosts}</svg>`;
 }

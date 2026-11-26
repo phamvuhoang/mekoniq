@@ -51,3 +51,15 @@ export function wireRows(bundle:ElectricalBundleV1,filter:{deviceId?:string;netI
 export function costRows(c:TcoComparisonV1|null):{designId:string;total:number|null;comparable:boolean;missing:number}[]{
  return c?c.options.map(o=>({designId:o.designId,total:o.comparable?o.total:null,comparable:o.comparable,missing:o.missingPriceLineIds.length})):[];
 }
+/** The package the runtime sent, as files at their paths, re-hashed against its own checksums.json before anything is handed out: a file whose bytes or size
+ * disagree, a file the checksums do not list, or a listed file that is missing is a problem. The full read-back (bundle digest, required components) is
+ * `node scripts/lab-hardware.mjs verify --package <extracted folder>` on the downloaded ZIP. */
+export async function packageFiles(pkg:{files:{path:string;bytes:number;contentBase64:string}[]}):Promise<{files:{path:string;bytes:Uint8Array}[];problems:string[]}>{
+ const files=pkg.files.map(f=>({path:f.path,size:f.bytes,bytes:Uint8Array.from(atob(f.contentBase64),c=>c.charCodeAt(0))})),problems:string[]=[];
+ const hex=async(b:Uint8Array)=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',b as BufferSource))].map(x=>x.toString(16).padStart(2,'0')).join('');
+ let sums:Record<string,string>={};
+ try{sums=(JSON.parse(new TextDecoder().decode(files.find(f=>f.path==='checksums.json')?.bytes))as {files:Record<string,string>}).files??{};}catch{problems.push('CHECKSUMS_INVALID');}
+ for(const f of files){if(f.path==='checksums.json')continue;if(f.bytes.length!==f.size)problems.push(`SIZE_MISMATCH ${f.path}`);else if(!sums[f.path])problems.push(`FILE_UNEXPECTED ${f.path}`);else if(await hex(f.bytes)!==sums[f.path])problems.push(`CHECKSUM_MISMATCH ${f.path}`);}
+ for(const p of Object.keys(sums))if(!files.some(f=>f.path===p))problems.push(`FILE_MISSING ${p}`);
+ return {files:files.map(({path,bytes})=>({path,bytes})),problems};
+}
