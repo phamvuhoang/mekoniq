@@ -33,7 +33,7 @@ test('a candidate directory is named and holds a qualification record',()=>{
 });
 test('the record is complete and consistent with every file beside it (fail-closed check shared with the recorder)',async()=>{
  expect(manifest().release==='r3'?await verifyR3Directory(dir):manifest().release==='r2b'?await verifyR2bDirectory(dir):manifest().release==='r4'?await verifyR4Directory(dir):manifest().release==='r5'?await verifyR5Directory(dir):checkQualification(manifest(),read)).toEqual([]);
-},300000); // re-reading a 0.5 GB R2b record takes about a minute
+},1200000); // re-reading a 0.5 GB R2b record takes about a minute; the full R4/R5 artifact re-read takes about 330 s
 test('the Webots campaign directory re-verifies from disk through the headless CLI (exit 0)',()=>{
  if(NO_CAMPAIGN.includes(manifest().release)){expect(manifest().campaign).toBeNull();return;} // R1.1 and R2a record no campaign; their engine evidence is the suites on the real engine
  const r=spawnSync(process.execPath,['scripts/lab-irsim.mjs','verify','--input',join(dir!,'campaign')],{encoding:'utf8',timeout:120000});
