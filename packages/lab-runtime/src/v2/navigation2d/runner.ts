@@ -7,6 +7,7 @@ import {driveDocumentDigest,type FaultOracleV1} from '../control/drive-io';
 import {admitDriveDocuments,mobileDrive,driveManifest,replayMobileCommands,type MobileDrive} from '../control/drive-run';
 import {STOP_FUNCTIONS,stopIntentsForTick,stopModeAt,stopReceiptsMatch,validateStopSchedule} from '../control/stop-functions';
 import type {StopIntentV1,StopReceiptV1} from '../control/drive-io';
+import {stopReportOfRun} from '../control/stop-report';
 import {openPhysicsRecorder,readPhysicsEvidence,readPhysicsManifest,preparePhysicsAdmission,validatePhysicsRecord,type PhysicsRecorder} from '../simulation3d/physics-evidence';
 import {physicsMetrics} from '../simulation3d/physics-metrics';
 // Fixed-step scenario runner for a plant port (IR-SIM today). The source runner is the only scheduler; per fixed 20 ms tick:
@@ -172,6 +173,8 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  // the scenario's server-owned actors (immutable seeded schedules) and reservation zones on this scene; refused whole, never partly applied
  const fixture=resolveScenarioFixture(scenario.id,scene,input.seed,tray?.experiment.actor?SCENARIO_FIXTURES.get(TRAY_PERSON_FIXTURE):undefined),fixtureBytes=fixture.actors.length?Buffer.from(JSON.stringify(fixtureFile(fixture))):null;
  const physics=plant.identity.amr.id==='mujoco_3d'?await preparePhysicsAdmission(scene,read,fixture.actors.map(a=>a.id)):undefined;
+ // a run with stop requests reports them from its physics records with the physics profile of its own bundle (byte checked against the scene)
+ const stopProfile=stops.length&&physics?await (async()=>{const ref=(scene.engine as {physicsProfileRef:{path:string;sha256:string}}).physicsProfileRef,b=await read(ref.path);if(sha256(b)!==ref.sha256)throw new Error('PHYSICS_PROFILE_HASH_MISMATCH');return JSON.parse(Buffer.from(b).toString());})():undefined;
  if(physics&&(providers.runtime.evidence?.maxBytes??EVIDENCE_LIMITS.maxBytes)>EVIDENCE_LIMITS.maxBytes)throw new Error('PHYSICS_COMBINED_QUOTA_INVALID');
  const mapId=scene.world.id,mapRevision=scene.sceneDigest,lock=providers.runtime.lockDigest;
  // an IR-FD01 run without actors or zones keeps its configuration identity exactly as before (no fixture key)
@@ -206,7 +209,7 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  // every terminal the recorder produces (any flush, the tick limit, close) goes into the checkpoint before its manifest write is attempted
  const owner:{run?:FixedStepRun}={},opened=cp;
  const recorder=await openNavigationRecorder({knownTerminal:cp.evidenceTerminal??null,onTerminal:async reason=>{const c=owner.run?.checkpoint??opened;c.evidenceTerminal=reason.slice(0,500);await writeCheckpoint(dir,c);},directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.runtime.evidence,maxTicks:Math.min(providers.runtime.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
- const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall,stopMonitor,physics,drive,tray&&{id:tray.id,policy:tray.policy,policyDigest:tray.policyDigest});owner.run=run;
+ const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall,stopMonitor,physics,drive,tray&&{id:tray.id,policy:tray.policy,policyDigest:tray.policyDigest},stopProfile);owner.run=run;
  run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{epochMs:EPOCH,navigation:{mapId,mapRevision,bindings},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},fresh).catch(async(e:unknown)=>{await recorder.close();throw e;});
  run.traffic=fixture.zones.length?createZoneTraffic(createZoneBridge(run.source,{async enter(){}},()=>`op-${++run.checkpoint.ordinal}`),fixture.zones,{clearanceM:scene.policy.parameters.safetyMarginM+2*scene.policy.parameters.gridResolutionM}):undefined;
  try{
@@ -252,7 +255,7 @@ class FixedStepRun implements ScenarioRun {
  private physicsRec?:PhysicsRecorder;
  /** Paced-step anchor (D57): memory only, never checkpointed nor in evidence; cleared by pause, resume, cancel, an unpaced step and a reopen. */
  private anchor:PaceAnchor|null=null;
- constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock,private stopMonitor?:import('./plant').PlantStopMonitor,private physics?:Awaited<ReturnType<typeof preparePhysicsAdmission>>,private drive?:MobileDrive,private tray?:{id:import('../simulation3d/tray-experiments').TrayExperimentId;policy:import('../simulation3d/tray-verdict').TrayPolicy;policyDigest:string}){
+ constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock,private stopMonitor?:import('./plant').PlantStopMonitor,private physics?:Awaited<ReturnType<typeof preparePhysicsAdmission>>,private drive?:MobileDrive,private tray?:{id:import('../simulation3d/tray-experiments').TrayExperimentId;policy:import('../simulation3d/tray-verdict').TrayPolicy;policyDigest:string},private stopProfile?:Parameters<typeof stopReportOfRun>[0]['physicsProfile']){
   this.clock=createClock(EPOCH,cp.tick,cp.paused);
   this.telemetry=new TelemetryRecorder(20000,plant.identity.telemetryLabel);
   // the controller sees the fixture's zones (the scene stays the bundle's: its digest is the run's identity); a zone it does not hold is an obstacle
@@ -747,6 +750,7 @@ class FixedStepRun implements ScenarioRun {
   const physicsEvidence=await this.physicsReport(read,serveTicksOf(businessEvents,EPOCH));
   // a tray run: the durable records, read back, become the report's tray evidence (slip over a window, drift, acceleration limit, service time); only records without a gap say anything
   const trayEvidence=this.tray&&this.trayRecords?buildTrayEvidence({experimentId:this.tray.id,records:this.trayRecords,businessEvents,status:v.run.status,accelerationLimitMps2:this.scene.policy.parameters.maxAccelerationMps2,policy:this.tray.policy,policyDigest:this.tray.policyDigest}):undefined;
+  const stopReport=this.stops.length&&this.stopProfile&&this.drive&&this.stopRecords?stopReportOfRun({runId:c.runId,entries:this.stops,records:this.stopRecords,physicsProfile:this.stopProfile,driveModel:this.drive.model as never,wheelRadiusM:this.scene.robots[0]!.model.kinematics.wheelRadiusM,attention:v.attention.map(a=>({tick:a.tick,reason:a.reason})),served:v.served,status:v.run.status}):undefined;
   const manifestOut=structuredClone(c.manifest);if(manifestOut.drive&&c.engine?.hostArch)manifestOut.drive.hostArch=c.engine.hostArch;   // known once the worker has described itself
   return {schemaVersion:2,manifest:manifestOut,outcome:{status:v.run.status,served:v.served,tick:c.tick,simTimeNs:v.simTimeNs},attention:v.attention,workload:v.workload,entities:v.entities,businessEvents,
    effects:(await this.source.effects()).filter(e=>ROBOT_TYPES.includes(String(e.type))).map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject})),
@@ -759,7 +763,7 @@ class FixedStepRun implements ScenarioRun {
     'Distance, collision and clearance metrics are computed from the durable per-tick evidence (navigation2d) by the independent oracle; they are unavailable whenever that evidence is incomplete.',
     'A lost or refused worker step leaves its legs unknown; it is never resent and the run is never continued by a new worker process.',
     'Stop requests are model stops only (physicalStopConfirmed false).',...this.scene.limitations],
-   telemetry:this.telemetry.report(),navigation2d,...physicsEvidence?{physicsEvidence}:{},...this.driveEvidence?{driveEvidence:this.driveEvidence}:{},...this.faultReport?{faultReport:this.faultReport}:{},...trayEvidence?{trayEvidence}:{}};
+   telemetry:this.telemetry.report(),navigation2d,...physicsEvidence?{physicsEvidence}:{},...this.driveEvidence?{driveEvidence:this.driveEvidence}:{},...this.faultReport?{faultReport:this.faultReport}:{},...stopReport?{stopReport}:{},...trayEvidence?{trayEvidence}:{}};
  }
  private async flushPhysics(){
   if(!this.physicsRec)return;
@@ -774,6 +778,7 @@ class FixedStepRun implements ScenarioRun {
  private driveEvidence?:import('../control/drive-report').DriveEvidenceReport;
  private faultReport?:import('../control/drive-io').FaultReportV1;
  private trayRecords?:import('./contracts').PhysicsTickRecord[];
+ private stopRecords?:import('./contracts').PhysicsTickRecord[];
  /** The schedule is read from the checkpoint's manifest: the injections of a tick are a pure function of it and the tick. */
  private get faults(){return this.cp.manifest.driveFaultSchedule?.entries??[];}
  private get stops(){return this.cp.manifest.stopSchedule?.entries??[];}
@@ -808,6 +813,7 @@ class FixedStepRun implements ScenarioRun {
   if(manifest.gaps.length||manifest.terminalReason)manifest.coverage.complete=false;
   const read=await readPhysicsEvidence(join(this.dir,'physics'),manifest,{admission:this.physics.admission,metricsPolicyDigest:this.physics.metricsPolicyDigest,identity:{...manifest.identity,runId:this.cp.runId,sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics.loadProfileDigest,physicsProfileDigest:this.physics.physicsProfileDigest,...this.cp.plant.snapshot?{bootId:this.cp.plant.snapshot.bootId}:{}},runTick:this.cp.tick});
   // the records are the durable truth up to wherever the run ended; a stop by the plant's own monitor (a cup that fell, a tilt) marks coverage incomplete but loses nothing, a gap does lose something
+  this.stopRecords=this.stops.length?read.records:undefined;
   this.trayRecords=this.tray&&read.records.length>0&&!blockingReadIssues(read,manifest,read.records.length,this.cp.tick).length?read.records:undefined;
   if(this.drive){
    const rows=read.records.map(r=>({tick:r.tick,drives:(r as {drives?:import('../control/drive-io').DriveAxisSnapshot[]}).drives??[]}));

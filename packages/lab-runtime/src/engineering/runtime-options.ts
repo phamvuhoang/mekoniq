@@ -38,6 +38,16 @@ export interface EngineeringRuntimeOptions{
  mujoco?:{workerRoot:string};
 }
 /**
+ * The base drive model of the electrical compile (fixtures/drive-v1 of the MuJoCo tool root), whatever simulation provider runs: the MuJoCo worker root when given,
+ * else the sibling of the simulation root (<source>/robotics/simulation -> <source>/robotics/simulation-mujoco), the same files the offline CLI compile reads.
+ * Undefined when neither holds the fixture: the electrical compile then reports UNVERIFIED_DRIVE_BASE.
+ */
+export async function engineeringDriveFixtureDir(o:Pick<EngineeringRuntimeOptions,'mujoco'|'simulationRoot'>):Promise<string|undefined>{
+ for(const d of [o.mujoco&&join(resolve(o.mujoco.workerRoot),'fixtures/drive-v1'),o.simulationRoot&&join(resolve(o.simulationRoot),'..','simulation-mujoco','fixtures/drive-v1')])
+  if(d&&await stat(join(d,'serve-drive-nominal-v1.json')).then(s=>s.isFile(),()=>false))return d;
+ return undefined;
+}
+/**
  * Builds the engineering service only when the operator asked for it and everything it needs works right now: a readable catalog and a compiler whose Python
  * dependencies import. Anything less throws, so the `engineering_bundle_v1` capability is never advertised for a service that would fail every request.
  * Native execution is a separate fact and stays unqualified: bundles compile as runnable:false.
@@ -72,5 +82,5 @@ export async function engineeringFromOptions(o:EngineeringRuntimeOptions):Promis
  if(o.mujoco)compilers['engineering-mujoco-3d-v1']=createMujocoCompiler({workerRoot:resolve(o.mujoco.workerRoot)});
  if(o.webots)compilers['engineering-webots-3d-v1']=createWebotsCompiler();
  if(o.portableOnly&&!Object.keys(compilers).length)throw Error('ENGINEERING_COMPILER_UNAVAILABLE');
- return createEngineeringService({directory:join(o.directory,'engineering'),catalogRoot,electrical:Object.keys(catalog.deviceProfiles).length>0,...o.mujoco?{driveFixtureDir:join(resolve(o.mujoco.workerRoot),'fixtures/drive-v1')}:{},...!o.portableOnly?{compiler:createPythonCompiler({python,simulationRoot})}:{},compilers,validator,validationUnavailable});
+ return createEngineeringService({directory:join(o.directory,'engineering'),catalogRoot,electrical:Object.keys(catalog.deviceProfiles).length>0,...await engineeringDriveFixtureDir(o).then(d=>d?{driveFixtureDir:d}:{}),...!o.portableOnly?{compiler:createPythonCompiler({python,simulationRoot})}:{},compilers,validator,validationUnavailable});
 }

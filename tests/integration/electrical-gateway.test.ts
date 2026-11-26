@@ -5,6 +5,7 @@ import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
 import {createEngineeringService,type CompilerPort} from '../../packages/lab-runtime/src/engineering/gateway';
+import {engineeringDriveFixtureDir} from '../../packages/lab-runtime/src/engineering/runtime-options';
 
 const roots:string[]=[],gateways:LabGateway[]=[];
 afterEach(async()=>{for(const g of gateways.splice(0))await g.close();for(const d of roots.splice(0))await rm(d,{recursive:true,force:true});});
@@ -17,7 +18,7 @@ const sceneCompiler:CompilerPort={version:'electrical-test-compiler',async compi
  await writeFile(join(outDir,'scene.json'),scene);return {sceneDigest:sha(scene),files:[{path:'scene.json',sha256:sha(scene)}]};
 }};
 
-async function boot(electrical=true){
+async function boot(electrical=true,driveFixtureDir:string|null='robotics/simulation-mujoco/fixtures/drive-v1'){
  const directory=await temp('elec-gw-'),catalogRoot=await temp('elec-cat-'),parts=JSON.parse(await readFile(FIXTURE+'serve-3d-components.json','utf8')) as {components:Record<string,unknown>;models:Record<string,unknown>};
  await cp('robotics/catalog',catalogRoot,{recursive:true});
  const index=JSON.parse(await readFile(join(catalogRoot,'catalog.json'),'utf8'));
@@ -25,7 +26,7 @@ async function boot(electrical=true){
  for(const [digest,m] of Object.entries(parts.models))await writeFile(join(catalogRoot,'models',`${digest}.json`),JSON.stringify(m));
  await writeFile(join(catalogRoot,'catalog.json'),JSON.stringify(index));
  const profiles={'engineering-webots-3d-v1':sceneCompiler,'engineering-mujoco-3d-v1':sceneCompiler};
- const g=await startLabGateway({port:0,directory:join(directory,'runs'),sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{engineering:createEngineeringService({directory:join(directory,'engineering'),catalogRoot,compilers:profiles,electrical,driveFixtureDir:'robotics/simulation-mujoco/fixtures/drive-v1'})}});
+ const g=await startLabGateway({port:0,directory:join(directory,'runs'),sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{engineering:createEngineeringService({directory:join(directory,'engineering'),catalogRoot,compilers:profiles,electrical,...driveFixtureDir?{driveFixtureDir}:{}})}});
  gateways.push(g);
  const pair=async()=>{const r=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.issuePairingToken()})});return {cookie:r.headers.get('set-cookie')!.split(';')[0]!,origin:'http://127.0.0.1:4175','content-type':'application/json','x-csrf-token':String((await r.json()).csrfToken)};};
  const project=JSON.parse(await readFile(FIXTURE+'serve-3d-project.json','utf8')),design=JSON.parse(await readFile('robotics/catalog/electrical/serve-hw-c-v1.json','utf8'));
@@ -99,4 +100,20 @@ test('package: a compiled bundle yields a verifiable package, a blocked one is 4
  expect(await verifyHardwareCandidate(async p=>m.get(p)??null,async()=>[...m.keys()])).toEqual([]);
  const blocked=await fetch(t.g.url+`/lab/v2/engineering/electrical/${a}/package`,{headers:{cookie:h.cookie}});expect(blocked.status).toBe(409);expect((await blocked.json()).error).toBe('ELECTRICAL_BUNDLE_BLOCKED');
  expect((await fetch(t.g.url+`/lab/v2/engineering/electrical/${c}/package`,{headers:{cookie:other.cookie}})).status).toBe(403);
+});
+
+test('a launcher without MuJoCo (Webots, IR-SIM: only the simulation root) still has the base drive model: HW-C gets its drive model draft and its package',async()=>{
+ const dir=await engineeringDriveFixtureDir({simulationRoot:'robotics/simulation'});expect(dir).toBeDefined();
+ expect(await engineeringDriveFixtureDir({})).toBeUndefined();
+ const pkgOf=async(d:string|null)=>{
+  const t=await boot(true,d),h=await t.pair(),ref=await compiled(t,h);
+  const c=(await (await t.post(h,'electrical',{ref:{bundleDigest:ref.bundleDigest,projectDigest:ref.projectDigest},design:t.design})).json()).digest as string;
+  const doc=await (await fetch(t.g.url+`/lab/v2/engineering/electrical/${c}`,{headers:{cookie:h.cookie}})).json();
+  const pkg=await fetch(t.g.url+`/lab/v2/engineering/electrical/${c}/package`,{headers:{cookie:h.cookie}});
+  return {draft:doc.driveModelDraft,status:pkg.status,body:await pkg.json(),bundle:doc};
+ };
+ const withBase=await pkgOf(dir!),without=await pkgOf(null);
+ expect(withBase.draft).not.toBeNull();expect(withBase.status).toBe(200);
+ expect(without.draft).toBeNull();expect(without.status).toBe(409);expect(without.body.error).toBe('DRIVE_MODEL_DRAFT_MISSING');
+ expect(withBase.bundle.digest).toBe((await pkgOf('robotics/simulation-mujoco/fixtures/drive-v1')).bundle.digest);   // the same bundle as the MuJoCo launcher's
 });

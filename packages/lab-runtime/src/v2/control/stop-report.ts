@@ -8,6 +8,7 @@ import {documentDigest,sealDocument,type PhysicsTickRecord,type StopPolicyV1,typ
 import type {SourceRef} from '../../engineering/contracts';
 import type {StopIntentV1,StopReceiptV1,StopScheduleEntryV1} from './drive-io';
 import {stopMetrics,type Unavailable} from './stop-metrics';
+import policyDoc from '../../../../../robotics/simulation-mujoco/fixtures/stop-v1/stop-policy-v1.json';
 
 const ajv=new Ajv({allErrors:true,strict:true,discriminator:true});addFormats(ajv);
 for(const [k,s] of Object.entries({'engineering-component.schema.json':componentSchema,'drive-io-v1.schema.json':driveIoSchema,'stop-evidence-v1.schema.json':stopSchema}))ajv.addSchema(s,k);
@@ -59,4 +60,23 @@ export function buildStopReport(i:StopReportInput):StopReportV1{
  const metrics=fired?stopMetrics({appliedTick:applied!,function:fn,records:i.records,policy:i.policy,chainAxes:i.chainAxes,wheelRadiusM:i.wheelRadiusM}):unavailableAll('RUN_ENDED');
  return sealDocument({schemaVersion:1,documentType:'stop-report',accepted:false,calibration:'not_calibrated',digest:'',runId:i.runId,function:fn,entryId:i.entry.id,verdict:fired?'fired':'not_fired',appliedTick:applied,receipt,metrics,drives,invariants,
   decidingParameters:i.decidingParameters.map(p=>({...p})),limits:[...STOP_LIMITS]} as StopReportV1,'digest');
+}
+
+/** The registered stop policy (fixtures/stop-v1) every stop report is read with. */
+export const STOP_POLICY=policyDoc as unknown as StopPolicyV1;
+type PhysicsProfileDoc={contact:{rollingM:number;sliding:number};sources:Record<string,unknown>};
+type DriveModelDoc={axes:readonly {axisId:string;onDisable?:string;brakeTorqueNm?:number|null}[];sources:{disable?:unknown}};
+/** The physics profile and drive model numbers that decide the stop, with the sources their documents give them. */
+export const decidingParametersOf=(physics:PhysicsProfileDoc,drive:DriveModelDoc):StopReportV1['decidingParameters']=>{
+ const src=Object.values(physics.sources)[0] as SourceRef;
+ return [{id:'rollingResistanceM',value:physics.contact.rollingM,source:src},{id:'floorContactSliding',value:physics.contact.sliding,source:src},{id:'onDisable',value:drive.axes[0]!.onDisable??null,source:drive.sources.disable as SourceRef},{id:'brakeTorqueNm',value:drive.axes[0]!.brakeTorqueNm??null,source:drive.sources.disable as SourceRef}];
+};
+/** The stop report of a run, from what the run holds durably: its physics records (stop intents and receipts ride on them), its physics profile and drive model, attention and outcome.
+ * One report per run: the first entry that fired, else the first entry. ponytail: a multi-entry schedule reports one entry; a list when the run report carries several. */
+export function stopReportOfRun(f:{runId:string;entries:readonly StopScheduleEntryV1[];records:readonly PhysicsTickRecord[];physicsProfile:PhysicsProfileDoc;driveModel:DriveModelDoc;wheelRadiusM:number;attention:readonly {tick:number;reason:string}[];served:string;status:string}):StopReportV1{
+ const recs=f.records as readonly (PhysicsTickRecord&{stopIntents?:StopIntentV1[];stopReceipts?:StopReceiptV1[]})[];
+ const intents=recs.filter(r=>r.stopIntents).map(r=>({tick:r.tick,intents:r.stopIntents!})),receipts=recs.flatMap(r=>r.stopReceipts??[]);
+ const entry=f.entries.find(e=>receipts.some(r=>r.entryId===e.id))??f.entries[0]!,fired=receipts.some(r=>r.entryId===entry.id);
+ return buildStopReport({runId:f.runId,entry,intents,receipts,records:f.records,policy:STOP_POLICY,chainAxes:f.driveModel.axes.map(a=>a.axisId),wheelRadiusM:f.wheelRadiusM,attention:f.attention,served:f.served,status:f.status,
+  servedAfterStop:f.served!=='0'&&fired,decidingParameters:decidingParametersOf(f.physicsProfile,f.driveModel)});
 }

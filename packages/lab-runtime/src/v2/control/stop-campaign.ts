@@ -4,7 +4,6 @@ import {createHash} from 'node:crypto';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import table from '../../../../../robotics/simulation-mujoco/campaigns/stop-v1.json';
-import policyDoc from '../../../../../robotics/simulation-mujoco/fixtures/stop-v1/stop-policy-v1.json';
 import {lockDigestOf} from '../../engineering/linkforge';
 import {hashJson} from '../hash';
 import {createFixedStepScenarioRun} from '../navigation2d/runner';
@@ -16,10 +15,10 @@ import {readCampaignJournal,verifyCampaignOutcome} from './campaign-source-evide
 import {readJson} from './cil-campaign';
 import {stopStartTick,type StopFunctionId} from './stop-functions';
 import {TRAY_EXPERIMENTS} from '../simulation3d/tray-experiments';
-import {buildStopReport,validateStopReport,stopReportDigest} from './stop-report';
+import {stopReportOfRun,validateStopReport,stopReportDigest} from './stop-report';
 import {bodySpeeds} from './stop-metrics';
 import type {FaultScheduleEntry} from '../fault-schedule';
-import type {StopPolicyV1,StopReportV1,PhysicsTickRecord} from '../navigation2d/contracts';
+import type {StopReportV1,PhysicsTickRecord} from '../navigation2d/contracts';
 import type {StopScheduleEntryV1} from './drive-io';
 import type {RunReport} from '../report';
 import type {TrayExperimentId} from '../simulation3d/tray-experiments';
@@ -59,21 +58,13 @@ export async function runStopCase(c:TrayContext,dir:string,spec:Pick<StopCase,'e
  }finally{await run.close();if(report)await writeFile(join(dir,'report.json'),json(report));}
  return report;
 }
-const POLICY=policyDoc as unknown as StopPolicyV1;
-/** The physics profile numbers that decide the stop, with the sources the fixture gives them. */
-const decidingFrom=(physics:{contact:{rollingM:number;sliding:number};brakeTorqueNm?:number;sources:Record<string,never>},drive:{axes:{onDisable:string;brakeTorqueNm:number|null}[];sources:{disable:never}}) =>{
- const src=Object.values(physics.sources)[0] as never;
- return [{id:'rollingResistanceM',value:physics.contact.rollingM,source:src},{id:'floorContactSliding',value:physics.contact.sliding,source:src},{id:'onDisable',value:drive.axes[0]!.onDisable,source:drive.sources.disable},{id:'brakeTorqueNm',value:drive.axes[0]!.brakeTorqueNm,source:drive.sources.disable}] as StopReportV1['decidingParameters'];
-};
-/** The stop report of a finished case, built from its durable files only. */
+/** The stop report of a finished case, built from its durable files only, the same way the run report builds it. */
 export async function stopReportOfCase(dir:string,spec:StopCase):Promise<StopReportV1>{
- const report=await readJson(dir,'report.json') as RunReport,{cp,scene,records}=await readTrayRun(dir),policy=POLICY;
- const evidence=records as unknown as PhysicsTickRecord[],intents=evidence.filter(r=>(r as {stopIntents?:unknown[]}).stopIntents).map(r=>({tick:r.tick,intents:(r as unknown as {stopIntents:never[]}).stopIntents}));
- const receipts=evidence.flatMap(r=>(r as unknown as {stopReceipts?:never[]}).stopReceipts??[]);
+ const report=await readJson(dir,'report.json') as RunReport,{cp,scene,records}=await readTrayRun(dir);
  const doc=async(p:string)=>JSON.parse(await readFile(join(dir,'bundle',p),'utf8'));
- const eng=scene.engine as unknown as {physicsProfileRef:{path:string};driveModelRef:{path:string}},physics=await doc(eng.physicsProfileRef.path),drive=await doc(eng.driveModelRef.path);
- const wheel=scene.robots[0]!.model.kinematics.wheelRadiusM,chain=(drive.axes as {axisId:string}[]).map(a=>a.axisId),appliedAfter=receipts.find(r=>(r as {entryId:string}).entryId===spec.entry.id) as {appliedTick:number}|undefined;
- return buildStopReport({runId:cp.runId,entry:spec.entry,intents,receipts,records:evidence,policy,chainAxes:chain,wheelRadiusM:wheel,attention:report.attention.map(a=>({tick:a.tick,reason:a.reason})),served:report.outcome.served,status:report.outcome.status,servedAfterStop:report.outcome.served!=='0'&&appliedAfter!==undefined,decidingParameters:decidingFrom(physics,drive)});
+ const eng=scene.engine as unknown as {physicsProfileRef:{path:string};driveModelRef:{path:string}};
+ return stopReportOfRun({runId:cp.runId,entries:[spec.entry],records:records as unknown as PhysicsTickRecord[],physicsProfile:await doc(eng.physicsProfileRef.path),driveModel:await doc(eng.driveModelRef.path),wheelRadiusM:scene.robots[0]!.model.kinematics.wheelRadiusM,
+  attention:report.attention.map(a=>({tick:a.tick,reason:a.reason})),served:report.outcome.served,status:report.outcome.status});
 }
 
 type InvariantId=StopReportV1['invariants'][number]['id'];
@@ -139,6 +130,8 @@ export async function verifyStopCampaign(out:string,onlyCase?:string):Promise<St
    const journal=await readCampaignJournal(join(dir,'run'),cp.runId),outcome=verifyCampaignOutcome(cp as never,journal,report,'STOP');check(report.outcome&&hashJson(outcome)===hashJson(report.outcome),'STOP_OUTCOME_NOT_FROM_JOURNAL');
    const stored=await readJson(dir,'stop-report.json') as StopReportV1,rebuilt=await stopReportOfCase(dir,spec);
    check(validateStopReport(stored).ok&&stopReportDigest(stored)===stored.digest,'STOP_REPORT_INVALID');check(hashJson(stored)===hashJson(rebuilt),'STOP_REPORT_NOT_FROM_STREAM');
+   // a run report that carries its stop report (runtimes after stop-v1's first recording) must carry this one; older reports have none
+   check(report.stopReport!==undefined,'STOP_RUN_REPORT_MISSING');check(hashJson(report.stopReport)===hashJson(rebuilt),'STOP_RUN_REPORT_NOT_FROM_STREAM');
    check(stored.verdict==='fired','STOP_NOT_FIRED');
    const bundleDoc=async(p:string)=>JSON.parse(await readFile(join(dir,'bundle',p),'utf8')),eng=scene.engine as unknown as {driveModelRef:{path:string}},driveDoc=await bundleDoc(eng.driveModelRef.path) as {digest:string;axes:{axisId:string}[]};
    v.issues.push(...stopCaseIssues(spec,{report:stored,records,chainAxes:driveDoc.axes.map(a=>a.axisId),experiment:await bundleDoc('tray-experiment.json'),driveModelDigest:driveDoc.digest,manifest:mf}).map(i=>`${spec.id}:${i}`));
