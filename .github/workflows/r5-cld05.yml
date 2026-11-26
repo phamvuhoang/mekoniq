@@ -44,3 +44,13 @@ jobs:
           name: r5-cld05-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/r5-cld05/
           if-no-files-found: error
+      # the tested image itself, saved by configuration ID (scripts/save-r4-native-image.sh: image.tar + handoff.json); CLD06 requires the promoted image to be this ID
+      - name: Save the tested image by ID
+        if: success()
+        run: scripts/save-r4-native-image.sh "$RUNNER_TEMP/r5-cld05" "$RUNNER_TEMP/r5-image" "$GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: r5-image-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/r5-image/
+          if-no-files-found: error
