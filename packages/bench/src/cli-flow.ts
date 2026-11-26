@@ -21,7 +21,9 @@ export interface Loaded{kit:BenchKitV1;kitPath:string;policy:BenchPolicy;session
 export interface FlowIo{spawn:Spawn;clock:Clock;arming:Arming;prompter?:Prompter;abort:AbortSignal;log:Log}
 export interface CaseResult{caseId:string;trace:CaseTrace;verdict:CaseVerdict}
 type Tty={isTTY:boolean;question(q:string):Promise<string>};
-export const SUITES={conformance:CONFORMANCE_CASES,measure:MEASURE_CASES,sensors:SENSOR_CASES};
+/** spec B1 §6: the first-motion cases pass in the SAME session before any other torque case, so a measurement session re-runs every one that is registered. */
+export const FIRST_MOTION=['KCF02','KCF04','KCF01'];
+export const SUITES={conformance:CONFORMANCE_CASES,measure:[...FIRST_MOTION.flatMap(id=>benchCase(id)??[]),...MEASURE_CASES],sensors:SENSOR_CASES};
 const refused=(code:string,detail:string)=>Object.assign(new Error(`${code}: ${detail}`),{code});
 const msg=(e:unknown)=>e instanceof Error?e.message:String(e);
 const codeOf=(e:unknown)=>{const c=(e as {code?:unknown}|null)?.code;return typeof c==='string'&&c?c:'CASE_EXCEPTION';};
@@ -76,9 +78,10 @@ const decided=(c:BenchCase,l:{kit:BenchKitV1;policy:BenchPolicy},status:'not_run
  return {caseId:c.id,trace,verdict:verdictOf(c,trace,l.kit,l.policy)};
 };
 const show=(r:CaseResult)=>`${r.caseId} ${r.verdict.status}${r.verdict.reason?` ${r.verdict.reason}`:''}`;
-/** BK-D11: the cases in order on one context. After every case a disarmed context stops the suite: no later case starts, each is not_run
+/** BK-D11: the cases in order on one context. After every case a disarmed context stops the suite, and so does a `failed` verdict when `stopOnFailed`
+ * (the torque suites: plan 02, one case fails, the suite stops; not_run and unsupported_by_device do not): no later case starts, each is not_run
  * SUITE_STOPPED_AFTER_<reason>, and nothing re-arms. A case that throws (a lost worker) is failed with the error's code and stops the suite the same way. */
-export async function runSuite(cases:readonly BenchCase[],ctx:RunContext,log:Log):Promise<{results:CaseResult[];stoppedAfter:CaseResult|null}>{
+export async function runSuite(cases:readonly BenchCase[],ctx:RunContext,log:Log,stopOnFailed:boolean):Promise<{results:CaseResult[];stoppedAfter:CaseResult|null}>{
  const results:CaseResult[]=[];let stoppedAfter:CaseResult|null=null;
  for(const c of cases){
   if(stoppedAfter){results.push(decided(c,ctx,'not_run',`SUITE_STOPPED_AFTER_${stoppedAfter.verdict.reason??'DISARMED'}`));continue;}
@@ -86,7 +89,7 @@ export async function runSuite(cases:readonly BenchCase[],ctx:RunContext,log:Log
   let r:CaseResult;
   try{r={caseId:c.id,...await runCase(c,ctx)};}catch(e){ctx.disarmed=true;r=decided(c,ctx,'failed',codeOf(e),msg(e));}
   results.push(r);log(show(r));
-  if(ctx.disarmed)stoppedAfter=r;
+  if(ctx.disarmed||stopOnFailed&&r.verdict.status==='failed')stoppedAfter=r;
  }
  return {results,stoppedAfter};
 }
@@ -117,6 +120,7 @@ async function storedResults(dir:string,l:Loaded,kind:PartKind):Promise<CaseResu
 export const calibrationKind=(backend:unknown,s:BenchSessionV1)=>backend==='sim'?'synthetic' as const:backend==='soem'&&!!s.operator.trim()&&!!s.startedAt.trim()?'measured' as const:null;
 /** The KMS01 trials of a measure part as <part>/calibration/{sidecar.json, <trial>.csv}; returns what to tell the operator. The caller rewrites the manifest. */
 export async function writeCalibration(dir:string,data:{session:BenchSessionV1;kit:BenchKitV1;policy:BenchPolicy;results:CaseResult[]}):Promise<string>{
+ if(data.results.find(r=>r.caseId==='KMS01')?.verdict.status!=='tested')return 'no calibration dataset: no KMS01 trial was tested';
  try{
   const backend=(await readJsonFile(join(dir,'measure.json')) as {describe?:{backend?:unknown}}).describe?.backend,kind=calibrationKind(backend,data.session);
   if(!kind)return `no calibration dataset: the part's worker backend is ${String(backend)} or the session has no attestation`;
@@ -164,14 +168,26 @@ export async function identify(l:Loaded,out:string,io:Pick<FlowIo,'spawn'|'log'>
  return results.every(r=>r.verdict.status==='tested')?0:1;
 }
 
-/** One case session (run, sensors): spawn, scan, the identity check (run), configure and start, the suite, close, the part. */
-async function caseSession(kind:'conformance'|'measure'|'sensors',l:Loaded,o:{out:string;cases:BenchCase[];stored:CaseResult[];identity?:string;replace:boolean},io:FlowIo):Promise<number>{
+/** spec B1 §7.2: torque only after a clean identity: KID02-KID05 all tested in the identity part (each recomputed from its trace). What is not, or []. */
+export async function identityNotClean(dir:string,l:{kit:BenchKitV1;policy:BenchPolicy}):Promise<string[]>{
+ const out=await Promise.all(IDENTITY_CASES.map(async c=>{
+  try{const v=verdictOf(c,await readTrace(join(dir,'cases',c.id)),l.kit,l.policy);return v.status==='tested'?null:`${c.id} ${v.status} ${v.reason}`;}
+  catch(e){return `${c.id} unreadable (${msg(e)})`;}
+ }));
+ return out.filter((x):x is string=>x!==null);
+}
+/** One case session (run, sensors): spawn, scan, the identity check (run), configure and start, the suite, close, the part. `seedPassed` is for tests only (the
+ * prerequisites of the measurement cases that are not registered yet); bench.mjs never passes it, so the CLI has no way to it. */
+export async function caseSession(kind:'conformance'|'measure'|'sensors',l:Loaded,o:{out:string;cases:BenchCase[];stored:CaseResult[];identity?:string;replace:boolean;seedPassed?:string[]},
+ io:FlowIo):Promise<number>{
  const torque=kind!=='sensors',ctx:RunContext={worker:undefined as unknown as BenchWorker,kit:l.kit,policy:l.policy,clock:io.clock,arming:torque?io.arming:{arm:async()=>false},
-  prompter:io.prompter,abort:io.abort,passed:new Set(o.stored.filter(r=>r.verdict.status==='tested').map(r=>r.caseId))};
+  prompter:io.prompter,abort:io.abort,passed:new Set([...o.stored.filter(r=>r.verdict.status==='tested').map(r=>r.caseId),...o.seedPassed??[]])};
  let bus:BenchWorker|undefined,sensors:BenchWorker|undefined,describe:Record<string,unknown>={},scan:Record<string,unknown>={slaves:[]},refusal:{code:string;detail:string}|null=null;
  let results:CaseResult[]=[],stoppedAfter:CaseResult|null=null;
  try{
-  // the bus worker is writable for sensors too: a read-only worker refuses `start`, and `step` needs it (session.py ORDER); no torque because arming always refuses
+  // the bus worker is writable for sensors too: a read-only worker refuses `start`, and `step` needs it (session.py ORDER); no torque because arming always refuses.
+  // ponytail: accepted for the simulated backend only; before the first hardware sensors session the sensor cases must run with no bus worker at all (drive power is
+  // off in that session and nothing should be written to a drive)
   bus=await io.spawn('bus',false);
   if(!torque)sensors=await io.spawn('sensors',true);
   describe=await call(bus,'describe');
@@ -180,7 +196,7 @@ async function caseSession(kind:'conformance'|'measure'|'sensors',l:Loaded,o:{ou
   await call(bus,'configure');await call(bus,'start');
   if(sensors)await call(sensors,'open');
   Object.assign(ctx,{worker:bus,sensors,objects:s.objects});
-  ({results,stoppedAfter}=await runSuite(o.cases,ctx,io.log));
+  ({results,stoppedAfter}=await runSuite(o.cases,ctx,io.log,torque));
  }catch(e){refusal={code:codeOf(e),detail:msg(e)};io.log(`REFUSED ${refusal.detail}`);}
  finally{await Promise.all([bus?.close(),sensors?.close()]);}
  for(const c of o.cases)if(!results.some(r=>r.caseId===c.id))results.push(decided(c,l,'not_run',refusal?.code??'NOT_STARTED',refusal?.detail));
@@ -192,12 +208,14 @@ async function caseSession(kind:'conformance'|'measure'|'sensors',l:Loaded,o:{ou
  protocolDouble(l,io.log);
  return all.every(r=>r.verdict.status==='tested')?0:1;
 }
-/** `run` (BK-D09, D11, D12): the declarations must allow torque; --from needs every earlier case of the suite tested in the stored part; then caseSession. */
+/** `run` (BK-D09, D11, D12; spec B1 §7.2): the declarations must allow torque, the identity must be clean; --from needs every earlier case of the suite tested in the stored part; then caseSession. */
 export async function run(l:Loaded,o:{identity:string;suite:string;out:string;from?:string;only?:string},io:FlowIo):Promise<number>{
  if(o.suite!=='conformance'&&o.suite!=='measure')throw refused('INVALID_OPTION',`--suite ${o.suite} (conformance or measure)`);
  if(!o.from&&existsSync(o.out))throw refused('OUT_EXISTS',o.out);
  const cases=casesOf(o.suite,o),problems=sessionAllowsTorque(l.session,l.kit);
  if(problems.length){for(const p of problems)io.log(`REFUSED ${p.code} ${p.path}: ${p.detail}`);return 1;}
+ const unclean=await identityNotClean(o.identity,l);
+ if(unclean.length){io.log(`REFUSED BENCH_IDENTITY_NOT_CLEAN: ${unclean.join('; ')}. Correct the profile (a new revision) and identify again.`);return 1;}
  const stored=o.from&&existsSync(o.out)?await storedResults(o.out,l,o.suite):[];
  const all=SUITES[o.suite],earlier=o.from?all.slice(0,all.indexOf(cases[0]!)):[];
  const missing=earlier.filter(c=>stored.find(r=>r.caseId===c.id)?.verdict.status!=='tested');

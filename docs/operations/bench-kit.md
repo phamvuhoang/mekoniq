@@ -13,7 +13,7 @@ Công cụ là `scripts/bench.mjs` (bench agent) và `scripts/record-bench.mjs` 
 
 - **Chỉ slave giả** (`bus.backend: 'sim'`, kit `robotics/bench/fixtures/kit-sim-v1.json`). Kết quả mang nhãn `protocol_double`: nó kiểm giao thức, luồng phiên, từ chối và bằng chứng, **không nói gì về một drive thật**. Mọi gate phần cứng của bản ghi từ slave giả là `blocked_external`.
 - Kit `soem` (bus EtherCAT thật) bị từ chối, exit 2: "the soem bus arrives with the first hardware session".
-- Chưa có `KCF04` và `KCF01` (đến ở K09). Các case đo (`--suite measure`) đòi `KCF02`, `KCF04`, `KCF01` đạt trong cùng phần, nên hiện chúng ra `not_run BENCH_ORDER_VIOLATION` và không có bộ dữ liệu hiệu chuẩn.
+- Chưa có `KCF04` và `KCF01` (đến ở K09). Cho tới khi có, các case đo của `--suite measure` ra `not_run BENCH_ORDER_VIOLATION` sau `KCF02`, và không có bộ dữ liệu hiệu chuẩn.
 
 ## 3. Chuẩn bị máy (làm ở buổi phần cứng đầu tiên, chưa làm)
 
@@ -25,6 +25,7 @@ Máy bàn thử: Ubuntu 24.04, checkout đúng commit của nhánh. Các bước
 - [ ] Người vận hành thuộc nhóm `dialout` (cổng nối tiếp của LiDAR và IMU).
 - [ ] Luật udev đặt `latency_timer` của bộ chuyển FTDI về 1 (mặc định 16 ms).
 - [ ] `node scripts/bench.mjs doctor --kit <kit>.json`: exit 0. Mục nào chưa đạt thì sửa máy, không sửa code. Lưu output.
+- [ ] Trước buổi cảm biến đầu tiên trên phần cứng, các case cảm biến phải chạy không có worker bus nào (buổi đó nguồn drive tắt và không được ghi gì vào drive). Hiện `sensors` vẫn cấu hình worker bus; điều đó chỉ được chấp nhận trên slave giả.
 
 `doctor` in một dòng JSON `{id, ok, detail}` cho mỗi mục: `node` (24), `python` (`BENCH_PYTHON` hoặc `python3`, ≥ 3.9), `worker` (worker trả lời `describe` trên kit giả), `venv` (`.venv-bench`; thiếu là bình thường trước buổi phần cứng đầu), và với kit `soem`: `nic`, `cap_net_raw`, `serial_ports`, `ftdi_latency`, `kernel` (chỉ ghi lại phiên bản và PREEMPT_RT; kernel thời gian thực chỉ bật khi số đo jitter đòi). Trên Mac các mục chỉ có ở Linux báo `ok:false`, `linux only`.
 
@@ -99,16 +100,17 @@ node scripts/bench.mjs verify --record ~/bench-runs/D/record                    
 ```
 
 - `identify` (buổi 1) chạy worker chỉ đọc: quét bus, đọc định danh, serial, firmware, các object mà hồ sơ dựa vào, ánh xạ PDO lúc khởi động, 6502h; chấm KID02–KID05. Mâu thuẫn giữa thiết bị và tài liệu dừng buổi enable cho tới khi hồ sơ có revision mới.
-- `run` đọc lại file phiên, kiểm lời khai, quét bus và so serial từng vị trí với phần nhận dạng, rồi mới cấu hình và sang OP. Mỗi case có mô-men hỏi mã bốn chữ số trên màn hình: gõ đúng mã đó. Câu hỏi giữa case (ví dụ độ lệch vạch dấu) trả lời ở cùng bàn phím.
-- **Thứ tự chuyển động đầu tiên là cố định: KCF02 → KCF04 → KCF01**, cả ba đạt trước mọi case khác trong cùng phần. KCF02 enable khi đứng yên (không có chuyển động nào trước khi biết drive vào và ra enable đúng); KCF04 kiểm đơn vị và chiều quay ở tốc độ bò (một hệ số đơn vị sai thì mọi tốc độ sau đó sai); KCF01 thử nút dừng khẩn ở tốc độ thấp khi đơn vị đã đúng. Phần mềm giữ thứ tự này bằng `requires` của từng case; không có cờ bỏ qua.
-- `sensors`: worker cảm biến chỉ đọc; worker bus cũng được cấu hình (worker chỉ đọc không cho `step`) nhưng không có cấp phép, nên không lệnh enable nào ra bus.
-- `measure` ghi bộ dữ liệu hiệu chuẩn vào `<out>/calibration/`. Nhãn do phần mềm suy ra: `synthetic` khi worker chạy slave giả, `measured` chỉ khi bus thật và phiên có lời chứng.
+- `run` đọc lại file phiên, kiểm lời khai, đòi phần nhận dạng **sạch** (KID02–KID05 đều `tested`, không thì `BENCH_IDENTITY_NOT_CLEAN` kèm danh sách, không worker nào chạy), quét bus và so serial từng vị trí với phần nhận dạng, rồi mới cấu hình và sang OP. Mỗi case có mô-men hỏi mã bốn chữ số trên màn hình: gõ đúng mã đó. Câu hỏi giữa case (ví dụ độ lệch vạch dấu) trả lời ở cùng bàn phím.
+- **Thứ tự chuyển động đầu tiên là cố định: KCF02 → KCF04 → KCF01**, cả ba đạt trước mọi case khác trong cùng buổi. Buổi đo là một buổi mới (drive đã tắt nguồn, thiết lập tạm đã ghi lại), nên `--suite measure` chạy lại ba case này trước các case đo; chúng nằm trong phần `measure`. Khi một case có mặt ở nhiều phần, bản ghi lấy trạng thái tệ nhất (`failed` > `not_run` > `unsupported_by_device` > `tested`). KCF02 enable khi đứng yên (không có chuyển động nào trước khi biết drive vào và ra enable đúng); KCF04 kiểm đơn vị và chiều quay ở tốc độ bò (một hệ số đơn vị sai thì mọi tốc độ sau đó sai); KCF01 thử nút dừng khẩn ở tốc độ thấp khi đơn vị đã đúng. Phần mềm giữ thứ tự này bằng `requires` của từng case; không có cờ bỏ qua.
+- `sensors`: worker cảm biến chỉ đọc; worker bus cũng được cấu hình (worker chỉ đọc không cho `step`) nhưng không có cấp phép, nên không lệnh enable nào ra bus. Chỉ chấp nhận trên slave giả (xem §3). Một case cảm biến trượt không dừng bộ (không có mô-men).
+- Trong `run`, **một case trượt là bộ dừng**, dù lý do do bộ chạy hay do phép chấm của case: như §7. `not_run` và `unsupported_by_device` không dừng bộ; `requires` của case sau tự quyết.
+- `measure` ghi bộ dữ liệu hiệu chuẩn vào `<out>/calibration/` khi có ít nhất một trial của KMS01 `tested`. Nhãn do phần mềm suy ra: `synthetic` khi worker chạy slave giả, `measured` chỉ khi bus thật và phiên có lời chứng.
 - `record-bench` không chạy lại bộ test nào: nó tính lại verdict của từng case từ trace đã lưu, rồi đọc lại bản ghi vừa viết; có issue thì xóa output.
 - JSON cấp trên của bản ghi vào `docs/implementation/evidence/bench/<candidate>/`; trace thô ở `evidence-archive/`, ngoài Git.
 
 ## 7. Khi bộ case dừng
 
-Sau một lỗi, dừng nhanh, phím bấm, dừng khẩn hay mất worker, `run` dừng ngay: không case nào sau đó bắt đầu, chúng ghi `not_run SUITE_STOPPED_AFTER_<lý do>`, phần vẫn được ghi, exit 1. Công cụ không tự cấp phép lại. Nó in case dừng và lệnh chạy tiếp:
+Sau một case trượt, một lỗi, dừng nhanh, phím bấm, dừng khẩn hay mất worker, `run` dừng ngay: không case nào sau đó bắt đầu, chúng ghi `not_run SUITE_STOPPED_AFTER_<lý do>`, phần vẫn được ghi, exit 1. Công cụ không tự cấp phép lại. Nó in case dừng và lệnh chạy tiếp:
 
 1. Tìm nguyên nhân trên bàn trước (đọc lý do, xem drive, xem dây).
 2. Chạy tiếp trong cùng phần: `run … --out <cùng thư mục> --from <case đã dừng>`. Các case trước đó phải `tested` trong phần đã lưu, không thì `FROM_EARLIER_NOT_TESTED`. Kết quả cũ được giữ, case từ `--from` trở đi chạy lại và gõ mã cấp phép mới.
@@ -131,6 +133,7 @@ Exit 2: dùng sai lệnh hoặc từ chối trước khi worker chạy. Exit 1: 
 | `OUTPUT_MUST_BE_OUTSIDE_REPOSITORIES` | `--out` nằm trong một repository | Ghi ra ngoài, ví dụ `~/bench-runs` |
 | `SESSION_ESTOP_REQUIRED`, `SESSION_CLAMP_REQUIRED`, `SESSION_POWER_OWNER_REQUIRED`, `SESSION_MAINS_QUALIFICATION_REQUIRED` | Lời khai không cho phép mô-men | Làm cho điều đó đúng trên bàn, rồi mới sửa file phiên |
 | `BENCH_IDENTITY_CHANGED` | Serial trên bus khác phần nhận dạng, phần nhận dạng của kit khác hoặc bị sửa, hoặc định danh slave khác hồ sơ | Kiểm dây và thứ tự slave; thiết bị đã đổi thì chạy `identify` lại |
+| `BENCH_IDENTITY_NOT_CLEAN` | Một trong KID02–KID05 của phần nhận dạng không `tested` (danh sách kèm lý do) | Sửa hồ sơ bằng revision mới (hoặc tìm vì sao không đọc được), chạy `identify` lại |
 | `FROM_EARLIER_NOT_TESTED` | `--from` mà các case trước chưa `tested` trong phần đã lưu | Chạy tiếp từ case đầu tiên chưa đạt |
 | `PART_MANIFEST_MISMATCH`, `KIT_DIGEST_MISMATCH`, `POLICY_DIGEST_MISMATCH` | Phần đã lưu bị sửa, hoặc của kit hay policy khác | Không sửa tay phần kết quả; chạy vào thư mục mới |
 | `BENCH_NOT_ARMED` | Không gõ đúng mã (ba lần), hoặc stdin không phải terminal | Chạy ở terminal của máy bàn thử, gõ mã hiện trên màn hình |

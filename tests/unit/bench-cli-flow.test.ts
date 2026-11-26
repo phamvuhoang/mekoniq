@@ -12,7 +12,7 @@ import {runCase,startBenchSession} from '../../packages/bench/src/session';
 import {CONFORMANCE_CASES,MEASURE_CASES,SENSOR_CASES} from '../../packages/bench/src/cases/index';
 import {checkManifest,readJsonFile,readManifest,readTrace} from '../../packages/bench/src/evidence';
 import {sessionExtra,writeBenchPart} from '../../packages/bench/src/record';
-import {armingFor,calibrationKind,casesOf,describeSession,identify,identityProblem,outProblem,prompterFor,run,sensors,writeCalibration,type Loaded,type Spawn}
+import {armingFor,calibrationKind,caseSession,casesOf,describeSession,identify,identityProblem,outProblem,prompterFor,run,sensors,writeCalibration,type Loaded,type Spawn}
  from '../../packages/bench/src/cli-flow';
 
 const PY=process.env.BENCH_PYTHON??'python3',ROOT=fileURLToPath(new URL('../..',import.meta.url));
@@ -34,11 +34,11 @@ afterAll(()=>rmSync(dir,{recursive:true,force:true}));
 
 /** A kit file (beside a copy of fixtures/bytes), the spawn the CLI would use, and what the flow did: spawned roles, ops sent, printed lines.
  * `workerKit` makes the worker run another kit than the one the CLI loaded (serials changed on the bench); `lostAt` / `abortAt` act on the n-th bus step. */
-function rig(kit=KIT,o:{workerKit?:BenchKitV1;lostAt?:number;abortAt?:number;session?:BenchSessionV1;arm?:boolean;spawnFails?:boolean}={}){
+function rig(kit=KIT,o:{workerKit?:BenchKitV1;lostAt?:number;abortAt?:number;session?:BenchSessionV1;arm?:boolean;spawnFails?:boolean;summary?:(s:{objects:{index:string}[]})=>void}={}){
  const d=fresh('rig');mkdirSync(d);cpSync(join(FIXTURES,'bytes'),join(d,'bytes'),{recursive:true});
  const kitPath=join(d,'kit.json'),workerPath=o.workerKit?join(d,'worker-kit.json'):kitPath;
  writeFileSync(kitPath,JSON.stringify(kit));if(o.workerKit)writeFileSync(workerPath,JSON.stringify(o.workerKit));
- cpSync(join(FIXTURES,'sim-esi.summary.json'),join(d,'sim-esi.summary.json'));
+ const summary=fixture<{objects:{index:string}[]}>('sim-esi.summary.json');o.summary?.(summary);writeFileSync(join(d,'sim-esi.summary.json'),JSON.stringify(summary));
  const calls:{role:string;readOnly:boolean}[]=[],ops:string[]=[],lines:string[]=[],ac=new AbortController();let steps=0;
  const spawn:Spawn=async(role,readOnly)=>{
   calls.push({role,readOnly});
@@ -59,7 +59,8 @@ function rig(kit=KIT,o:{workerKit?:BenchKitV1;lostAt?:number;abortAt?:number;ses
 }
 const statuses=async(part:string)=>Object.fromEntries(await Promise.all(readdirSync(join(part,'cases')).map(async id=>{const t=await readTrace(join(part,'cases',id));return [id,t.meta?.runner??'evaluated'];})));
 const clean=async(part:string)=>checkManifest(part,await readManifest(part));
-async function identityOf(kit=KIT){const r=rig(kit),out=fresh('identity');expect(await identify(r.l,out,r.io)).toBe(0);return out;}
+async function identityOf(kit=KIT,o:{summary?:(s:{objects:{index:string}[]})=>void;code?:number}={}){const r=rig(kit,o),out=fresh('identity');expect(await identify(r.l,out,r.io)).toBe(o.code??0);return out;}
+const FIRST_MOTION=['KCF02'];   // KCF04 and KCF01 join by id once they are registered
 
 describe('the two test hooks are honoured only on the simulated slave',()=>{
  it('BENCH_TEST_ARMING=1 arms a sim kit without a question; with a soem kit it is ignored and said so; otherwise ttyArming decides',async()=>{
@@ -93,11 +94,11 @@ describe('the two test hooks are honoured only on the simulated slave',()=>{
 describe('arguments and outputs',()=>{
  it('suites run in their registered order; --from starts at a case, --case runs one; together or unknown is refused',()=>{
   expect(casesOf('conformance',{}).map(c=>c.id)).toEqual(CONFORMANCE_CASES.map(c=>c.id));
-  expect(casesOf('measure',{}).map(c=>c.id)).toEqual(MEASURE_CASES.map(c=>c.id));
+  expect(casesOf('measure',{}).map(c=>c.id)).toEqual([...FIRST_MOTION,...MEASURE_CASES.map(c=>c.id)]);   // a measurement session re-runs the first-motion cases
   expect(casesOf('conformance',{from:'KCF05'}).map(c=>c.id)).toEqual(CONFORMANCE_CASES.slice(2).map(c=>c.id));
   expect(casesOf('conformance',{only:'KCF05'}).map(c=>c.id)).toEqual(['KCF05']);
   expect(()=>casesOf('conformance',{from:'KCF05',only:'KCF05'})).toThrow(/INVALID_OPTION/);
-  expect(()=>casesOf('measure',{only:'KCF02'})).toThrow(/INVALID_OPTION.*not a measure case/);
+  expect(()=>casesOf('measure',{only:'KCF05'})).toThrow(/INVALID_OPTION.*not a measure case/);
  });
  it('an output inside any repository is refused, an existing one too unless --from',()=>{
   expect(outProblem(join(ROOT,'not-yet/deep/out'),false)).toBe('OUTPUT_MUST_BE_OUTSIDE_REPOSITORIES');
@@ -205,11 +206,41 @@ describe('run',()=>{
   expect(s.KCF05).toEqual({status:'not_run',reason:'SUITE_STOPPED_AFTER_OPERATOR_ABORT'});
   expect(await clean(out)).toEqual([]);expect(readdirSync(dir).filter(f=>/\.(new|old)-/.test(f))).toEqual([]);
  },180_000);
- it('measure on the simulated slave: requires is enforced across parts, and no calibration dataset comes from an empty KMS01',async()=>{
+ it('measure re-runs KCF02 first; without KCF04 and KCF01 the measurement cases stay not_run, and no calibration dataset is written',async()=>{
   const identity=await identityOf(),r=rig(),out=fresh('measure');
   expect(await run(r.l,{identity,suite:'measure',out},r.io)).toBe(1);
-  expect(Object.values(await statuses(out)).every(s=>(s as {reason:string}).reason==='BENCH_ORDER_VIOLATION')).toBe(true);
-  expect(r.lines.join('\n')).toMatch(/no calibration dataset: NO_CALIBRATION_TRIALS/);expect(existsSync(join(out,'calibration'))).toBe(false);
+  const s=await statuses(out);
+  expect(s.KCF02).toBe('evaluated');
+  for(const c of MEASURE_CASES)expect(s[c.id]).toEqual({status:'not_run',reason:'BENCH_ORDER_VIOLATION'});
+  expect(r.lines.join('\n')).toMatch(/no calibration dataset: no KMS01 trial was tested/);expect(existsSync(join(out,'calibration'))).toBe(false);
+ },120_000);
+ it('measure with the prerequisites passed (injected): the trials run and the dataset is synthetic on the simulated backend',async()=>{
+  const r=rig(),out=fresh('measure');
+  expect(await caseSession('measure',r.l,{out,cases:casesOf('measure',{}),stored:[],replace:false,seedPassed:['KCF04','KCF01']},r.io)).toBe(1);   // KMS04 asks the operator: no prompter, not_run
+  const s=await statuses(out);
+  expect(s.KCF02).toBe('evaluated');expect(s.KMS01).toBe('evaluated');expect(s.KMS04).toEqual({status:'not_run',reason:'BENCH_PROMPT_UNAVAILABLE'});
+  const sidecar=JSON.parse(readFileSync(join(out,'calibration/sidecar.json'),'utf8')) as {sourceKind:string;generator?:string};
+  expect(sidecar.sourceKind).toBe('synthetic');expect(sidecar.generator).toMatch(/simulated slave/);
+  expect(await clean(out)).toEqual([]);
+ },180_000);
+ it('a failed torque case stops the suite like a disarmed one, even when evaluate failed it',async()=>{
+  const slow=reseal(KIT,k=>{Object.assign(k.simSlave!,{velocityScale:0.8});});   // KCF02 passes, KCF03 fails on trackingToleranceRadS (evaluate, not the runner)
+  const identity=await identityOf(slow),r=rig(slow),out=fresh('conformance');
+  expect(await run(r.l,{identity,suite:'conformance',out},r.io)).toBe(1);
+  const s=await statuses(out),k3=await readTrace(join(out,'cases/KCF03'));
+  expect(s.KCF02).toBe('evaluated');expect(s.KCF03).toBe('evaluated');expect(k3.meta?.runner).toBeUndefined();
+  for(const c of CONFORMANCE_CASES.slice(2))expect((s[c.id] as {reason:string}).reason).toMatch(/^SUITE_STOPPED_AFTER_trackingToleranceRadS exceeded/);
+  expect(r.lines.join('\n')).toMatch(/--from KCF03/);
+ },180_000);
+ it('torque needs a clean identity: a KID case failed or not_run refuses the run before any worker, listing them',async()=>{
+  const failed=await identityOf(KIT,{summary:x=>{x.objects=x.objects.filter(o=>!/6064/i.test(o.index));},code:1});
+  let r=rig();
+  expect(await run(r.l,{identity:failed,suite:'conformance',out:fresh('conformance'),only:'KCF02'},r.io)).toBe(1);
+  expect(r.calls).toEqual([]);expect(r.lines.join('\n')).toMatch(/BENCH_IDENTITY_NOT_CLEAN: KID03 failed OBJECT_NOT_IN_DESCRIPTION/);
+  const blind=reseal(KIT,k=>{Object.assign(k.simSlave!,{strings:{}});});
+  const notRun=await identityOf(blind,{code:1});r=rig(blind);
+  expect(await run(r.l,{identity:notRun,suite:'conformance',out:fresh('conformance'),only:'KCF02'},r.io)).toBe(1);
+  expect(r.calls).toEqual([]);expect(r.lines.join('\n')).toMatch(/BENCH_IDENTITY_NOT_CLEAN: KID02 not_run FIRMWARE_NOT_READ/);
  },120_000);
 });
 
@@ -233,6 +264,14 @@ describe('the calibration dataset of a measure part',()=>{
 });
 
 describe('sensors',()=>{
+ it('the sensors suite keeps going after a failed case (no torque)',async()=>{
+  const r=rig(reseal(SENSOR_KIT,k=>{Object.assign(k.simSlave!,{sensorCorruptEvery:10});})),out=fresh('sensors');
+  expect(await sensors(r.l,{out},r.io)).toBe(1);
+  const s=await statuses(out);
+  expect(s.KSN01).toBe('evaluated');expect(Object.keys(s).sort()).toEqual(SENSOR_CASES.map(c=>c.id).sort());
+  expect(Object.values(s).some(x=>/SUITE_STOPPED/.test(JSON.stringify(x)))).toBe(false);
+  expect((await readTrace(join(out,'cases/KSN05'))).ticks.length).toBeGreaterThan(0);   // ran after KSN01 failed
+ },180_000);
  it('the sensors worker read-only, never armed even with an arming that would say yes, no enable sent; the sensors part written',async()=>{
   const r=rig(SENSOR_KIT,{arm:true}),out=fresh('sensors');
   expect(await sensors(r.l,{out,only:SENSOR_CASES[0]!.id},r.io)).toBe(0);

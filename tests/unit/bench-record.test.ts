@@ -8,7 +8,7 @@ import {sealBench,type BenchKitV1,type BenchPolicy,type BenchRecordV1,type Bench
 import {fakeClock} from '../../packages/bench/src/clock';
 import {spawnBenchWorker,type BenchWorker} from '../../packages/bench/src/worker';
 import {runCase,startBenchSession} from '../../packages/bench/src/session';
-import {benchCase,trackingCase,type BenchCase,type CaseVerdict} from '../../packages/bench/src/cases/index';
+import {benchCase,trackingCase,verdictOf,type BenchCase,type CaseTrace,type CaseVerdict} from '../../packages/bench/src/cases/index';
 import {readTrace,writeManifest} from '../../packages/bench/src/evidence';
 import {READ_LIMITS} from '../../packages/lab-runtime/src/v2/navigation2d/evidence';
 import {assembleBenchRecord,BENCH_DEVIATIONS,sessionExtra,verifyBenchRecord,writeBenchPart,type PartKind} from '../../packages/bench/src/record';
@@ -161,6 +161,30 @@ describe('a hostile record directory: verify returns issues, never throws, never
   const m=JSON.parse(readFileSync(join(d,'manifest.json'),'utf8'));m.files.push({path:'big.bin',sha256:'0'.repeat(64),bytes});writeFileSync(join(d,'manifest.json'),JSON.stringify(m));
   expect(await issuesOf(d)).toContainEqual({code:'SIZE_MISMATCH',path:'big.bin'});
  });
+});
+
+describe('a case in several parts (a measurement session re-runs KCF02)',()=>{
+ /** A measure part holding only KCF02 with a runner verdict (an abort), on the same kit, policy and serials as the conformance part. */
+ async function abortedKcf02(){
+  const d=fresh('measure'),kit=kitOf(SIM),trace:CaseTrace={ticks:[],cycles:[],prompts:[],meta:{runner:{status:'failed',reason:'OPERATOR_ABORT'}}};
+  await writeBenchPart(d,'measure',{session:SESSION,kit,policy:POLICY,results:[{caseId:'KCF02',trace,verdict:verdictOf(benchCase('KCF02')!,trace,kit,POLICY)}],extra:sessionExtra(conformance.describe,conformance.scan)});
+  return d;
+ }
+ it('tested in conformance, failed in measure: the record says failed with every occurrence in artifacts; edited to tested: VERDICT_NOT_REPRODUCED',async()=>{
+  const d=fresh('record'),r=await assembleBenchRecord({identity:identity.d,conformance:conformance.d,measure:await abortedKcf02()},d,{candidateId:'t-2',sourceCommit:'abc1234'});
+  expect(r.cases.KCF02).toMatchObject({status:'failed',reason:'OPERATOR_ABORT',session:'measure'});
+  expect(r.cases.KCF02!.artifacts.some(a=>a.startsWith('conformance/cases/KCF02/'))).toBe(true);expect(r.cases.KCF02!.artifacts.some(a=>a.startsWith('measure/cases/KCF02/'))).toBe(true);
+  expect(await verifyBenchRecord(d)).toEqual({ok:true,issues:[]});
+  const p=join(d,'bench-record.json'),x=JSON.parse(readFileSync(p,'utf8')) as BenchRecordV1;
+  x.cases.KCF02={...x.cases.KCF02!,status:'tested',reason:null};writeFileSync(p,JSON.stringify(x));await writeManifest(d);
+  expect(await verifyBenchRecord(d)).toEqual({ok:false,issues:[{code:'VERDICT_NOT_REPRODUCED',path:'/cases/KCF02'}]});
+ },60_000);
+ it('tested in both parts: tested',async()=>{
+  const measure=await part('measure',[benchCase('KCF02')!]),d=fresh('record');
+  const r=await assembleBenchRecord({identity:identity.d,conformance:conformance.d,measure:measure.d},d,{candidateId:'t-3',sourceCommit:'abc1234'});
+  expect(r.cases.KCF02).toMatchObject({status:'tested',reason:null});expect(r.cases.KCF02!.artifacts.filter(a=>a.includes('/cases/KCF02/')).length).toBeGreaterThan(2);
+  expect(await verifyBenchRecord(d)).toEqual({ok:true,issues:[]});
+ },60_000);
 });
 
 describe('assembly refuses parts that do not belong together',()=>{

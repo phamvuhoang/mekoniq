@@ -19,6 +19,8 @@ export type {Issue} from './evidence';
 
 export type PartKind='identity'|'conformance'|'measure'|'sensors';
 const PARTS=['identity','conformance','measure','sensors','compare'] as const,TORQUE=['conformance','measure'];
+/** A case in several parts (a measurement session re-runs the first-motion cases): the worst occurrence is the record's status. */
+const RANK:Record<CaseVerdict['status'],number>={failed:3,not_run:2,unsupported_by_device:1,tested:0};
 const refused=(code:string,detail:string)=>Object.assign(new Error(`${code}: ${detail}`),{code});
 const json=(x:unknown)=>JSON.stringify(x,null,1);
 const same=(a:unknown,b:unknown)=>hashJson(a??null)===hashJson(b??null);
@@ -77,7 +79,7 @@ async function derive(root:string):Promise<{fields:Derived|null;issues:Issue[]}>
  if(!k.ok)add('KIT_DIGEST_MISMATCH','kit/bench-kit.json');
  if(!p.ok)add('POLICY_DIGEST_MISMATCH','kit/policy.json');
  if(!k.ok||!p.ok)return {fields:null,issues};
- const {kit}=k,{policy}=p,parts={} as BenchRecordV1['parts'],cases:BenchRecordV1['cases']={},verdicts=new Map<string,CaseVerdict>();
+ const {kit}=k,{policy}=p,parts={} as BenchRecordV1['parts'],cases:BenchRecordV1['cases']={},verdicts=new Map<string,CaseVerdict>(),measurements:BenchRecordV1['measurements']=[];
  const loads:Partial<Record<string,BenchSessionV1['declarations']['shaftLoad']>>={};let identity:SessionExtra|null=null;
  for(const kind of PARTS){
   const d=join(root,kind);parts[kind]=null;
@@ -108,8 +110,11 @@ async function derive(root:string):Promise<{fields:Derived|null;issues:Issue[]}>
     const c=codeOf(e);if(c==='RECORD_SCHEMA_INVALID'||c==='SIZE_MISMATCH')add(c,`${kind}/cases/${id}`);
     v={status:'failed',reason:`VERDICT_NOT_REPRODUCIBLE ${e instanceof Error?e.message:String(e)}`.slice(0,500),measurements:[]};
    }
-   if(cases[id])add('VERDICT_NOT_REPRODUCED',`/cases/${id}`);   // one case, one session
-   verdicts.set(id,v);cases[id]={status:v.status,reason:v.reason,session:kind,artifacts:(await listFiles(cd)).map(f=>`${kind}/cases/${id}/${f}`)};
+   // each occurrence recomputed from its own traces; the worst one (the first of equals) gives status, reason and session, the artifacts cover every occurrence
+   const artifacts=(await listFiles(cd)).map(f=>`${kind}/cases/${id}/${f}`),had=cases[id];
+   measurements.push(...v.measurements);
+   if(had&&RANK[had.status]>=RANK[v.status]){had.artifacts.push(...artifacts);continue;}
+   verdicts.set(id,v);cases[id]={status:v.status,reason:v.reason,session:kind,artifacts:[...had?.artifacts??[],...artifacts]};
   }
  }
  if(!identity){add('SERIAL_SET_MISMATCH','identity/identity.json');return {fields:null,issues};}
@@ -119,7 +124,7 @@ async function derive(root:string):Promise<{fields:Derived|null;issues:Issue[]}>
   policyDigest:policy.digest,conditions:{shaftLoad:loads.conformance??loads.measure??loads.identity??'bare',busMode:kit.bus.mode,cycleMs:kit.bus.cycleMs,sync:kit.bus.sync},
   devices:identity.slaves.map(s=>({deviceId:s.axisId,profileId:kit.axes.find(a=>a.axisId===s.axisId)?.profile.id??'',vendorId:s.vendorId,productCode:s.productCode,revision:String(s.revision),serial:s.serial,firmware:null})),
   deviations:BENCH_DEVIATIONS,cases,gates:Object.fromEntries(HARDWARE_GATES_BENCH.map(g=>[g,{status:gateStatus(g,cases,{testLevel}),accepted:false as const}])),
-  closures:closuresFor(identity.checks,verdicts,kit),measurements:[...verdicts.values()].flatMap(v=>v.measurements),
+  closures:closuresFor(identity.checks,verdicts,kit),measurements,
   externalGates:{'G-SAFE1':{status:'blocked_external',accepted:false}}}};
 }
 
