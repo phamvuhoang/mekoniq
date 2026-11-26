@@ -81,17 +81,30 @@ describe('conformance cases on the simulated slave',()=>{
   const r=await run(byId('KCF07a'));
   expect(r.verdict).toMatchObject({status:'tested',reason:null});expect(measured(r,'watchdogTrippedAtTick')).toBe(5);
  },30_000);
- it('KCF07b: silence with the slave watchdog trips the drive, which is at rest on reconnect; the session then takes only stop',async()=>{
-  const r=await run(byId('KCF07b'),{watchdogMs:100}),s=r.trace.silence as {alState:string;slaves:{errorCode:number}[];axes:{velocityRadS:number}[]};
-  expect(s.alState).not.toBe('OP');expect(s.slaves.every(x=>x.errorCode!==0)).toBe(true);expect(s.axes.map(a=>Math.abs(a.velocityRadS))).toEqual([0,0]);
-  expect(r.verdict).toMatchObject({status:'tested',reason:null});expect(measured(r,'travelDuringSilenceRad')).toBeGreaterThan(0);
-  const w=r.ctx.worker;
+ it.each([[100,'tested',null],[null,'failed','DRIVE_KEPT_RUNNING_WITHOUT_MASTER']])('KCF07b with slave watchdog %s: %s %s; runCase then sends stop itself, the axes end at rest, the run is disarmed',async(watchdogMs,status,reason)=>{
+  const r=await run(byId('KCF07b'),{watchdogMs}),s=r.trace.silence as {alState:string;slaves:{errorCode:number}[];axes:{velocityRadS:number}[]};
+  expect(r.verdict).toMatchObject({status,reason});
+  if(watchdogMs){
+   expect(s.alState).not.toBe('OP');expect(s.slaves.every(x=>x.errorCode!==0)).toBe(true);expect(s.axes.map(a=>Math.abs(a.velocityRadS))).toEqual([0,0]);
+   expect(measured(r,'travelDuringSilenceRad')).toBeGreaterThan(0);
+  }else expect(s.axes.every(a=>a.velocityRadS>0.4)).toBe(true);
+  const stop=r.trace.stop as {controlwords:number[];velocityRadS:(number|null)[]};
+  // the last word is 0x0000 on every axis; where the bus still reads (no slave watchdog: still in OP), it went out at rest, so the ramp was held, not cut into a coast
+  expect(stop.controlwords).toEqual([0,0]);
+  if(!watchdogMs)expect(stop.velocityRadS.every(v=>v!==null&&Math.abs(v)<=POLICY.restSpeedRadS)).toBe(true);
+  expect(r.ctx.disarmed).toBe(true);
+  await expect(r.ctx.worker.request('describe',{},r.ctx.worker.tick)).rejects.toMatchObject({code:'WORKER_LOST',outcome:'not_sent'});   // the session is over: nothing is written after stop
+  await r.ctx.worker.close();   // waits for the exit the stop already caused
+  expect(JSON.parse(r.ctx.worker.stderr.trim().split('\n').at(-1)!)).toEqual({event:'stopped',controlwords:[0,0]});
+ },30_000);
+ it('after silence the worker takes only stop (and describe)',async()=>{
+  const {worker:w}=await ctxOf([]);
+  for(let k=0;k<5;k++)await w.request('step',{commands:KIT.axes.map(a=>({axisId:a.axisId,seq:k+1,mode:'csv',target:0.5,enable:true,quickStop:false,faultReset:false}))},k);
+  expect((await w.request('silence',{ms:200},w.tick)).ok).toBe(true);
   for(const op of ['open','scan','configure','start','silence'] as const)expect((await w.request(op,{ms:100},w.tick)).error?.code).toBe('BENCH_ORDER_VIOLATION');
   expect((await w.request('step',{commands:[]},w.tick)).error?.code).toBe('BENCH_ORDER_VIOLATION');
-  expect((await w.request('stop',{},w.tick)).result).toEqual({controlwords:[0,0]});
- },30_000);
- it('KCF07b: a drive without its own watchdog keeps running: DRIVE_KEPT_RUNNING_WITHOUT_MASTER',async()=>{
-  expect((await run(byId('KCF07b'),{watchdogMs:null})).verdict).toMatchObject({status:'failed',reason:'DRIVE_KEPT_RUNNING_WITHOUT_MASTER'});
+  expect((await w.request('describe',{},w.tick)).ok).toBe(true);
+  expect((await w.request('stop',{},w.tick)).result).toMatchObject({controlwords:[0,0]});
  },30_000);
  it('KCF08 (KSW08): diffDriveBaseV1 drives both axes through straight, arc, spin, normal and protective stop',async()=>{
   const r=await run(byId('KCF08'));
@@ -111,6 +124,6 @@ describe('conformance cases on the simulated slave',()=>{
   const ctx=await ctxOf(CONFORMANCE_CASES,{},SOAK);ctx.passed.clear();
   const out:[string,string,string|null][]=[];
   for(const c of CONFORMANCE_CASES){const r=await runCase(c,ctx);out.push([c.id,r.verdict.status,r.verdict.reason]);}
-  expect(out).toEqual(CONFORMANCE_CASES.map(c=>[c.id,'tested',null]));expect(ctx.disarmed).toBeFalsy();
+  expect(out).toEqual(CONFORMANCE_CASES.map(c=>[c.id,'tested',null]));expect(ctx.disarmed).toBe(true);   // only by the silence of KCF07b, the last case
  },120_000);
 });

@@ -3,8 +3,9 @@ import type {DriveCommandV1,DriveFault,DriveFeedbackV1} from '../../../lab-runti
 import type {BenchCycleRow,BenchKitV1,BenchPolicy,BenchTickRecord,Measurement} from '../contracts';
 
 /** What runCase recorded: every tick sent (the stop sequence included), the worker's cycle rows, the operator's answers, the objects `scan` read
- * (axisId -> {'605A:00': value}), the script's own notes (`meta`) and the result of `silence`. evaluate() sees nothing else. */
-export interface CaseTrace{ticks:BenchTickRecord[];cycles:BenchCycleRow[];prompts:{id:string;answer:string}[];objects?:Record<string,Record<string,number>>;meta?:Record<string,unknown>;silence?:Record<string,unknown>}
+ * (axisId -> {'605A:00': value}), the script's own notes (`meta`, plus `error` when the case code threw), and the results of `silence` and of the `stop`
+ * runCase sends after it. evaluate() sees nothing else. */
+export interface CaseTrace{ticks:BenchTickRecord[];cycles:BenchCycleRow[];prompts:{id:string;answer:string}[];objects?:Record<string,Record<string,number>>;meta?:Record<string,unknown>;silence?:Record<string,unknown>;stop?:Record<string,unknown>}
 export interface CaseVerdict{status:'tested'|'failed'|'not_run'|'unsupported_by_device';reason:string|null;measurements:Measurement[]}
 export interface CaseScript{
  ticks:number;

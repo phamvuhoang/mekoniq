@@ -7,7 +7,7 @@ import type {Arming} from './arming';
 import type {CaseTrace,CaseVerdict,BenchCase} from './cases/types';
 import type {Clock} from './clock';
 import type {BenchKitV1,BenchPolicy,BenchTickRecord,BenchCycleRow} from './contracts';
-import type {BenchOp,BenchWorker} from './worker';
+import {BenchWorkerError,type BenchOp,type BenchWorker} from './worker';
 
 const TICK_NS=20_000_000n;
 export interface RunContext{
@@ -56,7 +56,10 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
  if(ctx.objects)trace.objects=ctx.objects;
  if(s.meta)trace.meta=s.meta;
  const t0=worker.tick,start=clock.nowNs(),expected=new Set<string>(s.expectedFaults??[]);
- let k=0,fb:DriveFeedbackV1[]=[],vendor:BenchTickRecord['vendor']=[],reason:string|null=null;
+ let k=0,fb:DriveFeedbackV1[]=[],vendor:BenchTickRecord['vendor']=[],reason:string|null=null,scriptError:string|null=null;
+ const disarm=()=>{armedRuns.delete(ctx);ctx.disarmed=true;};
+ /** Case code (commandsAt) and the caller's onTick never throw through the loop: the first error is kept and ends the case like any abnormal end. */
+ const guarded=<T>(f:()=>T):T|undefined=>{try{return f();}catch(e){scriptError??=e instanceof Error?e.message:String(e);return undefined;}};
  /** One tick on the 20 ms grid: the step, its row, its cycles. A refused step returns its code; a lost worker throws. */
  const step=async(cmds:DriveCommandV1[])=>{
   const due=start+BigInt(k++)*TICK_NS;
@@ -65,35 +68,52 @@ export async function runCase(c:BenchCase,ctx:RunContext):Promise<{trace:CaseTra
   if(!ack.ok)return ack.error!.code;
   const r=ack.result as {feedback:DriveFeedbackV1[];vendor:BenchTickRecord['vendor'];cycles:BenchCycleRow[]};
   const row:BenchTickRecord={schemaVersion:1,tick:ack.tick-1,tMonoNs:Number(now),latenessNs:Number(now-due),armed:armedRuns.has(ctx),driveCommands:cmds,feedback:r.feedback,vendor:r.vendor};
-  ({feedback:fb,vendor}=r);trace.ticks.push(row);trace.cycles.push(...r.cycles);ctx.onTick?.(row);
+  ({feedback:fb,vendor}=r);trace.ticks.push(row);trace.cycles.push(...r.cycles);guarded(()=>ctx.onTick?.(row));
   return null;
+ };
+ /** THE stop sequence, the only one: an abnormal end (`quick`) sends one quick-stop tick first; then quickStop/enable false ticks until every power stage is off
+  * (the worker holds the ramp: stopseq rule 2), at most quickStopHoldMs + 10 ticks. Returns a code when it could not finish. */
+ const stopAxes=async(quick:boolean)=>{
+  const limit=Math.ceil((kit.channel.quickStopHoldMs??2000)/20)+10;
+  for(let i=0;i<limit&&(i===0&&quick||!vendor.every(powerOff));i++){
+   const seq=worker.tick+1,err=await step(kit.axes.map(a=>({axisId:a.axisId,seq,mode:'csv' as const,target:0,enable:quick&&i===0,quickStop:quick,faultReset:false})));
+   if(err)return err;
+  }
+  return vendor.every(powerOff)?null:'BENCH_STOP_INCOMPLETE';
  };
  try{
   for(let i=0;i<s.ticks;i++){
    if(ctx.abort.aborted){reason='OPERATOR_ABORT';break;}
-   const cmds=s.commandsAt(i,fb).map(x=>({...x,seq:t0+x.seq}));
+   const local=guarded(()=>s.commandsAt(i,fb));
+   if(!local){reason='CASE_SCRIPT_ERROR';break;}
+   const cmds=local.map(x=>({...x,seq:t0+x.seq}));
    // the torque gate: a command that asks for torque (enable without quickStop) leaves only from an armed torque case
    if(cmds.some(x=>x.enable&&!x.quickStop)&&!(c.needsTorque&&armedRuns.has(ctx))){reason='BENCH_NOT_ARMED';break;}
    if((reason=await step(cmds)))break;
+   if(scriptError){reason='CASE_SCRIPT_ERROR';break;}
    if(trace.ticks.at(-1)!.latenessNs>policy.tickLatenessMaxMs*1e6){reason='HOST_TICK_LATE';break;}   // the host's fault, not the drive's
    const bad=fb.filter(f=>f.state==='fault'&&!expected.has(f.fault!));
    if(bad.length){reason=`UNEXPECTED_FAULT ${bad.map(f=>`${f.axisId}:${f.fault}`).join(',')}`;break;}
   }
-  if(!reason&&s.silence){    // the session ends here (KCF07b): only stop follows, so no stop sequence either
+  if(!reason&&s.silence){
    const a=await worker.request('silence',{ms:s.silence.ms},worker.tick);
-   if(a.ok)trace.silence=a.result;else reason=a.error!.code;
+   if(a.ok){
+    // the session ends here (KCF07b; contracts §3: only stop follows). runCase sends it itself, whatever the drive did: a drive that kept running is stopped
+    // by the worker's held ramp (session.py _stop). A bus silence is an abnormal end by design, so the run is disarmed.
+    trace.silence=a.result;disarm();
+    const st=await worker.request('stop',{},worker.tick);
+    if(st.ok)trace.stop=st.result;else reason=st.error!.code;
+   }else reason=a.error!.code;
   }
-  if(!trace.silence&&k>0){
-   // the stop sequence: an abnormal end quick-stops first; then enable false until every power stage is off (the worker holds the ramp: stopseq rule 2)
-   const quick=reason!==null,limit=Math.ceil((kit.channel.quickStopHoldMs??2000)/20)+10;
-   for(let i=0;i<limit&&(i===0&&quick||!vendor.every(powerOff));i++){
-    const seq=worker.tick+1,err=await step(kit.axes.map(a=>({axisId:a.axisId,seq,mode:'csv' as const,target:0,enable:quick&&i===0,quickStop:quick,faultReset:false})));
-    if(err){reason??=err;break;}
-   }
-   if(!vendor.every(powerOff))reason??='BENCH_STOP_INCOMPLETE';
-  }
- }catch(e){armedRuns.delete(ctx);ctx.disarmed=true;throw e;}   // WORKER_LOST / WORKER_TIMEOUT: nothing more is sent
- if(reason){armedRuns.delete(ctx);ctx.disarmed=true;return verdict(trace,'failed',reason);}
+  if(!trace.silence&&k>0){const err=await stopAxes(reason!==null);reason??=err;}
+ }catch(e){
+  disarm();
+  // a lost worker (BenchWorkerError) is already dead with its group: nothing more is sent. Anything else left a live worker: stop it, best effort, then rethrow.
+  if(!(e instanceof BenchWorkerError))try{await stopAxes(true);}catch{/* the first error is the one reported */}
+  throw e;
+ }
+ if(scriptError)trace.meta={...trace.meta,error:scriptError};
+ if(reason){disarm();return verdict(trace,'failed',reason);}
  const v=c.evaluate(trace,kit,policy);
  if(v.status==='tested')ctx.passed.add(c.id);
  return {trace,verdict:v};

@@ -73,6 +73,7 @@ class BenchSession:
         self.rest, self.qs_ms = [0] * self.n, [0] * self.n   # cycles in a row below quickStopRestRadS; ms since the quick-stop sequence began
         self.unwrap = [Unwrap32() for _ in self.axes]
         self.last = [None] * self.n                          # the last input of each axis that came with a good working counter
+        self.read_ok = [False] * self.n                      # whether the latest exchange read that axis (good working counter)
         self.accepted = [{"enable": False, "quickStop": False, "faultReset": False} for _ in self.axes]
         self.fault_maps = [a.get("faultMap", {}) for a in self.axes]
 
@@ -273,7 +274,7 @@ class BenchSession:
         t = time.monotonic_ns()
         axes = []
         for i, inp in zip(by_pos, inputs):
-            self.cw[i] = outputs[i]["controlword"]
+            self.cw[i], self.read_ok[i] = outputs[i]["controlword"], inp["wkcOk"]
             if inp["wkcOk"]:
                 self.wkc_bad[i] = 0
                 # EXTERNAL_TRIP case (1) of the module docstring; a drive Fault latches in the drive itself
@@ -336,4 +337,6 @@ class BenchSession:
         finally:
             self.phase = "stopped"
             self.bus.close()
-        return {"controlwords": list(self.cw)}
+        # the speed each axis had when its last word went out: at rest means the ramp was held, not cut into a coast; null when that exchange read nothing
+        return {"controlwords": list(self.cw), "velocityRadS": [velocity_from_raw(x["velocityRaw"], a["units"]) if ok and x["velocityRaw"] is not None else None
+                                                                for x, a, ok in zip(self.last, self.axes, self.read_ok)]}

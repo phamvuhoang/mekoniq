@@ -432,7 +432,10 @@ def test_silence_ends_the_session(watchdog):
     assert code(r.step) == "BENCH_ORDER_VIOLATION"
     r.do("describe")
     rec = record(r)
-    assert r.do("stop")["controlwords"] == [0, 0]
+    stop = r.do("stop")
+    assert stop["controlwords"] == [0, 0]
+    # the last word went out at rest; a bus out of OP reads nothing, so the speed is unknown there (the silence result above saw it at rest)
+    assert stop["velocityRadS"] == ([None, None] if watchdog else pytest.approx([0, 0], abs=0.05))
     if not watchdog:   # the slave did not trip and still runs in Operation enabled: stop must hold the ramp, not cut torque
         assert_held(rec)
     assert not coasted(r)
@@ -444,13 +447,14 @@ def test_stop_ends_with_controlword_zero_on_every_axis(option):
     r.enable()
     for _ in range(20):
         r.step(target=2.0)
-    assert r.do("stop")["controlwords"] == [0, 0] and not coasted(r)
+    stop = r.do("stop")
+    assert stop["controlwords"] == [0, 0] and stop["velocityRadS"] == pytest.approx([0, 0], abs=0.05) and not coasted(r)
     assert code(r.step) == "BENCH_ORDER_VIOLATION"
 
 
 def test_stop_before_start_writes_nothing():
     r = Rig(upto="scan")
-    assert r.do("stop")["controlwords"] == [0, 0] and r.bus.writes == []
+    assert r.do("stop") == {"controlwords": [0, 0], "velocityRadS": [None, None]} and r.bus.writes == []
 
 
 # ---- the process: stdio lines, roles, stdin close = stop --------------------------------------------------------------------------------------------------------------

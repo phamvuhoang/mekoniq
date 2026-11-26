@@ -54,9 +54,9 @@ describe('worker wire discipline (KSW01)',()=>{
   const t0=Date.now();
   await expect(w.request('step',{commands:cmd(1)},0)).rejects.toMatchObject({code:'WORKER_TIMEOUT',outcome:'unknown'});
   expect(Date.now()-t0).toBeGreaterThanOrEqual(190);
+  expect(await gone(py)).toBe(true);   // the timeout itself killed the group, before close()
   await expect(w.request('step',{commands:cmd(1)},0)).rejects.toMatchObject({code:'WORKER_LOST',outcome:'not_sent'});
   await w.close();
-  expect(await gone(py)).toBe(true);
   expect(readFileSync(log,'utf8').trim().split('\n').map(l=>(JSON.parse(l) as {op:string}).op)).toEqual(['open','scan','configure','start','step']);
  },20_000);
 });
@@ -76,6 +76,11 @@ describe('arming and case order (KSW05)',()=>{
   asked.length=0;
   expect(await ttyArming(io(['x',' 5000\n'])).arm('KCF02')).toBe(true);expect(asked).toHaveLength(2);expect(asked[0]).toContain('5000');expect(asked[0]).toContain('KCF02');
   expect(await ttyArming({...io(['0000']),random:()=>0}).arm('x')).toBe(true);
+ });
+ it('ttyArming without an injected random draws an unpredictable four-digit code',async()=>{
+  const codes:string[]=[];
+  for(let i=0;i<20;i++)await ttyArming({isTTY:true,question:async q=>{codes.push(/type (\S+) to arm/.exec(q)![1]!);return '';}}).arm('x');
+  expect(codes.every(c=>/^\d{4}$/.test(c))).toBe(true);expect(new Set(codes).size).toBeGreaterThan(1);
  });
  it('unmet requires is not_run BENCH_ORDER_VIOLATION before arming is asked',async()=>{
   const {w,kit}=await open();await startBenchSession(w);const arming=counting(true);
@@ -109,7 +114,8 @@ describe('ending a case',()=>{
   expect(ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);
   expect(r.trace.ticks).toEqual(ticks);
   expect(c.disarmed).toBe(true);
-  const again=await runCase(holdCase({id:'next'}),{...c,arming:no,abort:new AbortController().signal,onTick:t=>ticks.push(t)});
+  Object.assign(c,{arming:no,abort:new AbortController().signal});   // the same run context: the disarm itself must refuse
+  const again=await runCase(holdCase({id:'next'}),c);
   expect(again.verdict.reason).toBe('BENCH_NOT_ARMED');expect(ticks).toHaveLength(r.trace.ticks.length);
  },20_000);
  it('an unexpected fault: quick stop, then enable false; the run is disarmed',async()=>{
@@ -121,6 +127,28 @@ describe('ending a case',()=>{
   expect(r.trace.ticks.at(-1)!.driveCommands.every(x=>!x.enable)).toBe(true);
   expect(c.disarmed).toBe(true);
   await runCase(holdCase({id:'next'}),c);expect(arming.calls).toBe(2);   // a new arming, never the old one
+ },20_000);
+ it.each(['commandsAt','onTick'])('a throw from %s ends the case CASE_SCRIPT_ERROR: quick stop, enable false, axes disabled, run disarmed',async where=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const base=holdCase({ticks:100,target:2}),ticks:BenchTickRecord[]=[];
+  const c:BenchCase=where==='commandsAt'?{...base,script:(k,p)=>{const s=base.script(k,p);return {...s,commandsAt:(i,f)=>{if(i===20)throw new Error('index bug');return s.commandsAt(i,f);}};}}:base;
+  const x=ctx(w,kit,{onTick:t=>{ticks.push(t);if(where==='onTick'&&ticks.length===20)throw new Error('ui bug');}});
+  const r=await runCase(c,x);
+  expect(r.verdict).toEqual({status:'failed',reason:'CASE_SCRIPT_ERROR',measurements:[]});expect(r.trace.meta).toMatchObject({error:expect.stringContaining('bug')});
+  const stop=r.trace.ticks.slice(20);
+  expect(stop[0]!.driveCommands.every(y=>y.quickStop)).toBe(true);expect(noTorque(stop)).toBe(true);
+  expect(r.trace.ticks.at(-1)!.driveCommands.every(y=>!y.enable)).toBe(true);expect(r.trace.ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);
+  expect(x.disarmed).toBe(true);
+ },20_000);
+ it('any other throw inside runCase (here the clock) still stops the live worker before it is rethrown',async()=>{
+  const {w,kit}=await open();await startBenchSession(w);
+  const clock=fakeClock(),sleep=clock.sleepUntilNs.bind(clock),ticks:BenchTickRecord[]=[];let n=0;
+  clock.sleepUntilNs=async t=>{if(++n===21)throw new Error('clock bug');return sleep(t);};
+  const x=ctx(w,kit,{clock,onTick:t=>ticks.push(t)});
+  await expect(runCase(holdCase({ticks:100,target:2}),x)).rejects.toThrow('clock bug');
+  expect(ticks).not.toHaveLength(20);expect(noTorque(ticks.slice(20))).toBe(true);
+  expect(ticks.at(-1)!.driveCommands.every(y=>!y.enable)).toBe(true);expect(ticks.at(-1)!.feedback.map(f=>f.state)).toEqual(['disabled','disabled']);
+  expect(x.disarmed).toBe(true);
  },20_000);
  it('the worker killed mid-case (KSW10): runCase rejects WORKER_LOST and sends nothing more',async()=>{
   const {w,kit}=await open();await startBenchSession(w);let sent=0;

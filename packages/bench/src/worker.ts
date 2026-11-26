@@ -63,7 +63,9 @@ export async function spawnBenchWorker(o:{role:'bus'|'sensors';python:string;kit
     ??(Array.isArray(res.cycles)?res.cycles.flatMap(c=>validateBenchCycle(c))[0]:{path:'/cycles',detail:'missing'});
    if(problem)return fail('WORKER_PROTOCOL',`step result: ${problem.path} ${problem.detail}`);
   }
-  tick=r.tick;clearTimeout(cur.timer);inFlight=undefined;cur.resolve(r);
+  tick=r.tick;clearTimeout(cur.timer);inFlight=undefined;
+  if(cur.op==='stop'&&r.ok)state='closed';   // the worker exits after stop: later requests are refused here, never written
+  cur.resolve(r);
  };
  child.stdout.on('data',(d:Buffer)=>{
   buffer+=d.toString('utf8');
@@ -73,7 +75,8 @@ export async function spawnBenchWorker(o:{role:'bus'|'sensors';python:string;kit
  });
  child.stderr.on('data',(d:Buffer)=>{stderr=(stderr+d.toString()).slice(-8192);});
  child.stdin.on('error',()=>{});
- child.once('exit',(code,signal)=>fail('WORKER_LOST',`worker exited (${signal??code}); ${stderr.slice(-300)}`));
+ // a stop's ACK is written just before the worker exits: let stdout drain before calling the exit a loss
+ child.once('exit',(code,signal)=>{const lost=()=>fail('WORKER_LOST',`worker exited (${signal??code}); ${stderr.slice(-300)}`);if(inFlight?.op==='stop')void exited.then(lost);else lost();});
  child.on('error',e=>fail('WORKER_LOST',e.message));
 
  const self:BenchWorker={
