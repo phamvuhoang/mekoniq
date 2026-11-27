@@ -100,6 +100,10 @@ test('within 5 % on every metric with matched entry passes',()=>{const {q,f,bin}
 test('a summary that claims a pass the streams do not give is refused',()=>{const {q,f,bin}=fixture({},{entryV:0.3});Object.assign(f['summary.json'],{status:'tested'});f['summary.json'].cld06={...f['summary.json'].cld06,status:'tested',failure:null};
  expect(check(q,f,bin)).toEqual(['CLD06_VERDICT_MISMATCH']);});
 test.each([
+ ['stop-report.json','cloud','peakDecelerationMps2',1.01],['stop-report.json','cloud','stopDistanceM',0.99],['mac/stop-report.json','mac','peakDecelerationMps2',1.01],['mac/stop-report.json','mac','stopDistanceM',1.01],
+] as const)('a %s whose %s %s is not the intact stream\'s is refused before any comparison',(file,side,k,factor)=>{const {q,f,bin}=fixture();f[file].stopReport.metrics[k]*=factor;
+ expect(check(q,f,bin)).toEqual([`CLD06_EXPECTED:${side}:stream`]);});
+test.each([
  ['torque left on a wheel at the stop tick',{torqueAtStop:0.01},'CLD06_EXPECTED:cloud:torque'],
  ['no receipt on the stop tick',{receipt:false},'CLD06_EVIDENCE_MISSING:cloud:601:receipt'],
 ] as const)('refuses %s',(_,o,code)=>{const {q,f,bin}=fixture({},o as any);expect(check(q,f,bin)).toEqual([code]);});

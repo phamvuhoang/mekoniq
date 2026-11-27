@@ -130,7 +130,8 @@ test('the performance measurement is recorded and says it is a measurement, not 
  expect(perf.steadyState.perTickMs.p50).toBeGreaterThan(0);expect(perf.steadyState.perTickMs.p95).toBeGreaterThanOrEqual(perf.steadyState.perTickMs.p50);expect(perf.steadyState.realtimeFactor).toBeGreaterThan(0);
 });
 test('R5 closing decision (LAB_R5_CLOSING=1, LAB_R5_CUT): the decided scope closes only with its gates tested, no failed case, a reason for every exception, and CLD06 from a valid supplement',()=>{
- const m=manifest();if(m.release!=='r5'||process.env.LAB_R5_CLOSING!=='1')return; // reading a partial candidate is the tests above; closing is asked for explicitly
+ if(process.env.LAB_R5_CLOSING!=='1')return; // reading a partial candidate is the tests above; closing is asked for explicitly
+ const m=manifest();expect(m.release,'LAB_R5_CLOSING=1 needs an R5 record').toBe('r5');
  const cloud=process.env.LAB_CLOUD_EVIDENCE_DIR?resolve(process.env.LAB_CLOUD_EVIDENCE_DIR):null;
  const cloudSupplementIssues=cloud?checkCloudRunR5Evidence((p:string)=>{const f=join(cloud,p);return existsSync(f)?readFileSync(f):null;},read('qualification.json')):null;
  // LAB_R5_CUT names the decided cut (default G-VIO1); G-CLOUD3 only on the decided CLD06 failure (scripts/sim-extension-r5.mjs, CUTTABLE_R5)

@@ -110,7 +110,7 @@ export const R5_CLOUD={container:'inputs/container/container.json',cld04:'inputs
  * its peak for 25 ticks) of a Mac run of MJ-TRAY01 / tray-stop-coast-v1 / seed 7 without a stop, 2026-11-27 (physics of 0d365afd): 0.4878 m/s from tick 394, straight held to tick 804;
  * fixtures/stop-v1/survey.json has 0.487 for the brake variant. Rest is stop-metrics.ts's (restSpeedMps 0.01 for restTicks 25, within observeTicks 500). */
 export const R5_CLD06={stopEntry:{id:'s1',function:'emergency',trigger:{kind:'elapsed_sim_ms',value:12000}},appliedTick:601,cruiseSpeedMps:0.488,
- entryTicks:25,minCruiseFraction:0.95,maxAbsOmegaRadps:0.05,maxSpeedDeltaFraction:0.02,maxYawDeltaRad:0.02,restSpeedMps:0.01,restTicks:25,observeTicks:500,
+ entryTicks:25,minCruiseFraction:0.95,maxAbsOmegaRadps:0.05,maxSpeedDeltaFraction:0.02,maxYawDeltaRad:0.02,restSpeedMps:0.01,restTicks:25,observeTicks:500,decelWindowTicks:5,
  chainAxes:['amr-1/wheel-left','amr-1/wheel-right'],metrics:['stopDistanceM','stopTimeMs','peakDecelerationMps2'],relativeTolerance:0.05};
 const must=(ok,code)=>{if(!ok)throw Error(code);};
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
@@ -168,7 +168,10 @@ export function cld06Trace(records,report,side){
  const torqueAtStop=torque(A),speeds=new Map();let restTick=null;
  for(let t=A;t<=A+c.observeTicks+c.restTicks-1&&restTick===null;t++){speeds.set(t,kin(t).v);torque(t);const s=t-c.restTicks+1;if(s>=A&&[...Array(c.restTicks).keys()].every(k=>speeds.get(s+k)<c.restSpeedMps))restTick=s;}
  must(restTick!==null,`CLD06_NOT_AT_REST:${side}`);
- return {entry,torqueAtStop,receipt:receipts[0],restTick};
+ // the two metrics stop-metrics.ts computes, recomputed here from the stream so a wrong report cannot pass the reader: distance over the poses from A to rest, peak over a trailing window
+ let stopDistanceM=0,peakDecelerationMps2=0;for(let t=A+1;t<=restTick;t++){const a=pose(t-1).positionM,b=pose(t).positionM;stopDistanceM+=Math.hypot(b[0]-a[0],b[1]-a[1]);}
+ for(let t=A+c.decelWindowTicks;t<=restTick;t++)peakDecelerationMps2=Math.max(peakDecelerationMps2,(speeds.get(t-c.decelWindowTicks)-speeds.get(t))/(c.decelWindowTicks*DT));
+ return {entry,torqueAtStop,receipt:receipts[0],restTick,metrics:{stopDistanceM,stopTimeMs:(restTick-A)*20,peakDecelerationMps2}};
 }
 /** One side's own expected result (the same for the Mac and for Cloud Run): the CLD06 run on the record's commit, the receipt and zero torque of each wheel on the applied tick,
  * needs_attention with EMERGENCY_STOP there, nothing served, no cup tipped, the stop report's rest the stream's. */
@@ -181,7 +184,7 @@ export function cld06Expected(report,trace,side,arch,commit){
  must(o?.status==='needs_attention'&&o.served==='0'&&emergencyTick(report)===A,e('outcome'));
  must(sr.metrics.cupTipped===false,e('cup'));
  must(R5_CLD06.metrics.every(k=>Number.isFinite(sr.metrics[k])&&sr.metrics[k]>0),e('metrics'));
- must(sr.metrics.stopTimeMs===(trace.restTick-A)*20,e('rest'));
+ must(R5_CLD06.metrics.every(k=>Math.abs(sr.metrics[k]-trace.metrics[k])<=1e-9*Math.abs(trace.metrics[k])),e('stream'));
 }
 /** Both runs, fixed before the cloud run: every tick of the 25 before the stop on both sides (v >= 95 % of the cruise reference, |omega| <= 0.05 rad/s), the speeds within 2 % of the Mac's
  * and the yaw within 0.02 rad (wrapped); then each metric |cloud - Mac| / Mac <= 5 %. Evidence is checked first and throws; the verdict is data: status, failure, the numbers. */
@@ -192,7 +195,7 @@ export function evaluateCld06(mac,cloud,commit){
  tm.entry.forEach((a,i)=>{const b=tc.entry[i];
   for(const [side,x] of [['mac',a],['cloud',b]]){if(!(x.v>=floor))mismatches.push(`speed_below_cruise:${side}:${x.tick}`);if(!(Math.abs(x.w)<=c.maxAbsOmegaRadps))mismatches.push(`yaw_rate:${side}:${x.tick}`);}
   if(!(Math.abs(b.v-a.v)<=c.maxSpeedDeltaFraction*a.v))mismatches.push(`speed_delta:${a.tick}`);if(!(Math.abs(wrap(b.yaw-a.yaw))<=c.maxYawDeltaRad))mismatches.push(`yaw_delta:${a.tick}`);});
- const comparison=Object.fromEntries(c.metrics.map(k=>{const x=mac.report.stopReport.metrics[k],y=cloud.report.stopReport.metrics[k],relative=Math.abs(y-x)/x;return [k,{mac:x,cloud:y,relative,pass:relative<=c.relativeTolerance}];}));
+ const comparison=Object.fromEntries(c.metrics.map(k=>{const x=tm.metrics[k],y=tc.metrics[k],relative=Math.abs(y-x)/x;return [k,{mac:x,cloud:y,relative,pass:relative<=c.relativeTolerance}];}));
  const exceeded=c.metrics.filter(k=>!comparison[k].pass),failure=mismatches.length?'ENTRY_CONDITION_MISMATCH':exceeded.length?'CLD06_TOLERANCE_EXCEEDED':null;
  const edge=t=>({tick:t.tick,v:t.v,w:t.w,yaw:t.yaw});
  return {status:failure?'failed':'tested',failure,appliedTick:c.appliedTick,cruiseSpeedMps:c.cruiseSpeedMps,relativeTolerance:c.relativeTolerance,
