@@ -1,0 +1,2025 @@
+{
+  "accepted": false,
+  "expectedRuns": 16,
+  "completedCases": 16,
+  "missingArtifacts": [],
+  "issues": [],
+  "reports": [
+    {
+      "caseId": "s1-normal",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "eb2c21cc79b5370c6bf9bb742e44ee7288f802791f7edeee7977b2fed9c50b95",
+        "runId": "35939c44-89a4-467f-b344-57282672c99a",
+        "function": "normal",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "normal",
+          "appliedBy": "controller",
+          "appliedTick": 412,
+          "runId": "35939c44-89a4-467f-b344-57282672c99a",
+          "bootId": "06ae6676-02d9-4dc8-af19-52d853d2ecd3",
+          "sceneDigest": "051cba6f12b72e141c73131c7d551c9b8d4f1264026fd254666bbfe3164a3922",
+          "requestDigest": "4a49ce7473f23fe58ebd26eae368ab06ca503a74ac505f96dbbb485cf6211bff"
+        },
+        "metrics": {
+          "stopTimeMs": 640,
+          "stopDistanceM": 0.1670112815044357,
+          "peakDecelerationMps2": 1.1125460694738842,
+          "torqueZeroTick": {
+            "unavailable": "NOT_APPLICABLE"
+          },
+          "cupMaxSlipMm": 0.951535309094048,
+          "cupTipped": false,
+          "postStopDriftMm": 0.02468001143403355,
+          "wheelSlip": true
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "enabled",
+            "fault": null
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "enabled",
+            "fault": null
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "not_applicable",
+            "detail": "only an emergency stop cuts torque"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "not_applicable",
+            "detail": "a normal stop keeps the drive enabled"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "not_applicable",
+            "detail": "a normal stop is not latched"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the controller"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "brake",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": 6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s1-protective",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "bbe8284feecfdc2100e8ea15d6f3ef316951e2d5a04938e44d22b222cd581cf8",
+        "runId": "5dfb7f64-7cb8-4732-bb60-2c461fc23b9a",
+        "function": "protective",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "protective",
+          "appliedBy": "controller",
+          "appliedTick": 412,
+          "runId": "5dfb7f64-7cb8-4732-bb60-2c461fc23b9a",
+          "bootId": "372b3d97-7054-4120-bc03-6067f872a98c",
+          "sceneDigest": "051cba6f12b72e141c73131c7d551c9b8d4f1264026fd254666bbfe3164a3922",
+          "requestDigest": "29936d4959c6734eb5a262ab97c703090afa9d7aaabdc193e4a117546aff3160"
+        },
+        "metrics": {
+          "stopTimeMs": 200,
+          "stopDistanceM": 0.02734326623708332,
+          "peakDecelerationMps2": 3.1828844659684887,
+          "torqueZeroTick": {
+            "unavailable": "NOT_APPLICABLE"
+          },
+          "cupMaxSlipMm": 2.1948742231752845,
+          "cupTipped": false,
+          "postStopDriftMm": 0.007161808635045964,
+          "wheelSlip": true
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "disabled",
+            "fault": null
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "disabled",
+            "fault": null
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "not_applicable",
+            "detail": "only an emergency stop cuts torque"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with PROTECTIVE_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the controller"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "brake",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": 6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s1-emergency-coast",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "2297b016baff681351e1ef87ca62f438ef712ad2389f56b629bb0afd2fc076ed",
+        "runId": "0e143bcb-0043-4b9d-b022-3b390884f965",
+        "function": "emergency",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "emergency",
+          "appliedBy": "worker",
+          "appliedTick": 412,
+          "runId": "0e143bcb-0043-4b9d-b022-3b390884f965",
+          "bootId": "894d9b32-60a7-4dc6-a976-bc87add66cbb",
+          "sceneDigest": "dd646f2e7595203d967d893beb695df70c53fe206aa6ed8881a0c861d9cd8386",
+          "requestDigest": "ecce81c49ddb5d0b48a3fc3e7242d904b4905dbbd9e68d801659384aae1891e0"
+        },
+        "metrics": {
+          "stopTimeMs": 3200,
+          "stopDistanceM": 0.7956733931729532,
+          "peakDecelerationMps2": 0.1783236330667436,
+          "torqueZeroTick": 412,
+          "cupMaxSlipMm": 2.8149523070944285,
+          "cupTipped": false,
+          "postStopDriftMm": 0.1635081752062841,
+          "wheelSlip": false
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "pass",
+            "detail": "zero torque on every chain axis from tick 412 to the end of the evidence (905 ticks)"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with EMERGENCY_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the worker"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "coast",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": null,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s1-emergency-brake",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "44d6183300cb2f4d6c113c8bbabc1d62aeb1afa730ed52fbebdd914eb5b2fc9f",
+        "runId": "3a89d33a-2a00-4f10-8c6a-44ae71e86c8e",
+        "function": "emergency",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "emergency",
+          "appliedBy": "worker",
+          "appliedTick": 412,
+          "runId": "3a89d33a-2a00-4f10-8c6a-44ae71e86c8e",
+          "bootId": "aeeae07e-f7e5-4344-92bc-567e56c0c65c",
+          "sceneDigest": "051cba6f12b72e141c73131c7d551c9b8d4f1264026fd254666bbfe3164a3922",
+          "requestDigest": "6ca63f2e6e20423510354ae7f848835cf1ab88f81f3355a137d6f51c6bbbdc50"
+        },
+        "metrics": {
+          "stopTimeMs": 120,
+          "stopDistanceM": 0.019551448125211698,
+          "peakDecelerationMps2": 3.888558109550509,
+          "torqueZeroTick": 412,
+          "cupMaxSlipMm": 3.0906389883545153,
+          "cupTipped": false,
+          "postStopDriftMm": 0.03220878624206532,
+          "wheelSlip": true
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "pass",
+            "detail": "zero torque on every chain axis from tick 412 to the end of the evidence (756 ticks)"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with EMERGENCY_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the worker"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "brake",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": 6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s2-normal",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "2e5cc3fe0ede21a240c2e9249b5b3c419957cc12737b65ca2e0437cdcb498fda",
+        "runId": "836ebc1f-2416-48f5-83d2-a918f437262f",
+        "function": "normal",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "normal",
+          "appliedBy": "controller",
+          "appliedTick": 412,
+          "runId": "836ebc1f-2416-48f5-83d2-a918f437262f",
+          "bootId": "693f0084-381b-4efa-8af1-9e20d283df97",
+          "sceneDigest": "a1cb5ff8ce7482b10fd8db6fafcb802b6988ee708c3c168c8c606f1b0f7213d3",
+          "requestDigest": "d278e92850153da68ee584e812d38161d44c3ab8e41cdedd1b12dc33123de996"
+        },
+        "metrics": {
+          "stopTimeMs": 400,
+          "stopDistanceM": 0.049532279233200124,
+          "peakDecelerationMps2": 0.8543480715268981,
+          "torqueZeroTick": {
+            "unavailable": "NOT_APPLICABLE"
+          },
+          "cupMaxSlipMm": 0.370937926931354,
+          "cupTipped": false,
+          "postStopDriftMm": 0.07419436678109063,
+          "wheelSlip": false
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "enabled",
+            "fault": null
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "enabled",
+            "fault": null
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "not_applicable",
+            "detail": "only an emergency stop cuts torque"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "not_applicable",
+            "detail": "a normal stop keeps the drive enabled"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "not_applicable",
+            "detail": "a normal stop is not latched"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the controller"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "brake",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": 6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s2-protective",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "1c7e7137b789b772f6af5afcd04f15e79cc31413e54c78c92058d4b81c629e5a",
+        "runId": "f3ef8c6d-2fdf-49cb-abc3-93b334cf2779",
+        "function": "protective",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "protective",
+          "appliedBy": "controller",
+          "appliedTick": 412,
+          "runId": "f3ef8c6d-2fdf-49cb-abc3-93b334cf2779",
+          "bootId": "7ec0170c-6e40-4cdb-9cda-2707b7db08e1",
+          "sceneDigest": "a1cb5ff8ce7482b10fd8db6fafcb802b6988ee708c3c168c8c606f1b0f7213d3",
+          "requestDigest": "29936d4959c6734eb5a262ab97c703090afa9d7aaabdc193e4a117546aff3160"
+        },
+        "metrics": {
+          "stopTimeMs": 140,
+          "stopDistanceM": 0.008199715679564366,
+          "peakDecelerationMps2": 1.8232065317439954,
+          "torqueZeroTick": {
+            "unavailable": "NOT_APPLICABLE"
+          },
+          "cupMaxSlipMm": 0.5599962039603513,
+          "cupTipped": false,
+          "postStopDriftMm": 0.0861689609321157,
+          "wheelSlip": true
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "disabled",
+            "fault": null
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "disabled",
+            "fault": null
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "not_applicable",
+            "detail": "only an emergency stop cuts torque"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with PROTECTIVE_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the controller"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "brake",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": 6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s2-emergency-coast",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "ab852dd2fd8d75345ad8dc760ab3197e9b4c4b0d2647c0c759825ceb73161cde",
+        "runId": "3c9967fa-3aaf-41cf-a2ee-c29fe1c92cd5",
+        "function": "emergency",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "emergency",
+          "appliedBy": "worker",
+          "appliedTick": 412,
+          "runId": "3c9967fa-3aaf-41cf-a2ee-c29fe1c92cd5",
+          "bootId": "ac6fd198-12b1-4bcb-945c-a856025c4b94",
+          "sceneDigest": "b9f76550fe2e83575cdf304c5961d9e05f8c5b72eb4f77e68d759ad059df1d4d",
+          "requestDigest": "54045bb084e3b3a63f794a7c835dce55cc4dc538d82625044ab17554a7d4b9cb"
+        },
+        "metrics": {
+          "stopTimeMs": 1500,
+          "stopDistanceM": 0.17984839428882618,
+          "peakDecelerationMps2": 0.17534059309049577,
+          "torqueZeroTick": 412,
+          "cupMaxSlipMm": 0.7010514061780325,
+          "cupTipped": false,
+          "postStopDriftMm": 0.15392443733200425,
+          "wheelSlip": false
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "pass",
+            "detail": "zero torque on every chain axis from tick 412 to the end of the evidence (813 ticks)"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with EMERGENCY_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the worker"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "coast",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": null,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s2-emergency-brake",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "c058b7041435c8ad0ce817d80a3095bdc9f6a8d8d3e773ff0250ca7ffa06c78d",
+        "runId": "369cacd1-fc87-4109-b81a-fad8cebcddd6",
+        "function": "emergency",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "emergency",
+          "appliedBy": "worker",
+          "appliedTick": 412,
+          "runId": "369cacd1-fc87-4109-b81a-fad8cebcddd6",
+          "bootId": "1266ed0d-19ab-4c3e-8eaf-de4e1344944c",
+          "sceneDigest": "a1cb5ff8ce7482b10fd8db6fafcb802b6988ee708c3c168c8c606f1b0f7213d3",
+          "requestDigest": "9284a2e37e38218487c84816df4f5b06a71f0208840e964a707b7f66275100d0"
+        },
+        "metrics": {
+          "stopTimeMs": 60,
+          "stopDistanceM": 0.0031681714425960583,
+          "peakDecelerationMps2": {
+            "unavailable": "TOO_FEW_SAMPLES"
+          },
+          "torqueZeroTick": 412,
+          "cupMaxSlipMm": 1.3759533118488816,
+          "cupTipped": false,
+          "postStopDriftMm": 0.037296615793460046,
+          "wheelSlip": true
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "pass",
+            "detail": "zero torque on every chain axis from tick 412 to the end of the evidence (752 ticks)"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with EMERGENCY_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the worker"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "brake",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": 6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s3-normal",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "4dd7481c8e7582e94e51dc507380ffaf702605de561950986c7be60886e2f04e",
+        "runId": "afafcd25-4540-4fd5-af83-bb4e81d091c7",
+        "function": "normal",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "normal",
+          "appliedBy": "controller",
+          "appliedTick": 412,
+          "runId": "afafcd25-4540-4fd5-af83-bb4e81d091c7",
+          "bootId": "99cf54e5-792e-441c-944f-5f0c96cbff2b",
+          "sceneDigest": "5881e087ba71527b887bb7eb6eb22b87d8ccf1eb3cc2f8b1232ce5663176e21c",
+          "requestDigest": "26c3aec80065aab014c98a31f2b7d30b22cd81780a0e01b199b3160f9b729878"
+        },
+        "metrics": {
+          "stopTimeMs": 640,
+          "stopDistanceM": 0.17206542251865717,
+          "peakDecelerationMps2": 1.040807680784575,
+          "torqueZeroTick": {
+            "unavailable": "NOT_APPLICABLE"
+          },
+          "cupMaxSlipMm": 10.447620280189371,
+          "cupTipped": false,
+          "postStopDriftMm": 0.09725660811695469,
+          "wheelSlip": true
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "enabled",
+            "fault": null
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "enabled",
+            "fault": null
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "not_applicable",
+            "detail": "only an emergency stop cuts torque"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "not_applicable",
+            "detail": "a normal stop keeps the drive enabled"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "not_applicable",
+            "detail": "a normal stop is not latched"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the controller"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.15,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "brake",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": 6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s3-protective",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "c37cbf40afa498e30c505eaa0ad35e1e397bd8328b60661e422ccb42bb20ba4b",
+        "runId": "745960be-46b6-4ade-ab0e-8d5586444085",
+        "function": "protective",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "protective",
+          "appliedBy": "controller",
+          "appliedTick": 412,
+          "runId": "745960be-46b6-4ade-ab0e-8d5586444085",
+          "bootId": "ca6a711f-ff9d-48ff-8b7d-abf1930c415d",
+          "sceneDigest": "5881e087ba71527b887bb7eb6eb22b87d8ccf1eb3cc2f8b1232ce5663176e21c",
+          "requestDigest": "29936d4959c6734eb5a262ab97c703090afa9d7aaabdc193e4a117546aff3160"
+        },
+        "metrics": {
+          "stopTimeMs": 200,
+          "stopDistanceM": 0.026274025331847754,
+          "peakDecelerationMps2": 3.1059493393437565,
+          "torqueZeroTick": {
+            "unavailable": "NOT_APPLICABLE"
+          },
+          "cupMaxSlipMm": 41.53693333630161,
+          "cupTipped": false,
+          "postStopDriftMm": 0.017597514359339383,
+          "wheelSlip": true
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "disabled",
+            "fault": null
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "disabled",
+            "fault": null
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "not_applicable",
+            "detail": "only an emergency stop cuts torque"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with PROTECTIVE_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the controller"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.15,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "brake",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": 6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s3-emergency-coast",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "a3da1bc0d67ab2d3d4ca20c6bd3034009ff1127145064dfb580c9f75cbe4a4b3",
+        "runId": "54f7fe0e-b01a-4055-84cb-dda6fd3f238a",
+        "function": "emergency",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "emergency",
+          "appliedBy": "worker",
+          "appliedTick": 412,
+          "runId": "54f7fe0e-b01a-4055-84cb-dda6fd3f238a",
+          "bootId": "11631176-99c9-4743-a86d-fd1c750bce1f",
+          "sceneDigest": "9b1ab8bcc8f8030644f57a908f4f8bcd66b7b5dee977339758e6c4712a6dcfe7",
+          "requestDigest": "e1c5854d5a9f7f8de8e777b6d0295a740f43b25f430da0b3aa0b6e1d5162e388"
+        },
+        "metrics": {
+          "stopTimeMs": 0,
+          "stopDistanceM": 0,
+          "peakDecelerationMps2": {
+            "unavailable": "TOO_FEW_SAMPLES"
+          },
+          "torqueZeroTick": 412,
+          "cupMaxSlipMm": 0.5052001744284258,
+          "cupTipped": false,
+          "postStopDriftMm": 0.5353161289283516,
+          "wheelSlip": true
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "pass",
+            "detail": "zero torque on every chain axis from tick 412 to the end of the evidence (777 ticks)"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with EMERGENCY_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the worker"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.15,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "coast",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": null,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s3-emergency-brake",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "34f1910e52034568030ad79be57800e8da5f48450d4b8091f4025e033612eb86",
+        "runId": "e3ae95b2-d7d6-48e0-9732-855dd5897ef6",
+        "function": "emergency",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "emergency",
+          "appliedBy": "worker",
+          "appliedTick": 412,
+          "runId": "e3ae95b2-d7d6-48e0-9732-855dd5897ef6",
+          "bootId": "89451a25-90bf-4c73-a9a6-773fca525fcf",
+          "sceneDigest": "5881e087ba71527b887bb7eb6eb22b87d8ccf1eb3cc2f8b1232ce5663176e21c",
+          "requestDigest": "a050fe71fd543b36392c03196113819335026fe1bd9fd88b7bf0bad3a548c7b2"
+        },
+        "metrics": {
+          "stopTimeMs": 100,
+          "stopDistanceM": 0.013974680131685962,
+          "peakDecelerationMps2": 4.145772648717963,
+          "torqueZeroTick": 412,
+          "cupMaxSlipMm": 53.40159800127434,
+          "cupTipped": false,
+          "postStopDriftMm": 0.028423578528522828,
+          "wheelSlip": true
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "pass",
+            "detail": "zero torque on every chain axis from tick 412 to the end of the evidence (754 ticks)"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with EMERGENCY_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the worker"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.15,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "brake",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": 6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s4-emergency-brake-command-loss",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "a86ea57bc56b0154ea9e7687f67d8242f16b1cbb99acdda1abc2362bb86201a6",
+        "runId": "5430b482-fb4a-46b1-9a93-a312bb88f59b",
+        "function": "emergency",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "emergency",
+          "appliedBy": "worker",
+          "appliedTick": 412,
+          "runId": "5430b482-fb4a-46b1-9a93-a312bb88f59b",
+          "bootId": "49bc3e8f-96b2-4f5a-a7c0-0000d1453a4f",
+          "sceneDigest": "051cba6f12b72e141c73131c7d551c9b8d4f1264026fd254666bbfe3164a3922",
+          "requestDigest": "00217a9a7fc3fd360255fe080c0cb943ede1ea42c5bfa7ac5dd82918d166d784"
+        },
+        "metrics": {
+          "stopTimeMs": 120,
+          "stopDistanceM": 0.01882236093730612,
+          "peakDecelerationMps2": 3.9603101648947745,
+          "torqueZeroTick": 412,
+          "cupMaxSlipMm": 3.135568780230144,
+          "cupTipped": false,
+          "postStopDriftMm": 0.012371490371485432,
+          "wheelSlip": true
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "pass",
+            "detail": "zero torque on every chain axis from tick 412 to the end of the evidence (756 ticks)"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with EMERGENCY_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the worker"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "brake",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": 6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s5-emergency-coast-r1",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "5294a7747fd3bf7b265bd1c4f042725d64ea4cc29210dc0603f3ecdfdd986d67",
+        "runId": "bd590dcd-b509-4659-9830-7101481b513f",
+        "function": "emergency",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "emergency",
+          "appliedBy": "worker",
+          "appliedTick": 412,
+          "runId": "bd590dcd-b509-4659-9830-7101481b513f",
+          "bootId": "7f6a41b6-e3eb-49d3-9358-fd54d4b4d143",
+          "sceneDigest": "dd646f2e7595203d967d893beb695df70c53fe206aa6ed8881a0c861d9cd8386",
+          "requestDigest": "ecce81c49ddb5d0b48a3fc3e7242d904b4905dbbd9e68d801659384aae1891e0"
+        },
+        "metrics": {
+          "stopTimeMs": 3200,
+          "stopDistanceM": 0.7956733931729532,
+          "peakDecelerationMps2": 0.1783236330667436,
+          "torqueZeroTick": 412,
+          "cupMaxSlipMm": 2.8149523070944285,
+          "cupTipped": false,
+          "postStopDriftMm": 0.1635081752062841,
+          "wheelSlip": false
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "pass",
+            "detail": "zero torque on every chain axis from tick 412 to the end of the evidence (905 ticks)"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with EMERGENCY_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the worker"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "coast",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": null,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s5-emergency-coast-r2",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "e2e22dfe5eb25b7810e687cba4db62fd75ea7dbc98a5e669b312890d19c3b02d",
+        "runId": "41110740-9d30-42e9-9486-da2eefe60cb4",
+        "function": "emergency",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "emergency",
+          "appliedBy": "worker",
+          "appliedTick": 412,
+          "runId": "41110740-9d30-42e9-9486-da2eefe60cb4",
+          "bootId": "8e440a67-c25a-4d2a-9225-0a2c5f0ecc05",
+          "sceneDigest": "dd646f2e7595203d967d893beb695df70c53fe206aa6ed8881a0c861d9cd8386",
+          "requestDigest": "ecce81c49ddb5d0b48a3fc3e7242d904b4905dbbd9e68d801659384aae1891e0"
+        },
+        "metrics": {
+          "stopTimeMs": 3200,
+          "stopDistanceM": 0.7956733931729532,
+          "peakDecelerationMps2": 0.1783236330667436,
+          "torqueZeroTick": 412,
+          "cupMaxSlipMm": 2.8149523070944285,
+          "cupTipped": false,
+          "postStopDriftMm": 0.1635081752062841,
+          "wheelSlip": false
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "pass",
+            "detail": "zero torque on every chain axis from tick 412 to the end of the evidence (905 ticks)"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with EMERGENCY_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the worker"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "coast",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": null,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    },
+    {
+      "caseId": "s5-emergency-coast-r3",
+      "report": {
+        "schemaVersion": 1,
+        "documentType": "stop-report",
+        "accepted": false,
+        "calibration": "not_calibrated",
+        "digest": "139566146a4684555a6e489899694d3de5e1585cf90f9a0060887ba343046ddd",
+        "runId": "34bf168f-62a0-4d7e-a2c7-3443678aed93",
+        "function": "emergency",
+        "entryId": "s1",
+        "verdict": "fired",
+        "appliedTick": 412,
+        "receipt": {
+          "entryId": "s1",
+          "function": "emergency",
+          "appliedBy": "worker",
+          "appliedTick": 412,
+          "runId": "34bf168f-62a0-4d7e-a2c7-3443678aed93",
+          "bootId": "60f4d21e-8670-47a5-a526-1ff2a9d67004",
+          "sceneDigest": "dd646f2e7595203d967d893beb695df70c53fe206aa6ed8881a0c861d9cd8386",
+          "requestDigest": "ecce81c49ddb5d0b48a3fc3e7242d904b4905dbbd9e68d801659384aae1891e0"
+        },
+        "metrics": {
+          "stopTimeMs": 3200,
+          "stopDistanceM": 0.7956733931729532,
+          "peakDecelerationMps2": 0.1783236330667436,
+          "torqueZeroTick": 412,
+          "cupMaxSlipMm": 2.8149523070944285,
+          "cupTipped": false,
+          "postStopDriftMm": 0.1635081752062841,
+          "wheelSlip": false
+        },
+        "drives": [
+          {
+            "axisId": "amr-1/wheel-left",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          },
+          {
+            "axisId": "amr-1/wheel-right",
+            "state": "fault",
+            "fault": "EXTERNAL_TRIP"
+          }
+        ],
+        "invariants": [
+          {
+            "id": "TORQUE_ZERO_AT_EMERGENCY",
+            "result": "pass",
+            "detail": "zero torque on every chain axis from tick 412 to the end of the evidence (905 ticks)"
+          },
+          {
+            "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+            "result": "pass",
+            "detail": "no axis of the chain was enabled again after the stop"
+          },
+          {
+            "id": "NO_AUTO_RESTART",
+            "result": "pass",
+            "detail": "needs_attention with EMERGENCY_STOP at tick 412; the chain stayed latched to the end"
+          },
+          {
+            "id": "RECEIPT_MATCHES_INTENT",
+            "result": "pass",
+            "detail": "one receipt for tick 412, applied by the worker"
+          },
+          {
+            "id": "NO_FALSE_SERVE",
+            "result": "pass",
+            "detail": "served 0, status needs_attention; nothing was served after the stop"
+          }
+        ],
+        "decidingParameters": [
+          {
+            "id": "rollingResistanceM",
+            "value": 0.0001,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "floorContactSliding",
+            "value": 0.6,
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-payload-v1/assumptions.json",
+              "revision": "1",
+              "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+              "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+            }
+          },
+          {
+            "id": "onDisable",
+            "value": "coast",
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          },
+          {
+            "id": "brakeTorqueNm",
+            "value": null,
+            "source": {
+              "kind": "assumed",
+              "documentId": "docs/research/virtual-drive-spike/results.json",
+              "revision": "1",
+              "locator": "case 3: group-bit switch-off and brake softness",
+              "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+            }
+          }
+        ],
+        "limits": [
+          "Every number is an observation in an assumed, not calibrated model; none is the stopping distance, stopping time or safety of a robot.",
+          "Rolling resistance, caster friction and brake torque decide these numbers and have not been measured; a coast-down test on the real robot is needed before they are used.",
+          "A simulated torque cut does not show that the torque-off circuit of a particular drive meets any safety requirement."
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,203 @@
+{
+ "schemaVersion": 1,
+ "accepted": false,
+ "release": "r5",
+ "candidateId": "r5-candidate-03",
+ "sourceCommit": "9de1a285a19641e78b61fec33706494db8ce404c",
+ "labCommit": "a3b2f9f43ba36f7bc633a3154b8428d031fec0b1",
+ "identityStable": true,
+ "guardCommit": "9de1a285a19641e78b61fec33706494db8ce404c",
+ "rawArchive": "robot/evidence-archive/r5-chain-9de1a285/ (outside git; guards need the extracted archive)",
+ "cases": {
+  "total": 48,
+  "tested": 43,
+  "notRun": [
+   {
+    "id": "VIO01",
+    "reason": "artifact not_run: vio_cut: R5 has no virtual I/O (E14 cut; the plan allows it)"
+   },
+   {
+    "id": "VIO02",
+    "reason": "artifact not_run: vio_cut: R5 has no virtual I/O (E14 cut)"
+   },
+   {
+    "id": "VIO03",
+    "reason": "artifact not_run: vio_cut: R5 has no virtual I/O (E14 cut)"
+   },
+   {
+    "id": "VIO04",
+    "reason": "artifact not_run: vio_cut: R5 has no virtual I/O (E14 cut)"
+   },
+   {
+    "id": "CLD06",
+    "reason": "artifact not_run: deploy_order_pending"
+   }
+  ]
+ },
+ "gates": {
+  "G-DEV1": "tested",
+  "G-ELE1": "tested",
+  "G-DOC1": "tested",
+  "G-STP1": "tested",
+  "G-VIO1": "not_run",
+  "G-DGN1": "tested",
+  "G-WEB3": "tested",
+  "G-REG6": "tested",
+  "G-CLOUD3": "not_run"
+ },
+ "externalGates": {
+  "G-BENCH1": "blocked_external",
+  "G-SAFE1": "blocked_external"
+ },
+ "records": {
+  "r5-candidate-03": {
+   "file": "qualification.json",
+   "sha256": "303fb7a1e9b8bb254ee38b85ebde87b0187440a466608d10a3313e6b8e05417d",
+   "rawPath": "r5-candidate-03/qualification.json"
+  },
+  "r4-candidate-04": {
+   "file": "records/r4-qualification.json",
+   "sha256": "da54960c036b8bcb17c6a2b869475a63c6f1103da44a123c1b0cbacf721f40bd",
+   "rawPath": "r4-candidate-04/qualification.json"
+  },
+  "irsim": {
+   "file": "records/irsim-qualification.json",
+   "sha256": "4e3910c339abd638bd654a9cfe6e7edb8c241bebc49bd39fb65285e7802069a4",
+   "rawPath": "irsim/qualification.json"
+  },
+  "r1": {
+   "file": "records/r1-qualification.json",
+   "sha256": "91eab58b59a4660c2026444ade7b47e188aa4c2cf2a775182ae980357d578094",
+   "rawPath": "r1/qualification.json"
+  },
+  "r1.1": {
+   "file": "records/r11-qualification.json",
+   "sha256": "8d0eb88c8d2e5aed627d24aee3978c2146018c1bb6bd523fbc435f2938b66fe6",
+   "rawPath": "r11/qualification.json"
+  },
+  "r2a": {
+   "file": "records/r2a-qualification.json",
+   "sha256": "a19f80ade83275d51d9939f836efce2918edb79fff1bff856304286b57246e4f",
+   "rawPath": "r2a/qualification.json"
+  },
+  "r2b": {
+   "file": "records/r2b-qualification.json",
+   "sha256": "ac0535e11e1f0a5dd9d421f3cc4ce1e72e113ed6d719726e76a8168ba2d901f0",
+   "rawPath": "r2b/qualification.json"
+  }
+ },
+ "campaigns": {
+  "cil-v2": {
+   "file": "records/cil-v2-campaign.json",
+   "sha256": "a02ed577e2d46c851dfe2773eedafaa554de39336925e1ec6bdafb80e673c4b1",
+   "rawPath": "cil-v2/campaign.json"
+  },
+  "bench-v2": {
+   "file": "records/bench-v2-campaign.json",
+   "sha256": "19fd13230fb7c8ccc98c9e91ade9e999d40cfa153047910674e01cd2b1c15c86",
+   "rawPath": "bench-v2/campaign.json"
+  },
+  "fault-v1": {
+   "file": "records/fault-v1-campaign.json",
+   "sha256": "85ff11e6ca073644b6ed2b387fcf739050cfb1dbee82e95e214058eba2b5aa4c",
+   "rawPath": "fault-v1/campaign.json"
+  },
+  "tray-v1": {
+   "file": "records/tray-v1-campaign.json",
+   "sha256": "90ac8c09c04995ec4968cfebafc3582f256213b789f25611b5d82f928f4dd4be",
+   "rawPath": "tray-v1/campaign.json"
+  },
+  "perception-gap-v1": {
+   "file": "records/perception-gap-v1-campaign.json",
+   "sha256": "30fb31643082693062faa51a94ed40c32af20c4c13ed795e92b85213783d536e",
+   "rawPath": "perception-gap-v1/campaign.json"
+  },
+  "mj-cell-recovery-v2": {
+   "file": "records/mj-cell-recovery-v2-campaign.json",
+   "sha256": "92a13cee7c701b9499469d91e1402d6eeb373b10c573aa6f0b951ce7513274cd",
+   "rawPath": "mj-cell-recovery-v2/campaign.json"
+  },
+  "stop-v1": {
+   "file": "records/stop-v1-campaign.json",
+   "sha256": "73074a2e53f79bd02b574ace47dc102e71308077b88514fd5ca3260b612e573f",
+   "rawPath": "stop-v1/campaign.json"
+  },
+  "stop-v1-summary": {
+   "file": "records/stop-v1-summary.json",
+   "sha256": "5a9bbed52993b4ceff8cbf2cd370b586ddc9836879850bc91a54ebf35a0ee3fe",
+   "rawPath": "stop-v1/summary.json"
+  }
+ },
+ "other": {
+  "container": {
+   "file": "records/container.json",
+   "sha256": "a12e3348a7c4ebd0623cfe22c12c2257c4cdb5f9f93994ae8676fd9135d333b5",
+   "rawPath": "container/container.json"
+  },
+  "containerR5": {
+   "file": "records/container-r5.json",
+   "sha256": "7db46b7d8b39c70cdb8737fd59784c9b2b97877ad8f23b1108a527639f769eea",
+   "rawPath": "container-r5/container.json"
+  },
+  "mockRegression": {
+   "file": "records/regression-manifest.json",
+   "sha256": "9eac2eccd03d81275c212fe469dda7a5ca9ea7821e8695bf0bb3e509f0946863",
+   "rawPath": "regression/manifest.json"
+  },
+  "calibrationRecord": {
+   "file": "records/calibration-record.json",
+   "sha256": "8cc01259b6eef7d239d273775bd35a9b6abcaa1d399e3a129e5fb74e4561c9ad",
+   "rawPath": "calibration/calibration-record.json"
+  }
+ },
+ "cld05": {
+  "rawDir": "robot/evidence-archive/r5-cld05-9de1a285/native",
+  "sha256": {
+   "SHA256SUMS": "41f58d2ac79075ae52c37eccc71f064d9190891ded0579955449417d3c4a766c"
+  }
+ },
+ "chain": {
+  "driver": "robot/evidence-archive/r5-handover-2026-11-26/run-final-chain-v7.sh",
+  "timeline": {
+   "file": "status.ndjson",
+   "sha256": "ea31e1604881df00dda24f7d0640396641137b46b5802f31ed067a5040136a3e"
+  },
+  "notes": [
+   "every step exit 0 in one run (finished [\"0\",\"1\"]); in-chain guards 27 (R4) and 31 (R5) ran with the 1 200 s timeout and passed, no re-run needed"
+  ],
+  "logs": {
+   "17c-r2b-guard.log": {
+    "file": "logs/17c-r2b-guard.log",
+    "sha256": "9a22a6ad76a7d927bfe95b80a6fbfd21f33d07a7931d8a36dc9597cbc508fa85"
+   },
+   "26-r4.log": {
+    "file": "logs/26-r4.log",
+    "sha256": "4452b14519bcc89e8020cb7fa2853c9f0d143a48633a6433e547d7176e176664"
+   },
+   "27-acceptance-guard.log": {
+    "file": "logs/27-acceptance-guard.log",
+    "sha256": "df1e5a64a70ba3c3c49a2d9d4b648dbf2783071d7a827137a8cb996024949cf5"
+   },
+   "29-container-r5.log": {
+    "file": "logs/29-container-r5.log",
+    "sha256": "80165c0faf20a0ab8d37307ecc7cedf0ba65d5ff2a2e21b400d1e0ffcc583df3"
+   },
+   "30-r5.log": {
+    "file": "logs/30-r5.log",
+    "sha256": "42ab52fdc87499c4065e0c0364dd860d06e46929b64d1a9a80d5c0a9b72d9671"
+   },
+   "31-r5-guard.log": {
+    "file": "logs/31-r5-guard.log",
+    "sha256": "100f1b8d2e8f91c45184714795c8a6f750f0d54cca99120e483fc0e57997e041"
+   },
+   "campaign-stop-v1.log": {
+    "file": "logs/campaign-stop-v1.log",
+    "sha256": "5a348c4111e457df6456ebe4f45699acacf88cc9e37144a366508aa570497e3f"
+   },
+   "verify-stop-v1.log": {
+    "file": "logs/verify-stop-v1.log",
+    "sha256": "5a348c4111e457df6456ebe4f45699acacf88cc9e37144a366508aa570497e3f"
+   }
+  }
+ }
+}

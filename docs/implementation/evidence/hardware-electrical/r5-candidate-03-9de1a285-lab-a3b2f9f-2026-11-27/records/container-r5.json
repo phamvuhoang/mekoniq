@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 2,
+  "accepted": false,
+  "sourceCommit": "9de1a285a19641e78b61fec33706494db8ce404c",
+  "cld04": {
+    "status": "tested",
+    "platform": "linux/arm64",
+    "imageTag": "mekoniq-lab-runtime:r5-9de1a285",
+    "imageId": "sha256:f16ed02f491a406888a8aae57669630a08194ebdbb7705817be08c2e1b8d8fba",
+    "sourceCommit": "9de1a285a19641e78b61fec33706494db8ce404c",
+    "evidence": {
+      "file": "cld04.json",
+      "sha256": "2bd84484a7e39b1eb5321b4160dddf0a8db374b0c8611ed03c6631eab55db1fb"
+    },
+    "testLog": {
+      "file": "cld04-test.json",
+      "sha256": "e31d71179484cbe6432eba357d4dba0585cbf7d4324defcb6cade6d39863a698"
+    }
+  },
+  "cld05": {
+    "status": "tested",
+    "platform": "linux/amd64",
+    "sourceCommit": "9de1a285a19641e78b61fec33706494db8ce404c",
+    "imageId": "sha256:b3070230982d94677d49d8b26864c13c0ea29ec2602c6a2307b67ac5965c5ae0",
+    "workflowRun": "https://github.com/phamvuhoang/mekoniq/actions/runs/45919345542/attempts/1",
+    "tests": {
+      "pytest": {
+        "tests": 335,
+        "passed": 331,
+        "skipped": [
+          "tests/test_drive_engine.py::test_the_legacy_path_gives_the_three_recorded_digests",
+          "tests/test_worker_protocol_regression.py::test_worker_responses_match_the_pre_fix_wire_bytes[arm-no-drive]",
+          "tests/test_worker_protocol_regression.py::test_worker_responses_match_the_pre_fix_wire_bytes[mobile-cil]",
+          "tests/test_worker_protocol_regression.py::test_worker_responses_match_the_pre_fix_wire_bytes[mobile-no-drive]"
+        ]
+      },
+      "container": {
+        "passed": 1
+      }
+    },
+    "result": {
+      "file": "cld05/SHA256SUMS",
+      "sha256": "41f58d2ac79075ae52c37eccc71f064d9190891ded0579955449417d3c4a766c"
+    }
+  },
+  "cld06": {
+    "status": "not_run",
+    "reason": "deploy_order_pending"
+  }
+}
