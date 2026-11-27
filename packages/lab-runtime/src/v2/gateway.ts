@@ -250,6 +250,16 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    const read=displayRoute[2]?entry.run.worldDisplayScene:entry.run.worldDisplay;if(!read)return deny(response,422,'WORLD_DISPLAY_UNSUPPORTED',[]);
    try{const value=displayRoute[2]?await entry.run.worldDisplayScene!():await entry.run.worldDisplay!();if(runs.get(displayRoute[1]!)!==entry||!readable(entry,sessionId)||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);return send(response,200,value);}catch(e){return (e as Error).message==='WORLD_DISPLAY_UNSUPPORTED'?deny(response,422,'WORLD_DISPLAY_UNSUPPORTED',[]):failed(response,e);}
   }
+  // GET /runs/:id/physics/<chunk>: one sealed chunk of a MuJoCo mobile run's physics stream, the bytes its report's physicsEvidence.manifest names (sha256 checked); owner and readers only
+  const physicsRoute=new RegExp(`^/runs/(${UUID})/physics/(physics-[0-9]{6}-[0-9a-f]{8}\\.ndjson\\.gz)$`).exec(sub);
+  if(physicsRoute){
+   const entry=runs.get(physicsRoute[1]!);if(!entry||!readable(entry,sessionId))return deny(response,404,'RUN_NOT_FOUND',[]);
+   if(method!=='GET')return deny(response,405,'METHOD_NOT_ALLOWED',[]);if(request.url?.includes('?'))return deny(response,422,'INVALID_PHYSICS_REQUEST',[]);
+   if(!entry.run.physicsChunk)return deny(response,409,'PHYSICS_UNSUPPORTED',[]);
+   try{const bytes=await entry.run.physicsChunk(physicsRoute[2]!);if(runs.get(physicsRoute[1]!)!==entry||!readable(entry,sessionId)||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);
+    if(!bytes)return deny(response,404,'PHYSICS_CHUNK_NOT_FOUND',[]);
+    response.writeHead(200,{'content-type':'application/octet-stream','cache-control':'no-store','x-content-type-options':'nosniff','content-length':bytes.length});response.end(bytes);return;}catch(e){return failed(response,e);}
+  }
   const replayRoute=new RegExp(`^/runs/(${UUID})/replay(?:/([a-f0-9-]{36})(?:/assets/(0|[1-9][0-9]{0,2}))?)?$`).exec(sub);
   if(replayRoute){
    const [,runId,exportId,index]=replayRoute,entry=runs.get(runId!);

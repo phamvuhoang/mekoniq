@@ -73,7 +73,10 @@ export function tableR5(){
 export const qualifyR5Structure=input=>qualify(input,tableR5());
 export function checkR5Structure(m,read){try{return checkQualification(m,read,tableR5());}catch(e){return ['R5_STRUCTURE_INVALID:'+e.message];}}
 /** Gates the user may cut from R5 and the cases each cut leaves not_run (contracts §9: without E14, "R5 không có I/O ảo"). */
-export const CUTTABLE_R5={'G-VIO1':{cases:['VIO01','VIO02','VIO03','VIO04'],releaseName:'R5 không có I/O ảo'}};
+// G-CLOUD3 may be cut only on the outcome the user decided before the cloud run (2026-11-27): a complete CLD06 supplement whose only failure is the Mac comparison
+// (CLD06_TOLERANCE_EXCEEDED or ENTRY_CONDITION_MISMATCH) after health, electrical and the stop outcome passed; missing evidence or a wrong stop never closes. CLD06 moves to R6.
+export const CUTTABLE_R5={'G-VIO1':{cases:['VIO01','VIO02','VIO03','VIO04'],releaseName:'R5 không có I/O ảo'},'G-CLOUD3':{cases:['CLD06'],releaseName:'CLD06 chuyển sang R6'}};
+const CLOUD_CUT_FAILURES=/^(?:CLD06_TOLERANCE_EXCEEDED(?::[A-Za-z0-9,]+)?|ENTRY_CONDITION_MISMATCH)$/;
 /**
  * The closing decision, apart from reading a record (checkR5Structure / verifyR5Directory accept a partial candidate whose not_run cases say why). Closing needs every gate of the
  * decided scope `tested`, no failed case, every exception with a reason, and only these not_run cases: the cut gates' own cases, and CLD06 when — and only when — a CLD06
@@ -89,7 +92,9 @@ export function checkR5Closing(m,{cut=[],cloudSupplementIssues=null}={}){
   if(c.status==='failed')issues.push('CASE_FAILED:'+id);
   else if(c.status!=='tested'){if(!allowed.has(id))issues.push('CASE_NOT_TESTED:'+id);if(!/\S/.test(c.reason??''))issues.push('EXCEPTION_WITHOUT_REASON:'+id);}
  }
- if(Array.isArray(cloudSupplementIssues)&&cloudSupplementIssues.length)issues.push(...cloudSupplementIssues.map(x=>'CLD06_SUPPLEMENT:'+x));
+ const cloudCut=cut.includes('G-CLOUD3');
+ if(cloudCut){if(!Array.isArray(cloudSupplementIssues))issues.push('CLD06_SUPPLEMENT_REQUIRED_FOR_CUT');else if(!cloudSupplementIssues.length)issues.push('CUT_GATE_PASSED:G-CLOUD3');}
+ if(Array.isArray(cloudSupplementIssues))for(const x of cloudSupplementIssues)if(!(cloudCut&&CLOUD_CUT_FAILURES.test(x)))issues.push('CLD06_SUPPLEMENT:'+x);
  for(const g of CLOSING_GATES_R5){
   if(cut.includes(g)){if(m.gates[g].status==='tested')issues.push('CUT_GATE_TESTED:'+g);continue;}
   const closes=m.gates[g].status==='tested'||g==='G-CLOUD3'&&cloud&&GATES_R5[g].every(id=>id==='CLD06'||m.cases[id].status==='tested');

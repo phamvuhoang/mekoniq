@@ -58,6 +58,14 @@ describe('R5 closing decision (apart from reading a record)',()=>{
   expect(checkR5Closing(record(PENDING,['STP06']),{cut:['G-VIO1'],cloudSupplementIssues:[]}).issues).toEqual(['CASE_FAILED:STP06','GATE_NOT_TESTED:G-STP1']);
   expect(checkR5Closing(record({...PENDING,VIO02:' '}),{cut:['G-VIO1'],cloudSupplementIssues:[]}).issues).toEqual(['EXCEPTION_WITHOUT_REASON:VIO02']);
   expect(checkR5Closing(record(PENDING),{cut:['G-DGN1'],cloudSupplementIssues:[]})).toMatchObject({closed:false,issues:['CUT_NOT_ALLOWED:G-DGN1']});
+  // G-CLOUD3 is cut only on the decided failure: a complete supplement whose only issue is the Mac comparison
+  expect(checkR5Closing(record(PENDING),{cut:['G-VIO1','G-CLOUD3'],cloudSupplementIssues:['CLD06_TOLERANCE_EXCEEDED:peakDecelerationMps2']})).toEqual({closed:true,releaseName:'R5 không có I/O ảo, CLD06 chuyển sang R6',issues:[]});
+  expect(checkR5Closing(record(PENDING),{cut:['G-VIO1','G-CLOUD3'],cloudSupplementIssues:['ENTRY_CONDITION_MISMATCH']}).closed).toBe(true);
+  expect(checkR5Closing(record(PENDING),{cut:['G-VIO1','G-CLOUD3'],cloudSupplementIssues:['CLD06_EVIDENCE_MISSING:cloud:700:torque:amr-1/wheel-right']}).issues).toEqual(['CLD06_SUPPLEMENT:CLD06_EVIDENCE_MISSING:cloud:700:torque:amr-1/wheel-right']);
+  expect(checkR5Closing(record(PENDING),{cut:['G-VIO1','G-CLOUD3'],cloudSupplementIssues:['CLD06_EXPECTED:cloud:torque']}).closed).toBe(false);
+  expect(checkR5Closing(record(PENDING),{cut:['G-VIO1','G-CLOUD3']}).issues).toEqual(['CLD06_SUPPLEMENT_REQUIRED_FOR_CUT']);
+  expect(checkR5Closing(record(PENDING),{cut:['G-VIO1','G-CLOUD3'],cloudSupplementIssues:[]}).issues).toEqual(['CUT_GATE_PASSED:G-CLOUD3']);
+  expect(checkR5Closing(record({...PENDING,CLD05:'CLD05_NATIVE_MISSING:x'}),{cut:['G-VIO1','G-CLOUD3'],cloudSupplementIssues:['CLD06_TOLERANCE_EXCEEDED:stopTimeMs']}).issues).toEqual(['CASE_NOT_TESTED:CLD05']);
   const accepted={...record(PENDING),accepted:true};expect(checkR5Closing(accepted,{cut:['G-VIO1'],cloudSupplementIssues:[]}).issues).toEqual(['NOT_AN_R5_CANDIDATE']);
  });
  test('the full R5 (nothing cut) needs G-VIO1 tested too',()=>{

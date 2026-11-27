@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 2,
+  "image": "mekoniq-lab-runtime:r5-9de1a285",
+  "imageId": "sha256:f16ed02f491a406888a8aae57669630a08194ebdbb7705817be08c2e1b8d8fba",
+  "platform": "linux/arm64",
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "sourceCommit": "9de1a285a19641e78b61fec33706494db8ce404c",
+  "schemaHash": "20dcb91def3429f6212ff00bc8c627e4227a10949b071848d1880cf3bb134db2",
+  "project": {
+    "fixture": "robotics/simulation-mujoco/fixtures/serve-tray-v1",
+    "overrides": {
+      "requestedProfile": "engineering-mujoco-3d-v1",
+      "mujocoExperimentId": "tray-stop-coast-v1"
+    },
+    "digest": "4ecc5861d42097d40143b135ef07b88449cb93c84916a6cc1dfb099ece6cd249"
+  },
+  "options": {
+    "serve-hw-a-v1": {
+      "state": "blocked",
+      "digest": "07b6994f18f9c4b3756b1f1e300047b1042cf5bfb4a130bf3cae6dbd00c70c7a",
+      "projectDigest": "4ecc5861d42097d40143b135ef07b88449cb93c84916a6cc1dfb099ece6cd249",
+      "assemblyDigest": "1bc981cfcab59b5a8aa060db2fba8d745a2ba8eb58518a86825dc4fa9afe371e"
+    },
+    "serve-hw-b-v1": {
+      "state": "compiled",
+      "digest": "b9c664f0a67e0538bf54734d17eb81c614b7f6083fcd81c5a0275ee3b3e6cc33",
+      "projectDigest": "4ecc5861d42097d40143b135ef07b88449cb93c84916a6cc1dfb099ece6cd249",
+      "assemblyDigest": "1bc981cfcab59b5a8aa060db2fba8d745a2ba8eb58518a86825dc4fa9afe371e"
+    },
+    "serve-hw-c-v1": {
+      "state": "compiled",
+      "digest": "0b4fe1f5e07edffb006cc6ff59d95bb8840a5ec7cc5cf71745fe6b4eddb8dacf",
+      "projectDigest": "4ecc5861d42097d40143b135ef07b88449cb93c84916a6cc1dfb099ece6cd249",
+      "assemblyDigest": "1bc981cfcab59b5a8aa060db2fba8d745a2ba8eb58518a86825dc4fa9afe371e"
+    }
+  },
+  "stop": {
+    "entry": {
+      "id": "s1",
+      "function": "emergency",
+      "trigger": {
+        "kind": "elapsed_sim_ms",
+        "value": 8220
+      }
+    },
+    "function": "emergency",
+    "scheduledTick": 412,
+    "tick": 412,
+    "status": "needs_attention",
+    "served": "0",
+    "outcomeTick": 412,
+    "attention": [
+      {
+        "reason": "EMERGENCY_STOP",
+        "tick": 412
+      }
+    ],
+    "scenario": {
+      "id": "MJ-TRAY01",
+      "revision": 1,
+      "hash": "54d473f17beadb0865f3dd18e7d3a5dcd4674b673e75e4136e302b5b58b96174"
+    },
+    "seed": 7,
+    "stopScheduleHash": "3513d989669ac5bbae2c1fd3560f5c02295730dce9925bc6475b2a584ee8e4b1",
+    "drive": {
+      "experimentId": "drive-hw-c-coast-v1",
+      "driveModelDigest": "256d6bd6bb4c46a6ca493e7dde736d5b66b61a6c7ffaa800497dd0f64172cac2",
+      "controlProfileDigest": "90bce57a463d8f22630d818f62a4f984364e5390b30a4ff6bbbd5ae2e9bbef87",
+      "hostArch": "arm64"
+    }
+  },
+  "diff": [
+    "C /usr",
+    "C /usr/local",
+    "C /usr/local/share",
+    "A /usr/local/share/ca-certificates",
+    "A /usr/local/share/ca-certificates/orbstack-root.crt"
+  ],
+  "diffEmpty": true,
+  "uid": "1000"
+}

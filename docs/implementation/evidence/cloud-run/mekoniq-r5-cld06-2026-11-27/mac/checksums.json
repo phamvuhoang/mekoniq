@@ -1,0 +1,17 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "health.json": "3be17436a0035809c9d55d11af244f55682bd1ebb21761b12c33e2f52f4980f6",
+    "electrical.json": "19158bb4ad68b51541a7796febe241510d887bb674b11062a684c21e6e38b8c4",
+    "stop-report.json": "e8ec955ba7c85fe7f72567622639ee6d30c5b2a9e106ec36c3c7fe09467da525",
+    "actions.json": "4d8bf4e594c871bbe496414d1f4f64bd2de7ec9c106e30160e6fec5b3148a84d",
+    "physics/physics-000000-079ac3d8.ndjson.gz": "e2e4e35ae43382500d9a3e08064a8d75cc67d8202b6839452b3fe099664c5f32",
+    "physics/physics-000001-6550db51.ndjson.gz": "5bf405f77216c486c775a17df5818f8847521ecc8ce74add3e28492b213c85d8",
+    "physics/physics-000002-713c9f39.ndjson.gz": "c037765ec4993586fdd8bd3a5e0af7d60e6ea12c8b5797e96cfb998a42a8c449",
+    "physics/physics-000003-8f29c3fd.ndjson.gz": "228de294c1133698a39a64cdde9a00d5672933ea23e90984c974a6bdcbfd8da3",
+    "physics/physics-000004-90742802.ndjson.gz": "7bb472410c7124f046069cbec89efb066aa19c89113300bd7a7a36853ec6cd92",
+    "physics/physics-000005-60d2e39b.ndjson.gz": "44ab116e3c50d057386491e27ed67e003f583a5eab798662ba7f9102762255c6",
+    "physics/physics-000006-a001f804.ndjson.gz": "e67305550b775d667dc1f0fae866246a9520815d9631dc440a7571f58d25dc22",
+    "summary.json": "0e7ea77792f8d2563761fe5858a69a4bf2ddd1eec611a23f3a46eab76adfc2be"
+  }
+}

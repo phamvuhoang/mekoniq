@@ -1,0 +1,17 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "deployment.json": "7e69f7429dfb55239e2638f061e1da35391a8117ab17f03106f8157c4b7a3b7e",
+    "service.json": "8bf407c2e7b3265e0e1148859e5f26fb47f2ca6391227e137336793fe24f4992",
+    "revision.json": "406bb4da93225eacd32b22edb8cdcdae87a656c584520f3dd0359f0102adb354",
+    "promotion.json": "a9e1ea437e209dcbfe2d910a62d675da9deea5f3765566da6d60377886509e98",
+    "container-record.json": "6c86998a703e561b5be61e6dff337831152e1b1bdc14f4c5581109c06926c20a",
+    "cld04.json": "c6724ea03417b6b5ee8ada07e3a8f24b5dc2d451105b5a33df5034bf4c3843e3",
+    "mac-stop-report.json": "2431cc8582cada4f71c172741dc9f849ed6c4db2a9cbd16816d55f816421c402",
+    "health.json": "88ed4b3e355f04bad7f5d80738d9ca2c172ef9c6d16580c28092c4e3709de169",
+    "electrical.json": "19158bb4ad68b51541a7796febe241510d887bb674b11062a684c21e6e38b8c4",
+    "stop-report.json": "ecb5d121c53063d445849e399cef0b084994ea0c1d07cc370a9be9e1e7cb4dab",
+    "actions.json": "652831ca35b46576c33867ce10ad46cf029c641bcb8eb838e4a06841b26e85ac",
+    "summary.json": "bdac10a131d7353ea8cd4c78c4a2fb136911e1a3ecc0f0e294cb658db5ac040a"
+  }
+}

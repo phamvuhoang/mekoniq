@@ -149,7 +149,7 @@ export async function prepareMujoco(o,launch_,lock,track=()=>{}){
  const inside=tools.map(t=>realish(join(o.source,t.root))).find(r=>data===r||data.startsWith(`${r}/`));
  if(inside)throw new Error(`DATA_DIR_IN_TOOL_ROOT: ${data} is inside the pinned tool root ${inside}; choose a --data-dir outside the source tools (the launcher never writes into them).`);
  const {tool,root}=await verifiedTools(o,launch_,lock,'mujoco_worker','the pinned runtime predates the MuJoCo arm provider; import an export that carries the mujoco_worker tool.',[['mujoco_worker',o.mujocoPython,'MUJOCO'],...o.mujocoMobile?[['irsim_worker',o.irsimPython,'ENGINEERING']]:[]],track);
- const engineering=o.mujocoMobile?['--engineering-catalog',await writeCatalog(join(root('mujoco_worker'),'fixtures/serve-payload-v1/serve-3d-components.json'),join(launch_.dataDir,'mujoco-catalog'),'serve-payload-v1'),'--engineering-simulation',join(o.source,tool('description_helper').root,'..'),'--engineering-python',o.irsimPython]:[];
+ const engineering=o.mujocoMobile?['--engineering-catalog',await writeCatalog(join(root('mujoco_worker'),'fixtures/serve-payload-v1/serve-3d-components.json'),join(launch_.dataDir,'mujoco-catalog'),'serve-payload-v1',o.source),'--engineering-simulation',join(o.source,tool('description_helper').root,'..'),'--engineering-python',o.irsimPython]:[];
  return {readyMs:60000,backends:[...MOCK_BACKENDS,MUJOCO_BACKEND,...o.mujocoMobile?['mujoco_3d']:[]].join(', '),env:{MEKONIQ_LAB_MUJOCO:'1'},
   args:[...engineering,'--mujoco-python',o.mujocoPython,'--mujoco-worker',root('mujoco_worker'),'--mujoco-lock',join(o.source,tool('mujoco_worker').lock.path)]};
 }
