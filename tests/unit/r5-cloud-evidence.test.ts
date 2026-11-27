@@ -26,7 +26,7 @@ function synthRun(runId:string,arch:string,o:{v?:number;decel?:number;yaw?:numbe
  const speed=(t:number)=>t<A?(t>=A-30?(o.entryV??v0):v0):Math.max(0,v0-decel*(t-A)*0.02);
  let y=1.5;const recs:any[]=[];
  for(let t=0;t<=last;t++){if(t>0)y+=speed(t)*0.02;
-  const drives=R5_CLD06.chainAxes.filter(a=>!(o.drop&&o.drop.tick===t&&o.drop.axis===a)).map(a=>({axisId:a,torqueNm:t<A?0.1:t===A&&o.torqueAtStop!==undefined?o.torqueAtStop:0}));
+  const drives=(R5_CLD06.chainAxes as string[]).filter(a=>!(o.drop&&o.drop.tick===t&&o.drop.axis===a)).map(a=>({axisId:a,torqueNm:t<A?0.1:t===A&&o.torqueAtStop!==undefined?o.torqueAtStop:0}));
   recs.push({schemaVersion:1,tick:t,base:[{robotId:'amr-1',poseMap:{positionM:[2,y,0.09],quaternionXyzw:q}}],drives,...t===A&&o.receipt!==false?{stopReceipts:[{entryId:'s1',function:'emergency',appliedBy:'worker',appliedTick:A,runId}]}:{}});}
  let rest=A;while(!(speed(rest)<0.01))rest++;
  let d=0;for(let t=A+1;t<=rest;t++)d+=speed(t)*0.02;
