@@ -84,3 +84,19 @@ K01–K07 không phụ thuộc các câu chưa trả lời.
 
 - Không có commit nào vào `main`, không chạm checkout chính, không sửa record hay evidence nào. File này là thay đổi duy nhất của task.
 - Nhánh `bench/kit` đã tạo sẵn từ `main` (không do task này tạo).
+
+## 9. Mốc tích hợp với `main` (2026-11-28, P18)
+
+`ea54ebe7` ở trên giữ nguyên là mốc lịch sử nơi plan 01 chạy. Từ ngày này KRG01 so với **`ae3dd8f35a68b90a17ddbfc18fa14d02f76ceba9`** (`main` đã push và đang deploy production; Vercel cả hai project mang đúng SHA này). `main` được merge vào `bench/kit` ở `5b4a99dd` (ghép sạch, không xung đột; so với `main` chỉ thêm 65 file).
+
+| Mốc | Giá trị tại `5b4a99dd` | So với baseline §4 |
+|---|---|---|
+| `git diff --quiet ae3dd8f3 HEAD --` `packages/lab-runtime packages/contracts packages/domain packages/sync packages/robot-adapters packages/cell-adapters robotics/catalog apps/lab pnpm-lock.yaml` + `PORTABLE_TOOL_PATHS` | exit 0 | — |
+| `grep -rn "packages/bench\|robotics/bench" packages/lab-runtime` | 0 dòng | — |
+| `schemaHash` (export, exit 0) | `20dcb91def3429f6212ff00bc8c627e4227a10949b071848d1880cf3bb134db2` | trùng |
+| Digest closure công cụ | `2c788ca437f59bbc99212b58667c55cbe4050c572d44bcfbd0781bb09d849caa` (348 file) | trùng |
+| `robotics/catalog/catalog.json` | `26f981a1…3288fe` | trùng |
+| `robotics/catalog/electrical/manifest.json` | `301d4542…d415532` | trùng |
+| Pin Lab | `sourceCommit` `9de1a285…` (bằng health Cloud Run, revision `00007-q9t`), `artifactSha256` `4e8d9613…` (chỉ tham khảo) | đổi theo R5, đúng commit đã khai |
+
+G-KSW1 trên CI Linux phải đạt ở commit cuối của nhánh (sau merge này) trước khi đề xuất merge phạm vi slave giả vào `main`. Push `main` là quyết định triển khai riêng.
