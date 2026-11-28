@@ -2,7 +2,7 @@
 // the sha256 of every stored evidence chunk (decompressed NDJSON, by stream and index) of IR-FD01 (seed 5) and IR-FD07 (seed 7) on the real IR-SIM worker.
 // UPDATE_GOLDEN=1 rewrites it. Skipped, with the reason, where the pinned IR-SIM venv is not provisioned.
 // The golden is bytes recorded on macOS: the last bits of the plant's floating point differ under another libm (glibc: up to 4e-14, from IR-FD01 tick 1681),
-// so only macOS compares with it. Every other assertion here holds on every host.
+// so only macOS reads, compares or rewrites it. Every other assertion here holds on every host.
 import { afterAll, afterEach, beforeAll, expect, test } from 'vitest';
 import { createHash } from 'node:crypto';
 import { readFile, readdir, rm, writeFile } from 'node:fs/promises';
@@ -46,11 +46,12 @@ async function runFd07() {
   return { dir, report: await run.report() };
 }
 
-test.skipIf(!irsimAvailable || !goldenHost)('IR-FD01 and IR-FD07 write the same evidence chunks as before the plant-port split', async () => {
+test.skipIf(!irsimAvailable)('IR-FD01 and IR-FD07 write the same evidence chunks as before the plant-port split', async () => {
   const [a, b] = [await runFd01(), await runFd07()];
   expect(a.report.outcome.status).toBe('completed'); expect(b.report.outcome.status).toBe('completed');
   const actual = { 'IR-FD01@5': await chunkHashes(a.dir), 'IR-FD07@7': await chunkHashes(b.dir) };
   for (const k of Object.keys(actual)) expect(Object.keys(actual[k as keyof typeof actual]).length, k).toBeGreaterThan(0);
+  if (!goldenHost) return;
   if (process.env.UPDATE_GOLDEN === '1') { await writeFile(GOLDEN, JSON.stringify(actual, null, 2) + '\n'); return; }
   expect(actual).toEqual(JSON.parse(await readFile(GOLDEN, 'utf8')));
 }, 600_000);
