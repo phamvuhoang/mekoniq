@@ -72,6 +72,7 @@ test('no new HEAD reader stands in for the source commit',()=>{
     'scripts/repo-identity.mjs':'standalone Lab checkout',
     'scripts/release.mjs':'platform release, no Lab pair',
     'scripts/restore-rehearsal.mjs':'platform release, no Lab pair',
+    'scripts/webots-physical-mac.py':'records the exact checkout whose cases it ran, the commit CI tested; not a source or Lab identity',
     'tests/support/load-report.ts':'platform load report, no Lab pair',
     'tests/support/regression-identity.ts':'standalone Lab checkout',
   };
