@@ -30,7 +30,10 @@ jobs:
           cache-dependency-path: source/pnpm-lock.yaml
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          # the engine workers are pinned to 3.11 (python3.11); the last version listed stays the default `python`
+          python-version: |
+            3.11
+            3.12
       - run: python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt -e robotics/agent
       - run: pnpm install --frozen-lockfile
       - name: Restore and verify the published regression corpus
@@ -39,6 +42,11 @@ jobs:
       - run: pnpm test:unit && pnpm --filter mekoniq-robot-lab test:unit
       - run: pnpm test:contracts
       - run: pnpm test:adapters
+      # Webots runs on macOS only: its cases and the cross-engine one are in the macos-engines job
+      - name: Provision the engine workers from their locks and start each once
+        run: |
+          node scripts/bootstrap-portable-simulation.mjs irsim mujoco algorithm
+          node scripts/engine-preflight.mjs irsim mujoco algorithm
       - name: Run integration with its owned database and cleanup receipt
         env:
           MEKONIQ_OWNED_CI_STATE: ${{ runner.temp }}/platform-db-owner.json
@@ -48,22 +56,47 @@ jobs:
       - name: Summarize integration results
         if: always()
         # Raw owned-service and child logs stay in the private runner temp directory.
+        run: python scripts/ci-junit-summary.py "$RUNNER_TEMP/platform-integration.xml"
+  # The integration cases only a macOS host can run: the Webots provider, plant and arm, and the cross-engine case (IR-SIM, Webots, MuJoCo). They need no database.
+  # A skip fails this job. mujoco-arm-readiness is here for its case that needs a second engine venv.
+  macos-engines:
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      ENGINEERING_PYTHON: ${{ github.workspace }}/.venv/bin/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: |
+            3.11
+            3.12
+      - run: python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt -e robotics/agent
+      - run: pnpm install --frozen-lockfile
+      - name: Install the pinned Webots R2025a
         run: |
-          python - <<'PYTHON'
-          from pathlib import Path
-          import os
-          import xml.etree.ElementTree as ET
-          report = Path(os.environ['RUNNER_TEMP']) / 'platform-integration.xml'
-          if report.is_file():
-              for suite in ET.parse(report).getroot().iter('testsuite'):
-                  counts = {key: int(suite.attrib[key]) for key in ('tests', 'failures', 'errors', 'skipped')}
-                  print(suite.get('name'), counts)
-                  for case in suite.findall('testcase'):
-                      if case.find('failure') is not None or case.find('error') is not None:
-                          print('  Failed', case.get('name'))
-          else:
-              print('No integration JUnit report was produced.')
-          PYTHON
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/webots.dmg" https://github.com/cyberbotics/webots/releases/download/R2025a/webots-R2025a.dmg
+          echo "484f6cc84ca794dd33e410b0bfc030132cc5b163a882c350c1d293d06d87584f  $RUNNER_TEMP/webots.dmg" | shasum -a 256 -c -
+          hdiutil attach -nobrowse -readonly -mountpoint "$RUNNER_TEMP/webots-dmg" "$RUNNER_TEMP/webots.dmg"
+          ditto "$RUNNER_TEMP/webots-dmg/Webots.app" /Applications/Webots.app
+          hdiutil detach "$RUNNER_TEMP/webots-dmg"
+      - name: Provision the engine workers from their locks and start each once
+        run: |
+          node scripts/bootstrap-portable-simulation.mjs irsim mujoco webots
+          node scripts/engine-preflight.mjs irsim mujoco webots
+      - name: Run the macOS integration cases
+        run: |
+          pnpm test:integration -- tests/integration/webots- tests/integration/irsim-plant-port.test.ts tests/integration/cross-engine-fd01.test.ts tests/integration/mujoco-arm-readiness.test.ts \
+            --reporter=default --reporter=junit --outputFile.junit="$RUNNER_TEMP/macos-integration.xml"
+      - name: Summarize integration results
+        if: always()
+        run: python scripts/ci-junit-summary.py "$RUNNER_TEMP/macos-integration.xml" --forbid-skips
   python:
     env:
       PYTHONDONTWRITEBYTECODE: '1'

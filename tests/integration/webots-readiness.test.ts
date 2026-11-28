@@ -9,6 +9,9 @@ import { portableSimulationFromOptions } from '../../packages/lab-runtime/src/v2
 import { webotsFromOptions } from '../../packages/lab-runtime/src/v2/simulation3d/readiness';
 import { hashJson } from '../../packages/lab-runtime/src/v2/hash';
 
+// the provider runs Webots on macOS only: past the flag, every other host is refused before the app or the worker is looked at, so the checks behind that gate run on macOS
+const macTest = test.runIf(process.platform === 'darwin');
+
 const root = resolve('robotics/simulation-3d'), lockPath = join(root, 'requirements.lock'), FX = join(root, 'fixtures', 'serve-3d-v1');
 const dirs: string[] = [];
 afterEach(async () => { for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
@@ -32,29 +35,42 @@ test('flag off: the backend is the catalog entry of a runtime never given the op
   expect(Object.keys(without.catalog.sets)).toEqual(Object.keys(defaultCatalog.sets));
 });
 
-test('Webots missing at the configured home is WEBOTS_NOT_INSTALLED, before any worker starts', async () => {
+// registered only where it can run: the macOS job fails on any skip
+if (process.platform !== 'darwin') {
+  test('a host that is not macOS is HOST_UNSUPPORTED for both Webots backends, even with an app and a worker that would pass', async () => {
+    const p = await webotsFromOptions(await opts({ entry: double('ok') }));
+    for (const c of [p.capability, p.arm.capability]) {
+      expect(c).toMatchObject({ installed: false, reachable: false });
+      expect(c.reason?.startsWith(`HOST_UNSUPPORTED: ${process.platform}`)).toBe(true);
+    }
+    expect(p.plant).toBeUndefined();
+    expect(p.arm.runtime).toBeUndefined();
+  });
+}
+
+macTest('Webots missing at the configured home is WEBOTS_NOT_INSTALLED, before any worker starts', async () => {
   const p = await webotsFromOptions(await opts({ webotsHome: join(await temp(), 'Webots.app'), python: '/nonexistent/python' }));
   expect(p.capability).toMatchObject({ installed: false, reachable: false });
   expect(p.capability.reason?.startsWith('WEBOTS_NOT_INSTALLED')).toBe(true);
 });
 
-test('a worker that reports Webots R2025b is WEBOTS_VERSION_MISMATCH', async () => {
+macTest('a worker that reports Webots R2025b is WEBOTS_VERSION_MISMATCH', async () => {
   const p = await webotsFromOptions(await opts({ entry: double('r2025b') }));
   expect(p.capability.reason?.startsWith('WEBOTS_VERSION_MISMATCH')).toBe(true);
   expect(p.plant).toBeUndefined();
 });
 
-test('a worker admitted with a different lock is WEBOTS_LOCK_MISMATCH', async () => {
+macTest('a worker admitted with a different lock is WEBOTS_LOCK_MISMATCH', async () => {
   const p = await webotsFromOptions(await opts({ entry: double('lock') }));
   expect(p.capability.reason).toBe('WEBOTS_LOCK_MISMATCH');
 });
 
-test('an unusable interpreter is WEBOTS_WORKER_UNAVAILABLE', async () => {
+macTest('an unusable interpreter is WEBOTS_WORKER_UNAVAILABLE', async () => {
   const p = await webotsFromOptions(await opts({ python: '/nonexistent/python' }));
   expect(p.capability.reason?.startsWith('WEBOTS_WORKER_UNAVAILABLE')).toBe(true);
 });
 
-test('a test double passes the describe but never makes the backend installed or enabled', async () => {
+macTest('a test double passes the describe but never makes the backend installed or enabled', async () => {
   const p = await webotsFromOptions(await opts({ entry: double('ok') }));
   expect(p.capability).toMatchObject({ installed: false, reachable: false });
   expect(p.capability.reason?.startsWith('WEBOTS_TEST_DOUBLE')).toBe(true);
@@ -78,12 +94,12 @@ const runnerRow = async (mode: string) => {
   return rows.find((r) => r.id === 'runner')!;
 };
 
-test('the smoke create names a missing window-server session and a busy port', async () => {
+macTest('the smoke create names a missing window-server session and a busy port', async () => {
   expect((await runnerRow('nogui')).reasonCodes).toEqual(['WEBOTS_NO_GUI_SESSION']);
   expect((await runnerRow('portbusy')).reasonCodes).toEqual(['WEBOTS_PORT_IN_USE']);
 });
 
-test('a scene that names another engine is refused before any worker starts', async () => {
+macTest('a scene that names another engine is refused before any worker starts', async () => {
   const { ctx } = await context();
   const irsim = JSON.parse(await readFile(join('robotics/navigation-2d/fixtures/serve-demo-v1', 'navigation-scene.json'), 'utf8')) as { inputs: { project: { digest: string } } };
   const bytes = new TextEncoder().encode(JSON.stringify(irsim));

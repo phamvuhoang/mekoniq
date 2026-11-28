@@ -17,8 +17,8 @@ import {compileStudy,sha,artifact} from '../support/simulation-study';
 import {OwnedProcesses} from '../support/owned-processes';
 import type {SimulationRunInput,StudyArtifact} from '../../packages/lab-runtime/src/v2/simulation3d/simulation-input';
 const root=resolve('.'),home=process.env.MEKONIQ_WEBOTS_HOME??'/Applications/Webots.app',exe=join(home,'Contents/MacOS/webots');
-/** Native work is deliberately one serialized test. No skip, fallback, installation or hidden engine double. */
-test('X01: actual IR-SIM, Webots and MuJoCo on fresh empty Serve geometry with deterministic confirmations',async()=>{
+/** Native work is deliberately one serialized test. No fallback, installation or hidden engine double, and no skip on macOS, the one host with Webots: a missing engine fails. */
+test.runIf(process.platform==='darwin')('X01: actual IR-SIM, Webots and MuJoCo on fresh empty Serve geometry with deterministic confirmations',async()=>{
  const out=process.env.SIMULATION_STUDY_OUT??await mkdtemp(join(tmpdir(),'mekoniq-b08-x01-')),owned=new OwnedProcesses(),runs:SimulationRunInput[]=[];
  const sourceCommit=identity.sourceCommit(root)+(identity.sourceDirty(root)?'-dirty':'');
  await mkdir(out,{recursive:true});await writeFile(join(out,'recording.json'),JSON.stringify({accepted:false,sourceCommit,status:'started',engineRuns:[]},null,2),{flag:'wx'});

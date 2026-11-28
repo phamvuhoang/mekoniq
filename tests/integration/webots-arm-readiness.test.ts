@@ -12,6 +12,9 @@ import { lockDigestOf } from '../../packages/lab-runtime/src/engineering/linkfor
 import type { WebotsRuntimeOptions } from '../../packages/lab-runtime/src/v2/simulation3d/webots';
 import { coffeeProject } from '../support/lab-v2';
 
+// the double is admitted through webotsFromOptions, which refuses every host but macOS (webots-readiness asserts that refusal)
+const macTest = test.runIf(process.platform === 'darwin');
+
 const root = resolve('robotics/simulation-3d'), lockPath = join(root, 'requirements.lock'), python = resolve('.venv-webots/bin/python');
 const dirs: string[] = [];
 afterEach(async () => { releaseSlot('webots_3d', 'other-run'); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
@@ -34,7 +37,7 @@ test('flag off: webots_arm is the catalog entry of a runtime never given the opt
   await expect(withOff.simulationFactory({ backendSetId: 'engineering-webots-arm-v1' } as never, { directory: await temp() })).rejects.toThrow('BACKEND_EXECUTION_DISABLED');
 });
 
-test('a worker double qualifies the wiring but never makes the arm installed; its readiness rows pass on the coffee project with the smoke on the arm scene', async () => {
+macTest('a worker double qualifies the wiring but never makes the arm installed; its readiness rows pass on the coffee project with the smoke on the arm scene', async () => {
   const p = await webotsFromOptions(await opts({ entry: double('arm') }));
   expect(p.arm.capability.reason?.startsWith('WEBOTS_TEST_DOUBLE')).toBe(true); expect(p.arm.capability.installed).toBe(false);
   const sim = await portableSimulationFromOptions({ ...(await base()), webots: p });
@@ -44,7 +47,7 @@ test('a worker double qualifies the wiring but never makes the arm installed; it
   expect(checks.find((c) => c.id === 'runner')!.evidenceRef).toMatch(/^webots-arm-smoke:/);
 });
 
-test('readiness names what is missing: no arm collision profile, a foreign model, a full host, a smoke the worker refuses', async () => {
+macTest('readiness names what is missing: no arm collision profile, a foreign model, a full host, a smoke the worker refuses', async () => {
   const p = await webotsFromOptions(await opts({ entry: double('arm') })), sim = await portableSimulationFromOptions({ ...(await base()), webots: p }), signal = new AbortController().signal;
   const noProfile = coffeeProject() as { armCollisionProfile?: unknown }; delete noProfile.armCollisionProfile;
   expect(rows(await sim.readinessChecks!(ctx(noProfile) as never, signal)).fixture).toEqual(['ARM_SCENE_UNAVAILABLE']);

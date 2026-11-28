@@ -1,6 +1,8 @@
 // W04: the fixed-step runner moves behind a plant port without changing what IR-SIM records. The golden below was written BEFORE the split:
 // the sha256 of every stored evidence chunk (decompressed NDJSON, by stream and index) of IR-FD01 (seed 5) and IR-FD07 (seed 7) on the real IR-SIM worker.
 // UPDATE_GOLDEN=1 rewrites it. Skipped, with the reason, where the pinned IR-SIM venv is not provisioned.
+// The golden is bytes recorded on macOS: the last bits of the plant's floating point differ under another libm (glibc: up to 4e-14, from IR-FD01 tick 1681),
+// so only macOS compares with it. Every other assertion here holds on every host.
 import { afterAll, afterEach, beforeAll, expect, test } from 'vitest';
 import { createHash } from 'node:crypto';
 import { readFile, readdir, rm, writeFile } from 'node:fs/promises';
@@ -19,6 +21,7 @@ const runs: ScenarioRun[] = [], dirs: string[] = [];
 beforeAll(async () => { if (irsimAvailable) { serve = await irsimBundle(); fleet = await irsimBundle('fleet'); } }, 240_000);
 afterAll(removeBundles);
 afterEach(async () => { for (const r of runs.splice(0)) await r.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+const goldenHost = process.platform === 'darwin';
 const sha = (b: Uint8Array | string) => createHash('sha256').update(b).digest('hex');
 
 /** `stream-index` -> sha256 of the decompressed NDJSON of that chunk (the file names carry a random suffix and are not part of the identity). */
@@ -43,7 +46,7 @@ async function runFd07() {
   return { dir, report: await run.report() };
 }
 
-test.skipIf(!irsimAvailable)('IR-FD01 and IR-FD07 write the same evidence chunks as before the plant-port split', async () => {
+test.skipIf(!irsimAvailable || !goldenHost)('IR-FD01 and IR-FD07 write the same evidence chunks as before the plant-port split', async () => {
   const [a, b] = [await runFd01(), await runFd07()];
   expect(a.report.outcome.status).toBe('completed'); expect(b.report.outcome.status).toBe('completed');
   const actual = { 'IR-FD01@5': await chunkHashes(a.dir), 'IR-FD07@7': await chunkHashes(b.dir) };
@@ -101,5 +104,5 @@ test.skipIf(!irsimAvailable)('a paced step sleeps each tick to its slot; without
   const run = await createIRSimScenarioRun(irsimInput(serve.locked, 5), { ...await irsimProviders(dir, serve.service), wall: golden.wall }); runs.push(run);
   await run.start(); await finish(run, 500, 30000); expect((await run.report()).outcome.status).toBe('completed');
   expect(golden.w.calls).toBe(0);
-  expect(await chunkHashes(dir)).toEqual(JSON.parse(await readFile(GOLDEN, 'utf8'))['IR-FD01@5']);
+  if (goldenHost) expect(await chunkHashes(dir)).toEqual(JSON.parse(await readFile(GOLDEN, 'utf8'))['IR-FD01@5']);
 }, 600_000);
