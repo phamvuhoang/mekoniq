@@ -7,7 +7,7 @@ import { readNavigationEvidence } from '../../packages/lab-runtime/src/v2/naviga
 import type { NavigationSceneV1 } from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 import type { RunReport } from '../../packages/lab-runtime/src/v2/report';
 import type { ScenarioRun } from '../../packages/lab-runtime/src/v2/scenario-runner';
-import { finish, openWebotsRun, removeBundles, temp, webotsAvailable, webotsBundle } from '../support/webots-mission';
+import { finish, openWebotsRun, removeBundles, temp, webotsAvailable, webotsBundle, webotsLidarAvailable } from '../support/webots-mission';
 
 let bundle: Awaited<ReturnType<typeof webotsBundle>>;
 const runs: ScenarioRun[] = [], dirs: string[] = [];
@@ -24,7 +24,7 @@ async function complete(seed: number) {
   return { dir, report, read };
 }
 
-test.skipIf(!webotsAvailable)('WB07 evidence: every tick of the four streams is stored, every trajectory record has its 3D pose, and a missing chunk makes the read fail', async () => {
+test.skipIf(!webotsLidarAvailable)('WB07 evidence: every tick of the four streams is stored, every trajectory record has its 3D pose, and a missing chunk makes the read fail', async () => {
   const { dir, report, read } = await complete(5);
   expect(report.outcome.status).toBe('completed');
   expect(read.complete).toBe(true); expect(read.issues).toEqual([]);
@@ -41,7 +41,7 @@ test.skipIf(!webotsAvailable)('WB07 evidence: every tick of the four streams is 
   expect(broken.complete).toBe(false); expect(broken.issues.length + broken.gaps.length).toBeGreaterThan(0);
 }, 300_000);
 
-test.skipIf(!webotsAvailable)('WB06 repeatability: three runs with the same seed give the same trajectory within the profile tolerance', async () => {
+test.skipIf(!webotsLidarAvailable)('WB06 repeatability: three runs with the same seed give the same trajectory within the profile tolerance', async () => {
   const tol = loadOracleProfile().profile.webots!.repeatPoseM;
   const runsRead = [await complete(5), await complete(5), await complete(5)].map((x) => x.read);
   let worst = 0;

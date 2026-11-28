@@ -13,6 +13,7 @@ import { WorkerLostError } from '../../packages/lab-runtime/src/v2/navigation2d/
 import { loadOracleProfile } from '../../packages/lab-runtime/src/v2/algorithm/checker';
 import { castScan, lidarAgrees } from '../../packages/lab-runtime/src/v2/simulation3d/lidar-oracle';
 import { spawnSim3DWorker } from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
+import { webotsNoLidar } from '../support/webots-mission';
 
 const HOME = process.env.MEKONIQ_WEBOTS_HOME ?? '/Applications/Webots.app', python = resolve('.venv-webots/bin/python'), workerRoot = resolve('robotics/simulation-3d'), FX = join(workerRoot, 'fixtures', 'serve-3d-v1');
 const exe = join(HOME, 'Contents', 'MacOS', 'webots');
@@ -87,7 +88,7 @@ describe.skipIf(!webotsReady)('Webots plant worker', () => {
     expect(Math.abs(last.poseDriveMap[0]! - first.poseDriveMap[0]!)).toBeLessThanOrEqual(1e-3); expect(Math.abs(last.poseDriveMap[1]! - first.poseDriveMap[1]!)).toBeLessThanOrEqual(1e-3);
   }, 180_000);
 
-  test('WB02 lidar: the scan at the spawn agrees with the independent ray-cast of the scene', async () => {
+  test.skipIf(webotsNoLidar)('WB02 lidar: the scan at the spawn agrees with the independent ray-cast of the scene', async () => {
     const t = await start();
     const r = (await t.create()).robots[0]!, scan = r.scans[0]!;
     const sensor = t.scene.robots[0]!.model.sensors[0]!, [x, y, yaw] = r.poseDriveMap, [dx] = sensor.poseInDrive;

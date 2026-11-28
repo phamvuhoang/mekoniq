@@ -8,7 +8,7 @@ import { SCENARIO_FIXTURES, resolveScenarioFixture, scenarioAssertions } from '.
 import type { NavigationSceneV1 } from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 import type { RunReport } from '../../packages/lab-runtime/src/v2/report';
 import type { ScenarioRun } from '../../packages/lab-runtime/src/v2/scenario-runner';
-import { finish, openWebotsRun, removeBundles, temp, webotsAvailable, webotsBundle, webotsProcesses } from '../support/webots-mission';
+import { finish, openWebotsRun, removeBundles, temp, webotsAvailable, webotsBundle, webotsLidarAvailable, webotsProcesses } from '../support/webots-mission';
 
 let fleet: Awaited<ReturnType<typeof webotsBundle>>;
 const runs: ScenarioRun[] = [], dirs: string[] = [];
@@ -16,7 +16,7 @@ beforeAll(async () => { if (webotsAvailable) fleet = await webotsBundle('fleet-3
 afterEach(async () => { for (const r of runs.splice(0)) await r.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
 afterAll(removeBundles);
 
-test.skipIf(!webotsAvailable)('WB04 WB-FD07: both robots deliver within 12,000 ticks, the aisle zone has one granted owner at a time, and the report carries the serialisation note', async () => {
+test.skipIf(!webotsLidarAvailable)('WB04 WB-FD07: both robots deliver within 12,000 ticks, the aisle zone has one granted owner at a time, and the report carries the serialisation note', async () => {
   const dir = await temp('webots-fleet-'); dirs.push(dir);
   const run = await openWebotsRun(dir, fleet, {}, 7, 'WB-FD07'); runs.push(run);
   await run.start(); await finish(run, 500, 12000);

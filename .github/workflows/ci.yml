@@ -58,13 +58,15 @@ jobs:
         # Raw owned-service and child logs stay in the private runner temp directory.
         run: python scripts/ci-junit-summary.py "$RUNNER_TEMP/platform-integration.xml"
   # The integration cases only a macOS host can run: the Webots provider, plant and arm, and the cross-engine case (IR-SIM, Webots, MuJoCo). They need no database.
-  # A skip fails this job. mujoco-arm-readiness is here for its case that needs a second engine venv.
+  # tests/fixtures/ci/macos-engines.json names every case: the job fails if one is missing, skipped, failed or unlisted. The Webots cases that need the lidar are
+  # skipped here and run on a physical Mac (physicalMac in that file). mujoco-arm-readiness is here for its case that needs a second engine venv.
   macos-engines:
     runs-on: macos-26
     timeout-minutes: 90
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       ENGINEERING_PYTHON: ${{ github.workspace }}/.venv/bin/python
+      MEKONIQ_WEBOTS_NO_LIDAR: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -91,6 +93,7 @@ jobs:
       # after R2025a). Dropping incoming loopback packets on the ports Webots may listen on (1234-1244 by default, the worker's 20000-29999 for runs) makes that
       # check time out instead. Inbound only: dropping outbound too still fails on ::1. The controllers connect over ipc://, not TCP. Webots itself is untouched.
       - name: Let Webots find its ports free
+        if: runner.environment == 'github-hosted' # a throwaway VM: never change the packet filter of a machine that outlives the job
         run: echo 'block drop in quick on lo0 proto tcp from any to any port { 1234:1244, 20000:29999 }' | sudo pfctl -E -f -
       - name: Provision the engine workers from their locks and start each once
         run: |
@@ -102,7 +105,7 @@ jobs:
             --reporter=default --reporter=junit --outputFile.junit="$RUNNER_TEMP/macos-integration.xml"
       - name: Summarize integration results
         if: always()
-        run: python scripts/ci-junit-summary.py "$RUNNER_TEMP/macos-integration.xml" --forbid-skips
+        run: python scripts/ci-junit-summary.py "$RUNNER_TEMP/macos-integration.xml" --expect tests/fixtures/ci/macos-engines.json
   python:
     env:
       PYTHONDONTWRITEBYTECODE: '1'

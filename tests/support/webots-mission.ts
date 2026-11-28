@@ -20,6 +20,9 @@ import {navigationFixture} from './navigation2d';
 export const WEBOTS_HOME=process.env.MEKONIQ_WEBOTS_HOME??'/Applications/Webots.app',webotsPython=resolve('.venv-webots/bin/python'),webotsRoot=resolve('robotics/simulation-3d'),schemaDir=resolve('packages/contracts/schemas');
 const exe=join(WEBOTS_HOME,'Contents','MacOS','webots');
 export const webotsAvailable=existsSync(exe)&&existsSync(webotsPython)&&(()=>{try{return execFileSync(exe,['--version'],{encoding:'utf8',timeout:30_000}).includes('R2025a');}catch{return false;}})();
+/** Set by the hosted macOS CI job: its VM's lidar ranges are wrong, so the cases tests/fixtures/ci/macos-engines.json lists as physicalMac run on a physical Mac instead (scripts/webots-physical-mac.py). */
+export const webotsNoLidar=process.env.MEKONIQ_WEBOTS_NO_LIDAR==='1';
+export const webotsLidarAvailable=webotsAvailable&&!webotsNoLidar;
 export const webotsDouble=(name:string)=>resolve('tests/support/webots_doubles',name);
 export const temp=async(p:string)=>{const d=await mkdtemp(join(tmpdir(),p));webotsProcessScope.addDirectory(d);return d;};
 /** Owned workers, engine and all controller descendants, including reparented ones. */

@@ -6,7 +6,7 @@ import {mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {loadCampaign,runIRSimBatch} from '../../packages/lab-runtime/src/v2/navigation2d/batch';
-import {webotsAvailable,webotsProcesses,webotsProcessScope,temp} from '../support/webots-mission';
+import {webotsLidarAvailable,webotsProcesses,webotsProcessScope,temp} from '../support/webots-mission';
 
 const dirs:string[]=[];
 afterAll(async()=>{for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
@@ -46,7 +46,7 @@ test('a Webots campaign needs concurrency 1 (one Webots per host)',async()=>{
  await expect(runIRSimBatch({campaignPath:path,outDir:out,concurrency:2,sourceCommit:'t',sourceRoot:root})).rejects.toThrow(/concurrency/);
 });
 
-test.skipIf(!webotsAvailable)('smoke campaign on the real Webots: same-seed repeats agree within the profile tolerance, a mid-route cancel is bounded, every run is labelled webots_3d and leaves no process',async()=>{
+test.skipIf(!webotsLidarAvailable)('smoke campaign on the real Webots: same-seed repeats agree within the profile tolerance, a mid-route cancel is bounded, every run is labelled webots_3d and leaves no process',async()=>{
  const out=await temp('webots-batch-');dirs.push(out);
  const s=await webotsProcessScope.observe(()=>runIRSimBatch({campaignPath:campaign('r1-smoke'),outDir:join(out,'c'),concurrency:1,sourceCommit:'test-commit'}));
  const summary=await json<{status:string;complete:boolean;provider:{id:string;kind:string};runs:{id:string;scenarioId:string;result:string;reasons:string[];assertions?:{id:string;result:string}[]}[]}>(s.summaryPath);

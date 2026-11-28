@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { readNavigationEvidence } from '../../packages/lab-runtime/src/v2/navigation2d/evidence';
 import { resolveScenarioFixture, scenarioAssertions } from '../../packages/lab-runtime/src/v2/navigation2d/scenario-fixtures';
 import type { NavigationSceneV1 } from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
-import { openWebotsRun, removeBundles, stepUntil, temp, webotsAvailable, webotsBundle, webotsProcesses } from '../support/webots-mission';
+import { openWebotsRun, removeBundles, stepUntil, temp, webotsAvailable, webotsBundle, webotsLidarAvailable, webotsProcesses } from '../support/webots-mission';
 
 let bundle: Awaited<ReturnType<typeof webotsBundle>>;
 const runs: ScenarioRun[] = [], dirs: string[] = [];
@@ -15,7 +15,7 @@ beforeAll(async () => { if (webotsAvailable) bundle = await webotsBundle(); }, 1
 afterEach(async () => { for (const r of runs.splice(0)) await r.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
 afterAll(removeBundles);
 
-test.skipIf(!webotsAvailable)('WB03 WB-FD01: arriving at the table does not serve the order; served only after the scripted handoff, then the robot parks', async () => {
+test.skipIf(!webotsLidarAvailable)('WB03 WB-FD01: arriving at the table does not serve the order; served only after the scripted handoff, then the robot parks', async () => {
   const dir = await temp('webots-mission-'); dirs.push(dir);
   const run = await openWebotsRun(dir, bundle); runs.push(run);
   await run.start();
